@@ -360,49 +360,8 @@ class TestOrchestrator:
           LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
           timestamp)
 
-      # Report file path
-      report_path = os.path.join(
-          LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
-          timestamp, "test", device.mac_addr.replace(":", ""))
-
-      # Parse string timestamp
-      date_timestamp: datetime.datetime = datetime.strptime(
-          timestamp, "%Y-%m-%dT%H:%M:%S")
-
-      # Find the report
-      test_report = None
-      for report in device.get_reports():
-        if report.get_started() == date_timestamp:
-          test_report = report
-
-      # This should not happen as the timestamp is checked in api.py first
-      if test_report is None:
-        return None
-
-      # Copy the original report for comparison
-      original_report = copy.deepcopy(test_report)
-
-      # Update the report with 'additional_info' field
-      test_report.update_device_profile(device.additional_info)
-
-      # Overwrite report only if additional_info has been updated
-      if original_report.to_json() != test_report.to_json():
-
-        # Write the json report
-        with open(os.path.join(report_path, "report.json"),
-                  "w",
-                  encoding="utf-8") as f:
-          json.dump(test_report.to_json(), f, indent=2)
-
-        # Write the html report
-        with open(os.path.join(report_path, "report.html"),
-                  "w",
-                  encoding="utf-8") as f:
-          f.write(test_report.to_html())
-
-        # Write the pdf report
-        with open(os.path.join(report_path, "report.pdf"), "wb") as f:
-          f.write(test_report.to_pdf().getvalue())
+      # Regenerate the report if the device profile has been updated
+      self._regenerate_report_files(device, timestamp)
 
       # Define temp directory to store files before zipping
       results_dir = os.path.join(f"/tmp/testrun/{time.time()}")
@@ -447,6 +406,84 @@ class TestOrchestrator:
       LOGGER.error("Failed to create zip file")
       LOGGER.debug(error)
       return None
+
+  def regenerate_pdf(self, device, timestamp):
+    """Regenerate the pdf report"""
+    self._regenerate_report_files(device, timestamp)
+
+  def _regenerate_report_files(self, device, timestamp):
+    '''Regenerate the report if the device profile has been updated'''
+
+    try:
+
+      # Report files path
+      report_path = os.path.join(
+          LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
+          timestamp, "test", device.mac_addr.replace(":", ""))
+
+      # Parse string timestamp
+      date_timestamp: datetime.datetime = datetime.strptime(
+          timestamp, "%Y-%m-%dT%H:%M:%S")
+
+      # Find the report
+      test_report = None
+      for report in device.get_reports():
+        if report.get_started() == date_timestamp:
+          test_report = report
+
+      # This should not happen as the timestamp is checked in api.py first
+      if test_report is None:
+        return None
+
+      # Copy the original report for comparison
+      test_report_copy = copy.deepcopy(test_report)
+
+      # Update the report with 'additional_info' field
+      test_report.update_device_profile(device.additional_info)
+
+      # Overwrite report only if additional_info has been changed
+      if test_report.to_json() != test_report_copy.to_json():
+        LOGGER.debug("Device profile has been updated, regenerating the report")
+
+        # Store the jinja templates
+        reload_templates = []
+
+        # Load the jinja templates
+        if os.path.isdir(report_path):
+          for dir_path, _, filenames in os.walk(report_path):
+            for filename in filenames:
+              try:
+                if filename.endswith(".j2.html"):
+                  with open(os.path.join(dir_path, filename), "r",
+                            encoding="utf-8") as f:
+                    reload_templates.append(f.read())
+              except Exception as e:
+                LOGGER.debug(f"Could not read the file: {e}")
+
+        # Add the jinja templates to the report
+        test_report.add_module_templates(reload_templates)
+
+        # Rewrite the json report
+        with open(os.path.join(report_path, "report.json"),
+                  "w",
+                  encoding="utf-8") as f:
+          json.dump(test_report.to_json(), f, indent=2)
+
+        # Rewrite the html report
+        with open(os.path.join(report_path, "report.html"),
+                  "w",
+                  encoding="utf-8") as f:
+          f.write(test_report.to_html())
+
+        # Rewrite the pdf report
+        with open(os.path.join(report_path, "report.pdf"), "wb") as f:
+          f.write(test_report.to_pdf().getvalue())
+
+        LOGGER.debug("Report has been regenerated")
+
+    except Exception as error:
+      LOGGER.error("Failed to regenerate the report")
+      LOGGER.debug(error)
 
   def test_in_progress(self):
     return self._test_in_progress

@@ -69,8 +69,7 @@ class RiskProfile():
                 'r',
                 encoding='utf-8') as device_format_file:
         device_format_json = json.load(device_format_file)
-        for step in device_format_json:
-          self._device_format.extend(step['questions'])
+        self._device_format = device_format_json
     except (IOError, ValueError) as e:
       LOGGER.error(
           'An error occurred whilst loading the device profile format')

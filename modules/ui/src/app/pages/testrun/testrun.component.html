@@ -20,22 +20,12 @@ limitations under the License.
         isTestrunInProgress(data.status) ||
         data.status === StatusOfTestrun.Cancelled ||
         data.status === StatusOfTestrun.Cancelling ||
+        data.status === StatusOfTestrun.Stopping ||
         data.finished
       ">
       <mat-toolbar class="progress-toolbar">
         <div class="toolbar-col-left">
           <div class="toolbar-row top">
-            <ng-container
-              *ngTemplateOutlet="
-                startNewTestrunButton;
-                context: {
-                  hasDevices: vm.hasDevices,
-                  systemStatus: vm.systemStatus,
-                  isAllDevicesOutdated: vm.isAllDevicesOutdated,
-                }
-              "></ng-container>
-          </div>
-          <div class="toolbar-row bottom">
             <h2
               class="title progress-title"
               tabindex="-1"
@@ -56,34 +46,37 @@ limitations under the License.
                 >{{ tag }}</span
               >
             </span>
-            <button
-              *ngIf="isTestrunInProgress(data.status)"
-              (click)="openStopTestrunDialog(vm.systemStatus)"
-              class="stop-button"
-              aria-label="Stop testrun"
-              color="warn"
-              mat-flat-button>
-              Stop
-            </button>
-            <app-download-options
-              *ngIf="data.report"
-              [data]="data"
-              [profiles]="vm.profiles"></app-download-options>
+          </div>
+          <div class="toolbar-row bottom">
+            <app-testrun-status-card [systemStatus]="vm.systemStatus">
+            </app-testrun-status-card>
           </div>
         </div>
-        <app-testrun-status-card [systemStatus]="vm.systemStatus">
-        </app-testrun-status-card>
       </mat-toolbar>
       <section
+        *ngIf="!resultIsEmpty(data.tests)"
         class="progress-table"
         [class.progress-table-progress-empty]="
-          isTestrunInProgress(data.status) && resultIsEmpty(data.tests)
+          isTestrunInProgress(data.status)
         ">
-        <app-testrun-table
-          [dataSource]="vm.dataSource"
-          [stepsToResolveCount]="vm.stepsToResolveCount"></app-testrun-table>
+        <app-testrun-table [dataSource]="vm.dataSource"></app-testrun-table>
         <app-spinner></app-spinner>
       </section>
+      <button
+        *ngIf="isTestrunInProgress(data.status)"
+        (click)="openStopTestrunDialog()"
+        class="stop-button"
+        aria-label="Stop testrun"
+        mat-flat-button>
+        <mat-icon fontSet="material-symbols-outlined" class="filled">
+          cancel
+        </mat-icon>
+        Stop
+      </button>
+      <app-download-options
+        *ngIf="data.report"
+        [data]="data"
+        [profiles]="vm.profiles"></app-download-options>
     </ng-container>
     <ng-container *ngIf="!data.started">
       <ng-container *ngTemplateOutlet="empty"></ng-container>
@@ -92,14 +85,21 @@ limitations under the License.
 
   <ng-template #empty>
     <div class="progress-content-empty">
-      <ng-container
-        *ngTemplateOutlet="
-          startNewTestrunButton;
-          context: {
-            hasDevices: vm.hasDevices,
-            isAllDevicesOutdated: vm.isAllDevicesOutdated,
-          }
-        "></ng-container>
+      <div class="empty-content">
+        <p class="empty-content-heading">Start device testing</p>
+        <p class="empty-content-info">
+          Click the button below to configure your testing task
+        </p>
+
+        <ng-container
+          *ngTemplateOutlet="
+            startNewTestrunButton;
+            context: {
+              hasDevices: vm.hasDevices,
+              isAllDevicesOutdated: vm.isAllDevicesOutdated,
+            }
+          "></ng-container>
+      </div>
     </div>
   </ng-template>
 
@@ -116,11 +116,13 @@ limitations under the License.
         hasDevices === false ||
         isAllDevicesOutdated === true ||
         isTestrunInProgress(systemStatus?.status) ||
-        systemStatus?.status === StatusOfTestrun.Cancelling
+        systemStatus?.status === StatusOfTestrun.Cancelling ||
+        systemStatus?.status === StatusOfTestrun.Stopping
       "
       (click)="openTestRunModal(vm.testModules)"
       mat-flat-button>
-      Start New Testrun
+      <mat-icon>add</mat-icon>
+      Start Testing
     </button>
   </ng-template>
 </ng-container>

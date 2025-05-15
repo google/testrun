@@ -37,7 +37,6 @@ import {
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
 } from '../mocks/testrun.mock';
 import {
-  fetchSystemStatus,
   fetchSystemStatusSuccess,
   setReports,
   setStatus,
@@ -339,7 +338,6 @@ describe('Effects', () => {
 
       effects.onStopTestrun$.subscribe(() => {
         expect(testRunServiceMock.stopTestrun).toHaveBeenCalled();
-        expect(dispatchSpy).toHaveBeenCalledWith(fetchSystemStatus());
         done();
       });
     });
@@ -429,6 +427,32 @@ describe('Effects', () => {
         );
         done();
       });
+    });
+  });
+
+  it('onFetchInterfaces$ should call fetchInterfacesSuccess on success', done => {
+    actions$ = of(actions.fetchInterfaces());
+
+    effects.onFetchInterfaces$.subscribe(action => {
+      expect(action).toEqual(
+        actions.fetchInterfacesSuccess({
+          interfaces: {},
+        })
+      );
+      done();
+    });
+  });
+
+  it('onFetchSystemConfig$ should call fetchSystemConfigSuccess on success', done => {
+    actions$ = of(actions.fetchSystemConfig());
+
+    effects.onFetchSystemConfig$.subscribe(action => {
+      expect(action).toEqual(
+        actions.fetchSystemConfigSuccess({
+          systemConfig: { network: {} },
+        })
+      );
+      done();
     });
   });
 });

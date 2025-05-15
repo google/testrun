@@ -20,10 +20,9 @@ import {
   tick,
 } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { Device } from '../../model/device';
+import { Device, DeviceAction, TestModule } from '../../model/device';
 
-import { DevicesComponent, FormAction } from './devices.component';
-import { DevicesModule } from './devices.module';
+import { DevicesComponent } from './devices.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialogRef } from '@angular/material/dialog';
 import { device, MOCK_TEST_MODULES } from '../../mocks/device.mock';
@@ -36,7 +35,7 @@ import { TestrunInitiateFormComponent } from '../testrun/components/testrun-init
 import { Routes } from '../../model/routes';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { Component } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../../mocks/testrun.mock';
 import { DeviceQualificationFromComponent } from './components/device-qualification-from/device-qualification-from.component';
 
@@ -60,22 +59,33 @@ describe('DevicesComponent', () => {
       'getTestModules',
       'deleteDevice',
     ]);
+    mockDevicesStore.isOpenAddDevice$ = of(false);
 
     await TestBed.configureTestingModule({
       imports: [
         RouterTestingModule.withRoutes([
           { path: 'testing', component: FakeProgressComponent },
         ]),
-        DevicesModule,
         BrowserAnimationsModule,
         MatIconTestingModule,
+        DevicesComponent,
+        FakeProgressComponent,
+        FakeDeviceQualificationComponent,
       ],
       providers: [
         { provide: DevicesStore, useValue: mockDevicesStore },
         { provide: FocusManagerService, useValue: stateServiceMock },
       ],
-      declarations: [DevicesComponent, FakeProgressComponent],
-    }).compileComponents();
+    })
+      .overrideComponent(DevicesComponent, {
+        remove: {
+          imports: [DeviceQualificationFromComponent],
+        },
+        add: {
+          imports: [FakeDeviceQualificationComponent],
+        },
+      })
+      .compileComponents();
 
     TestBed.overrideProvider(DevicesStore, { useValue: mockDevicesStore });
 
@@ -96,27 +106,30 @@ describe('DevicesComponent', () => {
         selectedDevice: null,
         deviceInProgress: null,
         testModules: [],
+        actions: [
+          {
+            action: DeviceAction.StartNewTestrun,
+            svgIcon: 'testrun_logo_small',
+          },
+          { action: DeviceAction.Delete, icon: 'delete' },
+        ],
       });
       mockDevicesStore.devices$ = of([]);
       mockDevicesStore.testModules$ = of([]);
-      mockDevicesStore.isOpenAddDevice$ = of(true);
       fixture.detectChanges();
     });
 
     it('should show only add device button if no device added', () => {
-      const button = compiled.querySelector(
-        '.device-repository-content-empty button'
-      );
+      const button = compiled.querySelector('app-empty-page button');
 
       expect(button).toBeTruthy();
     });
 
-    it('should open the modal if isOpenAddDevice$ as true', () => {
-      const openDialogSpy = spyOn(component, 'openDialog');
-
+    it('should open form if isOpenAddDevice$ as true', () => {
+      mockDevicesStore.isOpenAddDevice$ = of(true);
       component.ngOnInit();
 
-      expect(openDialogSpy).toHaveBeenCalled();
+      expect(component.isOpenDeviceForm).toBeTrue();
     });
   });
 
@@ -127,6 +140,13 @@ describe('DevicesComponent', () => {
         selectedDevice: device,
         deviceInProgress: device,
         testModules: [],
+        actions: [
+          {
+            action: DeviceAction.StartNewTestrun,
+            svgIcon: 'testrun_logo_small',
+          },
+          { action: DeviceAction.Delete, icon: 'delete' },
+        ],
       });
       fixture.detectChanges();
     });
@@ -137,68 +157,15 @@ describe('DevicesComponent', () => {
       expect(item.length).toEqual(3);
     }));
 
-    it('should open device dialog on "add device button" click', () => {
-      const openSpy = spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of(true),
-        beforeClosed: () => of(true),
-      } as MatDialogRef<typeof DeviceQualificationFromComponent>);
+    it('should open form on "add device button" click', () => {
       fixture.detectChanges();
       const button = compiled.querySelector(
-        '.device-add-button'
+        '.add-entity-button'
       ) as HTMLButtonElement;
       button?.click();
 
       expect(button).toBeTruthy();
-      expect(openSpy).toHaveBeenCalled();
-      expect(openSpy).toHaveBeenCalledWith(DeviceQualificationFromComponent, {
-        ariaLabel: 'Create Device',
-        data: {
-          device: null,
-          initialDevice: undefined,
-          title: 'Create Device',
-          testModules: [],
-          devices: [device, device, device],
-          index: 0,
-          isCreate: true,
-        },
-        autoFocus: 'first-tabbable',
-        hasBackdrop: true,
-        disableClose: true,
-        panelClass: 'device-form-dialog',
-      });
-
-      openSpy.calls.reset();
-    });
-
-    describe('#openDialog', () => {
-      it('should open device dialog on item click', () => {
-        const openSpy = spyOn(component.dialog, 'open').and.returnValue({
-          beforeClosed: () => of(true),
-        } as MatDialogRef<typeof DeviceQualificationFromComponent>);
-        fixture.detectChanges();
-
-        component.openDialog([device], MOCK_TEST_MODULES, device, device, true);
-
-        expect(openSpy).toHaveBeenCalled();
-        expect(openSpy).toHaveBeenCalledWith(DeviceQualificationFromComponent, {
-          ariaLabel: 'Edit device',
-          data: {
-            device: device,
-            initialDevice: device,
-            title: 'Edit device',
-            devices: [device],
-            testModules: MOCK_TEST_MODULES,
-            index: 0,
-            isCreate: false,
-          },
-          autoFocus: 'first-tabbable',
-          hasBackdrop: true,
-          disableClose: true,
-          panelClass: 'device-form-dialog',
-        });
-
-        openSpy.calls.reset();
-      });
+      expect(component.isOpenDeviceForm).toBeTrue();
     });
 
     it('should disable device if deviceInProgress is exist', () => {
@@ -208,16 +175,6 @@ describe('DevicesComponent', () => {
     });
   });
 
-  it('should call setIsOpenAddDevice if dialog closes with null', () => {
-    spyOn(component.dialog, 'open').and.returnValue({
-      beforeClosed: () => of(null),
-    } as MatDialogRef<typeof DeviceQualificationFromComponent>);
-
-    component.openDialog([], MOCK_TEST_MODULES);
-
-    expect(mockDevicesStore.setIsOpenAddDevice).toHaveBeenCalled();
-  });
-
   describe('close dialog', () => {
     beforeEach(() => {
       component.viewModel$ = of({
@@ -225,6 +182,13 @@ describe('DevicesComponent', () => {
         selectedDevice: device,
         deviceInProgress: null,
         testModules: [],
+        actions: [
+          {
+            action: DeviceAction.StartNewTestrun,
+            svgIcon: 'testrun_logo_small',
+          },
+          { action: DeviceAction.Delete, icon: 'delete' },
+        ],
       });
       fixture.detectChanges();
     });
@@ -234,47 +198,6 @@ describe('DevicesComponent', () => {
 
       expect(item.length).toEqual(3);
     }));
-
-    it('should open device dialog when dialog return null', () => {
-      const openDeviceDialogSpy = spyOn(component, 'openDialog');
-      spyOn(component.dialog, 'open').and.returnValue({
-        beforeClosed: () => of(null),
-      } as MatDialogRef<typeof SimpleDialogComponent>);
-
-      component.openCloseDialog(
-        [device],
-        MOCK_TEST_MODULES,
-        device,
-        undefined,
-        false,
-        0,
-        0
-      );
-
-      expect(openDeviceDialogSpy).toHaveBeenCalledWith(
-        [device],
-        MOCK_TEST_MODULES,
-        device,
-        undefined,
-        false,
-        0,
-        0
-      );
-    });
-  });
-
-  it('should delete device if dialog closes with object, action delete and selected device', () => {
-    spyOn(component.dialog, 'open').and.returnValue({
-      beforeClosed: () =>
-        of({
-          device,
-          action: FormAction.Delete,
-        }),
-    } as MatDialogRef<typeof DeviceQualificationFromComponent>);
-
-    component.openDialog([device], MOCK_TEST_MODULES, device);
-
-    expect(mockDevicesStore.deleteDevice).toHaveBeenCalled();
   });
 
   describe('delete device dialog', () => {
@@ -284,6 +207,13 @@ describe('DevicesComponent', () => {
         selectedDevice: device,
         deviceInProgress: null,
         testModules: [],
+        actions: [
+          {
+            action: DeviceAction.StartNewTestrun,
+            svgIcon: 'testrun_logo_small',
+          },
+          { action: DeviceAction.Delete, icon: 'delete' },
+        ],
       });
       fixture.detectChanges();
     });
@@ -293,47 +223,12 @@ describe('DevicesComponent', () => {
         beforeClosed: () => of(true),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
-      component.openDeleteDialog(
-        [device],
-        MOCK_TEST_MODULES,
-        device,
-        device,
-        false,
-        0,
-        0
-      );
+      component.openDeleteDialog(device);
 
       const args = mockDevicesStore.deleteDevice.calls.argsFor(0);
       // @ts-expect-error config is in object
       expect(args[0].device).toEqual(device);
       expect(mockDevicesStore.deleteDevice).toHaveBeenCalled();
-    });
-
-    it('should open device dialog when dialog return null', () => {
-      const openDeviceDialogSpy = spyOn(component, 'openDialog');
-      spyOn(component.dialog, 'open').and.returnValue({
-        beforeClosed: () => of(null),
-      } as MatDialogRef<typeof SimpleDialogComponent>);
-
-      component.openDeleteDialog(
-        [device],
-        MOCK_TEST_MODULES,
-        device,
-        device,
-        false,
-        0,
-        0
-      );
-
-      expect(openDeviceDialogSpy).toHaveBeenCalledWith(
-        [device],
-        MOCK_TEST_MODULES,
-        device,
-        device,
-        false,
-        0,
-        0
-      );
     });
   });
 
@@ -380,3 +275,18 @@ describe('DevicesComponent', () => {
   template: '',
 })
 class FakeProgressComponent {}
+
+@Component({
+  selector: 'app-device-qualification-from',
+  template: '<div></div>',
+})
+class FakeDeviceQualificationComponent {
+  initialDevice = input<Device | null>(null);
+  devices = input<Device[]>([]);
+  testModules = input<TestModule[]>([]);
+  isCreate = input<boolean>(true);
+
+  save = output<Device>();
+  delete = output<Device>();
+  cancel = output<void>();
+}

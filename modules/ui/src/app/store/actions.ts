@@ -142,3 +142,12 @@ export const updateInternetConnection = createAction(
   '[Shared] Fetch internet connection',
   props<{ internetConnection: boolean | null }>()
 );
+
+export const fetchInterfaces = createAction('[Shared] Fetch interfaces');
+
+export const fetchSystemConfig = createAction('[Shared] Fetch system config');
+
+export const setIsOpenProfile = createAction(
+  '[Shared] Set Is Open Profile',
+  props<{ isOpenCreateProfile: boolean }>()
+);

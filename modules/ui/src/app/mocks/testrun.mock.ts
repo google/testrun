@@ -39,7 +39,7 @@ export const TEST_DATA_RESULT: IResult[] = [
   },
   {
     name: 'dns.mdns',
-    description: 'Does the device has MDNS (or any kind of IP multicast)',
+    description: 'Does the device has MDNS',
     result: 'Not Started',
     required_result: RequiredResult.RequiredIfApplicable,
   },
@@ -75,15 +75,10 @@ export const TEST_DATA_RESULT_WITH_ERROR: IResult[] = [
   },
   {
     name: 'dns.mdns',
-    description: 'Does the device has MDNS (or any kind of IP multicast)',
+    description: 'Does the device has MDNS ',
     result: 'Not Started',
     required_result: RequiredResult.Required,
   },
-];
-
-export const TEST_DATA_TABLE_RESULT: IResult[] = [
-  ...TEST_DATA_RESULT,
-  ...new Array(23).fill(null).map(() => ({}) as IResult),
 ];
 
 export const EMPTY_RESULT = new Array(100)
@@ -148,6 +143,14 @@ export const MOCK_PROGRESS_DATA_NON_COMPLIANT: TestrunStatus =
     'https://api.testrun.io/report.pdf',
     ResultOfTestrun.NonCompliant
   );
+
+export const MOCK_PROGRESS_DATA_PROCEED: TestrunStatus = PROGRESS_DATA_RESPONSE(
+  StatusOfTestrun.Proceed,
+  '2023-06-22T09:20:00.123Z',
+  TEST_DATA_RESULT,
+  'https://api.testrun.io/report.pdf',
+  ResultOfTestrun.Compliant
+);
 
 export const MOCK_PROGRESS_DATA_CANCELLED: TestrunStatus =
   PROGRESS_DATA_RESPONSE(StatusOfTestrun.Cancelled, null, TEST_DATA);

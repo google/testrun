@@ -1,0 +1,104 @@
+@use '@angular/material' as mat;
+@use 'colors';
+@use 'variables';
+
+:host {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.1fr;
+  gap: 46px;
+  padding: 8px 0;
+}
+
+.setting-form-label {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  color: colors.$on-surface;
+}
+
+:host:has(.two-ports-message) .internet-label {
+  padding-top: 16px;
+}
+
+.setting-label-description {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: colors.$on-surface-variant;
+}
+
+.setting-option-value {
+  padding: 8px 16px;
+}
+
+.option-value {
+  margin: 0;
+  font-family: variables.$font-text;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: 0;
+
+  &.top {
+    color: colors.$on-surface-variant;
+  }
+
+  &.bottom {
+    color: colors.$schemes-outline;
+  }
+}
+
+.setting-field {
+  width: 100%;
+  padding: 10px 0;
+
+  &.mat-form-field-disabled {
+    opacity: 0.6;
+  }
+
+  &::ng-deep.mat-mdc-form-field-subscript-wrapper {
+    display: none;
+  }
+
+  ::ng-deep .mat-mdc-form-field-infix {
+    min-height: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding-top: 9px;
+    padding-bottom: 6px;
+  }
+
+  ::ng-deep .mat-mdc-floating-label {
+    font-family: Roboto;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    letter-spacing: 0.2px;
+  }
+
+  ::ng-deep .mat-mdc-floating-label:not(.mdc-floating-label--float-above) {
+    top: 28px;
+  }
+}
+
+.label-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 16px;
+  color: colors.$on-surface-variant;
+  font-family: variables.$font-text;
+}
+
+::ng-deep .info-column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 260px;
+  padding: 0 12px;
+  justify-content: center;
+}

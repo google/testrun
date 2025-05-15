@@ -14,99 +14,62 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import 'src/theming/colors';
-@import 'src/theming/variables';
+@use 'm3-theme' as *;
+@use 'colors';
+@use 'variables';
+@use 'mixins';
 
-$form-min-width: 732px;
+$form-max-width: var(--mat-dialog-container-max-width);
+$form-min-width: 285px;
 
 :host {
   container-type: size;
   container-name: qualification-form;
   display: grid;
-  grid-template-rows: 1fr;
-  overflow: auto;
-  grid-template-columns: minmax(285px, $form-max-width);
-  height: 100vh;
-  max-height: 978px;
+  height: 100%;
+  background: colors.$surface;
+  border-radius: 8px;
+  box-shadow:
+    0px 4px 8px 3px rgba(60, 64, 67, 0.15),
+    0px 1px 3px 0px rgba(60, 64, 67, 0.3);
+  box-sizing: border-box;
 }
 
 .device-qualification-form {
-  overflow: hidden;
+  overflow-y: scroll;
 }
 
 ::ng-deep .device-form-test-modules {
   overflow: auto;
   min-height: 78px;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
   grid-auto-flow: column;
   padding-top: 16px;
+  padding-left: 10px;
   p {
     margin: 8px 0;
   }
-}
-
-.close-button {
-  color: $primary;
 }
 
 .hidden {
   display: none;
 }
 
-.device-qualification-form-header {
-  position: relative;
-  padding-top: 24px;
-  &-title {
-    margin: 0;
-    font-size: 32px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 40px;
-    color: $grey-800;
-    text-align: center;
-    padding: 38px 0;
-    background-image: url(/assets/icons/create_device_header.svg);
-  }
-
-  &-close-button {
-    position: absolute;
-    right: 0;
-    top: 0;
-    min-width: 24px;
-    width: 24px;
-    height: 24px;
-    box-sizing: content-box;
-    line-height: normal !important;
-    padding: 0;
-    margin: 0;
-
-    .close-button-icon {
-      width: 24px;
-      height: 24px;
-      margin: 0;
-    }
-
-    ::ng-deep * {
-      line-height: inherit !important;
-    }
-  }
-}
-
 .device-qualification-form-journey-label {
-  font-family: $font-secondary;
+  font-family: variables.$font-text;
   font-style: normal;
-  font-weight: 400;
+  font-weight: 500;
   font-size: 16px;
   line-height: 24px;
   letter-spacing: 0.1px;
-  color: $grey-800;
-  margin: 24px 16px 0 16px;
+  color: colors.$on-surface-variant;
+  padding: 20px 20px 8px 16px;
 }
 
 .device-qualification-form-journey-button {
-  padding: 0 18px 0 24px;
+  padding: 0 18px;
 }
 
 .device-qualification-form-journey-button-info {
@@ -114,190 +77,48 @@ $form-min-width: 732px;
 }
 
 .device-qualification-form-journey-button-label {
-  font-family: $font-secondary;
+  font-family: variables.$font-text;
   font-style: normal;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 20px;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
   letter-spacing: 0.2px;
-  color: $grey-800;
-}
-
-.device-qualification-form-test-modules-container {
-  padding: 0 24px;
-}
-
-.device-qualification-form-step-title {
-  margin: 0;
-  font-style: normal;
-  font-weight: 500;
-  font-size: 22px;
-  line-height: 28px;
-  text-align: center;
-  color: $grey-900;
-  padding: 0 24px;
-  display: inline-block;
-  height: 28px;
-}
-
-.device-qualification-form-step-description {
-  font-family: $font-secondary;
-  text-align: center;
-  color: $grey-800;
-  margin: 0;
-  padding: 8px 16px 0 16px;
-}
-
-.step-link {
-  color: $primary;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.device-qualification-form-step-content {
-  padding: 0 16px;
-  overflow: scroll;
 }
 
 .device-qualification-form-page {
-  padding-top: 10px;
-  margin-top: -10px;
   display: grid;
-  gap: 8px;
-  height: 100%;
-  overflow: hidden;
   align-content: start;
-  &:has(.device-qualification-form-summary-container) {
-    grid-template-rows: min-content min-content 1fr min-content;
-  }
+  padding: 24px 60px 0 60px;
 }
 
-.device-qualification-form-summary-container {
+.device-qualification-form-journey {
   display: grid;
-  align-items: center;
-  justify-content: center;
-  overflow: scroll;
-  ::ng-deep {
-    .device-item,
-    .device-qualification-form-summary-info {
-      width: $device-item-width;
-    }
-  }
-}
-
-.device-qualification-form-summary {
-  border-radius: 12px;
-  background: mat.m2-get-color-from-palette($color-primary, 50);
-  padding: 24px;
-  width: max-content;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 24px;
-  &-error {
-    background: $red-50;
-  }
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .device-qualification-form-actions {
-  width: $device-item-width;
-  text-align: center;
-  padding: 8px 24px;
-  justify-self: center;
-  align-self: end;
-  &:has(.delete-button) {
-    text-align: right;
+  @include mixins.form-actions;
+
+  div {
+    display: flex;
+    gap: 12px;
   }
-  .close-button,
-  .delete-button {
-    border: 1px solid $lighter-grey;
-  }
-  .delete-button {
-    color: $primary;
-    float: left;
-  }
+
   .close-button {
     padding: 0 16px;
   }
-  .save-button {
-    margin-left: 16px;
-  }
-}
 
-.device-qualification-form-summary-info {
-  margin-top: 16px;
-  border-radius: 12px;
-  padding: 16px 24px;
-  background: #fff;
-  box-sizing: border-box;
-  &-title,
-  &-title-error {
-    font-size: 18px;
-    font-weight: 400;
-    line-height: 24px;
-    text-align: center;
-    color: $grey-900;
+  .delete-button:not(.mat-mdc-button-disabled) {
+    @include mixins.delete-red-button;
   }
-  &-description {
-    font-family: $font-secondary;
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 24px;
-    text-align: center;
-    color: $grey-800;
-  }
-  .info-label {
-    display: block;
-    font-family: $font-secondary;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 20px;
-    text-align: left;
-    color: $secondary;
-  }
-  .info-value {
-    display: block;
-    color: $grey-800;
-    font-family: $font-secondary;
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 24px;
-    text-align: left;
-  }
-}
 
-.device-qualification-form-summary-info-title-error {
-  display: flex;
-  align-items: center;
-  height: 48px;
-  margin: auto;
-  justify-content: center;
-  color: $red-800;
-  gap: 14px;
-  ::ng-deep mat-icon {
-    color: $red-800;
-  }
-}
-
-.device-qualification-form-instructions {
-  margin-top: auto;
-  padding-top: 8px;
-  color: $grey-800;
-  text-align: center;
-  font-family: $font-secondary;
-  font-size: 16px;
-  width: 510px;
-  ul {
-    margin-bottom: 0;
-    text-align: left;
-    padding-left: 26px;
-  }
-  li {
-    line-height: 24px;
+  .close-button:not(.mat-mdc-button-disabled) {
+    @include mixins.secondary-button;
   }
 }
 
 ::ng-deep mat-error {
-  background: $white;
+  background: colors.$white;
 }
 
 :host mat-form-field {
@@ -307,21 +128,28 @@ $form-min-width: 732px;
   }
 }
 
+::ng-deep .device-tests-description {
+  padding: 0 20px;
+}
+
+::ng-deep .device-tests-title {
+  font-family: variables.$font-text;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px !important;
+  line-height: 24px !important;
+  letter-spacing: 0.1px;
+  padding: 20px 20px 8px 16px;
+}
+
 .device-qualification-form-test-modules-container-error
   ::ng-deep
   .device-tests-title {
-  color: $red-800;
+  color: colors.$red-800;
 }
 
 .device-qualification-form-test-modules-error {
   padding: 0 24px;
-}
-
-.form-content-summary {
-  display: grid;
-  grid-template-rows: 1fr auto;
-  grid-row-gap: 16px;
-  overflow: hidden;
 }
 
 @container qualification-form (height < 870px) {
@@ -336,8 +164,7 @@ $form-min-width: 732px;
 @container qualification-form (height < 580px) {
   .device-qualification-form-page {
     overflow: scroll;
-    .device-qualification-form-step-content,
-    .device-qualification-form-summary-container {
+    .device-qualification-form-step-content {
       overflow: visible;
     }
   }

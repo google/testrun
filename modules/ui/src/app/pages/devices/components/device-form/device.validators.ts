@@ -23,10 +23,10 @@ import { Device } from '../../../../model/device';
  */
 export class DeviceValidators {
   static readonly STRING_FORMAT_MAX_LENGTH = 28;
+
+  // Not allowed symbols: <>?/:;@'"][=^!\#$%&*+{}|()
   readonly STRING_FORMAT_REGEXP = new RegExp(
-    "^([a-z0-9\\p{L}\\p{M}.',-_ ]{1," +
-      DeviceValidators.STRING_FORMAT_MAX_LENGTH +
-      '})$',
+    '^([^<>?:;@\'\\\\"\\[\\]=^!/,.#$%&*+{}|()]{1,28})$',
     'u'
   );
 
@@ -64,7 +64,10 @@ export class DeviceValidators {
     };
   }
 
-  public differentMACAddress(devices: Device[], device?: Device): ValidatorFn {
+  public differentMACAddress(
+    devices: Device[],
+    device: Device | null
+  ): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = control.value?.trim();
       if (value && (!device || device?.mac_addr !== value)) {

@@ -14,103 +14,77 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import '../theming/colors';
-@import '../theming/variables';
+@use 'm3-theme' as *;
+@use 'colors';
+@use 'variables';
 
-$toolbar-height: 56px;
-$nav-close-width: 80px;
-$nav-open-width: 236px;
-$nav-close-btn-width: 48px;
-$nav-open-btn-width: 210px;
+$toolbar-height: 64px;
+$content-padding-top: 18px;
+$content-padding-bottom: 16px;
+$nav-width: 96px;
 
 .app-container {
   height: 100%;
+  background-color: colors.$surface-container-low;
 }
 
 .spacer {
   flex: 1 1 auto;
 }
 
-.mat-drawer-content {
-  height: calc(100% - 56px);
-  background: $white;
-}
-
-.mat-drawer-side {
-  margin-top: $toolbar-height;
-}
-
-.active-menu {
-  .app-sidebar {
-    width: $nav-open-width;
-    align-items: start;
-  }
-
-  .app-sidebar-button {
-    width: $nav-open-btn-width;
-    height: $toolbar-height;
-    border-radius: 0 100px 100px 0;
-    margin: 0;
-    padding: 0 24px;
-  }
-
-  .app-sidebar-button:first-child {
-    margin-top: 8px;
-  }
-
-  .app-sidebar-button-active {
-    border: 1px solid mat.m2-get-color-from-palette($color-primary, 50);
-    background-color: mat.m2-get-color-from-palette($color-primary, 50);
-  }
-
-  .app-sidebar-button-active > .mat-icon,
-  .sidebar-button-label {
-    color: $grey-800;
-  }
-
-  .sidebar-button-label {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 20px;
-    letter-spacing: 0.25px;
-  }
-}
-
 .app-sidebar {
   display: flex;
   flex-direction: column;
-  background-color: $white;
+  background-color: colors.$surface-container-low;
   height: 100%;
-  gap: 8px;
-  width: $nav-close-width;
+  gap: 40px;
+  width: $nav-width;
   align-items: center;
+  box-sizing: border-box;
+  padding-top: 104px;
 }
 
-.app-sidebar-button,
-.app-toolbar-button {
-  border-radius: 20px;
-  border: 1px solid transparent;
-  min-width: 48px;
-  padding: 0;
-  box-sizing: border-box;
-  height: 34px;
-  margin: 11px 0;
-  line-height: 50% !important;
+.nav-items-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  gap: 4px;
+  flex-grow: 1;
 }
 
 .app-sidebar-button {
-  width: $nav-close-btn-width;
   display: flex;
-  justify-content: flex-start;
+  flex-direction: column;
+  border-radius: variables.$corner-large;
+  border: 1px solid transparent;
+  min-width: 48px;
+  box-sizing: border-box;
+  padding: 10px;
+  line-height: 50% !important;
+  justify-content: center;
+  gap: 4px;
+  align-self: stretch;
+  height: unset;
+  width: 86px;
+  margin: 0 auto;
+}
+
+.app-sidebar-button {
+  --mat-text-button-with-icon-horizontal-padding: 8px;
+
   padding-inline: 8px;
 }
 
-.app-sidebar-button:first-child {
-  margin-top: 19px;
-}
-
-.app-toolbar-button-menu {
-  margin: 11px 17px 11px 16px;
+.sidebar-button-label {
+  color: colors.$on-surface-variant;
+  text-align: center;
+  font-family: variables.$font-text;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.1px;
 }
 
 .app-sidebar-button:disabled {
@@ -122,45 +96,80 @@ $nav-open-btn-width: 210px;
   margin-right: 0;
   width: 24px;
   font-size: 24px;
-  color: $dark-grey;
+  color: colors.$on-surface-variant;
   height: 24px;
 }
 
 .app-sidebar-button > .mat-icon {
-  margin: 0 3px;
+  margin: 4px;
   min-width: 24px;
-  line-height: 18px !important;
 }
 
-.app-sidebar-button-active {
-  border: 1px solid mat.m2-get-color-from-palette($color-primary, 500);
-  background-color: mat.m2-get-color-from-palette($color-primary, 500);
+.app-toolbar-button-help-tips {
+  display: none;
 }
 
-.app-sidebar-button-active > .mat-icon {
-  color: $white;
+.app-sidebar-button-active,
+:host:has(app-help-tip) .app-toolbar-button-help-tips {
+  .material-symbols-outlined {
+    font-variation-settings:
+      'FILL' 1,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24;
+  }
+
+  & > .mat-icon {
+    color: colors.$on-secondary-fixed-variant;
+  }
+  .sidebar-button-label {
+    color: colors.$secondary;
+  }
+
+  .mat-mdc-button-persistent-ripple::before {
+    opacity: 1;
+    background: colors.$secondary-fixed;
+  }
+}
+
+:host:has(app-help-tip) .app-toolbar-button-help-tips {
+  display: block;
 }
 
 .logo-link {
-  color: $grey-800;
+  color: colors.$on-surface;
   text-decoration: none;
-  font-size: 18px;
+  font-size: 22px;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  width: 120px;
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 4px;
+  border: 1px solid transparent;
+
+  &:focus-visible {
+    outline: none;
+    border: 1px solid colors.$black;
+    border-radius: 4px;
+  }
+
+  &:active,
+  :focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
 }
 
 .logo-link .mat-icon {
-  width: 36px;
-  height: 23px;
-  line-height: 18px !important;
+  width: 40px;
+  height: 26px;
+  flex-shrink: 0;
+  line-height: 22px !important;
 }
 
 .main-heading {
-  font-size: 18px;
+  font-size: 22px;
   line-height: 24px;
 }
 
@@ -170,17 +179,30 @@ $nav-open-btn-width: 210px;
   left: 0;
   z-index: 3;
   height: $toolbar-height;
-  padding: 0;
-  background-color: $white;
-  border-bottom: 1px solid $light-grey;
-  color: $grey-800;
+  padding: 0 16px;
+  background-color: colors.$surface-container-low;
+  color: colors.$grey-800;
+  width: 100%;
+}
+
+.app-bar-buttons {
+  display: flex;
+  padding: 4px 0 4px 24px;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
 }
 
 .app-content {
   position: static;
   display: grid;
   grid-template-rows: 1fr;
-  margin-top: $toolbar-height;
+  margin-top: calc($toolbar-height + $content-padding-top);
+  height: calc(
+    100% - $toolbar-height - $content-padding-top - $content-padding-bottom
+  );
+  border-radius: variables.$corner-large;
+  background: colors.$white;
 }
 
 .app-content-main {
@@ -193,24 +215,31 @@ $nav-open-btn-width: 210px;
 .settings-drawer {
   width: 320px;
   box-shadow: none;
-  border-left: 1px solid $light-grey;
-}
-
-.app-toolbar-button.app-toolbar-button-certificates {
-  margin-left: 72px;
+  border-left: 1px solid colors.$light-grey;
 }
 
 app-version {
-  margin-top: auto;
   margin-bottom: 16px;
   max-width: 100%;
-  width: $nav-close-width;
+  width: $nav-width;
   display: flex;
   justify-content: center;
 }
 
-.separator {
-  width: 1px;
-  height: 28px;
-  background-color: $light-grey;
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  container-type: size;
+  container-name: app-root;
+}
+@container app-root (height < 600px) {
+  .app-sidebar {
+    gap: 4px;
+    padding-top: 82px;
+  }
+}
+
+.closed-tip {
+  display: none;
 }

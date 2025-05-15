@@ -19,6 +19,7 @@ import {
   EventEmitter,
   OnDestroy,
   Output,
+  inject,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -31,7 +32,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-delete-report',
-  standalone: true,
+
   imports: [CommonModule, MatButtonModule, MatTooltipModule],
   templateUrl: './delete-report.component.html',
   styleUrls: ['./delete-report.component.scss'],
@@ -42,13 +43,12 @@ export class DeleteReportComponent
   extends ReportActionComponent
   implements OnDestroy
 {
+  dialog = inject(MatDialog);
+
   @Output() removeDevice = new EventEmitter<void>();
   private destroy$: Subject<boolean> = new Subject<boolean>();
-  constructor(
-    public dialog: MatDialog,
-    datePipe: DatePipe
-  ) {
-    super(datePipe);
+  constructor() {
+    super();
   }
 
   ngOnDestroy() {
@@ -67,7 +67,7 @@ export class DeleteReportComponent
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'simple-dialog',
+      panelClass: ['simple-dialog', 'delete-dialog'],
     });
 
     dialogRef

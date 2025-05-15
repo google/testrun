@@ -13,45 +13,77 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import 'src/theming/colors';
+@use 'colors';
 
 :host {
   display: flex;
 }
 
-.clear-all {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 8px;
-  cursor: pointer;
-  color: $primary;
-  font-weight: 400;
-  height: 32px;
-  margin: 4px 0 4px 8px;
-  border-radius: 16px;
-  flex-shrink: 0;
-  background: $white;
-  font-family: Roboto, sans-serif;
-}
-
 .filter-chip.mat-mdc-chip {
-  background: $white;
-  border: 1px solid $primary;
+  background: colors.$light-grey;
+  &::ng-deep .mat-mdc-chip-primary-focus-indicator {
+    display: none;
+  }
 }
 
 .filter-chip.mat-mdc-chip ::ng-deep .mat-mdc-chip-action-label {
-  color: $primary;
+  color: colors.$on-secondary-container;
   font-weight: 500;
 }
 
 .filter-chip.mat-mdc-chip ::ng-deep .mat-mdc-chip-remove {
-  color: $primary;
+  color: colors.$on-secondary-container;
 }
 
 .filter-chip.cdk-keyboard-focused,
 .filter-chip-remove:focus-visible {
-  outline: $black solid 2px;
+  outline: colors.$black solid 2px;
+  &:before {
+    content: none;
+  }
+}
+
+.filter-chip-remove:focus {
+  &:before {
+    content: none;
+  }
+}
+
+.clear-button:has(.clear-button-label:focus),
+.clear-button.cdk-keyboard-focused {
+  outline: colors.$black solid 2px;
+}
+
+.clear-button-label:focus {
+  border: none;
+}
+
+.clear-button {
+  height: var(--mdc-text-button-container-height);
+  border-radius: var(--mdc-text-button-container-shape);
+  margin: 0 0 0 8px !important;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-button .clear-button-label {
+  color: colors.$primary !important;
+  border: none;
+  outline: none;
+}
+
+.clear-button ::ng-deep .mat-focus-indicator {
+  display: none;
+}
+
+.clear-button
+  ::ng-deep
+  .mdc-evolution-chip__action--primary:not(
+    .mdc-evolution-chip__action--presentational
+  ):not(.mdc-ripple-upgraded):focus::before {
+  border: none;
 }
 
 .filter-chip .filter-chip-remove {
@@ -64,7 +96,7 @@
 .mat-mdc-standard-chip:not(
     .mdc-evolution-chip--disabled
   ).filter-chip-clear-all {
-  background-color: $white;
+  background-color: colors.$white;
 
   & ::ng-deep .mat-mdc-chip-action {
     padding: 0;
