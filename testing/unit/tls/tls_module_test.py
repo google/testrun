@@ -17,6 +17,7 @@ from tls_util import TLSUtil
 from common import logger
 import os
 import unittest
+import unittest.mock
 from scapy.all import sniff, wrpcap
 import threading
 import time
@@ -635,10 +636,14 @@ class TLSModuleTest(unittest.TestCase):
                     startup_capture_file=startup_pcap_file,
                     monitor_capture_file=monitor_pcap_file,
                     tls_capture_file=tls_pcap_file)
+    conns_orig = TLS_UTIL.get_all_outbound_connections(
+        device_mac='68:5e:1c:cb:6e:cb', capture_files=[monitor_pcap_file]) * 5
+    conns_mock = unittest.mock.MagicMock()
+    conns_mock.get_all_outbound_connections.return_value = conns_orig
+    tls._tls_util = conns_mock # pylint: disable=W0212
     report_out_path = tls.generate_module_report()
     with open(report_out_path, 'r', encoding='utf-8') as file:
       report_out = file.read()
-
     # Read the local good report
     with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
       report_local = file.read()

@@ -36,6 +36,7 @@ TLS_CAPTURE_FILE = '/runtime/output/tls.pcap'
 GATEWAY_CAPTURE_FILE = '/runtime/network/gateway.pcap'
 LOGGER = None
 REPORT_TEMPLATE_FILE = 'report_template.jinja2'
+OUTBOUND_CONNS_PER_PAGE = 18
 
 
 class TLSModule(TestModule):
@@ -193,12 +194,21 @@ class TLSModule(TestModule):
         device_mac=self._device_mac, capture_files=pcap_files)
 
     if outbound_conns:
-      out_page = template.render(
-                          base_template=self._base_template_file,
-                          ountbound_headers=outbound_headers,
-                          outbound_conns=outbound_conns
-                        )
-      report_jinja += out_page
+      # Splitting Outbound Coonestions table to pages
+      pages = len(outbound_conns) // OUTBOUND_CONNS_PER_PAGE
+      if pages * OUTBOUND_CONNS_PER_PAGE < len(outbound_conns):
+        pages += 1
+        for page in range(pages):
+          start = page * OUTBOUND_CONNS_PER_PAGE
+          end = min(page * OUTBOUND_CONNS_PER_PAGE + OUTBOUND_CONNS_PER_PAGE,
+                    len(outbound_conns))
+          outbound_conns_chunk = outbound_conns[start:end]
+          out_page = template.render(
+                              base_template=self._base_template_file,
+                              ountbound_headers=outbound_headers,
+                              outbound_conns=outbound_conns_chunk
+                            )
+          report_jinja += out_page
 
     LOGGER.debug('Module report:\n' + report_jinja)
 
