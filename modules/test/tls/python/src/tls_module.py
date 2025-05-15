@@ -357,8 +357,12 @@ class TLSModule(TestModule):
                 host=self._device_ipv4_addr, port=port, tls_version='1.2')
             tls_1_3_results = self._tls_util.validate_tls_server(
                 host=self._device_ipv4_addr, port=port, tls_version='1.3')
-            port_results = self._tls_util.process_tls_server_results(
-                tls_1_2_results, tls_1_3_results, port=port)
+            # If TLS 1.2 is not supported don't process the results
+            if tls_1_2_results[0] is not None:
+              port_results = self._tls_util.process_tls_server_results(
+                  tls_1_2_results, tls_1_3_results, port=port)
+            else:
+              port_results = None
             if port_results is not None:
               result = port_results[
                   0] if result is None else result and port_results[0]
@@ -378,6 +382,12 @@ class TLSModule(TestModule):
       if result is None:
         result = 'Feature Not Detected'
         description = 'TLS 1.2 certificate could not be validated'
+        details = 'TLS 1.2 certificate could not be validated'
+      # If TLS 1.2 cert is not valid but TLS 1.3 is valid test is Compliant
+      elif result and not tls_1_2_results[0] and tls_1_3_results[0]:
+        ports_csv = ','.join(map(str,ports_valid))
+        description = 'TLS 1.2 certificate invalid and '
+        description += f'TLS 1.3 certificate valid on ports: {ports_csv}'
       elif result:
         ports_csv = ','.join(map(str,ports_valid))
         description = f'TLS 1.2 certificate valid on ports: {ports_csv}'
@@ -387,7 +397,9 @@ class TLSModule(TestModule):
       return result, description, details
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
-      return 'Error', 'Could not resolve device IP address'
+      description = 'Could not resolve device IP address'
+      details = 'Could not resolve device IP address'
+      return 'Error', description, details
 
   def _security_tls_v1_3_server(self):
     LOGGER.info('Running security.tls.v1_3_server')
