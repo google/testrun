@@ -611,7 +611,9 @@ class TestOrchestrator:
           # Convert dict from json into TestCase object
           test_case = TestCase(name=test_result["name"],
                                result=test_result["result"],
-                               description=test_result["description"])
+                               description=test_result["description"],
+                               details=test_result['details']
+                               )
 
           # Add steps to resolve if test is non-compliant
           if (test_case.result == TestResult.NON_COMPLIANT
