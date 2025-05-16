@@ -28,12 +28,14 @@ class TestCase:  # pylint: disable=too-few-public-methods,too-many-instance-attr
   result: str = TestResult.NON_COMPLIANT
   recommendations: list = field(default_factory=lambda: [])
   optional_recommendations: list = field(default_factory=lambda: [])
+  details: str = ""
 
   def to_dict(self):
 
     test_dict = {
       "name": self.name,
       "description": self.description,
+      "details": self.details,
       "expected_behavior": self.expected_behavior,
       "required_result": self.required_result,
       "result": self.result
@@ -47,3 +49,6 @@ class TestCase:  # pylint: disable=too-few-public-methods,too-many-instance-attr
       test_dict["optional_recommendations"] = self.optional_recommendations
 
     return test_dict
+
+  def __post_init__(self):
+    self.details = self.details.replace("\n", "", 1)
