@@ -612,7 +612,7 @@ class TestOrchestrator:
           test_case = TestCase(name=test_result["name"],
                                result=test_result["result"],
                                description=test_result["description"],
-                               details=test_result['details']
+                               details=test_result["details"]
                                )
 
           # Add steps to resolve if test is non-compliant
