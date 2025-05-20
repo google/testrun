@@ -611,8 +611,7 @@ class TestOrchestrator:
           # Convert dict from json into TestCase object
           test_case = TestCase(name=test_result["name"],
                                result=test_result["result"],
-                               description=test_result["description"],
-                               details=test_result["details"]
+                               description=test_result["description"]
                                )
 
           # Add steps to resolve if test is non-compliant
@@ -621,6 +620,9 @@ class TestOrchestrator:
             test_case.recommendations = test_result["recommendations"]
           else:
             test_case.recommendations = []
+          # Add details to the test case if presented
+          if "details" in test_result:
+            test_case.details = test_result["details"]
 
           self.get_session().add_test_result(test_case)
 
