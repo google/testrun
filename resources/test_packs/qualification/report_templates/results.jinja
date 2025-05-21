@@ -8,7 +8,7 @@
         <div class="result-list-header-label" style="left: 7in">Required result</div>
       </div>
       {% for i in range(results_from, results_to) %}
-      {% if test_results[i]['result'] == 'Non-Compliant' and test_results[i]['required_result'] == "Required" %}
+      {% if test_results[i]['result'] == 'Non-Compliant' and test_results[i]['required_result'] in ["Required", "Required if Applicable"] %}
       <div class="result-line result-line-result result-line-result-non-compliant-required">
       {% else %}
       <div class="result-line result-line-result">
