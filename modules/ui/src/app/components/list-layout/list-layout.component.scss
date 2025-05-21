@@ -112,6 +112,10 @@
   }
 }
 
+.clear-search-button {
+  margin-right: 10px;
+}
+
 ::ng-deep .using-mouse .search-field input:focus {
   outline: none;
 }
