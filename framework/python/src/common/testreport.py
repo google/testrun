@@ -284,7 +284,10 @@ class TestReport():
 
     module_reports = self._module_reports
     env_module = Environment(loader=BaseLoader())
-    tests_first_page = self._calculate_tests_first_page(json_data['device']['manufacturer'], json_data['device']['model'])
+    manufacturer_length = len(json_data['device']['manufacturer'])
+    device_name_length = len(json_data['device']['model'])
+    title_length = manufacturer_length + device_name_length +1
+    tests_first_page = self._calculate_tests_first_page(title_length)
     pages_num = self._pages_num(json_data, tests_first_page)
 
     module_templates = [
@@ -317,19 +320,22 @@ class TestReport():
                            module_templates=module_templates
                            ))
 
-  def _calculate_tests_first_page(self, device_manufacturer, device_model, average_chars_per_line=25, average_line_height_px=60, test_result_height_px=39, max_tests_on_full_page=TESTS_FIRST_PAGE):
-    full_text = f"{device_manufacturer} {device_model}"
-    text_length = len(full_text)
-    estimated_lines = (text_length // average_chars_per_line) + (1 if text_length % average_chars_per_line > 0 else 0)
-    estimated_device_info_height_px = estimated_lines * average_line_height_px
+  def _calculate_tests_first_page(self, title_length):
+    # Calculation of test results lines at first page
 
-    available_space_px = 816 - estimated_device_info_height_px - 322
+    # Average chars per line is 25
+    estimated_lines = title_length // 25
+    if title_length % 25 > 0:
+      estimated_lines += 1
 
-    if available_space_px < test_result_height_px:
-      return 0
-
-    estimated_tests_first_page = int(available_space_px // test_result_height_px)
-    return min(estimated_tests_first_page, max_tests_on_full_page)
+    if estimated_lines > 1:
+      # Line height is 60 px
+      title_px = (estimated_lines - 1) * 60
+      available_space_px = 445 - title_px
+      estimated_tests_first_page = available_space_px // 39
+      return min(estimated_tests_first_page, TESTS_FIRST_PAGE)
+    else:
+      return TESTS_FIRST_PAGE
 
   def _add_page_counter(self, html):
     # Add page nums and total page
