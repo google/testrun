@@ -284,7 +284,9 @@ class TestReport():
 
     module_reports = self._module_reports
     env_module = Environment(loader=BaseLoader())
-    pages_num = self._pages_num(json_data)
+    tests_first_page = self._calculate_tests_first_page(json_data['device']['manufacturer'], json_data['device']['model'])
+    pages_num = self._pages_num(json_data, tests_first_page)
+
     module_templates = [
         env_module.from_string(s).render(
           name=current_test_pack.name,
@@ -310,10 +312,24 @@ class TestReport():
                            steps_to_resolve=steps_to_resolve_,
                            module_reports=module_reports,
                            pages_num=pages_num,
-                           tests_first_page=TESTS_FIRST_PAGE,
+                           tests_first_page=tests_first_page,
                            tests_per_page=TESTS_PER_PAGE,
                            module_templates=module_templates
                            ))
+
+  def _calculate_tests_first_page(self, device_manufacturer, device_model, average_chars_per_line=25, average_line_height_px=60, test_result_height_px=39, max_tests_on_full_page=TESTS_FIRST_PAGE):
+    full_text = f"{device_manufacturer} {device_model}"
+    text_length = len(full_text)
+    estimated_lines = (text_length // average_chars_per_line) + (1 if text_length % average_chars_per_line > 0 else 0)
+    estimated_device_info_height_px = estimated_lines * average_line_height_px
+
+    available_space_px = 816 - estimated_device_info_height_px - 322
+
+    if available_space_px < test_result_height_px:
+      return 0
+
+    estimated_tests_first_page = int(available_space_px // test_result_height_px)
+    return min(estimated_tests_first_page, max_tests_on_full_page)
 
   def _add_page_counter(self, html):
     # Add page nums and total page
@@ -324,18 +340,18 @@ class TestReport():
       div.string = f'Page {index+1}/{total_pages}'
     return str(soup)
 
-  def _pages_num(self, json_data):
+  def _pages_num(self, json_data, tests_first_page=TESTS_FIRST_PAGE):
 
     # Calculate pages
     test_count = len(json_data['tests']['results'])
 
     # Multiple pages required
-    if test_count > TESTS_FIRST_PAGE:
+    if test_count > tests_first_page:
       # First page
       pages = 1
 
       # Remaining testsgenerate
-      test_count -= TESTS_FIRST_PAGE
+      test_count -= tests_first_page
       pages += (int)(test_count / TESTS_PER_PAGE)
       pages = pages + 1 if test_count % TESTS_PER_PAGE > 0 else pages
 
