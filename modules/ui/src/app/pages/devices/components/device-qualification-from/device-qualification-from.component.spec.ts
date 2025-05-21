@@ -227,6 +227,10 @@ describe('DeviceQualificationFromComponent', () => {
       [
         'very long value very long value very long value very long value very long value very long value very long value',
         'as&@3$',
+        'test/',
+        'test|',
+        'test[',
+        ':test',
       ].forEach(value => {
         const model: HTMLInputElement = compiled.querySelector(
           '.device-qualification-form-model'
@@ -273,6 +277,10 @@ describe('DeviceQualificationFromComponent', () => {
       [
         'very long value very long value very long value very long value very long value very long value very long value',
         'as&@3$',
+        'test/',
+        'test|',
+        'test[',
+        ':test',
       ].forEach(value => {
         const manufacturer: HTMLInputElement = compiled.querySelector(
           '.device-qualification-form-manufacturer'

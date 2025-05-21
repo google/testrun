@@ -15,6 +15,12 @@
 # Image name: testrun/ntp-test
 FROM testrun/base-test:latest
 
+# Set DEBIAN_FRONTEND to noninteractive mode
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install required software
+RUN apt-get update && apt-get install -y tshark
+
 ARG MODULE_NAME=ntp
 ARG MODULE_DIR=modules/test/$MODULE_NAME
 

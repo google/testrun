@@ -20,6 +20,7 @@ limitations under the License.
         isTestrunInProgress(data.status) ||
         data.status === StatusOfTestrun.Cancelled ||
         data.status === StatusOfTestrun.Cancelling ||
+        data.status === StatusOfTestrun.Stopping ||
         data.finished
       ">
       <mat-toolbar class="progress-toolbar">
@@ -115,7 +116,8 @@ limitations under the License.
         hasDevices === false ||
         isAllDevicesOutdated === true ||
         isTestrunInProgress(systemStatus?.status) ||
-        systemStatus?.status === StatusOfTestrun.Cancelling
+        systemStatus?.status === StatusOfTestrun.Cancelling ||
+        systemStatus?.status === StatusOfTestrun.Stopping
       "
       (click)="openTestRunModal(vm.testModules)"
       mat-flat-button>

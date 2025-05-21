@@ -382,7 +382,10 @@ class Testrun:  # pylint: disable=too-few-public-methods
     while True:
       time.sleep(5)
 
-  def stop(self):
+  async def stop(self):
+
+    # First, change the status to stopping
+    self.get_session().stop()
 
     # First, change the status to stopping
     self.get_session().stop()

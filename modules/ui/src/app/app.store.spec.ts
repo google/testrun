@@ -77,6 +77,7 @@ const mock = (() => {
     },
   };
 })();
+const localMock = { ...mock };
 Object.defineProperty(window, 'sessionStorage', {
   value: mock,
   writable: true,
@@ -91,6 +92,12 @@ describe('AppStore', () => {
 
   beforeEach(() => {
     window.sessionStorage.clear();
+    window.localStorage.clear();
+
+    Object.defineProperty(window, 'localStorage', {
+      value: localMock,
+      writable: true,
+    });
 
     mockService = jasmine.createSpyObj('mockService', [
       'fetchDevices',
@@ -145,6 +152,7 @@ describe('AppStore', () => {
 
   afterEach(() => {
     mock.clear();
+    localMock.clear();
   });
 
   it('should be created', () => {
@@ -211,7 +219,7 @@ describe('AppStore', () => {
       it('should update store', () => {
         appStore.setContent();
 
-        expect(mock.getItem(CONSENT_SHOWN_KEY)).toBeTruthy();
+        expect(localMock.getItem(CONSENT_SHOWN_KEY)).toBeTruthy();
       });
     });
 

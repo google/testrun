@@ -16,10 +16,7 @@ const mock = (() => {
     },
   };
 })();
-Object.defineProperty(window, 'localStorage', {
-  value: mock,
-  writable: true,
-});
+const localMock = { ...mock };
 
 describe('LocalStorageService', () => {
   let service: LocalStorageService;
@@ -35,6 +32,13 @@ describe('LocalStorageService', () => {
     getItemSpy = spyOn(service, 'getItem').and.callThrough();
     // @ts-expect-error getItem is defined
     setItemSpy = spyOn(service, 'setItem').and.callThrough();
+
+    window.localStorage.clear();
+
+    Object.defineProperty(window, 'localStorage', {
+      value: localMock,
+      writable: true,
+    });
   });
 
   afterEach(() => {

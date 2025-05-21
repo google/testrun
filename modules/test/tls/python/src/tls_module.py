@@ -36,6 +36,7 @@ TLS_CAPTURE_FILE = '/runtime/output/tls.pcap'
 GATEWAY_CAPTURE_FILE = '/runtime/network/gateway.pcap'
 LOGGER = None
 REPORT_TEMPLATE_FILE = 'report_template.jinja2'
+OUTBOUND_CONNS_PER_PAGE = 18
 
 
 class TLSModule(TestModule):
@@ -165,9 +166,6 @@ class TLSModule(TestModule):
                                             signed_by
                                           ]
 
-      outbound_conns = self._tls_util.get_all_outbound_connections(
-          device_mac=self._device_mac, capture_files=pcap_files)
-
     report_jinja = ''
     if pages:
       for num,page in pages.items():
@@ -185,18 +183,33 @@ class TLSModule(TestModule):
                                   ountbound_headers=outbound_headers,
                                 )
         report_jinja += page_html
-      if outbound_conns:
-        out_page = template.render(
-                            base_template=self._base_template_file,
-                            ountbound_headers=outbound_headers,
-                            outbound_conns=outbound_conns
-                          )
-        report_jinja += out_page
+
     else:
       report_jinja = template.render(
                                     base_template=self._base_template_file,
                                     module_header = module_header,
                                     )
+
+    outbound_conns = self._tls_util.get_all_outbound_connections(
+        device_mac=self._device_mac, capture_files=pcap_files)
+
+    if outbound_conns:
+      # Splitting Outbound Coonestions table to pages
+      pages = len(outbound_conns) // OUTBOUND_CONNS_PER_PAGE
+      if pages * OUTBOUND_CONNS_PER_PAGE < len(outbound_conns):
+        pages += 1
+        for page in range(pages):
+          start = page * OUTBOUND_CONNS_PER_PAGE
+          end = min(page * OUTBOUND_CONNS_PER_PAGE + OUTBOUND_CONNS_PER_PAGE,
+                    len(outbound_conns))
+          outbound_conns_chunk = outbound_conns[start:end]
+          out_page = template.render(
+                              base_template=self._base_template_file,
+                              ountbound_headers=outbound_headers,
+                              outbound_conns=outbound_conns_chunk
+                            )
+          report_jinja += out_page
+
     LOGGER.debug('Module report:\n' + report_jinja)
 
     # Use os.path.join to create the complete file path
@@ -344,8 +357,12 @@ class TLSModule(TestModule):
                 host=self._device_ipv4_addr, port=port, tls_version='1.2')
             tls_1_3_results = self._tls_util.validate_tls_server(
                 host=self._device_ipv4_addr, port=port, tls_version='1.3')
-            port_results = self._tls_util.process_tls_server_results(
-                tls_1_2_results, tls_1_3_results, port=port)
+            # If TLS 1.2 is not supported don't process the results
+            if tls_1_2_results[0] is not None:
+              port_results = self._tls_util.process_tls_server_results(
+                  tls_1_2_results, tls_1_3_results, port=port)
+            else:
+              port_results = None
             if port_results is not None:
               result = port_results[
                   0] if result is None else result and port_results[0]
@@ -365,6 +382,12 @@ class TLSModule(TestModule):
       if result is None:
         result = 'Feature Not Detected'
         description = 'TLS 1.2 certificate could not be validated'
+        details = 'TLS 1.2 certificate could not be validated'
+      # If TLS 1.2 cert is not valid but TLS 1.3 is valid test is Compliant
+      elif result and not tls_1_2_results[0] and tls_1_3_results[0]:
+        ports_csv = ','.join(map(str,ports_valid))
+        description = 'TLS 1.2 certificate invalid and '
+        description += f'TLS 1.3 certificate valid on ports: {ports_csv}'
       elif result:
         ports_csv = ','.join(map(str,ports_valid))
         description = f'TLS 1.2 certificate valid on ports: {ports_csv}'
@@ -374,7 +397,9 @@ class TLSModule(TestModule):
       return result, description, details
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
-      return 'Error', 'Could not resolve device IP address'
+      description = 'Could not resolve device IP address'
+      details = 'Could not resolve device IP address'
+      return 'Error', description, details
 
   def _security_tls_v1_3_server(self):
     LOGGER.info('Running security.tls.v1_3_server')

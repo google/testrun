@@ -4,3 +4,4 @@
 
 # User defined packages
 scapy==2.6.0
+pyshark==0.6

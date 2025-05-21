@@ -14,9 +14,10 @@
 """Module run all the TLS related unit tests"""
 from tls_module import TLSModule
 from tls_util import TLSUtil
+from common import logger
 import os
 import unittest
-from common import logger
+import unittest.mock
 from scapy.all import sniff, wrpcap
 import threading
 import time
@@ -29,6 +30,7 @@ import sys
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
+from unittest.mock import patch
 
 MODULE = 'tls'
 # Define the file paths
@@ -64,6 +66,273 @@ class TLSModuleTest(unittest.TestCase):
         #bin_dir='modules/test/tls/bin',
         cert_out_dir=OUTPUT_DIR,
         root_certs_dir=ROOT_CERTS_DIR)
+
+  # Setup the default ipv4 address and the scan results
+  def setUp(self):
+    self.tls_module = TLSModule(module=MODULE)
+    self.tls_module._device_ipv4_addr = None # pylint: disable=W0212
+    self.tls_module._scan_results = None # pylint: disable=W0212
+
+  def security_tls_v1_2_server_no_ip_test(self):
+    """Test _security_tls_v1_2_server when device IP could not be resolved"""
+
+    result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
+
+    self.assertEqual(result, 'Error')
+    self.assertEqual(description, 'Could not resolve device IP address')
+    self.assertEqual(details, 'Could not resolve device IP address')
+
+  def security_tls_v1_2_server_no_scan_results_test(self):
+    """Tests _security_tls_v1_2_server when scan finds no HTTP/HTTPS ports"""
+
+    self.tls_module._device_ipv4_addr = '10.10.10.14' # pylint: disable=W0212
+    self.tls_module._scan_results = {} # pylint: disable=W0212
+
+    result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
+
+    self.assertEqual(result, 'Feature Not Detected')
+    self.assertEqual(description, 'TLS 1.2 certificate could not be validated')
+    self.assertEqual(details, 'TLS 1.2 certificate could not be validated')
+
+  def security_tls_v1_2_server_scan_failure_test(self):
+    """Tests _security_tls_v1_2_server when scan fails"""
+
+    self.tls_module._device_ipv4_addr = '10.10.10.14' # pylint: disable=W0212
+
+    result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
+
+    self.assertEqual(result, 'Feature Not Detected')
+    self.assertEqual(description, 'TLS 1.2 certificate could not be validated')
+    self.assertEqual(details, 'TLS 1.2 certificate could not be validated')
+
+  @patch('tls_module.TLSUtil.validate_tls_server')
+  def security_tls_v1_2_server_no_tls_v1_3_test(self, mock_validate_tls_server):
+    """Test _security_tls_v1_2_server when TLS 1.3 is not supported"""
+
+    self.tls_module._device_ipv4_addr = '10.10.10.14' # pylint: disable=W0212
+    self.tls_module._scan_results = {443 : 'HTTPS'} # pylint: disable=W0212
+
+    # Mock the result of validate_tls_server from TLSUtil
+    def validate_side_effect(**kwargs):
+      tls_version = kwargs.get('tls_version')
+      if tls_version == '1.2':
+        return (True, 'Time range valid\nPublic key valid\nSignature valid')
+      elif tls_version == '1.3':
+        return (None, 'Failed to resolve public certificate')
+
+    mock_validate_tls_server.side_effect = validate_side_effect
+    result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
+
+    self.assertEqual(result, True)
+    self.assertEqual(description, 'TLS 1.2 certificate valid on ports: 443')
+
+    expected_details = (
+    'TLS 1.2 validated on port 443: '
+    'Time range valid\n'
+    'Public key valid\n'
+    'Signature valid'
+    )
+    self.assertEqual(details, expected_details)
+
+  @patch('tls_module.TLSUtil.validate_tls_server')
+  def security_tls_v1_2_server_no_tls_v1_2_test(self, mock_validate_tls_server):
+    """Test _security_tls_v1_2_server when TLS 1.2 is not supported"""
+
+    self.tls_module._device_ipv4_addr = '10.10.10.14' # pylint: disable=W0212
+    self.tls_module._scan_results = {443 : 'HTTPS'} # pylint: disable=W0212
+
+    # Mock the result of validate_tls_server from TLSUtil
+    def validate_side_effect(**kwargs):
+      tls_version = kwargs.get('tls_version')
+      if tls_version == '1.2':
+        return (None, 'Failed to resolve public certificate')
+      elif tls_version == '1.3':
+        return (True, 'Time range valid\nPublic key valid\nSignature valid')
+
+    mock_validate_tls_server.side_effect = validate_side_effect
+    result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
+
+    self.assertEqual(result, 'Feature Not Detected')
+    self.assertEqual(description, 'TLS 1.2 certificate could not be validated')
+    self.assertEqual(details, 'TLS 1.2 certificate could not be validated')
+
+  @patch('tls_module.TLSUtil.validate_tls_server')
+  def security_tls_v1_2_server_compliant_invalid_v1_2_cert_test(self,
+                              mock_validate_tls_server):
+    """
+    Test _security_tls_v1_2_server when TLS 1.2 cert is invalid but 
+    TLS 1.3 cert is valid
+    """
+
+    self.tls_module._device_ipv4_addr = '10.10.10.14' # pylint: disable=W0212
+    self.tls_module._scan_results = {443 : 'HTTPS'} # pylint: disable=W0212
+
+    # Mock the result of validate_tls_server from TLSUtil
+    def validate_side_effect(**kwargs):
+      tls_version = kwargs.get('tls_version')
+      if tls_version == '1.2':
+        return (False, 'Certificate has expired')
+      elif tls_version == '1.3':
+        return (True, 'Time range valid\nPublic key valid\nSignature valid')
+
+    mock_validate_tls_server.side_effect = validate_side_effect
+    result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
+
+    # Expects compliant result
+    self.assertEqual(result, True)
+
+    expected_description = (
+      'TLS 1.2 certificate invalid and TLS 1.3 certificate valid on ports: 443'
+    )
+    self.assertEqual(description, expected_description )
+
+    expected_details = (
+    'TLS 1.2 not validated on port 443: '
+    'Certificate has expired'
+    '\nTLS 1.3 validated on port 443: '
+    'Time range valid\n'
+    'Public key valid\n'
+    'Signature valid'
+    )
+    self.assertEqual(details, expected_details)
+
+  @patch('tls_module.TLSUtil.validate_tls_server')
+  def security_tls_v1_2_server_non_compliant_invalid_1_2_and_1_3_cert_test(self,
+                              mock_validate_tls_server):
+    """
+    Test _security_tls_v1_2_server when TLS 1.2 and TLS 1.3 certs are invalid
+    """
+
+    self.tls_module._device_ipv4_addr = '10.10.10.14' # pylint: disable=W0212
+    self.tls_module._scan_results = {443 : 'HTTPS'} # pylint: disable=W0212
+
+    # Mock the result of validate_tls_server from TLSUtil
+    def validate_side_effect(**kwargs):
+      tls_version = kwargs.get('tls_version')
+      if tls_version == '1.2':
+        return (False, 'Certificate has expired')
+      elif tls_version == '1.3':
+        return (False, 'Device certificate has not been signed')
+
+    mock_validate_tls_server.side_effect = validate_side_effect
+    result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
+
+    # Expects compliant result
+    self.assertEqual(result, False)
+    self.assertEqual(description, 'TLS 1.2 certificate invalid on ports: 443')
+
+    expected_details = (
+    'TLS 1.2 not validated on port 443: '
+    'Certificate has expired'
+    '\nTLS 1.3 not validated on port 443: '
+    'Device certificate has not been signed'
+    )
+    self.assertEqual(details, expected_details)
+
+  @patch('tls_module.TLSUtil.validate_tls_server')
+  def security_tls_v1_2_server_v1_2_v1_3_test(self, mock_validate_tls_server):
+    """Test _security_tls_v1_2_server TLS 1.2 and TLS 1.3 are supported"""
+
+    self.tls_module._device_ipv4_addr = '10.10.10.14' # pylint: disable=W0212
+    self.tls_module._scan_results = {443 : 'HTTPS'} # pylint: disable=W0212
+
+    # Mock the result of validate_tls_server from TLSUtil
+    def validate_side_effect(**kwargs):
+      tls_version = kwargs.get('tls_version')
+      if tls_version in ['1.2', '1.3']:
+        return (True, 'Time range valid\nPublic key valid\nSignature valid')
+
+    mock_validate_tls_server.side_effect = validate_side_effect
+    result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
+
+    self.assertEqual(result, True)
+    self.assertEqual(description, 'TLS 1.2 certificate valid on ports: 443')
+
+    expected_details = (
+    'TLS 1.2 validated on port 443: '
+    'Time range valid\n'
+    'Public key valid\n'
+    'Signature valid'
+    '\nTLS 1.3 validated on port 443: '
+    'Time range valid\n'
+    'Public key valid\n'
+    'Signature valid'
+    )
+    self.assertEqual(details, expected_details)
+
+  @patch('tls_module.TLSUtil.validate_tls_server')
+  def security_tls_v1_2_multiple_https_servers_test(self,
+                                mock_validate_tls_server):
+    """Test _security_tls_v1_2_server when multiple https servers are found"""
+
+    self.tls_module._device_ipv4_addr = '10.10.10.14' # pylint: disable=W0212
+    self.tls_module._scan_results = {443 : 'HTTPS', 8443 : 'HTTPS'} # pylint: disable=W0212
+
+    # Mock the result of validate_tls_server from TLSUtil
+    def validate_side_effect(**kwargs):
+      tls_version = kwargs.get('tls_version')
+      if tls_version in ['1.2', '1.3']:
+        return (True, 'Time range valid\nPublic key valid\nSignature valid')
+
+    mock_validate_tls_server.side_effect = validate_side_effect
+    result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
+
+    self.assertEqual(result, True)
+
+    expected_description = 'TLS 1.2 certificate valid on ports: 443,8443'
+    self.assertEqual(description, expected_description)
+
+    expected_details = (
+    'TLS 1.2 validated on port 443: '
+    'Time range valid\n'
+    'Public key valid\n'
+    'Signature valid'
+    '\nTLS 1.3 validated on port 443: '
+    'Time range valid\n'
+    'Public key valid\n'
+    'Signature valid'
+    'TLS 1.2 validated on port 8443: '
+    'Time range valid\n'
+    'Public key valid\n'
+    'Signature valid'
+    '\nTLS 1.3 validated on port 8443: '
+    'Time range valid\n'
+    'Public key valid\n'
+    'Signature valid'
+    )
+    self.assertEqual(details, expected_details)
+
+  @patch('tls_module.TLSUtil.validate_tls_server')
+  def security_tls_v1_2_server_http_test(self, mock_validate_tls_server):
+    """Test _security_tls_v1_2_server when http port is found"""
+
+    self.tls_module._device_ipv4_addr = '10.10.10.14' # pylint: disable=W0212
+    self.tls_module._scan_results = {443 : 'HTTPS', 80 : 'HTTP'} # pylint: disable=W0212
+
+    # Mock the result of validate_tls_server from TLSUtil
+    def validate_side_effect(**kwargs):
+      tls_version = kwargs.get('tls_version')
+      if tls_version in ['1.2', '1.3']:
+        return (True, 'Time range valid\nPublic key valid\nSignature valid')
+
+    mock_validate_tls_server.side_effect = validate_side_effect
+    result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
+
+    self.assertEqual(result, False)
+    self.assertEqual(description, 'TLS 1.2 certificate invalid on ports: 80')
+
+    expected_details = (
+    'TLS 1.2 validated on port 443: '
+    'Time range valid\n'
+    'Public key valid\n'
+    'Signature valid'
+    '\nTLS 1.3 validated on port 443: '
+    'Time range valid\n'
+    'Public key valid\n'
+    'Signature valid'
+    '\nHTTP service detected on port 80'
+    )
+    self.assertEqual(details, expected_details)
 
   # Test 1.2 server when only 1.2 connection is established
   def security_tls_v1_2_server_test(self):
@@ -367,10 +636,14 @@ class TLSModuleTest(unittest.TestCase):
                     startup_capture_file=startup_pcap_file,
                     monitor_capture_file=monitor_pcap_file,
                     tls_capture_file=tls_pcap_file)
+    conns_orig = TLS_UTIL.get_all_outbound_connections(
+        device_mac='68:5e:1c:cb:6e:cb', capture_files=[monitor_pcap_file]) * 5
+    conns_mock = unittest.mock.MagicMock()
+    conns_mock.get_all_outbound_connections.return_value = conns_orig
+    tls._tls_util = conns_mock # pylint: disable=W0212
     report_out_path = tls.generate_module_report()
     with open(report_out_path, 'r', encoding='utf-8') as file:
       report_out = file.read()
-
     # Read the local good report
     with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
       report_local = file.read()
@@ -599,7 +872,22 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('client_hello_packets_test'))
 
   # TLS 1.2 server tests
-  suite.addTest(TLSModuleTest('security_tls_v1_2_server_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_server_no_ip_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_server_no_scan_results_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_server_scan_failure_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_server_no_tls_v1_2_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_server_no_tls_v1_3_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_server_v1_2_v1_3_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_multiple_https_servers_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_server_http_test'))
+  suite.addTest(
+    TLSModuleTest('security_tls_v1_2_server_compliant_invalid_v1_2_cert_test')
+  )
+  suite.addTest(
+    TLSModuleTest(
+      'security_tls_v1_2_server_non_compliant_invalid_1_2_and_1_3_cert_test'
+    )
+  )
   suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_3_server_test'))
   suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_2_and_1_3_server_test'))
   suite.addTest(
