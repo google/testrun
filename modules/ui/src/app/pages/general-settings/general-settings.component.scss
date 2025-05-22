@@ -37,11 +37,15 @@
   }
 }
 
+.section-item.error-message-section {
+  min-height: 20px;
+  padding-bottom: 0;
+}
+
 .error-message-container {
-  display: block;
-  margin-top: auto;
-  padding-bottom: 8px;
-  text-align: center;
+  display: flex;
+  align-items: flex-end;
+  grid-column: 2 / 4;
 }
 
 .message {
