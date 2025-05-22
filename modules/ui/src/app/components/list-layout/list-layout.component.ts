@@ -82,6 +82,10 @@ export class ListLayoutComponent<T extends object> {
     return this.actions();
   };
 
+  clearSearch(): void {
+    this.searchText.set('');
+  }
+
   updateQuery(e: Event) {
     const input = e.target as HTMLInputElement;
     const value = input.value;
