@@ -95,11 +95,13 @@ limitations under the License.
         "></ng-container>
       <mat-divider></mat-divider>
     </section>
-    <mat-error
-      *ngIf="vm.isSubmitting && isFormError"
-      class="error-message-container">
-      <span>Both interfaces must have different values</span>
-    </mat-error>
+    <div class="section-item error-message-section">
+      <mat-error
+        *ngIf="vm.isSubmitting && isFormError"
+        class="error-message-container">
+        <span>Both interfaces must have different values</span>
+      </mat-error>
+    </div>
     <div class="setting-drawer-footer">
       <button
         mat-flat-button
