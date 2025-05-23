@@ -31,6 +31,11 @@ limitations under the License.
     <ul class="info-steps-list">
       <li *ngFor="let point of data.testResult.recommendations">{{ point }}</li>
     </ul>
+    <div *ngIf="data.testResult.details" class="details-info">
+      <p class="info-label">Details</p>
+      <p class="info-details">{{ data.testResult.details }}</p>
+      <p></p>
+    </div>
   </section>
 </mat-dialog-content>
 <mat-dialog-actions align="end" class="actions-container">
