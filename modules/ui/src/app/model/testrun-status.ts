@@ -53,6 +53,7 @@ export interface IResult {
   description: string;
   result: string;
   recommendations?: string[];
+  details?: string;
   required_result: RequiredResult;
 }
 

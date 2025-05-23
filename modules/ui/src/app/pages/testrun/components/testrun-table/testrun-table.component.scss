@@ -57,6 +57,24 @@ mat-header-cell {
   font-weight: 700;
 }
 
+.cell-addition-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  p {
+    margin: 0;
+  }
+
+  .description-info {
+    font-weight: bold;
+  }
+
+  .details-info {
+    margin-top: 6px;
+  }
+}
+
 .clickable-icon {
   display: flex;
   flex-shrink: 0;
