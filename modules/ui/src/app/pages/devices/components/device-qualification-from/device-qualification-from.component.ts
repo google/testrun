@@ -476,7 +476,7 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: ['simple-dialog', 'close-device'],
+      panelClass: ['simple-dialog', 'discard-dialog'],
     });
 
     return dialogRef?.beforeClosed();
