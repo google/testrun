@@ -284,7 +284,12 @@ class TestReport():
 
     module_reports = self._module_reports
     env_module = Environment(loader=BaseLoader())
-    pages_num = self._pages_num(json_data)
+    manufacturer_length = len(json_data['device']['manufacturer'])
+    device_name_length = len(json_data['device']['model'])
+    title_length = manufacturer_length + device_name_length +1
+    tests_first_page = self._calculate_tests_first_page(title_length)
+    pages_num = self._pages_num(json_data, tests_first_page)
+
     module_templates = [
         env_module.from_string(s).render(
           name=current_test_pack.name,
@@ -310,10 +315,27 @@ class TestReport():
                            steps_to_resolve=steps_to_resolve_,
                            module_reports=module_reports,
                            pages_num=pages_num,
-                           tests_first_page=TESTS_FIRST_PAGE,
+                           tests_first_page=tests_first_page,
                            tests_per_page=TESTS_PER_PAGE,
                            module_templates=module_templates
                            ))
+
+  def _calculate_tests_first_page(self, title_length):
+    # Calculation of test results lines at first page
+
+    # Average chars per line is 25
+    estimated_lines = title_length // 25
+    if title_length % 25 > 0:
+      estimated_lines += 1
+
+    if estimated_lines > 1:
+      # Line height is 60 px
+      title_px = (estimated_lines - 1) * 60
+      available_space_px = 445 - title_px
+      estimated_tests_first_page = available_space_px // 39
+      return min(estimated_tests_first_page, TESTS_FIRST_PAGE)
+    else:
+      return TESTS_FIRST_PAGE
 
   def _add_page_counter(self, html):
     # Add page nums and total page
@@ -324,18 +346,18 @@ class TestReport():
       div.string = f'Page {index+1}/{total_pages}'
     return str(soup)
 
-  def _pages_num(self, json_data):
+  def _pages_num(self, json_data, tests_first_page=TESTS_FIRST_PAGE):
 
     # Calculate pages
     test_count = len(json_data['tests']['results'])
 
     # Multiple pages required
-    if test_count > TESTS_FIRST_PAGE:
+    if test_count > tests_first_page:
       # First page
       pages = 1
 
       # Remaining testsgenerate
-      test_count -= TESTS_FIRST_PAGE
+      test_count -= tests_first_page
       pages += (int)(test_count / TESTS_PER_PAGE)
       pages = pages + 1 if test_count % TESTS_PER_PAGE > 0 else pages
 

@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import { ListLayoutComponent } from './list-layout.component';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -22,6 +27,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { ListItemComponent } from '../list-item/list-item.component';
 import { Component } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { By } from '@angular/platform-browser';
 
 interface Entity {
   id: number;
@@ -63,6 +69,7 @@ describe('ListLayoutComponent', () => {
   let component: HostComponent;
   let fixture: ComponentFixture<HostComponent>;
   let compiled: HTMLElement;
+  let listLayoutComponentInstance: ListLayoutComponent<Entity>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -79,6 +86,13 @@ describe('ListLayoutComponent', () => {
     fixture = TestBed.createComponent(HostComponent);
     component = fixture.componentInstance;
     compiled = fixture.nativeElement as HTMLElement;
+
+    const listLayoutDebugElement = fixture.debugElement.query(
+      By.directive(ListLayoutComponent)
+    );
+    listLayoutComponentInstance =
+      listLayoutDebugElement.componentInstance as ListLayoutComponent<Entity>;
+
     fixture.detectChanges();
   });
 
@@ -146,5 +160,46 @@ describe('ListLayoutComponent', () => {
 
       expect(listItemComponent.length).toEqual(2);
     });
+
+    it('clearSearch() should reset searchText to an empty string and clear input', fakeAsync(() => {
+      const searchInputElement = compiled.querySelector(
+        '.search-field input'
+      ) as HTMLInputElement;
+      expect(searchInputElement).toBeTruthy();
+
+      searchInputElement.value = 'testing';
+      searchInputElement.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      tick();
+
+      // Verify ListLayoutComponent's internal searchText is updated
+      expect(listLayoutComponentInstance.searchText()).toBe('testing');
+
+      const buttonClearSearch = compiled.querySelector(
+        '.clear-search-button'
+      ) as HTMLButtonElement;
+      expect(buttonClearSearch).toBeTruthy();
+
+      buttonClearSearch.click();
+      fixture.detectChanges();
+      tick();
+
+      // Verify ListLayoutComponent's internal searchText is cleared
+      expect(listLayoutComponentInstance.searchText()).toBe('');
+
+      // Verify the input field in the DOM is also cleared
+      expect(searchInputElement.value).toBe('');
+
+      // Verify the clear button is gone and search icon is back
+      const clearButtonAfterClear = compiled.querySelector(
+        '.clear-search-button'
+      );
+      expect(clearButtonAfterClear).toBeNull();
+      const searchIcon = compiled.querySelector(
+        '.search-field mat-icon:not(button mat-icon)'
+      );
+      expect(searchIcon).toBeTruthy();
+      expect(searchIcon?.textContent?.trim()).toBe('search');
+    }));
   });
 });

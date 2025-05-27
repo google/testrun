@@ -151,17 +151,20 @@ export class GeneralSettingsStore extends ComponentStore<SettingsComponentState>
     config: SystemConfig;
   }>(trigger$ => {
     return trigger$.pipe(
-      exhaustMap(trigger => {
-        return this.testRunService.createSystemConfig(trigger.config).pipe(
-          tap(() => {
-            this.store.dispatch(
-              AppActions.fetchSystemConfigSuccess({
-                systemConfig: trigger.config,
-              })
-            );
-            trigger.onSystemConfigUpdate();
-          })
-        );
+      withLatestFrom(this.systemConfig$),
+      exhaustMap(([trigger, currentConfig]) => {
+        return this.testRunService
+          .createSystemConfig({ ...currentConfig, ...trigger.config })
+          .pipe(
+            tap(() => {
+              this.store.dispatch(
+                AppActions.fetchSystemConfigSuccess({
+                  systemConfig: { ...currentConfig, ...trigger.config },
+                })
+              );
+              trigger.onSystemConfigUpdate();
+            })
+          );
       })
     );
   });

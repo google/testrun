@@ -453,6 +453,9 @@ class TestrunSession():
         if len(result.description) != 0:
           test_result.description = result.description
 
+        # Add details to test result
+        test_result.details = result.details
+
         # Add recommendations if provided
         if result.recommendations is not None:
           test_result.recommendations = result.recommendations
