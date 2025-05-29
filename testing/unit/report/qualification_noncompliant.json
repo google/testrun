@@ -205,7 +205,7 @@
       },
       {
         "name": "connection.ipaddr.dhcp_failover",
-        "description": "Device did not recieve a new lease from secondary DHCP server'",
+        "description": "Device did not receive a new lease from secondary DHCP server'",
         "expected_behavior": "",
         "required_result": "Required",
         "result": "Non-Compliant",
