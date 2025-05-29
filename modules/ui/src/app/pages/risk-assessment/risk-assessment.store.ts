@@ -27,7 +27,7 @@ import {
   selectIsOpenCreateProfile,
   selectRiskProfiles,
 } from '../../store/selectors';
-import { setRiskProfiles } from '../../store/actions';
+import { setRiskProfiles, setIsOpenProfile } from '../../store/actions';
 import { EntityAction } from '../../model/entity-action';
 
 export interface AppComponentState {
@@ -66,6 +66,14 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
       selectedProfile,
     })
   );
+
+  setIsOpenProfile = this.effect<boolean>(trigger$ => {
+    return trigger$.pipe(
+      tap(isOpen =>
+        this.store.dispatch(setIsOpenProfile({ isOpenCreateProfile: isOpen }))
+      )
+    );
+  });
 
   deleteProfile = this.effect<{
     name: string;
