@@ -376,7 +376,7 @@ class ConnectionModule(TestModule):
               else:
                 result = False, 'Could not validate lease is active in device'
             else:
-              result = False, ('Device did not recieve a new lease from '
+              result = False, ('Device did not receive a new lease from '
                                'secondary DHCP server')
             self._dhcp_util.start_dhcp_server(dhcp_server_primary=True)
           else:
@@ -443,7 +443,7 @@ class ConnectionModule(TestModule):
                   else:
                     result = False
                     description = (
-                      'Device did not recieve a DHCP lease after disconnect')
+                      'Device did not receive a DHCP lease after disconnect')
                 else:
                   result = 'Error'
                   description = 'Failed to set device interface to up state'
