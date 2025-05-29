@@ -29,7 +29,7 @@ import {
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { AppState } from '../../store/state';
 import { selectRiskProfiles } from '../../store/selectors';
-import { setRiskProfiles } from '../../store/actions';
+import { setRiskProfiles, setIsOpenProfile } from '../../store/actions';
 import { ProfileAction } from '../../model/profile';
 
 describe('RiskAssessmentStore', () => {
@@ -129,6 +129,16 @@ describe('RiskAssessmentStore', () => {
 
         expect(store.dispatch).toHaveBeenCalledWith(
           setRiskProfiles({ riskProfiles: [PROFILE_MOCK_2] })
+        );
+      });
+    });
+
+    describe('setIsOpenProfile', () => {
+      it('should dispatch action setIsOpenProfile', () => {
+        riskAssessmentStore.setIsOpenProfile(true);
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setIsOpenProfile({ isOpenCreateProfile: true })
         );
       });
     });
