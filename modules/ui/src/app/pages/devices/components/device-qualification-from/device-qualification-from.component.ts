@@ -66,6 +66,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { of } from 'rxjs/internal/observable/of';
 import { Observable } from 'rxjs/internal/Observable';
 import { map } from 'rxjs/internal/operators/map';
+import { tap } from 'rxjs/internal/operators/tap';
 
 const MAC_ADDRESS_PATTERN =
   '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*$';
@@ -281,9 +282,15 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
     if (
       this.deviceHasNoChanges(this.initialDevice(), this.createDeviceFromForm())
     ) {
+      this.devicesStore.setIsOpenAddDevice(false);
       return of(true);
     }
-    return this.openCloseDialog().pipe(map(res => !!res));
+    return this.openCloseDialog().pipe(
+      tap(res => {
+        if (res) this.devicesStore.setIsOpenAddDevice(false);
+      }),
+      map(res => !!res)
+    );
   }
 
   private deviceIsEmpty(device: Device) {

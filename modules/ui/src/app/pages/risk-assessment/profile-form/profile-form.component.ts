@@ -56,6 +56,7 @@ import { map } from 'rxjs/internal/operators/map';
 import { SimpleDialogComponent } from '../../../components/simple-dialog/simple-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { RiskAssessmentStore } from '../risk-assessment.store';
+import { tap } from 'rxjs/internal/operators/tap';
 
 @Component({
   selector: 'app-profile-form',
@@ -327,9 +328,15 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
 
   close(): Observable<boolean> {
     if (this.profileHasNoChanges() || this.profileForm.pristine) {
+      this.store.setIsOpenProfile(false);
       return of(true);
     }
-    return this.openCloseDialog().pipe(map(res => !!res));
+    return this.openCloseDialog().pipe(
+      tap(res => {
+        if (res) this.store.setIsOpenProfile(false);
+      }),
+      map(res => !!res)
+    );
   }
 
   openCloseDialog() {
