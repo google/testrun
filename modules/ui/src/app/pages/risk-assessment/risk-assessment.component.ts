@@ -420,6 +420,7 @@ export class RiskAssessmentComponent
       autoFocus: 'dialog',
       hasBackdrop: true,
       disableClose: true,
+      panelClass: ['simple-dialog', 'small-dialog'],
     });
 
     return dialogRef?.afterClosed();
