@@ -362,6 +362,7 @@ describe('RiskAssessmentComponent', () => {
             autoFocus: 'dialog',
             hasBackdrop: true,
             disableClose: true,
+            panelClass: ['simple-dialog', 'small-dialog'],
           });
 
           openSpy.calls.reset();
@@ -382,6 +383,7 @@ describe('RiskAssessmentComponent', () => {
             autoFocus: 'dialog',
             hasBackdrop: true,
             disableClose: true,
+            panelClass: ['simple-dialog', 'small-dialog'],
           });
 
           openSpy.calls.reset();
