@@ -207,7 +207,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
 
   private compareProfiles(profile1: Profile, profile2: Profile) {
-    if (profile1.name !== profile2.name) {
+    if (profile1.name !== profile2.name || this.isCopyProfile) {
       return false;
     }
     if (
@@ -327,13 +327,21 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
 
   close(): Observable<boolean> {
-    if (this.profileHasNoChanges() || this.profileForm.pristine) {
+    if (
+      (this.profileHasNoChanges() || this.profileForm.pristine) &&
+      !this.isCopyProfile
+    ) {
       this.store.setIsOpenProfile(false);
       return of(true);
     }
     return this.openCloseDialog().pipe(
       tap(res => {
-        if (res) this.store.setIsOpenProfile(false);
+        if (res) {
+          if (this.isCopyProfile && this.profile) {
+            this.deleteCopy.emit(this.profile);
+          }
+          this.store.setIsOpenProfile(false);
+        }
       }),
       map(res => !!res)
     );
