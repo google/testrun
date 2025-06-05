@@ -316,10 +316,7 @@ describe('RiskAssessmentComponent', () => {
     it('#copyProfileAndOpenForm should call openForm with copy of profile', fakeAsync(() => {
       spyOn(component, 'openForm');
 
-      component.copyProfileAndOpenForm(PROFILE_MOCK, [
-        PROFILE_MOCK,
-        PROFILE_MOCK,
-      ]);
+      component.copyProfileAndOpenForm(PROFILE_MOCK);
       tick();
 
       expect(component.openForm).toHaveBeenCalledWith(DRAFT_COPY_PROFILE_MOCK);

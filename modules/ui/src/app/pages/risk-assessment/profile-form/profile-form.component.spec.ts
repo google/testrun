@@ -19,7 +19,6 @@ import { ProfileFormComponent } from './profile-form.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   COPY_PROFILE_MOCK,
-  DRAFT_COPY_PROFILE_MOCK,
   NEW_PROFILE_MOCK,
   NEW_PROFILE_MOCK_DRAFT,
   OUTDATED_DRAFT_PROFILE_MOCK,
@@ -333,16 +332,6 @@ describe('ProfileFormComponent', () => {
           component.nameControl.hasError('has_same_profile_name')
         ).toBeTrue();
       });
-
-      it('should have an error when uses the name of copy profile', fakeAsync(() => {
-        component.selectedProfile = DRAFT_COPY_PROFILE_MOCK;
-        component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2, COPY_PROFILE_MOCK];
-        fixture.detectChanges();
-
-        expect(
-          component.nameControl.hasError('has_same_profile_name')
-        ).toBeTrue();
-      }));
     });
 
     describe('with no profile', () => {
@@ -372,7 +361,7 @@ describe('ProfileFormComponent', () => {
           ariaLabel: 'Discard the Risk Assessment changes',
           data: {
             title: 'Discard changes?',
-            content: `You have unsaved changes that would be permanently lost.`,
+            content: `You have unsaved changes in the New risk profile that would be permanently lost.`,
             confirmName: 'Discard',
           },
           autoFocus: true,
@@ -397,9 +386,8 @@ describe('ProfileFormComponent', () => {
         deleteCopyEmitSpy = spyOn(component.deleteCopy, 'emit');
       });
 
-      it('should set isOpenProfile to false and return of(true) if profileHasNoChanges is true and not isCopyProfile', done => {
+      it('should set isOpenProfile to false and return of(true) if profileHasNoChanges is true and not copyProfile', done => {
         spyOn(component, 'profileHasNoChanges').and.returnValue(true);
-        component.isCopyProfile = false;
         component.profileForm.markAsDirty();
 
         component.close().subscribe(result => {
@@ -411,10 +399,9 @@ describe('ProfileFormComponent', () => {
         });
       });
 
-      it('should set isOpenProfile to false and return of(true) if profileForm is pristine and not isCopyProfile', done => {
+      it('should set isOpenProfile to false and return of(true) if profileForm is pristine and not copyProfile', done => {
         spyOn(component, 'profileHasNoChanges').and.returnValue(false);
         component.profileForm.markAsPristine();
-        component.isCopyProfile = false;
 
         component.close().subscribe(result => {
           expect(result).toBeTrue();
@@ -425,10 +412,9 @@ describe('ProfileFormComponent', () => {
         });
       });
 
-      it('should open dialog if there are changes and not isCopyProfile, and dialog confirms (returns true)', done => {
+      it('should open dialog if there are changes and not copyProfile, and dialog confirms (returns true)', done => {
         spyOn(component, 'profileHasNoChanges').and.returnValue(false);
         component.profileForm.markAsDirty();
-        component.isCopyProfile = false;
         openDialogSpy.and.returnValue(of(true));
 
         component.close().subscribe(result => {
@@ -440,10 +426,9 @@ describe('ProfileFormComponent', () => {
         });
       });
 
-      it('should open dialog if there are changes and not isCopyProfile, and dialog cancels (returns false)', done => {
+      it('should open dialog if there are changes and not copyProfile, and dialog cancels (returns false)', done => {
         spyOn(component, 'profileHasNoChanges').and.returnValue(false);
         component.profileForm.markAsDirty();
-        component.isCopyProfile = false;
         openDialogSpy.and.returnValue(of(false));
 
         component.close().subscribe(result => {
@@ -460,7 +445,7 @@ describe('ProfileFormComponent', () => {
         spyOn(component, 'profileHasNoChanges').and.returnValue(false);
         component.profileForm.markAsDirty();
         component.isCopyProfile = true;
-        component.selectedProfile = { ...PROFILE_MOCK };
+        component.selectedProfile = { ...COPY_PROFILE_MOCK };
         openDialogSpy.and.returnValue(of(true));
 
         component.close().subscribe(result => {
