@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 import {
+  ChangeDetectorRef,
   Component,
   ElementRef,
+  inject,
   OnDestroy,
   OnInit,
-  ChangeDetectorRef,
-  inject,
   viewChild,
 } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import {
   Device,
   DeviceAction,
+  DeviceStatus,
   DeviceView,
   TestModule,
 } from '../../model/device';
@@ -49,7 +50,7 @@ import { MatInputModule } from '@angular/material/input';
 import { DeviceItemComponent } from '../../components/device-item/device-item.component';
 import { EmptyPageComponent } from '../../components/empty-page/empty-page.component';
 import { ListLayoutComponent } from '../../components/list-layout/list-layout.component';
-import { EntityActionResult } from '../../model/entity-action';
+import { EntityAction, EntityActionResult } from '../../model/entity-action';
 import { NoEntitySelectedComponent } from '../../components/no-entity-selected/no-entity-selected.component';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { CanComponentDeactivate } from '../../guards/can-deactivate.guard';
@@ -250,6 +251,16 @@ export class DevicesComponent
         return 'Device under test';
       }
       return '';
+    };
+  }
+
+  actions(actions: EntityAction[]) {
+    return (device: Device) => {
+      // expired device can only be removed
+      if (device.status === DeviceStatus.INVALID) {
+        return [{ action: DeviceAction.Delete, icon: 'delete' }];
+      }
+      return actions;
     };
   }
 

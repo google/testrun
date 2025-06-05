@@ -21,6 +21,7 @@ limitations under the License.
     [content]="content"
     [itemTemplate]="itemTemplate"
     [actions]="vm.actions"
+    [actionsFn]="actions(vm.actions)"
     [entities]="vm.devices"
     [isOpenEntityForm]="isOpenDeviceForm"
     [initialEntity]="vm.selectedDevice"
