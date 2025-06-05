@@ -152,10 +152,9 @@ export class RiskAssessmentComponent
     this.cd.detectChanges();
   }
 
-  async copyProfileAndOpenForm(profile: Profile, profiles: Profile[]) {
+  async copyProfileAndOpenForm(profile: Profile) {
     this.isCopyProfile = true;
     const copyOfProfile = this.getCopyOfProfile(profile);
-    this.store.updateProfiles([copyOfProfile, ...profiles]);
     await this.openForm(copyOfProfile);
   }
 
@@ -290,6 +289,11 @@ export class RiskAssessmentComponent
   deleteCopy(copyOfProfile: Profile, profiles: Profile[]) {
     this.isCopyProfile = false;
     this.store.removeProfile(copyOfProfile.name, profiles);
+    this.cd.markForCheck();
+  }
+  setCopy(copyOfProfile: Profile, profiles: Profile[]) {
+    this.store.updateProfiles([copyOfProfile, ...profiles]);
+    this.cd.detectChanges();
   }
 
   actions(actions: EntityAction[]) {
@@ -312,7 +316,7 @@ export class RiskAssessmentComponent
   ) {
     switch (action) {
       case ProfileAction.Copy:
-        this.copyProfileAndOpenForm(entity, profiles);
+        this.copyProfileAndOpenForm(entity);
         break;
       case ProfileAction.Delete:
         this.deleteProfile(entity, profiles, selectedProfile);

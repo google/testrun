@@ -47,6 +47,7 @@ limitations under the License.
       [profileFormat]="vm.profileFormat"
       (saveProfile)="saveProfileClicked($event, vm.selectedProfile)"
       (deleteCopy)="deleteCopy($event, vm.profiles)"
+      (setCopy)="setCopy($event, vm.profiles)"
       (discard)="discard($event, vm.profiles)"></app-profile-form>
   </ng-template>
 
