@@ -18,6 +18,7 @@ import {
   afterNextRender,
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   inject,
@@ -80,7 +81,9 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   private profileValidators = inject(ProfileValidators);
   private fb = inject(FormBuilder);
   private store = inject(RiskAssessmentStore);
+  cd = inject(ChangeDetectorRef);
   private profile: Profile | null = null;
+  private copyProfile: Profile | null = null;
   private profileList!: Profile[];
   private injector = inject(Injector);
   private nameValidator!: ValidatorFn;
@@ -103,8 +106,8 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
   @Input()
   set selectedProfile(profile: Profile | null) {
-    if (this.isCopyProfile && this.profile) {
-      this.deleteCopy.emit(this.profile);
+    if (profile?.name.trim().startsWith('Copy')) {
+      this.copyProfile = profile;
     }
     if (this.changeProfile || this.profileHasNoChanges()) {
       this.changeProfile = false;
@@ -112,8 +115,14 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
       if (profile && this.nameControl) {
         this.updateNameValidator(profile);
         this.fillProfileForm(this.profileFormat, profile);
+        if (this.isCopyProfile && this.copyProfile) {
+          this.setCopy.emit(this.copyProfile);
+        }
       } else {
         this.profileForm.reset();
+        if (this.copyProfile) {
+          this.setCopy.emit(this.copyProfile);
+        }
       }
     } else if (this.profile != profile) {
       // prevent select profile before user confirmation
@@ -128,6 +137,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
 
   @Output() saveProfile = new EventEmitter<Profile>();
   @Output() deleteCopy = new EventEmitter<Profile>();
+  @Output() setCopy = new EventEmitter<Profile>();
   @Output() discard = new EventEmitter();
   ngOnInit() {
     this.profileForm = this.createProfileForm();
@@ -207,7 +217,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
 
   private compareProfiles(profile1: Profile, profile2: Profile) {
-    if (profile1.name !== profile2.name || this.isCopyProfile) {
+    if (profile1.name !== profile2.name || this.copyProfile) {
       return false;
     }
     if (
@@ -329,7 +339,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   close(): Observable<boolean> {
     if (
       (this.profileHasNoChanges() || this.profileForm.pristine) &&
-      !this.isCopyProfile
+      !this.copyProfile
     ) {
       this.store.setIsOpenProfile(false);
       return of(true);
@@ -337,8 +347,8 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     return this.openCloseDialog().pipe(
       tap(res => {
         if (res) {
-          if (this.isCopyProfile && this.profile) {
-            this.deleteCopy.emit(this.profile);
+          if (this.copyProfile) {
+            this.deleteCopy.emit(this.copyProfile);
           }
           this.store.setIsOpenProfile(false);
         }
@@ -348,11 +358,12 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
 
   openCloseDialog() {
+    const profileName = this.profile?.name || 'New risk profile';
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Discard the Risk Assessment changes',
       data: {
         title: 'Discard changes?',
-        content: `You have unsaved changes that would be permanently lost.`,
+        content: `You have unsaved changes in the ${profileName} that would be permanently lost.`,
         confirmName: 'Discard',
       },
       autoFocus: true,
@@ -367,6 +378,10 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   private openCloseDialogToChangeProfile(profile: Profile | null) {
     this.openCloseDialog().subscribe(close => {
       if (close) {
+        if (this.copyProfile) {
+          this.deleteCopy.emit(this.copyProfile);
+          this.copyProfile = null;
+        }
         this.changeProfile = true;
         this.store.updateSelectedProfile(profile);
       }
