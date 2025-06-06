@@ -293,53 +293,48 @@ class ConnectionModule(TestModule):
         return False, 'Device does not respond to ping'
 
   def _connection_ipaddr_ip_change(self, config):
-    result = None
     LOGGER.info('Running connection.ipaddr.ip_change')
     # Resolve the configured lease wait time
-    if 'lease_wait_time_sec' in config:
-      self._lease_wait_time_sec = config['lease_wait_time_sec']
-
-    if self._dhcp_util.setup_single_dhcp_server():
-      lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
+    if (not 'lease_wait_time_sec' in config or
+      not self._dhcp_util.setup_single_dhcp_server()):
+      return None, 'Failed to configure network for test'
+    self._lease_wait_time_sec = config['lease_wait_time_sec']
+    lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
                                             timeout=self._lease_wait_time_sec)
-      if lease is not None:
-        LOGGER.info('Current device lease resolved')
-        LOGGER.debug(str(lease))
-        # Figure out how to calculate a valid IP address
-        ip_address = '10.10.10.30'
-        if self._dhcp_util.add_reserved_lease(lease['hostname'],
-                                              lease['hw_addr'], ip_address):
-          self._dhcp_util.wait_for_lease_expire(lease,
-                                                self._lease_wait_time_sec)
-          LOGGER.info('Checking device accepted new IP')
-          for _ in range(5):
-            LOGGER.info('Pinging device at IP: ' + ip_address)
-            if self._ping(ip_address):
-              LOGGER.debug('Ping success')
-              LOGGER.debug('Reserved lease confirmed active in device')
-              result = True, 'Device has accepted an IP address change'
-              LOGGER.debug('Restoring DHCP failover configuration')
-              break
-            else:
-              LOGGER.info('Device did not respond to ping')
-              result = False, 'Device did not accept IP address change'
-              time.sleep(5)  # Wait 5 seconds before trying again
-          self._dhcp_util.delete_reserved_lease(lease['hw_addr'])
-        else:
-          result = None, 'Failed to create reserved lease for device'
-      else:
-        LOGGER.info('Device has no current DHCP lease so ' +
+    if lease is  None:
+      message = ('Device has no current DHCP lease so ' +
                     'this test could not be run')
-        result = None, ('Device has no current DHCP lease so ' +
-                        'this test could not be run')
-      # Restore the network
-      self._dhcp_util.restore_failover_dhcp_server()
-      LOGGER.info('Waiting 30 seconds for reserved lease to expire')
-      time.sleep(30)
-      self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
-                                    timeout=self._lease_wait_time_sec)
-    else:
-      result = None, 'Failed to configure network for test'
+      LOGGER.info(message)
+      return None, message
+    LOGGER.info('Current device lease resolved')
+    LOGGER.debug(str(lease))
+    # Figure out how to calculate a valid IP address
+    ip_address = '10.10.10.30'
+    if not self._dhcp_util.add_reserved_lease(lease['hostname'],
+                                              lease['hw_addr'], ip_address):
+      return None, 'Failed to create reserved lease for device'
+    self._dhcp_util.wait_for_lease_expire(lease,
+                                          self._lease_wait_time_sec)
+    LOGGER.info('Checking device accepted new IP')
+    for _ in range(5):
+      LOGGER.info('Pinging device at IP: ' + ip_address)
+      if self._ping(ip_address):
+        LOGGER.debug('Ping success')
+        LOGGER.debug('Reserved lease confirmed active in device')
+        result = True, 'Device has accepted an IP address change'
+        LOGGER.debug('Restoring DHCP failover configuration')
+        break
+      else:
+        LOGGER.info('Device did not respond to ping')
+        result = False, 'Device did not accept IP address change'
+        time.sleep(5)  # Wait 5 seconds before trying again
+    self._dhcp_util.delete_reserved_lease(lease['hw_addr'])
+    # Restore the network
+    self._dhcp_util.restore_failover_dhcp_server()
+    LOGGER.info('Waiting 30 seconds for reserved lease to expire')
+    time.sleep(30)
+    self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
+                                timeout=self._lease_wait_time_sec)
     return result
 
   def _connection_ipaddr_dhcp_failover(self, config):
