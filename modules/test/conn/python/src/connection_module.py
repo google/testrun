@@ -288,7 +288,6 @@ class ConnectionModule(TestModule):
     if not self._ping(self._device_ipv4_addr):
       return False, 'Device does not respond to ping'
     return True, 'Device responds to ping'
-  
 
   def _connection_ipaddr_ip_change(self, config):
     LOGGER.info('Running connection.ipaddr.ip_change')
@@ -336,54 +335,44 @@ class ConnectionModule(TestModule):
     return result
 
   def _connection_ipaddr_dhcp_failover(self, config):
-    result = None
     LOGGER.info('Running connection.ipaddr.dhcp_failover')
-
     # Resolve the configured lease wait time
     if 'lease_wait_time_sec' in config:
       self._lease_wait_time_sec = config['lease_wait_time_sec']
-
     # Confirm that both servers are online
     primary_status = self._dhcp_util.get_dhcp_server_status(
         dhcp_server_primary=True)
     secondary_status = self._dhcp_util.get_dhcp_server_status(
         dhcp_server_primary=False)
-    if primary_status and secondary_status:
-      lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
+    if not primary_status or not secondary_status:
+      LOGGER.error('Network is not ready for this test. Skipping')
+      return None, 'Network is not ready for this test'
+    lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
                                             timeout=self._lease_wait_time_sec)
-      if lease is not None:
-        LOGGER.info('Current device lease resolved')
-        if self._dhcp_util.is_lease_active(lease):
-          # Shutdown the primary server
-          if self._dhcp_util.stop_dhcp_server(dhcp_server_primary=True):
-            # Wait until the current lease is expired
-            self._dhcp_util.wait_for_lease_expire(lease,
-                                                  self._lease_wait_time_sec)
-            # Make sure the device has received a new lease from the
-            # secondary server
-            if self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
-                                             timeout=self._lease_wait_time_sec):
-              if self._dhcp_util.is_lease_active(lease):
-                result = True, ('Secondary DHCP server lease confirmed active '
-                                'in device')
-              else:
-                result = False, 'Could not validate lease is active in device'
-            else:
-              result = False, ('Device did not recieve a new lease from '
-                               'secondary DHCP server')
-            self._dhcp_util.start_dhcp_server(dhcp_server_primary=True)
-          else:
-            result = None, 'Failed to shutdown primary DHCP server'
-        else:
-          result = False, 'Device did not respond to ping'
-      else:
-        result = (
+    if lease is None:
+      return (
             None,
             'Device has no current DHCP lease so this test could not be run')
-    else:
-      LOGGER.error('Network is not ready for this test. Skipping')
-      result = None, 'Network is not ready for this test'
-    return result
+    LOGGER.info('Current device lease resolved')
+    if not self._dhcp_util.is_lease_active(lease):
+      return False, 'Device did not respond to ping'
+    # Shutdown the primary server
+    if not self._dhcp_util.stop_dhcp_server(dhcp_server_primary=True):
+      return None, 'Failed to shutdown primary DHCP server'
+    # Wait until the current lease is expired
+    self._dhcp_util.wait_for_lease_expire(lease,
+                                          self._lease_wait_time_sec)
+    # Make sure the device has received a new lease from the
+    # secondary server
+    lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
+                                             timeout=self._lease_wait_time_sec)
+    if lease is None:
+      return False, ('Device did not recieve a new lease from '
+                               'secondary DHCP server')
+    if not self._dhcp_util.is_lease_active(lease):
+      return False, 'Could not validate lease is active in device'
+    return True, ('Secondary DHCP server lease confirmed active '
+                                'in device')
 
   def _connection_dhcp_disconnect(self):
     LOGGER.info('Running connection.dhcp.disconnect')
