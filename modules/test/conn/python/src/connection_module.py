@@ -192,25 +192,23 @@ class ConnectionModule(TestModule):
     LOGGER.info('Running connection.dhcp_address')
     lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
                                           timeout=self._lease_wait_time_sec)
-    if lease is not None:
-      if 'ip' in lease:
-        ip_addr = lease['ip']
-        LOGGER.info('IP Resolved: ' + ip_addr)
-        LOGGER.info('Attempting to ping device...')
-        ping_success = self._ping(self._device_ipv4_addr)
-        LOGGER.debug('Ping success: ' + str(ping_success))
-        if ping_success:
-          return True, 'Device responded to leased IP address'
-        else:
-          return False, 'Device did not respond to leased IP address'
-      else:
-        LOGGER.info('No IP information found in lease: ' + self._device_mac)
-        return False, 'No IP information found in lease: ' + self._device_mac
-    else:
-      LOGGER.info('No DHCP lease could be found for MAC ' + self._device_mac +
+    if lease is None:
+      message = (f'No DHCP lease could be found for MAC {self._device_mac}' +
                   ' at the time of this test')
-      return (False, 'No DHCP lease could be found for MAC ' +
-              self._device_mac + ' at the time of this test')
+      LOGGER.info(message)
+      return False, message
+    if 'ip' not in lease:
+      message = f'No IP information found in lease: {self._device_mac}'
+      LOGGER.info(message)
+      return False, message
+    ip_addr = lease['ip']
+    LOGGER.info('IP Resolved: ' + ip_addr)
+    LOGGER.info('Attempting to ping device...')
+    ping_success = self._ping(self._device_ipv4_addr)
+    LOGGER.debug('Ping success: ' + str(ping_success))
+    if not ping_success:
+      return False, 'Device did not respond to leased IP address'
+    return True, 'Device responded to leased IP address'
 
   def _connection_mac_address(self):
     LOGGER.info('Running connection.mac_address')
