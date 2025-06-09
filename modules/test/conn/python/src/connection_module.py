@@ -222,7 +222,7 @@ class ConnectionModule(TestModule):
   def _connection_mac_oui(self):
     LOGGER.info('Running connection.mac_oui')
     manufacturer = self._get_oui_manufacturer(self._device_mac)
-    if manufacturer is not None:
+    if manufacturer is None:
       msg = f'No OUI Manufacturer found for: {self._device_mac}'
       LOGGER.info(msg)
       return False, msg
