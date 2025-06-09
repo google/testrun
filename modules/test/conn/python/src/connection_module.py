@@ -212,12 +212,12 @@ class ConnectionModule(TestModule):
 
   def _connection_mac_address(self):
     LOGGER.info('Running connection.mac_address')
-    if self._device_mac is not None:
-      LOGGER.info('MAC address found: ' + self._device_mac)
-      return True, 'MAC address found: ' + self._device_mac
-    else:
+    if self._device_mac is  None:
       LOGGER.info('No MAC address found: ' + self._device_mac)
       return False, 'No MAC address found.'
+    message = f'MAC address found: {self._device_mac}'
+    LOGGER.info(message)
+    return True, message
 
   def _connection_mac_oui(self):
     LOGGER.info('Running connection.mac_oui')
