@@ -235,7 +235,7 @@ class ConnectionModule(TestModule):
 
     result = None
     if self._device_mac is None:
-      LOGGER.info('No MAC address found: ')
+      LOGGER.info('No MAC address found.')
       return result, 'No MAC address found.'
 
     # Read all the pcap files containing DHCP packet information
@@ -285,11 +285,10 @@ class ConnectionModule(TestModule):
     if self._device_ipv4_addr is None:
       LOGGER.error('No device IP could be resolved')
       return 'Error', 'Could not resolve device IP address'
-    else:
-      if self._ping(self._device_ipv4_addr):
-        return True, 'Device responds to ping'
-      else:
-        return False, 'Device does not respond to ping'
+    if not self._ping(self._device_ipv4_addr):
+      return False, 'Device does not respond to ping'
+    return True, 'Device responds to ping'
+  
 
   def _connection_ipaddr_ip_change(self, config):
     LOGGER.info('Running connection.ipaddr.ip_change')
