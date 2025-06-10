@@ -61,6 +61,12 @@ $profile-item-container-gap: 8px;
   color: colors.$grey-800;
 }
 
+:host-context(.no-actions-menu) {
+  .profile-item-info .profile-item-name {
+    max-width: 260px;
+  }
+}
+
 .profile-item-info {
   cursor: pointer;
   display: grid;
