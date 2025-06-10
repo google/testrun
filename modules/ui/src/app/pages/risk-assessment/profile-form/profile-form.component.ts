@@ -157,6 +157,13 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     );
   }
 
+  get isDiscardDisabled(): boolean {
+    return (
+      (this.profileHasNoChanges() || this.profileForm.pristine) &&
+      !this.copyProfile
+    );
+  }
+
   profileHasNoChanges() {
     const oldProfile = this.profile;
     const newProfile = oldProfile
@@ -384,6 +391,11 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
         }
         this.changeProfile = true;
         this.store.updateSelectedProfile(profile);
+      } else {
+        if (this.copyProfile?.name !== this.profile?.name) {
+          this.copyProfile = null;
+          this.cd.detectChanges();
+        }
       }
     });
   }
