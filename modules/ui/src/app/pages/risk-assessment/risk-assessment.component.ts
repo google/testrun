@@ -189,26 +189,15 @@ export class RiskAssessmentComponent
       .pipe(takeUntil(this.destroy$))
       .subscribe(deleteProfile => {
         if (deleteProfile) {
-          if (
-            profile &&
-            profile.status === ProfileStatus.DRAFT &&
-            !profile.created
-          ) {
-            this.deleteCopy(profile, profiles);
-            this.closeFormAfterDelete(profile.name, selectedProfile);
-            this.focusAddButton();
-            return;
-          } else {
-            this.store.deleteProfile({
-              name: profileName,
-              onDelete: (idx = 0) => {
-                this.closeFormAfterDelete(profileName, selectedProfile);
-                timer(100).subscribe(() => {
-                  this.setFocus(idx);
-                });
-              },
-            });
-          }
+          this.store.deleteProfile({
+            name: profileName,
+            onDelete: (idx = 0) => {
+              this.closeFormAfterDelete(profileName, selectedProfile);
+              timer(100).subscribe(() => {
+                this.setFocus(idx);
+              });
+            },
+          });
         } else {
           this.store.setFocusOnSelectedProfile();
         }
@@ -298,11 +287,12 @@ export class RiskAssessmentComponent
 
   actions(actions: EntityAction[]) {
     return (profile: Profile) => {
-      // expired profiles or unsaved copy of profile can only be removed
-      if (
-        profile.status === ProfileStatus.EXPIRED ||
-        (profile.status === ProfileStatus.DRAFT && !profile.created)
-      ) {
+      // unsaved copy of profile can't have any action
+      if (profile.status === ProfileStatus.DRAFT && !profile.created) {
+        return [];
+      }
+      // expired profiles can only be removed
+      if (profile.status === ProfileStatus.EXPIRED) {
         return [{ action: ProfileAction.Delete, icon: 'delete' }];
       }
       return actions;

@@ -255,25 +255,6 @@ describe('RiskAssessmentComponent', () => {
         ).toHaveBeenCalledWith(null);
         expect(component.isOpenProfileForm).toBeFalse();
       }));
-
-      it('should remove copy and close form when unsaved copy is deleted', fakeAsync(() => {
-        spyOn(component.dialog, 'open').and.returnValue({
-          afterClosed: () => of(true),
-        } as MatDialogRef<typeof SimpleDialogComponent>);
-        component.isCopyProfile = true;
-        component.deleteProfile(
-          DRAFT_COPY_PROFILE_MOCK,
-          [DRAFT_COPY_PROFILE_MOCK, PROFILE_MOCK],
-          DRAFT_COPY_PROFILE_MOCK
-        );
-        tick();
-
-        expect(mockRiskAssessmentStore.removeProfile).toHaveBeenCalled();
-        expect(
-          mockRiskAssessmentStore.updateSelectedProfile
-        ).toHaveBeenCalledWith(null);
-        expect(component.isOpenProfileForm).toBeFalse();
-      }));
     });
 
     describe('#openForm', () => {
