@@ -588,19 +588,14 @@ class ConnectionModule(TestModule):
 
   def _connection_ipv6_ping(self):
     LOGGER.info('Running connection.ipv6_ping')
-    result = None
     if self._device_ipv6_addr is None:
       LOGGER.info('No IPv6 SLAAC address found. Cannot ping')
-      result = False, 'No IPv6 SLAAC address found. Cannot ping'
-    else:
-      if self._ping(self._device_ipv6_addr, ipv6=True):
-        LOGGER.info(f'Device responds to IPv6 ping on {self._device_ipv6_addr}')
-        result = True, ('Device responds to IPv6 ping on ' +
-                        f'{self._device_ipv6_addr}')
-      else:
-        LOGGER.info('Device does not respond to IPv6 ping')
-        result = False, 'Device does not respond to IPv6 ping'
-    return result
+      return False, 'No IPv6 SLAAC address found. Cannot ping'
+    if self._ping(self._device_ipv6_addr, ipv6=True):
+      LOGGER.info(f'Device responds to IPv6 ping on {self._device_ipv6_addr}')
+      return True, f'Device responds to IPv6 ping on {self._device_ipv6_addr}'
+    LOGGER.info('Device does not respond to IPv6 ping')
+    return False, 'Device does not respond to IPv6 ping'
 
   def _ping(self, host, ipv6=False):
     LOGGER.info('Pinging: ' + str(host))
@@ -619,15 +614,12 @@ class ConnectionModule(TestModule):
         if response.code == 200:
           LOGGER.info('DHCP server configuration restored')
           return True
-        else:
-          LOGGER.error('Failed to start secondary DHCP server')
-          return False
-      else:
-        LOGGER.error('Failed to enabled failover in primary DHCP server')
+        LOGGER.error('Failed to start secondary DHCP server')
         return False
-    else:
-      LOGGER.error('Failed to restore original subnet')
+      LOGGER.error('Failed to enabled failover in primary DHCP server')
       return False
+    LOGGER.error('Failed to restore original subnet')
+    return False
 
   def setup_single_dhcp_server(self):
     # Shutdown the secondary DHCP Server
