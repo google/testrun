@@ -46,7 +46,10 @@ limitations under the License.
         check_circle
       </mat-icon>
       <mat-icon
-        *ngIf="profile.status === ProfileStatus.DRAFT"
+        *ngIf="
+          profile.status === ProfileStatus.DRAFT ||
+          profile.status === ProfileStatus.COPY
+        "
         svgIcon="draft"
         class="profile-draft-icon"></mat-icon>
       <mat-icon
