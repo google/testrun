@@ -44,7 +44,7 @@ LEASE_WAIT_TIME_DEFAULT = 60
 class ConnectionModule(TestModule):
   """Connection Test module"""
 
-  def __init__(self,
+  def __init__(self, # pylint: disable=R0917
                module,
                conf_file=None,
                results_dir=None,
@@ -415,7 +415,7 @@ class ConnectionModule(TestModule):
       iface_up = self.host_client.set_iface_up(dev_iface)
     except Exception:
       LOGGER.error(rpc_error_msg)
-      return 'Error', rpc_error_msg 
+      return 'Error', rpc_error_msg
     if not iface_up:
       return 'Error', 'Failed to set device interface to up state'
     LOGGER.info('Device interface set to up state')
