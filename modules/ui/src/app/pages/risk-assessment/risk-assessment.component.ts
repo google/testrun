@@ -107,7 +107,6 @@ export class RiskAssessmentComponent
 
   viewModel$ = this.store.viewModel$;
   isOpenProfileForm = false;
-  isCopyProfile = false;
 
   canDeactivate(): Observable<boolean> {
     const form = this.form();
@@ -153,7 +152,6 @@ export class RiskAssessmentComponent
   }
 
   async copyProfileAndOpenForm(profile: Profile) {
-    this.isCopyProfile = true;
     const copyOfProfile = this.getCopyOfProfile(profile);
     await this.openForm(copyOfProfile);
   }
@@ -163,7 +161,7 @@ export class RiskAssessmentComponent
     copyOfProfile.name = this.getCopiedProfileName(profile.name);
     delete copyOfProfile.created; // new profile is not create yet
     delete copyOfProfile.risk;
-    copyOfProfile.status = ProfileStatus.DRAFT;
+    copyOfProfile.status = ProfileStatus.COPY;
     return copyOfProfile;
   }
 
@@ -213,7 +211,7 @@ export class RiskAssessmentComponent
       });
     } else if (
       this.compareProfiles(profile, selectedProfile) ||
-      this.isCopyProfile
+      selectedProfile.status === ProfileStatus.COPY
     ) {
       this.saveProfile(profile, this.store.setFocusOnSelectedProfile);
     } else {
@@ -244,10 +242,9 @@ export class RiskAssessmentComponent
       .pipe(takeUntil(this.destroy$))
       .subscribe(close => {
         if (close) {
-          if (selectedProfile && this.isCopyProfile) {
+          if (selectedProfile?.status === ProfileStatus.COPY) {
             this.deleteCopy(selectedProfile, profiles);
           }
-          this.isCopyProfile = false;
           this.isOpenProfileForm = false;
           this.store.updateSelectedProfile(null);
           this.cd.markForCheck();
@@ -276,7 +273,6 @@ export class RiskAssessmentComponent
   }
 
   deleteCopy(copyOfProfile: Profile, profiles: Profile[]) {
-    this.isCopyProfile = false;
     this.store.removeProfile(copyOfProfile.name, profiles);
     this.cd.markForCheck();
   }
@@ -288,7 +284,7 @@ export class RiskAssessmentComponent
   actions(actions: EntityAction[]) {
     return (profile: Profile) => {
       // unsaved copy of profile can't have any action
-      if (profile.status === ProfileStatus.DRAFT && !profile.created) {
+      if (profile.status === ProfileStatus.COPY) {
         return [];
       }
       // expired profiles can only be removed
@@ -387,7 +383,6 @@ export class RiskAssessmentComponent
         this.store.updateSelectedProfile(profile);
       },
     });
-    this.isCopyProfile = false;
   }
 
   private setFocus(index: number): void {

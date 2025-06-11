@@ -452,7 +452,6 @@ describe('RiskAssessmentComponent', () => {
             <ProfileFormComponent>component.form(),
             'openCloseDialog'
           ).and.returnValue(of(true));
-          component.isCopyProfile = true;
           component.discard(DRAFT_COPY_PROFILE_MOCK, [DRAFT_COPY_PROFILE_MOCK]);
           tick(100);
         }));
@@ -481,7 +480,6 @@ class FakeProfileItemComponent {
 })
 class FakeProfileFormComponent {
   @Input() profiles!: Profile[];
-  @Input() isCopyProfile!: boolean;
   @Input() selectedProfile!: Profile;
   @Input() profileFormat!: ProfileFormat[];
 }
