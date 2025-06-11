@@ -625,26 +625,23 @@ class ConnectionModule(TestModule):
     # Shutdown the secondary DHCP Server
     LOGGER.info('Stopping secondary DHCP server')
     response = self.dhcp2_client.stop_dhcp_server()
-    if response.code == 200:
-      LOGGER.info('Secondary DHCP server stop command success')
-      time.sleep(3)  # Give some time for the server to stop
-      LOGGER.info('Checking secondary DHCP server status')
-      response = self.dhcp2_client.get_status()
-      if response.code == 200:
-        LOGGER.info('Secondary DHCP server stopped')
-        LOGGER.info('Configuring primary DHCP server')
-        # Move primary DHCP server from failover into
-        # a single DHCP server config
-        response = self.dhcp1_client.disable_failover()
-        if response.code == 200:
-          LOGGER.info('Primary DHCP server failover disabled')
-        else:
-          return False, 'Failed to disable primary DHCP server failover'
-        return True, 'Single DHCP server configured'
-      else:
-        return False, 'Secondary DHCP server still running'
-    else:
+    if response.code != 200:
       return False, 'Secondary DHCP server stop command failed'
+    LOGGER.info('Secondary DHCP server stop command success')
+    time.sleep(3)  # Give some time for the server to stop
+    LOGGER.info('Checking secondary DHCP server status')
+    response = self.dhcp2_client.get_status()
+    if response.code != 200:
+      return False, 'Secondary DHCP server still running'
+    LOGGER.info('Secondary DHCP server stopped')
+    LOGGER.info('Configuring primary DHCP server')
+    # Move primary DHCP server from failover into
+    # a single DHCP server config
+    response = self.dhcp1_client.disable_failover()
+    if response.code != 200:
+      return False, 'Failed to disable primary DHCP server failover'
+    LOGGER.info('Primary DHCP server failover disabled')
+    return True, 'Single DHCP server configured'
 
   def _communication_network_type(self):
     try:
