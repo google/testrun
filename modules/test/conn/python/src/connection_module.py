@@ -550,21 +550,18 @@ class ConnectionModule(TestModule):
 
   def _connection_ipv6_slaac(self):
     LOGGER.info('Running connection.ipv6_slaac')
-    result = None
-
     slac_test, sends_ipv6 = self._has_slaac_address()
     if slac_test:
-      result = True, f'Device has formed SLAAC address {self._device_ipv6_addr}'
+      return True, f'Device has formed SLAAC address {self._device_ipv6_addr}'
     elif slac_test is None:
-      result = 'Error', 'An error occurred whilst running this test'
+      return 'Error', 'An error occurred whilst running this test'
     else:
       if sends_ipv6:
         LOGGER.info('Device does not support IPv6 SLAAC')
-        result = False, 'Device does not support IPv6 SLAAC'
+        return False, 'Device does not support IPv6 SLAAC'
       else:
         LOGGER.info('Device does not support IPv6')
-        result = False, 'Device does not support IPv6'
-    return result
+        return False, 'Device does not support IPv6'
 
   def _has_slaac_address(self):
     packet_capture = (rdpcap(self.startup_capture_file) +
