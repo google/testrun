@@ -711,9 +711,8 @@ class ConnectionModule(TestModule):
     if response.code == 200:
       LOGGER.info('Primary DHCP server enabled')
       return True
-    else:
-      LOGGER.error('Failed to disable primary DHCP server failover')
-      return False
+    LOGGER.error('Failed to disable primary DHCP server failover')
+    return False
 
   def is_ip_in_range(self, ip, start_ip, end_ip):
     ip_int = int(''.join(format(int(octet), '08b') for octet in ip.split('.')),
@@ -859,8 +858,7 @@ class ConnectionModule(TestModule):
           LOGGER.debug('Subnet change confirmed')
           return True
       LOGGER.debug('Failed to confirm subnet change')
-    else:
-      LOGGER.debug('Subnet change request failed.')
+    LOGGER.debug('Subnet change request failed.')
     return False
 
   def test_subnets(self, subnets):
