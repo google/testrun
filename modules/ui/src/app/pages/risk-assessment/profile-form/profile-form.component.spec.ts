@@ -441,10 +441,9 @@ describe('ProfileFormComponent', () => {
         });
       });
 
-      it('should open dialog if isCopyProfile is true, dialog confirms, and emit deleteCopy', done => {
+      it('should open dialog if status is COPY, dialog confirms, and emit deleteCopy', done => {
         spyOn(component, 'profileHasNoChanges').and.returnValue(false);
         component.profileForm.markAsDirty();
-        component.isCopyProfile = true;
         component.selectedProfile = { ...COPY_PROFILE_MOCK };
         openDialogSpy.and.returnValue(of(true));
 
@@ -459,11 +458,10 @@ describe('ProfileFormComponent', () => {
         });
       });
 
-      it('should open dialog if isCopyProfile is true, and dialog cancels', done => {
+      it('should open dialog if status is COPY, and dialog cancels', done => {
         spyOn(component, 'profileHasNoChanges').and.returnValue(false);
         component.profileForm.markAsDirty();
-        component.isCopyProfile = true;
-        component.selectedProfile = { ...PROFILE_MOCK };
+        component.selectedProfile = { ...COPY_PROFILE_MOCK };
         openDialogSpy.and.returnValue(of(false));
 
         component.close().subscribe(result => {
