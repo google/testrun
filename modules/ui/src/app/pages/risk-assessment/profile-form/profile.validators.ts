@@ -75,7 +75,7 @@ export class ProfileValidators {
   }
 
   public multiSelectRequired(g: FormGroup) {
-    if (Object.values(g.value).every(value => value === false)) {
+    if (Object.values(g.value).every(value => !value)) {
       return { required: true };
     }
     return null;
