@@ -125,6 +125,8 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     ) {
       this.copyProfile = profile;
       this.setCopy.emit(this.copyProfile);
+    } else if (profile?.status !== ProfileStatus.COPY) {
+      this.copyProfile = null;
     }
   }
 
