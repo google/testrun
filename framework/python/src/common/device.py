@@ -38,6 +38,11 @@ class Device():
   device_folder: str = None
   reports: List[TestReport] = field(default_factory=list)
   max_device_reports: int = None
+  created_at: datetime = field(default=datetime.now())
+  modified_at: datetime = field(default=datetime.now())
+
+  # Store the original values to detect changes
+  _initial_values: dict = field(init=False, repr=False, default_factory=dict)
 
   def add_report(self, report):
     self.reports.append(report)
@@ -66,6 +71,8 @@ class Device():
     device_json['technology'] = self.technology
     device_json['test_pack'] = self.test_pack
     device_json['additional_info'] = self.additional_info
+    device_json['created_at'] = self.created_at.isoformat()
+    device_json['modified_at'] = self.modified_at.isoformat()
 
     if self.firmware is not None:
       device_json['firmware'] = self.firmware
@@ -85,4 +92,20 @@ class Device():
     device_json['test_pack'] = self.test_pack
     device_json['test_modules'] = self.test_modules
     device_json['additional_info'] = self.additional_info
+    device_json['created_at'] = self.created_at.isoformat()
+    device_json['modified_at'] = self.modified_at.isoformat()
+
     return device_json
+
+  def __post_init__(self):
+    # Store initial values after creation
+    for f in self.__dataclass_fields__:
+      if f not in ['created_at', 'modified_at', '_initial_values']:
+        self._initial_values[f] = getattr(self, f)
+
+  def __setattr__(self, name: str, value: any) -> None:
+    if (name not in ['created_at', 'modified_at', '_initial_values'] and
+      hasattr(self, name) and getattr(self, name) != value):
+      # Update the last_updated timestamp
+      super().__setattr__('modified_at', datetime.now())
+    super().__setattr__(name, value)
