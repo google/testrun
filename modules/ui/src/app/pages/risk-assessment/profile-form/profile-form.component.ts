@@ -93,7 +93,6 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   dialog = inject(MatDialog);
   readonly autosize = viewChildren(CdkTextareaAutosize);
   @Input() profileFormat!: ProfileFormat[];
-  @Input() isCopyProfile!: boolean;
   @Input()
   set profiles(profiles: Profile[]) {
     this.profileList = profiles;
@@ -106,28 +105,28 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
   @Input()
   set selectedProfile(profile: Profile | null) {
-    if (profile?.name.trim().startsWith('Copy')) {
-      this.copyProfile = profile;
-    }
     if (this.changeProfile || this.profileHasNoChanges()) {
       this.changeProfile = false;
       this.profile = profile;
       if (profile && this.nameControl) {
         this.updateNameValidator(profile);
         this.fillProfileForm(this.profileFormat, profile);
-        if (this.isCopyProfile && this.copyProfile) {
-          this.setCopy.emit(this.copyProfile);
-        }
       } else {
         this.profileForm.reset();
-        if (this.copyProfile) {
-          this.setCopy.emit(this.copyProfile);
-        }
       }
     } else if (this.profile != profile) {
       // prevent select profile before user confirmation
       this.store.updateSelectedProfile(this.profile);
       this.openCloseDialogToChangeProfile(profile);
+    }
+    if (
+      profile?.status === ProfileStatus.COPY &&
+      this.copyProfile !== profile // check if copy already set
+    ) {
+      this.copyProfile = profile;
+      this.setCopy.emit(this.copyProfile);
+    } else if (profile?.status !== ProfileStatus.COPY) {
+      this.copyProfile = null;
     }
   }
 
@@ -154,6 +153,13 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
       !this.nameControl.valid ||
       this.fieldsHasError ||
       this.profileHasNoChanges()
+    );
+  }
+
+  get isDiscardDisabled(): boolean {
+    return (
+      (this.profileHasNoChanges() || this.profileForm.pristine) &&
+      !this.copyProfile
     );
   }
 
@@ -384,6 +390,11 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
         }
         this.changeProfile = true;
         this.store.updateSelectedProfile(profile);
+      } else {
+        if (this.copyProfile?.name !== this.profile?.name) {
+          this.copyProfile = null;
+          this.cd.detectChanges();
+        }
       }
     });
   }
@@ -396,7 +407,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     const request: any = {
       questions: [],
     };
-    if (profile && !this.isCopyProfile) {
+    if (profile && profile.status !== ProfileStatus.COPY) {
       request.name = profile.name;
       request.rename = this.nameControl?.value?.trim();
     } else {
