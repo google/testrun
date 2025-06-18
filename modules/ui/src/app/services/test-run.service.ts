@@ -65,7 +65,7 @@ export class TestRunService {
 
   fetchDevices(): Observable<Device[]> {
     return this.http
-      .get<Device[]>(`${API_URL}/devices`)
+      .get<Required<Device>[]>(`${API_URL}/devices`)
       .pipe(
         map(items =>
           items.sort(
