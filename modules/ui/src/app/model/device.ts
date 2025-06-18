@@ -26,6 +26,8 @@ export interface Device {
   technology?: string;
   test_pack?: TestingType;
   additional_info?: Question[];
+  created_at: string;
+  modified_at: string;
 }
 
 export enum DeviceStatus {
