@@ -38,8 +38,8 @@ class Device():
   device_folder: str = None
   reports: List[TestReport] = field(default_factory=list)
   max_device_reports: int = None
-  created_at: datetime = field(default=datetime.now())
-  modified_at: datetime = field(default=datetime.now())
+  created_at: datetime = field(default_factory=datetime.now)
+  modified_at: datetime = field(default_factory=datetime.now)
 
   # Store the original values to detect changes
   _initial_values: dict = field(init=False, repr=False, default_factory=dict)
