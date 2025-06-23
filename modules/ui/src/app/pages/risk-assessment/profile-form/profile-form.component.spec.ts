@@ -19,7 +19,6 @@ import { ProfileFormComponent } from './profile-form.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   COPY_PROFILE_MOCK,
-  DRAFT_COPY_PROFILE_MOCK,
   NEW_PROFILE_MOCK,
   NEW_PROFILE_MOCK_DRAFT,
   OUTDATED_DRAFT_PROFILE_MOCK,
@@ -32,28 +31,34 @@ import {
 import { ProfileStatus } from '../../../model/profile';
 import { RiskAssessmentStore } from '../risk-assessment.store';
 import { TestRunService } from '../../../services/test-run.service';
-import { provideMockStore } from '@ngrx/store/testing';
 import { of } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
 import { SimpleDialogComponent } from '../../../components/simple-dialog/simple-dialog.component';
+import SpyObj = jasmine.SpyObj;
 
 describe('ProfileFormComponent', () => {
   let component: ProfileFormComponent;
   let fixture: ComponentFixture<ProfileFormComponent>;
   let compiled: HTMLElement;
+
   const testrunServiceMock: jasmine.SpyObj<TestRunService> =
     jasmine.createSpyObj('testrunServiceMock', [
       'fetchQuestionnaireFormat',
       'saveDevice',
     ]);
 
+  const mockRiskAssessmentStore: SpyObj<RiskAssessmentStore> =
+    jasmine.createSpyObj('RiskAssessmentStore', [
+      'updateSelectedProfile',
+      'setIsOpenProfile',
+    ]);
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProfileFormComponent, BrowserAnimationsModule],
       providers: [
-        RiskAssessmentStore,
         { provide: TestRunService, useValue: testrunServiceMock },
-        provideMockStore({}),
+        { provide: RiskAssessmentStore, useValue: mockRiskAssessmentStore },
       ],
     }).compileComponents();
 
@@ -327,16 +332,6 @@ describe('ProfileFormComponent', () => {
           component.nameControl.hasError('has_same_profile_name')
         ).toBeTrue();
       });
-
-      it('should have an error when uses the name of copy profile', fakeAsync(() => {
-        component.selectedProfile = DRAFT_COPY_PROFILE_MOCK;
-        component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2, COPY_PROFILE_MOCK];
-        fixture.detectChanges();
-
-        expect(
-          component.nameControl.hasError('has_same_profile_name')
-        ).toBeTrue();
-      }));
     });
 
     describe('with no profile', () => {
@@ -366,7 +361,7 @@ describe('ProfileFormComponent', () => {
           ariaLabel: 'Discard the Risk Assessment changes',
           data: {
             title: 'Discard changes?',
-            content: `You have unsaved changes that would be permanently lost.`,
+            content: `You have unsaved changes in the New risk profile that would be permanently lost.`,
             confirmName: 'Discard',
           },
           autoFocus: true,
@@ -377,6 +372,106 @@ describe('ProfileFormComponent', () => {
 
         openSpy.calls.reset();
       }));
+    });
+
+    describe('close method', () => {
+      let storeSpy: jasmine.Spy;
+      let openDialogSpy: jasmine.Spy;
+      let deleteCopyEmitSpy: jasmine.Spy;
+
+      beforeEach(() => {
+        mockRiskAssessmentStore.setIsOpenProfile.calls.reset();
+        storeSpy = mockRiskAssessmentStore.setIsOpenProfile;
+        openDialogSpy = spyOn(component, 'openCloseDialog');
+        deleteCopyEmitSpy = spyOn(component.deleteCopy, 'emit');
+      });
+
+      it('should set isOpenProfile to false and return of(true) if profileHasNoChanges is true and not copyProfile', done => {
+        spyOn(component, 'profileHasNoChanges').and.returnValue(true);
+        component.profileForm.markAsDirty();
+
+        component.close().subscribe(result => {
+          expect(result).toBeTrue();
+          expect(storeSpy).toHaveBeenCalledWith(false);
+          expect(openDialogSpy).not.toHaveBeenCalled();
+          expect(deleteCopyEmitSpy).not.toHaveBeenCalled();
+          done();
+        });
+      });
+
+      it('should set isOpenProfile to false and return of(true) if profileForm is pristine and not copyProfile', done => {
+        spyOn(component, 'profileHasNoChanges').and.returnValue(false);
+        component.profileForm.markAsPristine();
+
+        component.close().subscribe(result => {
+          expect(result).toBeTrue();
+          expect(storeSpy).toHaveBeenCalledWith(false);
+          expect(openDialogSpy).not.toHaveBeenCalled();
+          expect(deleteCopyEmitSpy).not.toHaveBeenCalled();
+          done();
+        });
+      });
+
+      it('should open dialog if there are changes and not copyProfile, and dialog confirms (returns true)', done => {
+        spyOn(component, 'profileHasNoChanges').and.returnValue(false);
+        component.profileForm.markAsDirty();
+        openDialogSpy.and.returnValue(of(true));
+
+        component.close().subscribe(result => {
+          expect(result).toBeTrue();
+          expect(openDialogSpy).toHaveBeenCalled();
+          expect(storeSpy).toHaveBeenCalledWith(false);
+          expect(deleteCopyEmitSpy).not.toHaveBeenCalled();
+          done();
+        });
+      });
+
+      it('should open dialog if there are changes and not copyProfile, and dialog cancels (returns false)', done => {
+        spyOn(component, 'profileHasNoChanges').and.returnValue(false);
+        component.profileForm.markAsDirty();
+        openDialogSpy.and.returnValue(of(false));
+
+        component.close().subscribe(result => {
+          expect(result).toBeFalse();
+          expect(openDialogSpy).toHaveBeenCalled();
+          // store.setIsOpenProfile should NOT be called if dialog is cancelled
+          expect(storeSpy).not.toHaveBeenCalled();
+          expect(deleteCopyEmitSpy).not.toHaveBeenCalled();
+          done();
+        });
+      });
+
+      it('should open dialog if status is COPY, dialog confirms, and emit deleteCopy', done => {
+        spyOn(component, 'profileHasNoChanges').and.returnValue(false);
+        component.profileForm.markAsDirty();
+        component.selectedProfile = { ...COPY_PROFILE_MOCK };
+        openDialogSpy.and.returnValue(of(true));
+
+        component.close().subscribe(result => {
+          expect(result).toBeTrue();
+          expect(openDialogSpy).toHaveBeenCalled();
+          expect(storeSpy).toHaveBeenCalledWith(false);
+          expect(deleteCopyEmitSpy).toHaveBeenCalledWith(
+            component.selectedProfile
+          );
+          done();
+        });
+      });
+
+      it('should open dialog if status is COPY, and dialog cancels', done => {
+        spyOn(component, 'profileHasNoChanges').and.returnValue(false);
+        component.profileForm.markAsDirty();
+        component.selectedProfile = { ...COPY_PROFILE_MOCK };
+        openDialogSpy.and.returnValue(of(false));
+
+        component.close().subscribe(result => {
+          expect(result).toBeFalse();
+          expect(openDialogSpy).toHaveBeenCalled();
+          expect(storeSpy).not.toHaveBeenCalled();
+          expect(deleteCopyEmitSpy).not.toHaveBeenCalled();
+          done();
+        });
+      });
     });
   });
 

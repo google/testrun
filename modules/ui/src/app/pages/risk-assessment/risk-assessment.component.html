@@ -42,11 +42,11 @@ limitations under the License.
       #profileFormComponent
       *ngIf="isOpenProfileForm"
       [selectedProfile]="vm.selectedProfile"
-      [isCopyProfile]="isCopyProfile"
       [profiles]="vm.profiles"
       [profileFormat]="vm.profileFormat"
       (saveProfile)="saveProfileClicked($event, vm.selectedProfile)"
       (deleteCopy)="deleteCopy($event, vm.profiles)"
+      (setCopy)="setCopy($event, vm.profiles)"
       (discard)="discard($event, vm.profiles)"></app-profile-form>
   </ng-template>
 

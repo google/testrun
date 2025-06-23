@@ -51,9 +51,9 @@ export class ProfileValidators {
           (profile.created && profile?.name.toLowerCase() !== value))
       ) {
         const isSameProfileName = this.hasSameProfileName(
+          profile,
           value,
-          profiles,
-          profile?.created
+          profiles
         );
         return isSameProfileName ? { has_same_profile_name: true } : null;
       }
@@ -75,7 +75,7 @@ export class ProfileValidators {
   }
 
   public multiSelectRequired(g: FormGroup) {
-    if (Object.values(g.value).every(value => value === false)) {
+    if (Object.values(g.value).every(value => !value)) {
       return { required: true };
     }
     return null;
@@ -101,15 +101,15 @@ export class ProfileValidators {
   }
 
   private hasSameProfileName(
+    selectedProfile: Profile | null,
     profileName: string,
-    profiles: Profile[],
-    created?: string
+    profiles: Profile[]
   ): boolean {
     return (
       profiles.some(
         profile =>
           profile.name.toLowerCase() === profileName &&
-          profile.created !== created
+          profile !== selectedProfile
       ) || false
     );
   }
