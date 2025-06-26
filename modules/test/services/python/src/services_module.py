@@ -189,13 +189,10 @@ class ServicesModule(TestModule):
   def _nmap_open_ports(self, nmap_results: str) -> list[str]:
     # Returns the list of open ports from nmap xml output
     open_ports = []
-    try:
-      xml_data = xmltodict.parse(nmap_results)
-      if 'host' in xml_data['nmaprun']:
-        for entry in xml_data['nmaprun']['host']['ports']['port']:
-          open_ports.append(entry['@portid'])
-    except Exception as e:
-      LOGGER.error(f'Error parsing Nmap output: {e}')
+    data = self._process_nmap_json_results(
+      self._nmap_results_to_json(nmap_results))
+    for item in data.values():
+      open_ports.append(item['number'])
     return open_ports
 
   def _scan_tcp_ports(self):
@@ -205,13 +202,13 @@ class ServicesModule(TestModule):
     nmap_command_prelim = f'''nmap --open -sT -Pn -v -n -T5
                           --version-intensity 0 --min-rate 1000
                           -p- -oX - {host}'''
-    # Command for detecting services using open ports.
-    nmap_command = f'''nmap --open -sT -sV -Pn -v -p 1-65535
-                    --version-intensity 7 -T4 -oX - {host}'''
-    LOGGER.info(f'Running nmap TCP port scan for {self._device_ipv4_addr}')
+    LOGGER.info(f'Running nmap TCP port scan for {host}')
     nmap_results_prelim = util.run_command(nmap_command_prelim)[0]
     open_ports = self._nmap_open_ports(nmap_results_prelim)
     if open_ports:
+      # Command for detecting services using open ports.
+      nmap_command = f'''nmap --open -sT -sV -Pn -v -p {','.join(open_ports)}
+                    --version-intensity 7 -T4 -oX - {host}'''
       LOGGER.info(f'Open TCP ports detected: {open_ports}')
       nmap_results = util.run_command(nmap_command)[0]
       LOGGER.debug(f'TCP Scan results raw: {nmap_results}')
