@@ -138,7 +138,8 @@ class TestReport():
         'description': test.description,
         'expected_behavior': test.expected_behavior,
         'required_result': test.required_result,
-        'result': test.result
+        'result': test.result,
+        'details': test.details
       }
 
       if test.recommendations is not None and len(test.recommendations) > 0:
@@ -217,6 +218,8 @@ class TestReport():
       if 'optional_recommendations' in test_result:
         test_case.optional_recommendations = test_result[
           'optional_recommendations']
+      if 'details' in test_result:
+        test_case.details = test_result['details']
 
       self.add_test(test_case)
 
