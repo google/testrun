@@ -133,13 +133,16 @@ class TestReport():
 
     test_results = []
     for test in self._results:
+      details = test.details
+      if isinstance(details, str):
+        details = list(filter(lambda s: s!='', details.split('\n')))
       test_dict = {
         'name': test.name,
         'description': test.description,
         'expected_behavior': test.expected_behavior,
         'required_result': test.required_result,
         'result': test.result,
-        'details': test.details
+        'details': details
       }
 
       if test.recommendations is not None and len(test.recommendations) > 0:
