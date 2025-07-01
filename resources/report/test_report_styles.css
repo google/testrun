@@ -436,8 +436,20 @@
       width: 8.5in;
     }
 
+    .result-line-details {
+      border: 1px solid #D3D3D3;
+      /* Light Gray border*/
+      height: fit-content;
+      width: 8.5in;
+    }
+
     .result-line-result {
       border-top: 0;
+    }
+
+    .result-line-result-details {
+      border-top: 0;
+      border-bottom: 0;
     }
 
     .result-line-result-non-compliant-required {
@@ -467,6 +479,12 @@
 
     .result-test-description {
       max-width: 300px;
+    }
+
+    .result-test-details {
+      font-size: 11px;
+      margin-left: 4px;
+      padding: 6px;
     }
 
     .result-test-result-error {
