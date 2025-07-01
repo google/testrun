@@ -438,6 +438,7 @@
 
     .result-line-result {
       border-top: 0;
+      position: relative;
     }
 
     .result-line-result-non-compliant-required {
@@ -463,6 +464,8 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       overflow: hidden;
+      top: 50%;
+      transform: translate(0, -50%);
     }
 
     .result-test-description {
@@ -493,7 +496,6 @@
       font-size: 12px;
       width: fit-content;
       height: 12px;
-      margin-top: 8px;
       padding: 4px 4px 7px 5px;
       border-radius: 2px;
       left: 5.4in;

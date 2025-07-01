@@ -14,7 +14,12 @@
       <div class="result-line result-line-result">
       {% endif %}
         <div class="result-test-label" style="left: .1in;">{{ test_results[i]['name'] }}</div>
-        <div class="result-test-label result-test-description" style="left: 2.1in">{{ test_results[i]['description'] }}</div>
+        <div class="result-test-label result-test-description" style="left: 2.1in">
+        {{ test_results[i]['description'] }}
+        {% if test_results[i]['details'] %}
+        <br/>{{ test_results[i]['details'] }}
+        {% endif %}
+        </div>
         <div class="result-test-label result-test-result
         {% if test_results[i]['result'] == 'Non-Compliant' %}
           result-test-result-non-compliant">
