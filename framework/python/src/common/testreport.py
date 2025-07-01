@@ -25,6 +25,7 @@ from test_orc.test_case import TestCase
 from jinja2 import Environment, FileSystemLoader, BaseLoader
 from collections import OrderedDict
 from bs4 import BeautifulSoup
+import math
 
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -35,6 +36,8 @@ TEST_REPORT_STYLES = 'test_report_styles.css'
 TEMPLATES_FOLDER = 'report_templates'
 TEST_REPORT_TEMPLATE = 'report_template.html'
 ICON = 'icon.png'
+RESULTS_SPACE_FIRST_PAGE = 440
+RESULTS_SPACE = 800
 
 
 LOGGER = logger.get_logger('REPORT')
@@ -292,9 +295,9 @@ class TestReport():
     env_module = Environment(loader=BaseLoader())
     manufacturer_length = len(json_data['device']['manufacturer'])
     device_name_length = len(json_data['device']['model'])
-    title_length = manufacturer_length + device_name_length +1
-    tests_first_page = self._calculate_tests_first_page(title_length)
-    pages_num = self._pages_num(json_data, tests_first_page)
+    title_length = manufacturer_length + device_name_length + 1
+    results = json_data['tests']['results']
+    results_pages = self._generate_result_pages(title_length, results)
 
     module_templates = [
         env_module.from_string(s).render(
@@ -313,6 +316,7 @@ class TestReport():
                            json_data=json_data,
                            device=json_data['device'],
                            modules=self._device_modules(json_data['device']),
+                           results_pages = results_pages,
                            test_status=json_data['status'],
                            duration=duration,
                            successful_tests=successful_tests,
@@ -320,28 +324,22 @@ class TestReport():
                            test_results=json_data['tests']['results'],
                            steps_to_resolve=steps_to_resolve_,
                            module_reports=module_reports,
-                           pages_num=pages_num,
-                           tests_first_page=tests_first_page,
                            tests_per_page=TESTS_PER_PAGE,
                            module_templates=module_templates
                            ))
 
-  def _calculate_tests_first_page(self, title_length):
+  def _calculate_space_first_page(self, title_length):
     # Calculation of test results lines at first page
-
     # Average chars per line is 25
     estimated_lines = title_length // 25
     if title_length % 25 > 0:
       estimated_lines += 1
-
     if estimated_lines > 1:
       # Line height is 60 px
       title_px = (estimated_lines - 1) * 60
-      available_space_px = 445 - title_px
-      estimated_tests_first_page = available_space_px // 39
-      return min(estimated_tests_first_page, TESTS_FIRST_PAGE)
+      return RESULTS_SPACE_FIRST_PAGE - title_px
     else:
-      return TESTS_FIRST_PAGE
+      return RESULTS_SPACE_FIRST_PAGE
 
   def _add_page_counter(self, html):
     # Add page nums and total page
@@ -352,25 +350,36 @@ class TestReport():
       div.string = f'Page {index+1}/{total_pages}'
     return str(soup)
 
-  def _pages_num(self, json_data, tests_first_page=TESTS_FIRST_PAGE):
+  def _calc_details_height(self, text):
+    # Calculate a details line height
+    lines = math.ceil(len(text) / 100)
+    return (lines * 14) + 12
 
-    # Calculate pages
-    test_count = len(json_data['tests']['results'])
+  def _gen_result_page(self, results, space):
+    # Build results page content
+    page = []
+    page_space = 0
+    while results:
+      result = results[0]
+      line_height = 40
+      if result['details']:
+        line_height += self._calc_details_height(result['details'])
+      page_space += line_height
+      if page_space > space:
+        break
+      else:
+        page.append(results.pop(0))
+    return page
 
-    # Multiple pages required
-    if test_count > tests_first_page:
-      # First page
-      pages = 1
-
-      # Remaining testsgenerate
-      test_count -= tests_first_page
-      pages += (int)(test_count / TESTS_PER_PAGE)
-      pages = pages + 1 if test_count % TESTS_PER_PAGE > 0 else pages
-
-    # 1 page required
-    else:
-      pages = 1
-
+  def _generate_result_pages(self, title_length,  results):
+    # Generating pages with tests results
+    pages = []
+    pages.append(
+      self._gen_result_page(results,
+                            self._calculate_space_first_page(title_length))
+                )
+    while results:
+      pages.append(self._gen_result_page(results, RESULTS_SPACE))
     return pages
 
   def _device_modules(self, device):
