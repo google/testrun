@@ -301,6 +301,7 @@ class TestReport():
 
     module_templates = [
         env_module.from_string(s).render(
+          title = 'Testrun report',
           name=current_test_pack.name,
           device=json_data['device'],
           logo=logo,
