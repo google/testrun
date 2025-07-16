@@ -353,7 +353,7 @@ class TestReport():
 
   def _calc_details_height(self, text):
     # Calculate a details line height
-    lines = math.ceil(len(text) / 100)
+    lines = math.ceil(len(text) / 45)
     return (lines * 14) + 12
 
   def _gen_result_page(self, results, space):

@@ -447,9 +447,14 @@
       border-top: 0;
     }
 
-    .result-line-result-details {
+    .result-line-result-with-details {
       border-top: 0;
       border-bottom: 0;
+    }
+
+    .result-line-result-details {
+      height: auto;
+      border-top: 0;
     }
 
     .result-line-result-non-compliant-required {
@@ -483,8 +488,12 @@
 
     .result-test-details {
       font-size: 11px;
-      margin-left: 3.6px;
-      padding: 6px;
+      width: 300px; 
+      display: block; 
+      margin-left: 2.1in; 
+      margin-right: 0;
+      margin-bottom: 6px;
+      box-sizing: border-box;
     }
 
     .result-test-result-error {
