@@ -10,13 +10,13 @@
   {% for test_result in page %}
     {% if test_result['result'] == 'Non-Compliant' and test_result['required_result'] in ["Required", "Required if Applicable"] %}
     {% if test_result['details']%}
-      <div class="result-line result-line-result-details result-line-result-non-compliant-required">
-    {% else %}
-      <div class="result-line result-line-result result-line-result-non-compliant-required">
+    <div class="result-line result-line-result-with-details result-line-result-non-compliant-required">
+    {% else%}
+    <div class="result-line result-line-result result-line-result-non-compliant-required">
     {% endif %}
     {% else %}
     {% if test_result['details']%}
-    <div class="result-line result-line-result-details">
+    <div class="result-line result-line-result-with-details">
     {% else %}
     <div class="result-line result-line-result">
     {% endif %}
