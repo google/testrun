@@ -277,8 +277,10 @@ export class RiskAssessmentComponent
     this.cd.markForCheck();
   }
   setCopy(copyOfProfile: Profile, profiles: Profile[]) {
-    this.store.updateProfiles([copyOfProfile, ...profiles]);
-    this.cd.detectChanges();
+    if (profiles.every(profile => profile !== copyOfProfile)) {
+      this.store.updateProfiles([copyOfProfile, ...profiles]);
+      this.cd.detectChanges();
+    }
   }
 
   actions(actions: EntityAction[]) {
