@@ -436,7 +436,24 @@
       width: 8.5in;
     }
 
+    .result-line-details {
+      border: 1px solid #D3D3D3;
+      /* Light Gray border*/
+      height: fit-content;
+      width: 8.5in;
+    }
+
     .result-line-result {
+      border-top: 0;
+    }
+
+    .result-line-result-with-details {
+      border-top: 0;
+      border-bottom: 0;
+    }
+
+    .result-line-result-details {
+      height: auto;
       border-top: 0;
     }
 
@@ -467,6 +484,16 @@
 
     .result-test-description {
       max-width: 300px;
+    }
+
+    .result-test-details {
+      font-size: 11px;
+      width: 300px; 
+      display: block; 
+      margin-left: 2.1in; 
+      margin-right: 0;
+      margin-bottom: 6px;
+      box-sizing: border-box;
     }
 
     .result-test-result-error {

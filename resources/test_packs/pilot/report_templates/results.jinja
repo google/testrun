@@ -1,4 +1,4 @@
-{% macro insert(successful_tests, total_tests, test_results, results_from, results_to) %}
+{% macro insert(successful_tests, total_tests, page) %}
 <div class="result-list">
   <h4 class="result-list-title">Results List <small>({{ successful_tests }}/{{ total_tests }})</small></h4>
   <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
@@ -7,61 +7,78 @@
     <div class="result-list-header-label" style="left: 5.4in">Result</div>
     <div class="result-list-header-label" style="left: 7in">Required result</div>
   </div>
-  {% for i in range(results_from, results_to) %}
-    {% if test_results[i]['result'] == 'Non-Compliant' and test_results[i]['required_result'] in ["Required", "Required if Applicable"] %}
+  {% for test_result in page %}
+    {% if test_result['result'] == 'Non-Compliant' and test_result['required_result'] in ["Required", "Required if Applicable"] %}
+    {% if test_result['details']%}
+    <div class="result-line result-line-result-with-details result-line-result-non-compliant-required">
+    {% else%}
     <div class="result-line result-line-result result-line-result-non-compliant-required">
+    {% endif %}
+    {% else %}
+    {% if test_result['details']%}
+    <div class="result-line result-line-result-with-details">
     {% else %}
     <div class="result-line result-line-result">
     {% endif %}
-      <div class="result-test-label" style="left: .1in;">{{ test_results[i]['name'] }}</div>
-      <div class="result-test-label result-test-description" style="left: 2.1in">{{ test_results[i]['description'] }}</div>
+    {% endif %}
+      <div class="result-test-label" style="left: .1in;">{{ test_result['name'] }}</div>
+      <div class="result-test-label result-test-description" style="left: 2.1in">{{ test_result['description'] }}</div>
       <div class="result-test-label result-test-result
-      {% if test_results[i]['result'] == 'Non-Compliant' %}
+      {% if test_result['result'] == 'Non-Compliant' %}
         result-test-result-non-compliant">
-      {% elif test_results[i]['result'] == 'Compliant' %}
+      {% elif test_result['result'] == 'Compliant' %}
         result-test-result-compliant">
-      {% elif  test_results[i]['result'] == 'Error' %}
+      {% elif  test_result['result'] == 'Error' %}
         result-test-result-error">
-      {% elif test_results[i]['result'] == 'Feature Not Detected' %}
+      {% elif test_result['result'] == 'Feature Not Detected' %}
         result-test-result-feature-not-detected">
-      {% elif test_results[i]['result'] == 'Informational' %}
+      {% elif test_result['result'] == 'Informational' %}
         result-test-result-informational">
       {% else %}
         result-test-result-skipped">
       {% endif %}
-      {{ test_results[i]['result'] }}</div>
+      {{ test_result['result'] }}</div>
       {# Required result badges #}
-      {% if test_results[i]['required_result'] == "Required" %}
+      {% if test_result['required_result'] == "Required" %}
         <div class="result-test-label result-test-required-result result-test-required-result-required" style="left: 7in;">
           <span class="material-symbols-outlined"></span>
-          <span class="result-test-required-result-text">{{ test_results[i]['required_result'] }}</span>
+          <span class="result-test-required-result-text">{{ test_result['required_result'] }}</span>
         </div>
-      {% elif test_results[i]['required_result'] == "Required if Applicable" %}
+      {% elif test_result['required_result'] == "Required if Applicable" %}
         <div class="result-test-label result-test-required-result result-test-required-result-required-if-applicable" style="left: 7in;">
           <span class="material-symbols-outlined"></span>
-          <span class="result-test-required-result-text">{{ test_results[i]['required_result'] }}</span>
+          <span class="result-test-required-result-text">{{ test_result['required_result'] }}</span>
         </div>
-      {% elif test_results[i]['required_result'] == "Informational" %}
+      {% elif test_result['required_result'] == "Informational" %}
         <div class="result-test-label result-test-required-result result-test-required-result-informational" style="left: 7in;">
           <span class="material-symbols-outlined"></span>
-          <span class="result-test-required-result-text">{{ test_results[i]['required_result'] }}</span>
+          <span class="result-test-required-result-text">{{ test_result['required_result'] }}</span>
         </div>
-      {% elif test_results[i]['required_result'] == "Roadmap" %}
+      {% elif test_result['required_result'] == "Roadmap" %}
         <div class="result-test-label result-test-required-result result-test-required-result-roadmap" style="left: 7in;">
           <span class="material-symbols-outlined"></span>
-          <span class="result-test-required-result-text">{{ test_results[i]['required_result'] }}</span>
+          <span class="result-test-required-result-text">{{ test_result['required_result'] }}</span>
         </div>
-      {% elif test_results[i]['required_result'] == "Recommended" %}
+      {% elif test_result['required_result'] == "Recommended" %}
         <div class="result-test-label result-test-required-result result-test-required-result-recommended" style="left: 7in;">
           <span class="material-symbols-outlined"></span>
-          <span class="result-test-required-result-text">{{ test_results[i]['required_result'] }}</span>
+          <span class="result-test-required-result-text">{{ test_result['required_result'] }}</span>
         </div>
       {% else %}
         <div class="result-test-label result-test-required-result" style="left: 7in;">
-          <span class="result-test-required-result-text">{{ test_results[i]['required_result'] }}</span>
+          <span class="result-test-required-result-text">{{ test_result['required_result'] }}</span>
         </div>
       {% endif %}
     </div>
+    {% if test_result['details']%}
+    {% if test_result['result'] == 'Non-Compliant' and test_result['required_result'] in ["Required", "Required if Applicable"] %}
+    <div class="result-line-details result-line-result result-line-result-non-compliant-required">
+    {% else %}
+    <div class="result-line-details result-line-result">
+    {% endif %}
+      <div class="result-test-details">{{ test_result['details']|join('. ') }}</div>
+    </div>
+    {%endif%}
   {% endfor %}
 </div>
 {% endmacro %}
