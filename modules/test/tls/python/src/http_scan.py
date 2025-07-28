@@ -40,6 +40,18 @@ class HTTPScan():
             http_ports.append(port)
     return http_ports
 
+  def scan_http_ports(self, ip):
+    """Scans HTTP/HTTPS ports."""
+    nm = nmap.PortScanner()
+    nm.scan(hosts=ip, ports='80,443', arguments='--open -sV')
+
+    http_ports = []
+    if ip in nm.all_hosts():
+      for port in [80, 443]:
+        if port in nm[ip]['tcp'] and nm[ip]['tcp'][port]['state'] == 'open':
+          http_ports.append(port)
+    return http_ports
+
   def is_https(self, ip, port):
     """Attempts a TLS handshake to determine if the port serves HTTPS."""
     try:
@@ -66,7 +78,7 @@ class HTTPScan():
 
   def scan_for_http_services(self, ip_address):
     LOGGER.info(f'Scanning for HTTP ports on {ip_address}')
-    http_ports = self.scan_all_ports(ip_address)
+    http_ports = self.scan_http_ports(ip_address)
     results = None
     if len(http_ports) > 0:
       LOGGER.info(f'Checking HTTP ports on {ip_address}: {http_ports}')
