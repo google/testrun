@@ -356,13 +356,20 @@ class TestReport():
     lines = math.ceil(len(text) / 45)
     return (lines * 14) + 12
 
+  def _calc_text_line_height(self, text):
+    # Calculate result lines count
+    lines = math.ceil(len(text) / 52)
+    return 40 + 15 * (lines -1)
+
   def _gen_result_page(self, results, space):
     # Build results page content
     page = []
     page_space = 0
     while results:
       result = results[0]
-      line_height = 40
+      line_height = self._calc_text_line_height(result['description'])
+      if line_height > 40:
+        result['height'] = line_height
       if result['details']:
         line_height += self._calc_details_height(result['details'])
       page_space += line_height

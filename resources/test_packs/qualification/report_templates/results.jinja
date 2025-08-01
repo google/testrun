@@ -9,16 +9,16 @@
   </div>
   {% for test_result in page %}
     {% if test_result['result'] == 'Non-Compliant' and test_result['required_result'] in ["Required", "Required if Applicable"] %}
-    {% if test_result['details']%}
-    <div class="result-line result-line-result-with-details result-line-result-non-compliant-required">
+    {% if test_result['details'] %}
+    <div class="result-line result-line-result-with-details result-line-result-non-compliant-required" style="height: {{ test_result['height'] | default(38.4) }}px">
     {% else%}
-    <div class="result-line result-line-result result-line-result-non-compliant-required">
+    <div class="result-line result-line-result result-line-result-non-compliant-required" style="height: {{ test_result['height'] | default(38.4) }}px">
     {% endif %}
     {% else %}
     {% if test_result['details']%}
-    <div class="result-line result-line-result-with-details">
+    <div class="result-line result-line-result-with-details" style="height: {{ test_result['height'] | default(38.4) }}px">
     {% else %}
-    <div class="result-line result-line-result">
+    <div class="result-line result-line-result" style="height: {{ test_result['height'] | default(38.4) }}px">
     {% endif %}
     {% endif %}
       <div class="result-test-label" style="left: .1in;">{{ test_result['name'] }}</div>

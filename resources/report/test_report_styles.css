@@ -484,6 +484,7 @@
 
     .result-test-description {
       max-width: 300px;
+      white-space: normal;
     }
 
     .result-test-details {
