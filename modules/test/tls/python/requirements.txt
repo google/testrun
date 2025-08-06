@@ -16,6 +16,5 @@ urllib3==2.2.2
 cryptography==44.0.1
 pyOpenSSL==24.3.0
 lxml==5.1.0 # Requirement of pyshark but if upgraded automatically above 5.1 will cause a
-pyshark==0.6
 requests==2.32.3
 python-nmap==0.7.1
