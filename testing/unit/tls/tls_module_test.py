@@ -760,18 +760,20 @@ class TLSModuleTest(unittest.TestCase):
         ]
         context.set_ciphers(':'.join(ciphers_str))
 
-      # Disable specific TLS versions based on the input
-      if tls_version != '1.1':
-        context.options |= ssl.OP_NO_TLSv1  # Disable TLS 1.0
-        context.options |= ssl.OP_NO_TLSv1_1  # Disable TLS 1.1
-      else:
-        context.options |= ssl.OP_NO_TLSv1_2  # Disable TLS 1.2
-        context.options |= ssl.OP_NO_TLSv1_3  # Disable TLS 1.3
 
+      # Set allowed TLS versions using minimum_version and maximum_version
       if tls_version == '1.3':
-        context.options |= ssl.OP_NO_TLSv1_2  # Disable TLS 1.2
+        context.minimum_version = ssl.TLSVersion.TLSv1_3
+        context.maximum_version = ssl.TLSVersion.TLSv1_3
       elif tls_version == '1.2':
-        context.options |= ssl.OP_NO_TLSv1_3  # Disable TLS 1.3
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
+        context.maximum_version = ssl.TLSVersion.TLSv1_2
+      elif tls_version == '1.1':
+        context.minimum_version = ssl.TLSVersion.TLSv1_1
+        context.maximum_version = ssl.TLSVersion.TLSv1_1
+      elif tls_version == '1.0':
+        context.minimum_version = ssl.TLSVersion.TLSv1
+        context.maximum_version = ssl.TLSVersion.TLSv1
 
       # Create an SSL/TLS socket
       with socket.create_connection((hostname, port), timeout=10) as sock:
