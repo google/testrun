@@ -18,7 +18,7 @@ from test_module import TestModule
 from tls_util import TLSUtil
 from http_scan import HTTPScan
 import os
-import pyshark
+import subprocess
 from binascii import hexlify
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -27,6 +27,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa, dsa, ec
 from cryptography.x509 import AuthorityKeyIdentifier, SubjectKeyIdentifier, BasicConstraints, KeyUsage
 from cryptography.x509 import GeneralNames, DNSName, ExtendedKeyUsage, ObjectIdentifier, SubjectAlternativeName
 from jinja2 import Environment, FileSystemLoader
+
 
 LOG_NAME = 'test_tls'
 MODULE_REPORT_FILE_NAME = 'tls_report.j2.html'
@@ -300,38 +301,52 @@ class TLSModule(TestModule):
     return html_content
 
   def extract_certificates_from_pcap(self, pcap_files, mac_address):
-    # Initialize a list to store packets
-    all_packets = []
-    # Iterate over each file
-    for pcap_file in pcap_files:
-      # Open the capture file and filter by tls
-      packets = pyshark.FileCapture(pcap_file, display_filter='tls')
-      try:
-        # Iterate over each packet in the file and add it to the list
-        for packet in packets:
-          all_packets.append(packet)
-      finally:
-        # Close the capture file
-        packets.close()
-
+    """
+    Extracts TLS certificates from pcap files using tshark for robust extraction.
+    Returns a dict keyed by (ip, port) with x509.Certificate objects as values.
+    """
     certificates = {}
-    # Loop through each item (packet)
-    for packet in all_packets:
-      if 'TLS' in packet:
-        # Check if the packet's source matches the target MAC address
-        if 'eth' in packet and (packet.eth.src == mac_address):
-          # Look for attribute of x509
-          if hasattr(packet['TLS'], 'x509sat_utf8string'):
-            certificate_bytes = bytes.fromhex(
-                packet['TLS'].handshake_certificate.replace(':', ''))
-            # Parse the certificate bytes
-            certificate = x509.load_der_x509_certificate(
-                certificate_bytes, default_backend())
-            # Extract IP address and port from packet
-            ip_address = packet.ip.src
-            port = packet.tcp.srcport if 'tcp' in packet else packet.udp.srcport
-            # Store certificate in dictionary with IP address and port as key
-            certificates[(ip_address, port)] = certificate
+    cert_count = 0
+    # MAC address for tshark must be colon-separated and lowercase
+    mac_colon = mac_address.lower() if mac_address else ''
+    for pcap_file in pcap_files:
+      try:
+        # If no MAC address is provided, match old method: do not extract any certs
+        if not mac_colon:
+          continue
+        # Build tshark filter expression with MAC filter
+        filter_expr = f'tls.handshake.certificate && eth.src=={mac_colon}'
+        cmd = [
+          'tshark',
+          '-r', pcap_file,
+          '-Y', filter_expr,
+          '-T', 'fields',
+          '-e', 'ip.src',
+          '-e', 'tcp.srcport',
+          '-e', 'tls.handshake.certificate',
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+        if result.returncode != 0:
+          LOGGER.error(f"tshark failed on {pcap_file}: {result.stderr}")
+          continue
+        for line in result.stdout.splitlines():
+          parts = line.strip().split('\t')
+          if len(parts) != 3:
+            continue
+          ip, port, cert_hex = parts
+          if not ip or not port or not cert_hex:
+            continue
+          # tls.handshake.certificate can be a list (comma-separated DERs), take the first
+          first_cert_hex = cert_hex.split(',')[0]
+          try:
+            cert_bytes = bytes.fromhex(first_cert_hex)
+            cert = x509.load_der_x509_certificate(cert_bytes, default_backend())
+            certificates[(ip, port)] = cert
+            cert_count += 1
+          except Exception as e:
+            LOGGER.info(f"Failed to parse certificate from {pcap_file} {ip}:{port}: {e}")
+      except Exception as e:
+        LOGGER.error(f"Error running tshark on {pcap_file}: {e}")
     sorted_keys = sorted(certificates.keys(), key=lambda x: (x[0], x[1]))
     sorted_certificates = {k: certificates[k] for k in sorted_keys}
     return sorted_certificates
