@@ -302,8 +302,10 @@ class TLSModule(TestModule):
 
   def extract_certificates_from_pcap(self, pcap_files, mac_address):
     """
-    Extracts TLS certificates from pcap files using tshark for robust extraction.
-    Returns a dict keyed by (ip, port) with x509.Certificate objects as values.
+    Extracts TLS certificates from pcap files using tshark for
+    robust extraction.
+    Returns a dict keyed by (ip, port) with x509.
+    Certificate objects as values.
     """
     certificates = {}
     cert_count = 0
@@ -311,7 +313,8 @@ class TLSModule(TestModule):
     mac_colon = mac_address.lower() if mac_address else ''
     for pcap_file in pcap_files:
       try:
-        # If no MAC address is provided, match old method: do not extract any certs
+        # If no MAC address is provided, match old method:
+        # do not extract any certs
         if not mac_colon:
           continue
         # Build tshark filter expression with MAC filter
@@ -325,7 +328,11 @@ class TLSModule(TestModule):
           '-e', 'tcp.srcport',
           '-e', 'tls.handshake.certificate',
         ]
-        result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+        result = subprocess.run(cmd,
+                                capture_output=True,
+                                text=True,
+                                check=False
+                                )
         if result.returncode != 0:
           LOGGER.error(f"tshark failed on {pcap_file}: {result.stderr}")
           continue
@@ -336,7 +343,7 @@ class TLSModule(TestModule):
           ip, port, cert_hex = parts
           if not ip or not port or not cert_hex:
             continue
-          # tls.handshake.certificate can be a list (comma-separated DERs), take the first
+          # tls.handshake.certificate can be a list (comma-separated DERs)
           first_cert_hex = cert_hex.split(',')[0]
           try:
             cert_bytes = bytes.fromhex(first_cert_hex)
@@ -344,7 +351,8 @@ class TLSModule(TestModule):
             certificates[(ip, port)] = cert
             cert_count += 1
           except Exception as e:
-            LOGGER.info(f"Failed to parse certificate from {pcap_file} {ip}:{port}: {e}")
+            LOGGER.info(
+              f"Failed to parse certificate from {pcap_file} {ip}:{port}: {e}")
       except Exception as e:
         LOGGER.error(f"Error running tshark on {pcap_file}: {e}")
     sorted_keys = sorted(certificates.keys(), key=lambda x: (x[0], x[1]))
