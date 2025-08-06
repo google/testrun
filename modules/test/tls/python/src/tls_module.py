@@ -102,12 +102,12 @@ class TLSModule(TestModule):
         pages[cert_num] = {}
 
         # Extract certificate data
-        not_valid_before = cert.not_valid_before
-        not_valid_after = cert.not_valid_after
+        not_valid_before = cert.not_valid_before_utc
+        not_valid_after = cert.not_valid_after_utc
         version_value = f'{cert.version.value + 1} ({hex(cert.version.value)})'
         signature_alg_value = cert.signature_algorithm_oid._name
-        not_before = str(not_valid_before)
-        not_after = str(not_valid_after)
+        not_before = str(not_valid_before.replace(tzinfo=None))
+        not_after = str(not_valid_after.replace(tzinfo=None))
         public_key = cert.public_key()
         signed_by = 'None'
 
