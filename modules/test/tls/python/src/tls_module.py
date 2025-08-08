@@ -334,7 +334,7 @@ class TLSModule(TestModule):
                                 check=False
                                 )
         if result.returncode != 0:
-          LOGGER.error(f"tshark failed on {pcap_file}: {result.stderr}")
+          LOGGER.error(f'tshark failed on {pcap_file}: {result.stderr}')
           continue
         for line in result.stdout.splitlines():
           parts = line.strip().split('\t')
@@ -352,9 +352,9 @@ class TLSModule(TestModule):
             cert_count += 1
           except Exception as e:
             LOGGER.info(
-              f"Failed to parse certificate from {pcap_file} {ip}:{port}: {e}")
+              f'Failed to parse certificate from {pcap_file} {ip}:{port}: {e}')
       except Exception as e:
-        LOGGER.error(f"Error running tshark on {pcap_file}: {e}")
+        LOGGER.error(f'Error running tshark on {pcap_file}: {e}')
     sorted_keys = sorted(certificates.keys(), key=lambda x: (x[0], x[1]))
     sorted_certificates = {k: certificates[k] for k in sorted_keys}
     return sorted_certificates
