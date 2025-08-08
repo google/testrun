@@ -61,8 +61,8 @@ export class HelpTipComponent implements OnInit {
   }
 
   private setFocus(): void {
-    const helpTipEl = window.document.querySelector('.tip');
     timer(200).subscribe(() => {
+      const helpTipEl = window.document.querySelector('.tip');
       this.focusManagerService.focusFirstElementInContainer(helpTipEl);
     });
   }

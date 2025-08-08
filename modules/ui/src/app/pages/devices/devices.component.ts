@@ -317,7 +317,13 @@ export class DevicesComponent
     const device = this.element.nativeElement.querySelectorAll(
       'app-device-item .button-edit'
     )[index];
-    device?.focus();
+    if (!this.hasDeviceTip()) {
+      device?.focus();
+    }
+  }
+
+  private hasDeviceTip() {
+    return window.document.querySelector('.tip');
   }
 
   private focusAddButton(): void {

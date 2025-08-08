@@ -246,9 +246,11 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
       if (question.type === FormControlType.SELECT_MULTIPLE) {
         const answer: number[] = [];
         question.options?.forEach((_, idx) => {
-          const value = this.deviceQualificationForm.value[index][idx];
-          if (value) {
-            answer.push(idx);
+          if (this.deviceQualificationForm.value[index]) {
+            const value = this.deviceQualificationForm.value[index][idx];
+            if (value) {
+              answer.push(idx);
+            }
           }
         });
         response.answer = answer;
