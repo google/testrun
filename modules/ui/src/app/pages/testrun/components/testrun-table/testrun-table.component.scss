@@ -26,15 +26,7 @@ mat-header-row {
 }
 
 .clickable-row {
-  background: colors.$error-container;
   cursor: pointer;
-}
-
-.clickable-row:has(.cell-result-text.red) {
-  .cell-result-text.red {
-    color: colors.$white;
-    background: colors.$on-error-container;
-  }
 }
 
 mat-cell,
