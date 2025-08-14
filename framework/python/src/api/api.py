@@ -1105,13 +1105,13 @@ class Api:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return self._generate_msg(
           False,
-          "Failed to upload certificate. Is it in the correct format?")
+          "Failed to upload certificate. The file is corrupted.")
 
     # Return error if something went wrong
     if cert_obj is None:
       response.status_code = 500
       return self._generate_msg(
-          False, "Failed to upload certificate. Is it in the correct format?")
+          False, "Failed to upload certificate. An error occurred.")
 
     response.status_code = status.HTTP_201_CREATED
 
