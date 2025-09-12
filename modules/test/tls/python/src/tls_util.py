@@ -695,8 +695,10 @@ class TLSUtil():
 
     tls_dst_ips = set()  # Store unique destination IPs
     for packet in packets:
-      dst_ip = ipaddress.ip_address(packet['_source']['layers']['ip.dst'][0])
-      tls_dst_ips.add(str(dst_ip))
+      # Extract the destination IP address
+      if 'ip.dst' in packet['_source']['layers']:
+        dst_ip = ipaddress.ip_address(packet['_source']['layers']['ip.dst'][0])
+        tls_dst_ips.add(str(dst_ip))
     return tls_dst_ips
 
   # Check if the device has made any outbound connections that use any
