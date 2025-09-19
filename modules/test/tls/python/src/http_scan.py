@@ -62,12 +62,12 @@ class HTTPScan():
       with socket.create_connection((ip, port), timeout=5) as sock:
         try:
           with context.wrap_socket(sock, server_hostname=ip):
-            LOGGER.info(f"Port {port} supports HTTPS.")
+            LOGGER.info(f'Port {port} supports HTTPS.')
             return 'HTTPS'
         except ssl.SSLError as e:
-          LOGGER.info(f"Port {port} does not support HTTPS: {e}")
+          LOGGER.info(f'Port {port} does not support HTTPS: {e}')
         except Exception as e:
-          LOGGER.error(f"Unexpected error during HTTPS check on {port}:{e}")
+          LOGGER.error(f'Unexpected error during HTTPS check on {port}:{e}')
       # If HTTPS fails, try HTTP by sending a simple request
       with socket.create_connection((ip, port), timeout=5) as sock:
         try:
@@ -79,14 +79,14 @@ class HTTPScan():
           sock.sendall(http_request.encode())
           response = sock.recv(1024)
           if response.startswith(b'HTTP/'):
-            LOGGER.info(f"Port {port} on {ip} supports HTTP.")
+            LOGGER.info(f'Port {port} on {ip} supports HTTP.')
             return 'HTTP'
           else:
-            LOGGER.info(f"Port {port} did not return HTTP response header.")
+            LOGGER.info(f'Port {port} did not return HTTP response header.')
         except Exception as e:
-          LOGGER.error(f"Error during HTTP check on {port}: {e}")
+          LOGGER.error(f'Error during HTTP check on {port}: {e}')
     except Exception as e:
-      LOGGER.error(f"Connection error on {port}: {e}")
+      LOGGER.error(f'Connection error on {port}: {e}')
     return 'UNKNOWN'
 
   def verify_http_or_https(self, ip, ports):
