@@ -53,27 +53,48 @@ class HTTPScan():
     return http_ports
 
   def is_https(self, ip, port):
-    """Attempts a TLS handshake to determine if the port serves HTTPS."""
+    """Detects if the port serves HTTPS, HTTP, or neither. Logs errors."""
     try:
+      # Try HTTPS first
       context = ssl.create_default_context()
       context.check_hostname = False
       context.verify_mode = ssl.CERT_NONE
+      with socket.create_connection((ip, port), timeout=5) as sock:
+        try:
+          with context.wrap_socket(sock, server_hostname=ip):
+            LOGGER.info(f"Port {port} supports HTTPS.")
+            return 'HTTPS'
+        except ssl.SSLError as e:
+          LOGGER.info(f"Port {port} does not support HTTPS: {e}")
+        except Exception as e:
+          LOGGER.error(f"Unexpected error during HTTPS check on {port}:{e}")
+      # If HTTPS fails, try HTTP by sending a simple request
       with socket.create_connection((ip, port), timeout=2) as sock:
-        with context.wrap_socket(sock, server_hostname=ip):
-          return True
-    except ssl.SSLError:
-      return False
-    except Exception:  # pylint: disable=W0718
-      return False
+        try:
+          http_request = (
+            f'GET / HTTP/1.1\r\n'
+            f'Host: {ip}\r\n'
+            'Connection: close\r\n\r\n'
+          )
+          sock.sendall(http_request.encode())
+          response = sock.recv(1024)
+          if response.startswith(b'HTTP/'):
+            LOGGER.info(f"Port {port} on {ip} supports HTTP.")
+            return 'HTTP'
+          else:
+            LOGGER.info(f"Port {port} did not return HTTP response header.")
+        except Exception as e:
+          LOGGER.error(f"Error during HTTP check on {port}: {e}")
+    except Exception as e:
+      LOGGER.error(f"Connection error on {port}: {e}")
+    return 'UNKNOWN'
 
   def verify_http_or_https(self, ip, ports):
-    """Classifies each port as HTTP or HTTPS."""
+    """Classifies each port as HTTP, HTTPS, or UNKNOWN."""
     results = {}
     for port in ports:
-      if self.is_https(ip, port):
-        results[port] = 'HTTPS'
-      else:
-        results[port] = 'HTTP'
+      protocol = self.is_https(ip, port)
+      results[port] = protocol
     return results
 
   def scan_for_http_services(self, ip_address):
