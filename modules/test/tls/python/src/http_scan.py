@@ -69,7 +69,7 @@ class HTTPScan():
         except Exception as e:
           LOGGER.error(f"Unexpected error during HTTPS check on {port}:{e}")
       # If HTTPS fails, try HTTP by sending a simple request
-      with socket.create_connection((ip, port), timeout=2) as sock:
+      with socket.create_connection((ip, port), timeout=5) as sock:
         try:
           http_request = (
             f'GET / HTTP/1.1\r\n'
