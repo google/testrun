@@ -78,7 +78,7 @@ set the log_level property for:
     ```
     "test_modules":{
         "connection":{
-          "log_level": "DEGUG"
+          "log_level": "DEBUG"
         }
       }
       ```
