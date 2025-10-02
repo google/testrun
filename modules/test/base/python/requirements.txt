@@ -4,8 +4,8 @@
 protobuf==6.32.1
 
 # User defined packages
-grpcio==1.67.1
-grpcio-tools==1.67.1
+grpcio==1.75.1
+grpcio-tools==1.75.1
 netifaces==0.11.0
 
 # Requirements for reports generation
