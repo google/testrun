@@ -391,27 +391,45 @@ class TLSUtil():
     positive_1_3 = '' if tls_1_3_results[0] else 'not '
     if tls_1_2_results[0] is None and tls_1_3_results[0] is not None:
       # Validate only TLS 1.3 results
-      msg = f'TLS 1.3 {positive_1_3} validated on port {port}:'
+      msg = f'TLS 1.3 {positive_1_3}validated on port {port}:'
       details.append(msg)
-      details.extend(tls_1_3_results[1])
+      if isinstance(tls_1_3_results[1], list):
+        details.extend(tls_1_3_results[1])
+      else:
+        details.append(tls_1_3_results[1])
       results = tls_1_3_results[0], details
     elif tls_1_3_results[0] is None and tls_1_2_results[0] is not None:
       # Vaidate only TLS 1.2 results
-      details.append(f'TLS 1.2 {positive_1_2} validated on port {port}:')
-      details.extend(tls_1_2_results[1])
+      details.append(f'TLS 1.2 {positive_1_2}validated on port {port}:')
+      if isinstance(tls_1_2_results[1], list):
+        details.extend(tls_1_2_results[1])
+      else:
+        details.append(tls_1_2_results[1])
       results = tls_1_2_results[0], details
     elif tls_1_2_results[0] is not None and tls_1_3_results[0] is not None:
       # Validate both results
-      details.append(f'TLS 1.2 {positive_1_2} validated on port {port}:')
-      details.extend(tls_1_2_results[1])
-      details.append(f'TLS 1.3 {positive_1_3} validated on port {port}:')
-      details.extend(tls_1_3_results[1])
+      details.append(f'TLS 1.2 {positive_1_2}validated on port {port}:')
+      if isinstance(tls_1_2_results[1], list):
+        details.extend(tls_1_2_results[1])
+      else:
+        details.append(tls_1_2_results[1])
+      details.append(f'TLS 1.3 {positive_1_3}validated on port {port}:')
+      if isinstance(tls_1_3_results[1], list):
+        details.extend(tls_1_3_results[1])
+      else:
+        details.append(tls_1_3_results[1])
       results = tls_1_2_results[0] or tls_1_3_results[0], details
     else:
       details.append(f'TLS 1.2 not validated on port {port}:')
-      details.extend(tls_1_2_results[1])
+      if isinstance(tls_1_2_results[1], list):
+        details.extend(tls_1_2_results[1])
+      else:
+        details.append(tls_1_2_results[1])
       details.append(f'TLS 1.3 not validated on port {port}:')
-      details.extend(tls_1_3_results[1])
+      if isinstance(tls_1_3_results[1], list):
+        details.extend(tls_1_3_results[1])
+      else:
+        details.append(tls_1_3_results[1])
       results = None, details
     LOGGER.info('TLS server test results: ' + str(results))
     return results
@@ -621,7 +639,7 @@ class TLSUtil():
                   'Allowing protocol connection, cipher check failure ignored.')
               protocol_name = allowed_protocol_client_ips[packet['dst_ip']]
               packet['protocol_details'] = (
-                  f'\nAllowing {protocol_name} traffic to {packet["dst_ip"]}')
+                  f'\nAllowing {protocol_name} traffic to {packet['dst_ip']}')
               client_hello_results['valid'].append(packet)
     else:
       # No cipher check for TLS 1.0, 1.1 or TLS 1.3
