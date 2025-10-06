@@ -381,40 +381,46 @@ class TLSUtil():
       LOGGER.error(f'Error fetching certificate from URI: {e}')
     return certificate
 
-  def process_tls_server_results(self, tls_1_2_results, tls_1_3_results, port):
+  def process_tls_server_results(self,
+                                 tls_1_2_results : list,
+                                 tls_1_3_results: list,
+                                 port: str) -> tuple[str| None, list]:
     results = ''
+    details = []
+    positive_1_2 = '' if tls_1_2_results[0] else 'not '
+    positive_1_3 = '' if tls_1_3_results[0] else 'not '
     if tls_1_2_results[0] is None and tls_1_3_results[0] is not None:
       # Validate only TLS 1.3 results
-      description = (f"""TLS 1.3 {'' if tls_1_3_results[0] else 'not '}"""
-                     f"""validated on port {port}: """
-                     f"""{tls_1_3_results[1]}""")
-      results = tls_1_3_results[0], description
+      msg = f'TLS 1.3 {positive_1_3} validated on port {port}:'
+      details.append(msg)
+      details.extend(tls_1_3_results[1])
+      results = tls_1_3_results[0], details
     elif tls_1_3_results[0] is None and tls_1_2_results[0] is not None:
       # Vaidate only TLS 1.2 results
-      description = (f"""TLS 1.2 {'' if tls_1_2_results[0] else 'not '}"""
-                     f"""validated on port {port}: """
-                     f"""{tls_1_2_results[1]}""")
-      results = tls_1_2_results[0], description
+      details.append(f'TLS 1.2 {positive_1_2} validated on port {port}:')
+      details.extend(tls_1_2_results[1])
+      results = tls_1_2_results[0], details
     elif tls_1_2_results[0] is not None and tls_1_3_results[0] is not None:
       # Validate both results
-      description = (f"""TLS 1.2 {'' if tls_1_2_results[0] else 'not '}"""
-                     f"""validated on port {port}: """
-                     f"""{tls_1_2_results[1]}""")
-      description += '\n' + (
-          f"""TLS 1.3 {'' if tls_1_3_results[0] else 'not '}"""
-          f"""validated on port {port}: """
-          f"""{tls_1_3_results[1]}""")
-      results = tls_1_2_results[0] or tls_1_3_results[0], description
+      details.append(f'TLS 1.2 {positive_1_2} validated on port {port}:')
+      details.extend(tls_1_2_results[1])
+      details.append(f'TLS 1.3 {positive_1_3} validated on port {port}:')
+      details.extend(tls_1_3_results[1])
+      results = tls_1_2_results[0] or tls_1_3_results[0], details
     else:
-      description = (f"""TLS 1.2 not validated on port {port}: """
-                     f"""{tls_1_2_results[1]}""")
-      description += '\n' + (f"""TLS 1.3 not validated on port {port}: """
-                             f"""{tls_1_3_results[1]}""")
-      results = None, description
+      details.append(f'TLS 1.2 not validated on port {port}:')
+      details.extend(tls_1_2_results[1])
+      details.append(f'TLS 1.3 not validated on port {port}:')
+      details.extend(tls_1_3_results[1])
+      results = None, details
     LOGGER.info('TLS server test results: ' + str(results))
     return results
 
-  def validate_tls_server(self, host, tls_version, port=443):
+  def validate_tls_server(self,
+                          host: str,
+                          tls_version: str,
+                          port: int=443
+                          ) -> tuple[bool| None, list| str]:
     cert_pem = self.get_public_certificate(host=host,
                                            port=port,
                                            validate_cert=False,
@@ -446,9 +452,9 @@ class TLSUtil():
 
       # Check results
       cert_valid = tr_valid[0] and key_valid[0] and sig_valid[0]
-      test_details = tr_valid[1] + '\n' + key_valid[1] + '\n' + sig_valid[1]
+      details = [tr_valid[1],key_valid[1], sig_valid[1]]
       LOGGER.info('Certificate validated: ' + str(cert_valid))
-      return cert_valid, test_details
+      return cert_valid, details
     else:
       LOGGER.info('Failed to resolve public certificate')
       return None, 'Failed to resolve public certificate'
@@ -826,7 +832,7 @@ class TLSUtil():
               f'\nAllowing non-TLS traffic to private subnet {ip}')
         elif ip not in tls_client_ips:
           tls_client_valid = False
-          tls_client_details += f'''\nNon-TLS connection detected to {ip}'''
+          tls_client_details += f'''Non-TLS connection detected to {ip}\n'''
         else:
           LOGGER.info(f'''TLS connection detected to {ip}.
                        Ignoring non-TLS traffic detected to this IP''')
@@ -838,8 +844,8 @@ class TLSUtil():
       tls_client_valid = False
       for ip, tls_versions in unsupported_tls_ips.items():
         for version in tls_versions:
-          tls_client_details += f'''\nUnsupported TLS {version}
-          connection detected to {ip}'''
+          tls_client_details += f'''Unsupported TLS {version}
+          connection detected to {ip}\n'''
     return tls_client_valid, tls_client_details
 
   def is_ecdh_and_ecdsa(self, ciphers):

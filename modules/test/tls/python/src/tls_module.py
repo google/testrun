@@ -366,7 +366,7 @@ class TLSModule(TestModule):
     ports_valid = []
     ports_invalid = []
     result = None
-    details = ''
+    details = []
     description = ''
     if self._device_ipv4_addr is not None:
       if self._scan_results is None:
@@ -389,7 +389,7 @@ class TLSModule(TestModule):
             if port_results is not None:
               result = port_results[
                   0] if result is None else result and port_results[0]
-              details += port_results[1]
+              details.extend(port_results[1])
               if port_results[0]:
                 ports_valid.append(port)
               else:
@@ -397,7 +397,7 @@ class TLSModule(TestModule):
           elif 'HTTP' in service_type:
             # Any non-HTTPS service detetcted is automatically invalid
             ports_invalid.append(port)
-            details += f'\nHTTP service detected on port {port}'
+            details.append(f'HTTP service detected on port {port}.')
             result = False
         LOGGER.debug(f'Valid Ports: {ports_valid}')
         LOGGER.debug(f'Invalid Ports: {ports_invalid}')
@@ -405,7 +405,7 @@ class TLSModule(TestModule):
       if result is None:
         result = 'Feature Not Detected'
         description = 'TLS 1.2 certificate could not be validated'
-        details = 'TLS 1.2 certificate could not be validated'
+        details.append('TLS 1.2 certificate could not be validated.')
       # If TLS 1.2 cert is not valid but TLS 1.3 is valid test is Compliant
       elif result and not tls_1_2_results[0] and tls_1_3_results[0]:
         ports_csv = ','.join(map(str,ports_valid))
@@ -421,7 +421,7 @@ class TLSModule(TestModule):
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       description = 'Could not resolve device IP address'
-      details = 'Could not resolve device IP address'
+      details.append('Could not resolve device IP address.')
       return 'Error', description, details
 
   def _security_tls_v1_3_server(self):
@@ -431,7 +431,7 @@ class TLSModule(TestModule):
     ports_valid = []
     ports_invalid = []
     result = None
-    details = ''
+    details = []
     description = ''
     if self._device_ipv4_addr is not None:
       if self._scan_results is None:
@@ -446,7 +446,7 @@ class TLSModule(TestModule):
             if port_results is not None:
               result = port_results[
                   0] if result is None else result and port_results[0]
-              details += port_results[1]
+              details.extend(port_results[1])
               if port_results[0]:
                 ports_valid.append(port)
               else:
@@ -454,7 +454,7 @@ class TLSModule(TestModule):
           elif 'HTTP' in service_type:
             # Any non-HTTPS service detetcted is automatically invalid
             ports_invalid.append(port)
-            details += f'\nHTTP service detected on port {port}'
+            details.append(f'HTTP service detected on port {port}.')
             result = False
         LOGGER.debug(f'Valid Ports: {ports_valid}')
         LOGGER.debug(f'Invalid Ports: {ports_invalid}')
@@ -497,8 +497,12 @@ class TLSModule(TestModule):
     else:
       result_state = False
       result_message = 'TLS 1.0 or higher was not detected'
-    result_details = tls_1_0_valid[2] + tls_1_1_valid[2] + tls_1_2_valid[
-        2] + tls_1_3_valid[2]
+    result_details = [
+                      *tls_1_0_valid[2],
+                      *tls_1_1_valid[2],
+                      *tls_1_2_valid[2],
+                      *tls_1_3_valid[2]
+                    ]
     result_tags = list(
         set(tls_1_0_valid[3] + tls_1_1_valid[3] + tls_1_2_valid[3] +
             tls_1_3_valid[3]))
@@ -531,11 +535,11 @@ class TLSModule(TestModule):
     # Generate results based on the state
     result_state = None
     result_message = ''
-    result_details = ''
+    result_details = []
     result_tags = []
 
     if client_results[0] is not None:
-      result_details = client_results[1]
+      result_details.append(client_results[1])
       if client_results[0]:
         result_state = True
         result_message = f'TLS {tls_version} client connections valid'

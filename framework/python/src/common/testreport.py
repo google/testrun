@@ -139,6 +139,8 @@ class TestReport():
       details = test.details
       if isinstance(details, str):
         details = list(filter(lambda s: s!='', details.split('\n')))
+      if isinstance(details, list):
+        details = ' '.join(details)
       test_dict = {
         'name': test.name,
         'description': test.description,

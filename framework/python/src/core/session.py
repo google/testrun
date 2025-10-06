@@ -454,7 +454,12 @@ class TestrunSession():
           test_result.description = result.description
 
         # Add details to test result
-        test_result.details = result.details
+        details = result.details
+        if isinstance(details, str):
+          details = list(filter(lambda s: s!='', details.split('\n')))
+        if isinstance(details, list):
+          details = ' '.join(details)
+        test_result.details = details
 
         # Add recommendations if provided
         if result.recommendations is not None:
