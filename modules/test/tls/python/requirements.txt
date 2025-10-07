@@ -18,3 +18,4 @@ pyOpenSSL==24.3.0
 lxml==5.1.0 # Requirement of pyshark but if upgraded automatically above 5.1 will cause a
 requests==2.32.5
 python-nmap==0.7.1
+requests==2.32.5
