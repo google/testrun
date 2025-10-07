@@ -639,7 +639,7 @@ class TLSUtil():
                   'Allowing protocol connection, cipher check failure ignored.')
               protocol_name = allowed_protocol_client_ips[packet['dst_ip']]
               packet['protocol_details'] = (
-                  f'\nAllowing {protocol_name} traffic to {packet['dst_ip']}')
+                  f'\nAllowing {protocol_name} traffic to {packet["dst_ip"]}') # pylint: disable=W1405
               client_hello_results['valid'].append(packet)
     else:
       # No cipher check for TLS 1.0, 1.1 or TLS 1.3
