@@ -13,8 +13,6 @@
 # limitations under the License.
 """Module that contains various methods for scaning for HTTP/HTTPS services"""
 import nmap
-import socket
-import ssl
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -61,23 +59,24 @@ class HTTPScan():
     Detects if the port serves HTTPS, HTTP, or neither.
     Returns 'HTTPS', 'HTTP' or 'UNKNOWN'.
     """
-    
+
     # Try HTTPS first
     try:
       requests.head(f'https://{ip}:{port}', verify=False, timeout=5)
       LOGGER.info(f'Port {port} supports HTTPS.')
       return 'HTTPS'
     except requests.exceptions.SSLError as e:
-      # This error occurs if the SSL handshake fails for any reason (like a cipher mismatch),
+      # This error occurs if the SSL handshake fails for any reason
+      # (like a cipher mismatch),
       # but the server still responded at the SSL layer.
-      LOGGER.warning(f'Port {port} has SSL issues, but is likely HTTPS-based: {e}')
+      LOGGER.error(f'Port {port} is likely HTTPS-based: {e}')
       return 'HTTPS'
     except requests.exceptions.ConnectionError as e:
       LOGGER.info(f'Connection failed for HTTPS on port {port}: {e}')
     except requests.exceptions.Timeout:
       LOGGER.info(f'Request timed out for HTTPS on port {port}.')
     except Exception as e:
-      LOGGER.error(f'An unexpected error occurred during HTTPS check on port {port}: {e}')
+      LOGGER.error(f'An unexpected error occurred during HTTPS check: {e}')
 
     # try HTTP
     try:
@@ -87,7 +86,7 @@ class HTTPScan():
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
       LOGGER.info(f'Port {port} does not support HTTP.')
     except Exception as e:
-      LOGGER.error(f'An unexpected error occurred during HTTP check on port {port}: {e}')
+      LOGGER.error(f'An unexpected error occurred during HTTP check: {e}')
 
     return 'UNKNOWN'
 
