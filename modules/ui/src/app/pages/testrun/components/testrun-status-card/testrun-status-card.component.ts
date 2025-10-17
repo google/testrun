@@ -15,7 +15,6 @@
  */
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import {
-  IResult,
   ResultOfTestrun,
   StatusOfTestResult,
   StatusOfTestrun,
@@ -97,17 +96,9 @@ export class TestrunStatusCardComponent {
       data.status === StatusOfTestrun.Stopping ||
       data.finished
     ) {
-      if (
-        (data.tests as TestsData)?.results?.length &&
-        (data.tests as TestsData)?.total
-      ) {
-        return `${(data.tests as TestsData)?.results?.filter(result => result.result !== StatusOfTestResult.NotStarted && result.result !== StatusOfTestResult.Error).length}/${
-          (data.tests as TestsData)?.total
-        }`;
-      } else if ((data.tests as IResult[])?.length) {
-        return `${(data.tests as IResult[])?.filter(result => result.result !== StatusOfTestResult.NotStarted && result.result !== StatusOfTestResult.Error).length}/${
-          (data.tests as IResult[])?.length
-        }`;
+      const testData = data.tests as TestsData;
+      if (testData && testData.total && testData.results?.length) {
+        return `${this.getTestsExecuted(testData)}/${testData.total}`;
       }
     }
     return '-/-';
@@ -150,12 +141,19 @@ export class TestrunStatusCardComponent {
 
     if (testData && testData.total && testData.results?.length) {
       return Math.round(
-        (testData.results.filter(
-          result => result.result !== StatusOfTestResult.NotStarted
-        ).length /
-          testData.total) *
-          100
+        (this.getTestsExecuted(testData) / testData.total) * 100
       );
+    }
+    return 0;
+  }
+
+  private getTestsExecuted(testData: TestsData) {
+    if (testData && testData.results) {
+      return testData.results.filter(
+        result =>
+          result.result !== StatusOfTestResult.NotStarted &&
+          result.result !== StatusOfTestResult.Error
+      ).length;
     }
     return 0;
   }
