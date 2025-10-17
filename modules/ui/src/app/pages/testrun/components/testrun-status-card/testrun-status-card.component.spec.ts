@@ -152,7 +152,7 @@ describe('ProgressStatusCardComponent', () => {
       });
 
       it('should return correct test result if status "Compliant"', () => {
-        const expectedResult = '2/3';
+        const expectedResult = '2/26';
 
         const result = component.getTestsResult(MOCK_PROGRESS_DATA_COMPLIANT);
 
