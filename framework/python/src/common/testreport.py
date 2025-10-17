@@ -138,9 +138,12 @@ class TestReport():
     for test in self._results:
       details = test.details
       if isinstance(details, str):
-        details = list(filter(lambda s: s!='', details.split('\n')))
+        details = ' '.join(list(filter(lambda s: s != '', details.split('\n'))))
       if isinstance(details, list):
+        details = [str(d) for d in details]
         details = ' '.join(details)
+      else:
+        details = str(details)
       test_dict = {
         'name': test.name,
         'description': test.description,
