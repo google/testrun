@@ -13,10 +13,12 @@
 # limitations under the License.
 """Module that contains various methods for scaning for HTTP/HTTPS services"""
 import nmap
-import socket
-import ssl
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
 
 LOGGER = None
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 class HTTPScan():
@@ -53,40 +55,39 @@ class HTTPScan():
     return http_ports
 
   def is_https(self, ip, port):
-    """Detects if the port serves HTTPS, HTTP, or neither. Logs errors."""
+    """
+    Detects if the port serves HTTPS, HTTP, or neither.
+    Returns 'HTTPS', 'HTTP' or 'UNKNOWN'.
+    """
+
+    # Try HTTPS first
     try:
-      # Try HTTPS first
-      context = ssl.create_default_context()
-      context.check_hostname = False
-      context.verify_mode = ssl.CERT_NONE
-      with socket.create_connection((ip, port), timeout=5) as sock:
-        try:
-          with context.wrap_socket(sock, server_hostname=ip):
-            LOGGER.info(f'Port {port} supports HTTPS.')
-            return 'HTTPS'
-        except ssl.SSLError as e:
-          LOGGER.info(f'Port {port} does not support HTTPS: {e}')
-        except Exception as e:
-          LOGGER.error(f'Unexpected error during HTTPS check on {port}:{e}')
-      # If HTTPS fails, try HTTP by sending a simple request
-      with socket.create_connection((ip, port), timeout=5) as sock:
-        try:
-          http_request = (
-            f'GET / HTTP/1.1\r\n'
-            f'Host: {ip}\r\n'
-            'Connection: close\r\n\r\n'
-          )
-          sock.sendall(http_request.encode())
-          response = sock.recv(1024)
-          if response.startswith(b'HTTP/'):
-            LOGGER.info(f'Port {port} on {ip} supports HTTP.')
-            return 'HTTP'
-          else:
-            LOGGER.info(f'Port {port} did not return HTTP response header.')
-        except Exception as e:
-          LOGGER.error(f'Error during HTTP check on {port}: {e}')
+      requests.head(f'https://{ip}:{port}', verify=False, timeout=5)
+      LOGGER.info(f'Port {port} supports HTTPS.')
+      return 'HTTPS'
+    except requests.exceptions.SSLError as e:
+      # This error occurs if the SSL handshake fails for any reason
+      # (like a cipher mismatch),
+      # but the server still responded at the SSL layer.
+      LOGGER.error(f'Port {port} is likely HTTPS-based: {e}')
+      return 'HTTPS'
+    except requests.exceptions.ConnectionError as e:
+      LOGGER.info(f'Connection failed for HTTPS on port {port}: {e}')
+    except requests.exceptions.Timeout:
+      LOGGER.info(f'Request timed out for HTTPS on port {port}.')
     except Exception as e:
-      LOGGER.error(f'Connection error on {port}: {e}')
+      LOGGER.error(f'An unexpected error occurred during HTTPS check: {e}')
+
+    # try HTTP
+    try:
+      requests.head(f'http://{ip}:{port}', timeout=5)
+      LOGGER.info(f'Port {port} supports HTTP.')
+      return 'HTTP'
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+      LOGGER.info(f'Port {port} does not support HTTP.')
+    except Exception as e:
+      LOGGER.error(f'An unexpected error occurred during HTTP check: {e}')
+
     return 'UNKNOWN'
 
   def verify_http_or_https(self, ip, ports):
