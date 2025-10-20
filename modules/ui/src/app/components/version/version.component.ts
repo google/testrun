@@ -39,6 +39,8 @@ import { filter, timer } from 'rxjs';
 import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 import { LocalStorageService } from '../../services/local-storage.service';
 
+export const INSTALLED_VERSION = 'INSTALLED_VERSION';
+
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 declare const gtag: Function;
 @Component({
@@ -64,11 +66,15 @@ export class VersionComponent implements OnInit, OnDestroy {
     this.version$ = this.testRunService.getVersion().pipe(
       filter(version => version !== null),
       tap(version => {
-        if (!this.consentShown) {
+        if (
+          !this.consentShown ||
+          version.installed_version !== localStorage.getItem(INSTALLED_VERSION)
+        ) {
           timer(2000).subscribe(() => {
             this.openConsentDialog(version);
             this.consentShownEvent.emit();
           });
+          localStorage.setItem(INSTALLED_VERSION, version.installed_version);
         }
         // @ts-expect-error data layer is not null
         window.dataLayer.push({
