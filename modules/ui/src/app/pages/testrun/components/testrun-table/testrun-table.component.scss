@@ -29,6 +29,14 @@ mat-header-row {
   cursor: pointer;
 }
 
+mat-row:has(.cell-result-text.highlight) {
+  background: colors.$error-container;
+  .cell-result-text.red {
+    color: colors.$white;
+    background: colors.$on-error-container;
+  }
+}
+
 mat-cell,
 mat-header-cell,
 .item-cell {

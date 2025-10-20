@@ -43,6 +43,9 @@ limitations under the License.
       <mat-cell mat-cell *matCellDef="let element">
         <span
           class="cell-result-text"
+          [class.highlight]="
+            isNonCompliantAndRequired(element.result, element.required_result)
+          "
           [ngClass]="getResultClass(element.result)">
           <span>{{ element.result }}</span>
         </span>
