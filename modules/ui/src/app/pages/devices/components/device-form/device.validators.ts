@@ -31,7 +31,7 @@ export class DeviceValidators {
   );
 
   readonly FIRMWARE_FORMAT_REGEXP = new RegExp(
-    "^([a-z0-9\\p{L}\\p{M}.',-_ ]{1,64})$",
+    '^(?=.*[^\\s])[\\p{L}\\p{M}0-9 .:;_-]{1,64}$',
     'u'
   );
 
