@@ -107,7 +107,6 @@ export class RiskAssessmentComponent
 
   viewModel$ = this.store.viewModel$;
   isOpenProfileForm = false;
-  isCopyProfile = false;
 
   canDeactivate(): Observable<boolean> {
     const form = this.form();
@@ -152,10 +151,8 @@ export class RiskAssessmentComponent
     this.cd.detectChanges();
   }
 
-  async copyProfileAndOpenForm(profile: Profile, profiles: Profile[]) {
-    this.isCopyProfile = true;
+  async copyProfileAndOpenForm(profile: Profile) {
     const copyOfProfile = this.getCopyOfProfile(profile);
-    this.store.updateProfiles([copyOfProfile, ...profiles]);
     await this.openForm(copyOfProfile);
   }
 
@@ -164,7 +161,7 @@ export class RiskAssessmentComponent
     copyOfProfile.name = this.getCopiedProfileName(profile.name);
     delete copyOfProfile.created; // new profile is not create yet
     delete copyOfProfile.risk;
-    copyOfProfile.status = ProfileStatus.DRAFT;
+    copyOfProfile.status = ProfileStatus.COPY;
     return copyOfProfile;
   }
 
@@ -190,26 +187,15 @@ export class RiskAssessmentComponent
       .pipe(takeUntil(this.destroy$))
       .subscribe(deleteProfile => {
         if (deleteProfile) {
-          if (
-            profile &&
-            profile.status === ProfileStatus.DRAFT &&
-            !profile.created
-          ) {
-            this.deleteCopy(profile, profiles);
-            this.closeFormAfterDelete(profile.name, selectedProfile);
-            this.focusAddButton();
-            return;
-          } else {
-            this.store.deleteProfile({
-              name: profileName,
-              onDelete: (idx = 0) => {
-                this.closeFormAfterDelete(profileName, selectedProfile);
-                timer(100).subscribe(() => {
-                  this.setFocus(idx);
-                });
-              },
-            });
-          }
+          this.store.deleteProfile({
+            name: profileName,
+            onDelete: (idx = 0) => {
+              this.closeFormAfterDelete(profileName, selectedProfile);
+              timer(100).subscribe(() => {
+                this.setFocus(idx);
+              });
+            },
+          });
         } else {
           this.store.setFocusOnSelectedProfile();
         }
@@ -225,7 +211,7 @@ export class RiskAssessmentComponent
       });
     } else if (
       this.compareProfiles(profile, selectedProfile) ||
-      this.isCopyProfile
+      selectedProfile.status === ProfileStatus.COPY
     ) {
       this.saveProfile(profile, this.store.setFocusOnSelectedProfile);
     } else {
@@ -256,10 +242,9 @@ export class RiskAssessmentComponent
       .pipe(takeUntil(this.destroy$))
       .subscribe(close => {
         if (close) {
-          if (selectedProfile && this.isCopyProfile) {
+          if (selectedProfile?.status === ProfileStatus.COPY) {
             this.deleteCopy(selectedProfile, profiles);
           }
-          this.isCopyProfile = false;
           this.isOpenProfileForm = false;
           this.store.updateSelectedProfile(null);
           this.cd.markForCheck();
@@ -288,17 +273,24 @@ export class RiskAssessmentComponent
   }
 
   deleteCopy(copyOfProfile: Profile, profiles: Profile[]) {
-    this.isCopyProfile = false;
     this.store.removeProfile(copyOfProfile.name, profiles);
+    this.cd.markForCheck();
+  }
+  setCopy(copyOfProfile: Profile, profiles: Profile[]) {
+    if (profiles.every(profile => profile !== copyOfProfile)) {
+      this.store.updateProfiles([copyOfProfile, ...profiles]);
+      this.cd.detectChanges();
+    }
   }
 
   actions(actions: EntityAction[]) {
     return (profile: Profile) => {
-      // expired profiles or unsaved copy of profile can only be removed
-      if (
-        profile.status === ProfileStatus.EXPIRED ||
-        (profile.status === ProfileStatus.DRAFT && !profile.created)
-      ) {
+      // unsaved copy of profile can't have any action
+      if (profile.status === ProfileStatus.COPY) {
+        return [];
+      }
+      // expired profiles can only be removed
+      if (profile.status === ProfileStatus.EXPIRED) {
         return [{ action: ProfileAction.Delete, icon: 'delete' }];
       }
       return actions;
@@ -312,7 +304,7 @@ export class RiskAssessmentComponent
   ) {
     switch (action) {
       case ProfileAction.Copy:
-        this.copyProfileAndOpenForm(entity, profiles);
+        this.copyProfileAndOpenForm(entity);
         break;
       case ProfileAction.Delete:
         this.deleteProfile(entity, profiles, selectedProfile);
@@ -393,7 +385,6 @@ export class RiskAssessmentComponent
         this.store.updateSelectedProfile(profile);
       },
     });
-    this.isCopyProfile = false;
   }
 
   private setFocus(index: number): void {
@@ -420,6 +411,7 @@ export class RiskAssessmentComponent
       autoFocus: 'dialog',
       hasBackdrop: true,
       disableClose: true,
+      panelClass: ['simple-dialog', 'small-dialog'],
     });
 
     return dialogRef?.afterClosed();

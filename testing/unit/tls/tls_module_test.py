@@ -80,7 +80,7 @@ class TLSModuleTest(unittest.TestCase):
 
     self.assertEqual(result, 'Error')
     self.assertEqual(description, 'Could not resolve device IP address')
-    self.assertEqual(details, 'Could not resolve device IP address')
+    self.assertEqual(details, ['Could not resolve device IP address.'])
 
   def security_tls_v1_2_server_no_scan_results_test(self):
     """Tests _security_tls_v1_2_server when scan finds no HTTP/HTTPS ports"""
@@ -92,7 +92,7 @@ class TLSModuleTest(unittest.TestCase):
 
     self.assertEqual(result, 'Feature Not Detected')
     self.assertEqual(description, 'TLS 1.2 certificate could not be validated')
-    self.assertEqual(details, 'TLS 1.2 certificate could not be validated')
+    self.assertEqual(details, ['TLS 1.2 certificate could not be validated.'])
 
   def security_tls_v1_2_server_scan_failure_test(self):
     """Tests _security_tls_v1_2_server when scan fails"""
@@ -103,7 +103,7 @@ class TLSModuleTest(unittest.TestCase):
 
     self.assertEqual(result, 'Feature Not Detected')
     self.assertEqual(description, 'TLS 1.2 certificate could not be validated')
-    self.assertEqual(details, 'TLS 1.2 certificate could not be validated')
+    self.assertEqual(details, ['TLS 1.2 certificate could not be validated.'])
 
   @patch('tls_module.TLSUtil.validate_tls_server')
   def security_tls_v1_2_server_no_tls_v1_3_test(self, mock_validate_tls_server):
@@ -116,9 +116,14 @@ class TLSModuleTest(unittest.TestCase):
     def validate_side_effect(**kwargs):
       tls_version = kwargs.get('tls_version')
       if tls_version == '1.2':
-        return (True, 'Time range valid\nPublic key valid\nSignature valid')
+        return (True, [
+                        'Time range valid',
+                        'Public key valid',
+                        'Signature valid'
+                        ]
+              )
       elif tls_version == '1.3':
-        return (None, 'Failed to resolve public certificate')
+        return (None, ['Failed to resolve public certificate'])
 
     mock_validate_tls_server.side_effect = validate_side_effect
     result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
@@ -126,12 +131,12 @@ class TLSModuleTest(unittest.TestCase):
     self.assertEqual(result, True)
     self.assertEqual(description, 'TLS 1.2 certificate valid on ports: 443')
 
-    expected_details = (
-    'TLS 1.2 validated on port 443: '
-    'Time range valid\n'
-    'Public key valid\n'
+    expected_details = [
+    'TLS 1.2 validated on port 443:',
+    'Time range valid',
+    'Public key valid',
     'Signature valid'
-    )
+    ]
     self.assertEqual(details, expected_details)
 
   @patch('tls_module.TLSUtil.validate_tls_server')
@@ -154,7 +159,7 @@ class TLSModuleTest(unittest.TestCase):
 
     self.assertEqual(result, 'Feature Not Detected')
     self.assertEqual(description, 'TLS 1.2 certificate could not be validated')
-    self.assertEqual(details, 'TLS 1.2 certificate could not be validated')
+    self.assertEqual(details, ['TLS 1.2 certificate could not be validated.'])
 
   @patch('tls_module.TLSUtil.validate_tls_server')
   def security_tls_v1_2_server_compliant_invalid_v1_2_cert_test(self,
@@ -171,9 +176,12 @@ class TLSModuleTest(unittest.TestCase):
     def validate_side_effect(**kwargs):
       tls_version = kwargs.get('tls_version')
       if tls_version == '1.2':
-        return (False, 'Certificate has expired')
+        return (False, ['Certificate has expired'])
       elif tls_version == '1.3':
-        return (True, 'Time range valid\nPublic key valid\nSignature valid')
+        return (True, ['Time range valid',
+                       'Public key valid',
+                       'Signature valid']
+                )
 
     mock_validate_tls_server.side_effect = validate_side_effect
     result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
@@ -186,14 +194,14 @@ class TLSModuleTest(unittest.TestCase):
     )
     self.assertEqual(description, expected_description )
 
-    expected_details = (
-    'TLS 1.2 not validated on port 443: '
-    'Certificate has expired'
-    '\nTLS 1.3 validated on port 443: '
-    'Time range valid\n'
-    'Public key valid\n'
+    expected_details = [
+    'TLS 1.2 not validated on port 443:',
+    'Certificate has expired',
+    'TLS 1.3 validated on port 443:',
+    'Time range valid',
+    'Public key valid',
     'Signature valid'
-    )
+    ]
     self.assertEqual(details, expected_details)
 
   @patch('tls_module.TLSUtil.validate_tls_server')
@@ -210,9 +218,9 @@ class TLSModuleTest(unittest.TestCase):
     def validate_side_effect(**kwargs):
       tls_version = kwargs.get('tls_version')
       if tls_version == '1.2':
-        return (False, 'Certificate has expired')
+        return (False, ['Certificate has expired'])
       elif tls_version == '1.3':
-        return (False, 'Device certificate has not been signed')
+        return (False, ['Device certificate has not been signed'])
 
     mock_validate_tls_server.side_effect = validate_side_effect
     result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
@@ -221,12 +229,12 @@ class TLSModuleTest(unittest.TestCase):
     self.assertEqual(result, False)
     self.assertEqual(description, 'TLS 1.2 certificate invalid on ports: 443')
 
-    expected_details = (
-    'TLS 1.2 not validated on port 443: '
-    'Certificate has expired'
-    '\nTLS 1.3 not validated on port 443: '
+    expected_details = [
+    'TLS 1.2 not validated on port 443:',
+    'Certificate has expired',
+    'TLS 1.3 not validated on port 443:',
     'Device certificate has not been signed'
-    )
+    ]
     self.assertEqual(details, expected_details)
 
   @patch('tls_module.TLSUtil.validate_tls_server')
@@ -240,7 +248,12 @@ class TLSModuleTest(unittest.TestCase):
     def validate_side_effect(**kwargs):
       tls_version = kwargs.get('tls_version')
       if tls_version in ['1.2', '1.3']:
-        return (True, 'Time range valid\nPublic key valid\nSignature valid')
+        return (True, [
+                      'Time range valid',
+                      'Public key valid',
+                      'Signature valid'
+                      ]
+                )
 
     mock_validate_tls_server.side_effect = validate_side_effect
     result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
@@ -248,16 +261,16 @@ class TLSModuleTest(unittest.TestCase):
     self.assertEqual(result, True)
     self.assertEqual(description, 'TLS 1.2 certificate valid on ports: 443')
 
-    expected_details = (
-    'TLS 1.2 validated on port 443: '
-    'Time range valid\n'
-    'Public key valid\n'
+    expected_details = [
+    'TLS 1.2 validated on port 443:',
+    'Time range valid',
+    'Public key valid',
+    'Signature valid',
+    'TLS 1.3 validated on port 443:',
+    'Time range valid',
+    'Public key valid',
     'Signature valid'
-    '\nTLS 1.3 validated on port 443: '
-    'Time range valid\n'
-    'Public key valid\n'
-    'Signature valid'
-    )
+    ]
     self.assertEqual(details, expected_details)
 
   @patch('tls_module.TLSUtil.validate_tls_server')
@@ -272,7 +285,10 @@ class TLSModuleTest(unittest.TestCase):
     def validate_side_effect(**kwargs):
       tls_version = kwargs.get('tls_version')
       if tls_version in ['1.2', '1.3']:
-        return (True, 'Time range valid\nPublic key valid\nSignature valid')
+        return (True, ['Time range valid',
+                       'Public key valid',
+                       'Signature valid']
+                )
 
     mock_validate_tls_server.side_effect = validate_side_effect
     result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
@@ -282,24 +298,24 @@ class TLSModuleTest(unittest.TestCase):
     expected_description = 'TLS 1.2 certificate valid on ports: 443,8443'
     self.assertEqual(description, expected_description)
 
-    expected_details = (
-    'TLS 1.2 validated on port 443: '
-    'Time range valid\n'
-    'Public key valid\n'
-    'Signature valid'
-    '\nTLS 1.3 validated on port 443: '
-    'Time range valid\n'
-    'Public key valid\n'
-    'Signature valid'
-    'TLS 1.2 validated on port 8443: '
-    'Time range valid\n'
-    'Public key valid\n'
-    'Signature valid'
-    '\nTLS 1.3 validated on port 8443: '
-    'Time range valid\n'
-    'Public key valid\n'
-    'Signature valid'
-    )
+    expected_details = [
+    'TLS 1.2 validated on port 443:',
+    'Time range valid',
+    'Public key valid',
+    'Signature valid',
+    'TLS 1.3 validated on port 443:',
+    'Time range valid',
+    'Public key valid',
+    'Signature valid',
+    'TLS 1.2 validated on port 8443:',
+    'Time range valid',
+    'Public key valid',
+    'Signature valid',
+    'TLS 1.3 validated on port 8443:',
+    'Time range valid',
+    'Public key valid',
+    'Signature valid',
+    ]
     self.assertEqual(details, expected_details)
 
   @patch('tls_module.TLSUtil.validate_tls_server')
@@ -313,7 +329,10 @@ class TLSModuleTest(unittest.TestCase):
     def validate_side_effect(**kwargs):
       tls_version = kwargs.get('tls_version')
       if tls_version in ['1.2', '1.3']:
-        return (True, 'Time range valid\nPublic key valid\nSignature valid')
+        return (True, ['Time range valid',
+                       'Public key valid',
+                       'Signature valid']
+                )
 
     mock_validate_tls_server.side_effect = validate_side_effect
     result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
@@ -321,17 +340,17 @@ class TLSModuleTest(unittest.TestCase):
     self.assertEqual(result, False)
     self.assertEqual(description, 'TLS 1.2 certificate invalid on ports: 80')
 
-    expected_details = (
-    'TLS 1.2 validated on port 443: '
-    'Time range valid\n'
-    'Public key valid\n'
-    'Signature valid'
-    '\nTLS 1.3 validated on port 443: '
-    'Time range valid\n'
-    'Public key valid\n'
-    'Signature valid'
-    '\nHTTP service detected on port 80'
-    )
+    expected_details = [
+    'TLS 1.2 validated on port 443:',
+    'Time range valid',
+    'Public key valid',
+    'Signature valid',
+    'TLS 1.3 validated on port 443:',
+    'Time range valid',
+    'Public key valid',
+    'Signature valid',
+    'HTTP service detected on port 80.'
+    ]
     self.assertEqual(details, expected_details)
 
   # Test 1.2 server when only 1.2 connection is established
@@ -390,22 +409,22 @@ class TLSModuleTest(unittest.TestCase):
     # Both None
     tls_1_2_results = None, none_message
     tls_1_3_results = None, none_message
-    expected = None, (f'TLS 1.2 not validated on port 443: {none_message}\n'
-                      f'TLS 1.3 not validated on port 443: {none_message}')
+    expected = None, ['TLS 1.2 not validated on port 443:', none_message,
+                      'TLS 1.3 not validated on port 443:', none_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
 
     # TLS 1.2 Pass and TLS 1.3 None
     tls_1_2_results = True, success_message
-    expected = True, f'TLS 1.2 validated on port 443: {success_message}'
+    expected = True, ['TLS 1.2 validated on port 443:', success_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
 
     # TLS 1.2 Fail and TLS 1.3 None
     tls_1_2_results = False, fail_message
-    expected = False, f'TLS 1.2 not validated on port 443: {fail_message}'
+    expected = False, ['TLS 1.2 not validated on port 443:', fail_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
@@ -413,14 +432,14 @@ class TLSModuleTest(unittest.TestCase):
     # TLS 1.3 Pass and TLS 1.2 None
     tls_1_2_results = None, fail_message
     tls_1_3_results = True, success_message
-    expected = True, f'TLS 1.3 validated on port 443: {success_message}'
+    expected = True, ['TLS 1.3 validated on port 443:', success_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
 
     # TLS 1.3 Fail and TLS 1.2 None
     tls_1_3_results = False, fail_message
-    expected = False, f'TLS 1.3 not validated on port 443: {fail_message}'
+    expected = False, ['TLS 1.3 not validated on port 443:', fail_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
@@ -428,8 +447,8 @@ class TLSModuleTest(unittest.TestCase):
     # TLS 1.2 Pass and TLS 1.3 Pass
     tls_1_2_results = True, success_message
     tls_1_3_results = True, success_message
-    expected = True, (f'TLS 1.2 validated on port 443: {success_message}\n'
-                      f'TLS 1.3 validated on port 443: {success_message}')
+    expected = True, ['TLS 1.2 validated on port 443:', success_message,
+                      'TLS 1.3 validated on port 443:', success_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
 
@@ -438,8 +457,8 @@ class TLSModuleTest(unittest.TestCase):
     # TLS 1.2 Pass and TLS 1.3 Fail
     tls_1_2_results = True, success_message
     tls_1_3_results = False, fail_message
-    expected = True, (f'TLS 1.2 validated on port 443: {success_message}\n'
-                      f'TLS 1.3 not validated on port 443: {fail_message}')
+    expected = True, ['TLS 1.2 validated on port 443:', success_message,
+                      'TLS 1.3 not validated on port 443:', fail_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
@@ -447,16 +466,16 @@ class TLSModuleTest(unittest.TestCase):
     # TLS 1.2 Fail and TLS 1.2 Pass
     tls_1_2_results = False, fail_message
     tls_1_3_results = True, success_message
-    expected = True, (f'TLS 1.2 not validated on port 443: {fail_message}\n'
-                      f'TLS 1.3 validated on port 443: {success_message}')
+    expected = True, ['TLS 1.2 not validated on port 443:', fail_message,
+                      'TLS 1.3 validated on port 443:', success_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
 
     # TLS 1.2 Fail and TLS 1.2 Fail
     tls_1_3_results = False, fail_message
-    expected = False, (f'TLS 1.2 not validated on port 443: {fail_message}\n'
-                       f'TLS 1.3 not validated on port 443: {fail_message}')
+    expected = False, ['TLS 1.2 not validated on port 443:', fail_message,
+                       'TLS 1.3 not validated on port 443:', fail_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
@@ -760,18 +779,20 @@ class TLSModuleTest(unittest.TestCase):
         ]
         context.set_ciphers(':'.join(ciphers_str))
 
-      # Disable specific TLS versions based on the input
-      if tls_version != '1.1':
-        context.options |= ssl.OP_NO_TLSv1  # Disable TLS 1.0
-        context.options |= ssl.OP_NO_TLSv1_1  # Disable TLS 1.1
-      else:
-        context.options |= ssl.OP_NO_TLSv1_2  # Disable TLS 1.2
-        context.options |= ssl.OP_NO_TLSv1_3  # Disable TLS 1.3
 
+      # Set allowed TLS versions using minimum_version and maximum_version
       if tls_version == '1.3':
-        context.options |= ssl.OP_NO_TLSv1_2  # Disable TLS 1.2
+        context.minimum_version = ssl.TLSVersion.TLSv1_3
+        context.maximum_version = ssl.TLSVersion.TLSv1_3
       elif tls_version == '1.2':
-        context.options |= ssl.OP_NO_TLSv1_3  # Disable TLS 1.3
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
+        context.maximum_version = ssl.TLSVersion.TLSv1_2
+      elif tls_version == '1.1':
+        context.minimum_version = ssl.TLSVersion.TLSv1_1
+        context.maximum_version = ssl.TLSVersion.TLSv1_1
+      elif tls_version == '1.0':
+        context.minimum_version = ssl.TLSVersion.TLSv1
+        context.maximum_version = ssl.TLSVersion.TLSv1
 
       # Create an SSL/TLS socket
       with socket.create_connection((hostname, port), timeout=10) as sock:

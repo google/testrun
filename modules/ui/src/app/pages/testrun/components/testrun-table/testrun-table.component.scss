@@ -26,11 +26,11 @@ mat-header-row {
 }
 
 .clickable-row {
-  background: colors.$error-container;
   cursor: pointer;
 }
 
-.clickable-row:has(.cell-result-text.red) {
+mat-row:has(.cell-result-text.highlight) {
+  background: colors.$error-container;
   .cell-result-text.red {
     color: colors.$white;
     background: colors.$on-error-container;
@@ -55,6 +55,21 @@ mat-cell {
 
 mat-header-cell {
   font-weight: 700;
+}
+
+.cell-addition-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+
+  p {
+    margin: 0;
+  }
+
+  .details-info {
+    margin-top: 6px;
+  }
 }
 
 .clickable-icon {

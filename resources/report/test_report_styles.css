@@ -231,20 +231,30 @@
 
     .module-data.dns-module thead tr th,
     .module-data.dns-module tbody tr td {
-      padding: 12px 16px;
+      padding: 12px 6px;
     }
 
-    .module-data.dns-module tbody tr td {
-      max-width: 1px;
+    .module-data.dns-module tbody tr td.dns-ip {
+      max-width: 130px;
     }
 
-    .module-data.dns-module tbody tr td.count-row {
-      width: 1px;
+    .module-data.dns-module tbody tr td.dns-type {
+      max-width: 70px;
+    }
+
+    .module-data.dns-module tbody tr td.dns-count {
+      width: 10px;
+    }
+
+    .module-data.dns-module tbody tr td.dns-count div {
+      text-align: center;
+    }
+    .module-data.dns-module tbody tr td.dns-url {
+      max-width: 285px;
     }
 
     .module-data.dns-module tbody tr td div {
-      word-wrap: break-word;
-      overflow-wrap: break-word;
+      word-break: break-all;
     }
 
     div.steps-to-resolve {
@@ -436,7 +446,24 @@
       width: 8.5in;
     }
 
+    .result-line-details {
+      border: 1px solid #D3D3D3;
+      /* Light Gray border*/
+      height: fit-content;
+      width: 8.5in;
+    }
+
     .result-line-result {
+      border-top: 0;
+    }
+
+    .result-line-result-with-details {
+      border-top: 0;
+      border-bottom: 0;
+    }
+
+    .result-line-result-details {
+      height: auto;
       border-top: 0;
     }
 
@@ -467,6 +494,17 @@
 
     .result-test-description {
       max-width: 300px;
+      white-space: normal;
+    }
+
+    .result-test-details {
+      font-size: 11px;
+      width: 300px; 
+      display: block; 
+      margin-left: 2.1in; 
+      margin-right: 0;
+      margin-bottom: 6px;
+      box-sizing: border-box;
     }
 
     .result-test-result-error {

@@ -1,6 +1,6 @@
 {% import 'header.jinja' as header %}
 {% import 'summary.jinja' as summary %}
-{% import 'results.jinja' as results %}
+{% import 'results.jinja' as result %}
 {% import 'resolve_steps.jinja' as resolve_steps %}
 {% import 'device_profile.jinja' as device_profile %}
 
@@ -16,22 +16,14 @@
 </head>
 <body>
   {# Test Results #}
-  {% for page in range(pages_num) %}
+  {% for page in results_pages %}
   <div class="page">
-    {{ header.insert(loop.first, device, logo, icon)}}
+    {{ header.insert(loop.first, device, logo, icon) }}
     {% if loop.first %}
-        {# Report summary #}
+      {# Report summary #}
       {{ summary.insert(json_data, device, modules, duration) }}
     {% endif %}
-      {% if loop.first %}
-        {% set results_from = 0 %}
-        {% set results_to = [tests_first_page, test_results|length]|min %}
-      {% else %}
-        {% set results_from = tests_first_page + (loop.index0 - 1) * tests_per_page %}
-        {% set results_to = [results_from + tests_per_page, test_results|length]|min %}
-      {% endif %}
-        {# Test results table #}
-        {{ results.insert(successful_tests, total_tests, test_results, results_from, results_to) }}
+      {{ result.insert(successful_tests, total_tests, page) }}
       <div class="footer">
         <div class="footer-label">Testrun {{ version }}</div>
         <div class="footer-label page-index" style="right: 0px"></div>

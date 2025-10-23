@@ -66,15 +66,17 @@ limitations under the License.
         *ngSwitchCase="StatusOfTestrun.Cancelling"
         [ngTemplateOutlet]="Cancelling">
       </ng-container>
-      <ng-container
-        *ngSwitchCase="StatusOfTestrun.Stopping"
-        [ngTemplateOutlet]="Cancelling">
-      </ng-container>
+    </div>
+
+    <div
+      *ngIf="data.status === StatusOfTestrun.Stopping"
+      class="progress-card-status">
+      <ng-container [ngTemplateOutlet]="Cancelling"> </ng-container>
     </div>
 
     <ng-container
       *ngIf="
-        data.finished ||
+        (data.finished && data.status !== StatusOfTestrun.Stopping) ||
         data.status === StatusOfTestrun.InProgress ||
         data.status === StatusOfTestrun.Cancelled
       ">

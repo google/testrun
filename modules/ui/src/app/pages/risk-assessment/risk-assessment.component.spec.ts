@@ -255,25 +255,6 @@ describe('RiskAssessmentComponent', () => {
         ).toHaveBeenCalledWith(null);
         expect(component.isOpenProfileForm).toBeFalse();
       }));
-
-      it('should remove copy and close form when unsaved copy is deleted', fakeAsync(() => {
-        spyOn(component.dialog, 'open').and.returnValue({
-          afterClosed: () => of(true),
-        } as MatDialogRef<typeof SimpleDialogComponent>);
-        component.isCopyProfile = true;
-        component.deleteProfile(
-          DRAFT_COPY_PROFILE_MOCK,
-          [DRAFT_COPY_PROFILE_MOCK, PROFILE_MOCK],
-          DRAFT_COPY_PROFILE_MOCK
-        );
-        tick();
-
-        expect(mockRiskAssessmentStore.removeProfile).toHaveBeenCalled();
-        expect(
-          mockRiskAssessmentStore.updateSelectedProfile
-        ).toHaveBeenCalledWith(null);
-        expect(component.isOpenProfileForm).toBeFalse();
-      }));
     });
 
     describe('#openForm', () => {
@@ -316,10 +297,7 @@ describe('RiskAssessmentComponent', () => {
     it('#copyProfileAndOpenForm should call openForm with copy of profile', fakeAsync(() => {
       spyOn(component, 'openForm');
 
-      component.copyProfileAndOpenForm(PROFILE_MOCK, [
-        PROFILE_MOCK,
-        PROFILE_MOCK,
-      ]);
+      component.copyProfileAndOpenForm(PROFILE_MOCK);
       tick();
 
       expect(component.openForm).toHaveBeenCalledWith(DRAFT_COPY_PROFILE_MOCK);
@@ -362,6 +340,7 @@ describe('RiskAssessmentComponent', () => {
             autoFocus: 'dialog',
             hasBackdrop: true,
             disableClose: true,
+            panelClass: ['simple-dialog', 'small-dialog'],
           });
 
           openSpy.calls.reset();
@@ -382,6 +361,7 @@ describe('RiskAssessmentComponent', () => {
             autoFocus: 'dialog',
             hasBackdrop: true,
             disableClose: true,
+            panelClass: ['simple-dialog', 'small-dialog'],
           });
 
           openSpy.calls.reset();
@@ -472,7 +452,6 @@ describe('RiskAssessmentComponent', () => {
             <ProfileFormComponent>component.form(),
             'openCloseDialog'
           ).and.returnValue(of(true));
-          component.isCopyProfile = true;
           component.discard(DRAFT_COPY_PROFILE_MOCK, [DRAFT_COPY_PROFILE_MOCK]);
           tick(100);
         }));
@@ -501,7 +480,6 @@ class FakeProfileItemComponent {
 })
 class FakeProfileFormComponent {
   @Input() profiles!: Profile[];
-  @Input() isCopyProfile!: boolean;
   @Input() selectedProfile!: Profile;
   @Input() profileFormat!: ProfileFormat[];
 }

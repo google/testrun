@@ -18,6 +18,7 @@ import {
   afterNextRender,
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   inject,
@@ -56,6 +57,7 @@ import { map } from 'rxjs/internal/operators/map';
 import { SimpleDialogComponent } from '../../../components/simple-dialog/simple-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { RiskAssessmentStore } from '../risk-assessment.store';
+import { tap } from 'rxjs/internal/operators/tap';
 
 @Component({
   selector: 'app-profile-form',
@@ -79,7 +81,9 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   private profileValidators = inject(ProfileValidators);
   private fb = inject(FormBuilder);
   private store = inject(RiskAssessmentStore);
+  cd = inject(ChangeDetectorRef);
   private profile: Profile | null = null;
+  private copyProfile: Profile | null = null;
   private profileList!: Profile[];
   private injector = inject(Injector);
   private nameValidator!: ValidatorFn;
@@ -89,7 +93,6 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   dialog = inject(MatDialog);
   readonly autosize = viewChildren(CdkTextareaAutosize);
   @Input() profileFormat!: ProfileFormat[];
-  @Input() isCopyProfile!: boolean;
   @Input()
   set profiles(profiles: Profile[]) {
     this.profileList = profiles;
@@ -102,9 +105,6 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
   @Input()
   set selectedProfile(profile: Profile | null) {
-    if (this.isCopyProfile && this.profile) {
-      this.deleteCopy.emit(this.profile);
-    }
     if (this.changeProfile || this.profileHasNoChanges()) {
       this.changeProfile = false;
       this.profile = profile;
@@ -119,6 +119,15 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
       this.store.updateSelectedProfile(this.profile);
       this.openCloseDialogToChangeProfile(profile);
     }
+    if (
+      profile?.status === ProfileStatus.COPY &&
+      this.copyProfile !== profile // check if copy already set
+    ) {
+      this.copyProfile = profile;
+      this.setCopy.emit(this.copyProfile);
+    } else if (profile?.status !== ProfileStatus.COPY) {
+      this.copyProfile = null;
+    }
   }
 
   get selectedProfile() {
@@ -127,6 +136,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
 
   @Output() saveProfile = new EventEmitter<Profile>();
   @Output() deleteCopy = new EventEmitter<Profile>();
+  @Output() setCopy = new EventEmitter<Profile>();
   @Output() discard = new EventEmitter();
   ngOnInit() {
     this.profileForm = this.createProfileForm();
@@ -143,6 +153,13 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
       !this.nameControl.valid ||
       this.fieldsHasError ||
       this.profileHasNoChanges()
+    );
+  }
+
+  get isDiscardDisabled(): boolean {
+    return (
+      (this.profileHasNoChanges() || this.profileForm.pristine) &&
+      !this.copyProfile
     );
   }
 
@@ -206,7 +223,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
 
   private compareProfiles(profile1: Profile, profile2: Profile) {
-    if (profile1.name !== profile2.name) {
+    if (profile1.name !== profile2.name || this.copyProfile) {
       return false;
     }
     if (
@@ -326,18 +343,33 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
 
   close(): Observable<boolean> {
-    if (this.profileHasNoChanges() || this.profileForm.pristine) {
+    if (
+      (this.profileHasNoChanges() || this.profileForm.pristine) &&
+      !this.copyProfile
+    ) {
+      this.store.setIsOpenProfile(false);
       return of(true);
     }
-    return this.openCloseDialog().pipe(map(res => !!res));
+    return this.openCloseDialog().pipe(
+      tap(res => {
+        if (res) {
+          if (this.copyProfile) {
+            this.deleteCopy.emit(this.copyProfile);
+          }
+          this.store.setIsOpenProfile(false);
+        }
+      }),
+      map(res => !!res)
+    );
   }
 
   openCloseDialog() {
+    const profileName = this.profile?.name || 'New risk profile';
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Discard the Risk Assessment changes',
       data: {
         title: 'Discard changes?',
-        content: `You have unsaved changes that would be permanently lost.`,
+        content: `You have unsaved changes in the ${profileName} that would be permanently lost.`,
         confirmName: 'Discard',
       },
       autoFocus: true,
@@ -352,8 +384,17 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   private openCloseDialogToChangeProfile(profile: Profile | null) {
     this.openCloseDialog().subscribe(close => {
       if (close) {
+        if (this.copyProfile) {
+          this.deleteCopy.emit(this.copyProfile);
+          this.copyProfile = null;
+        }
         this.changeProfile = true;
         this.store.updateSelectedProfile(profile);
+      } else {
+        if (this.copyProfile?.name !== this.profile?.name) {
+          this.copyProfile = null;
+          this.cd.detectChanges();
+        }
       }
     });
   }
@@ -366,7 +407,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     const request: any = {
       questions: [],
     };
-    if (profile && !this.isCopyProfile) {
+    if (profile && profile.status !== ProfileStatus.COPY) {
       request.name = profile.name;
       request.rename = this.nameControl?.value?.trim();
     } else {

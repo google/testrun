@@ -448,7 +448,7 @@ describe('DeviceQualificationFromComponent', () => {
         autoFocus: true,
         hasBackdrop: true,
         disableClose: true,
-        panelClass: ['simple-dialog', 'close-device'],
+        panelClass: ['simple-dialog', 'discard-dialog'],
       });
 
       openSpy.calls.reset();

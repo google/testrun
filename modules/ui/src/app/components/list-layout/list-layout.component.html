@@ -38,10 +38,23 @@ limitations under the License.
         </mat-toolbar-row>
         <mat-toolbar-row>
           <div class="search-field">
-            <input (input)="updateQuery($event)" placeholder="Search" />
-            <mat-icon>search</mat-icon>
-          </div></mat-toolbar-row
-        >
+            <input
+              [value]="searchText()"
+              (input)="updateQuery($event)"
+              placeholder="Search" />
+            <button
+              *ngIf="searchText().length > 2; else searchIcon"
+              (click)="clearSearch()"
+              class="clear-search-button"
+              mat-icon-button
+              aria-label="Clear search">
+              <mat-icon>close</mat-icon>
+            </button>
+            <ng-template #searchIcon>
+              <mat-icon>search</mat-icon>
+            </ng-template>
+          </div>
+        </mat-toolbar-row>
       </mat-toolbar>
       <div class="entity-list-container">
         <section class="entity-list">

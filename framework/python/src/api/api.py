@@ -599,17 +599,19 @@ class Api:
       if device is None:
 
         # Create new device
-        device = Device()
-        device.mac_addr = device_json.get(DEVICE_MAC_ADDR_KEY).lower()
-        device.manufacturer = device_json.get(DEVICE_MANUFACTURER_KEY)
-        device.model = device_json.get(DEVICE_MODEL_KEY)
-        device.test_pack = device_json.get(DEVICE_TEST_PACK_KEY)
-        device.type = device_json.get(DEVICE_TYPE_KEY)
-        device.technology = device_json.get(DEVICE_TECH_KEY)
-        device.additional_info = device_json.get(DEVICE_ADDITIONAL_INFO_KEY)
-
-        device.device_folder = device.manufacturer + " " + device.model
-        device.test_modules = device_json.get(DEVICE_TEST_MODULES_KEY)
+        device_manufacturer = device_json.get(DEVICE_MANUFACTURER_KEY)
+        device_model = device_json.get(DEVICE_MODEL_KEY)
+        additional_info=device_json.get(DEVICE_ADDITIONAL_INFO_KEY)
+        device = Device(mac_addr=device_json.get(DEVICE_MAC_ADDR_KEY).lower(),
+                        manufacturer=device_manufacturer,
+                        model=device_model,
+                        test_pack=device_json.get(DEVICE_TEST_PACK_KEY),
+                        type=device_json.get(DEVICE_TYPE_KEY),
+                        technology=device_json.get(DEVICE_TECH_KEY),
+                        additional_info=additional_info,
+                        device_folder=f"{device_manufacturer} {device_model}",
+                        test_modules=device_json.get(DEVICE_TEST_MODULES_KEY)
+                        )
 
         self._testrun.create_device(device)
         response.status_code = status.HTTP_201_CREATED
@@ -1103,13 +1105,13 @@ class Api:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return self._generate_msg(
           False,
-          "Failed to upload certificate. Is it in the correct format?")
+          "Failed to upload certificate. The file is corrupted.")
 
     # Return error if something went wrong
     if cert_obj is None:
       response.status_code = 500
       return self._generate_msg(
-          False, "Failed to upload certificate. Is it in the correct format?")
+          False, "Failed to upload certificate. An error occurred.")
 
     response.status_code = status.HTTP_201_CREATED
 

@@ -95,8 +95,7 @@ class RiskProfile():
   # but still validate the profile
   def load(self, profile_json, profile_format):
     self.name = profile_json['name']
-    self.created = datetime.strptime(
-      profile_json['created'], '%Y-%m-%d')
+    self.created = datetime.fromisoformat(profile_json['created'])
     self.version = profile_json['version']
     self.questions = profile_json['questions']
     self.status = None
@@ -329,7 +328,7 @@ class RiskProfile():
     json_dict = {
         'name': self.name,
         'version': self.version,
-        'created': self.created.strftime('%Y-%m-%d'),
+        'created': self.created.isoformat(),
         'status': self.status,
         'risk': self.risk,
         'questions': self.questions

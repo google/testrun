@@ -9,7 +9,7 @@
     "docker": {
       "depends_on": "base",
       "enable_container": true,
-      "timeout": 900
+      "timeout": 1200
     },
     "tests": [
       {

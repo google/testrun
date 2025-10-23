@@ -28,8 +28,11 @@ limitations under the License.
       <mat-header-cell mat-header-cell *matHeaderCellDef>
         Description
       </mat-header-cell>
-      <mat-cell mat-cell *matCellDef="let element">
-        {{ element.description }}
+      <mat-cell mat-cell *matCellDef="let element" class="cell-addition-info">
+        <p class="item-cell">{{ element.description }}</p>
+        <p *ngIf="element.details" class="details-info">
+          {{ element.details }}
+        </p>
       </mat-cell>
     </ng-container>
 
@@ -40,6 +43,9 @@ limitations under the License.
       <mat-cell mat-cell *matCellDef="let element">
         <span
           class="cell-result-text"
+          [class.highlight]="
+            isNonCompliantAndRequired(element.result, element.required_result)
+          "
           [ngClass]="getResultClass(element.result)">
           <span>{{ element.result }}</span>
         </span>

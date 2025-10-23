@@ -453,6 +453,14 @@ class TestrunSession():
         if len(result.description) != 0:
           test_result.description = result.description
 
+        # Add details to test result
+        details = result.details
+        if isinstance(details, str):
+          details = list(filter(lambda s: s!='', details.split('\n')))
+        if isinstance(details, list):
+          details = ' '.join(details)
+        test_result.details = details
+
         # Add recommendations if provided
         if result.recommendations is not None:
           test_result.recommendations = result.recommendations

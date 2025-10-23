@@ -28,7 +28,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { EntityAction } from '../../model/entity-action';
-import { MatTooltip } from '@angular/material/tooltip';
+import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-list-item',
@@ -39,6 +39,8 @@ import { MatTooltip } from '@angular/material/tooltip';
     MatMenu,
     MatMenuItem,
     CommonModule,
+    MatTooltipModule,
+    MatTooltip,
   ],
   providers: [MatTooltip],
   templateUrl: './list-item.component.html',

@@ -64,7 +64,17 @@ export class TestRunService {
   }
 
   fetchDevices(): Observable<Device[]> {
-    return this.http.get<Device[]>(`${API_URL}/devices`);
+    return this.http
+      .get<Required<Device>[]>(`${API_URL}/devices`)
+      .pipe(
+        map(items =>
+          items.sort(
+            (a, b) =>
+              new Date(b.modified_at).getTime() -
+              new Date(a.modified_at).getTime()
+          )
+        )
+      );
   }
 
   getSystemConfig(): Observable<SystemConfig> {

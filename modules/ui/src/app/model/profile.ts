@@ -41,6 +41,7 @@ export enum ProfileStatus {
   VALID = 'Valid',
   DRAFT = 'Draft',
   EXPIRED = 'Expired',
+  COPY = 'Copy',
 }
 
 export interface RiskResultClassName {

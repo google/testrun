@@ -13,9 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="list-item" [class.disabled]="disabled">
+<div
+  class="list-item"
+  [class.disabled]="disabled"
+  [class.no-actions-menu]="!actions().length">
   <ng-content></ng-content>
   <button
+    *ngIf="actions().length"
     [disabled]="disabled"
     fontSet="material-symbols-outlined"
     mat-icon-button

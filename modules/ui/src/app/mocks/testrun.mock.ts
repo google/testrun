@@ -130,7 +130,7 @@ export const MOCK_PROGRESS_DATA_COMPLIANT: TestrunStatus =
   PROGRESS_DATA_RESPONSE(
     StatusOfTestrun.Complete,
     '2023-06-22T09:20:00.123Z',
-    TEST_DATA_RESULT,
+    TEST_DATA,
     'https://api.testrun.io/report.pdf',
     ResultOfTestrun.Compliant
   );
