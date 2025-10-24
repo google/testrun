@@ -1,7 +1,7 @@
 Package: Testrun
-Version: 2.2.1
+Version: 2.2.2
 Architecture: amd64
-Maintainer: Google <boddey@google.com>
+Maintainer: Google <ssm-orcas@google.com>
 Homepage: https://github.com/google/testrun
 Bugs: https://github.com/google/testrun/issues
 Description: Automatically verify IoT device network behavior
