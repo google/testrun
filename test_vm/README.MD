@@ -73,29 +73,8 @@ sudo virsh net-list --all
 
 You should see hostonly-noip with status active.
 
-## 8. Create Your Vagrantfile
 
-In your project directory, create a file named Vagrantfile:
-
-```ruby
-Vagrant.configure("2") do |config|
-  config.vm.box = "bento/ubuntu-24.04"
-  config.vm.hostname = "ubuntu-vm"
-  # First interface: NAT (default, for SSH)
-  # Second interface: direct to host via enbr99, no auto-IP
-  config.vm.network "private_network",
-    libvirt__network_name: "hostonly-noip",
-    auto_config: false,
-    mac: "52:54:00:12:34:56"
-  config.vm.provider :libvirt do |libvirt|
-    libvirt.memory = 2048
-    libvirt.cpus = 2
-    libvirt.graphics_type = "none"
-  end
-end
-```
-
-## 9. Start the Virtual Machine
+## 8. Start the Virtual Machine
 
 
 ```bash
