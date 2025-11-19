@@ -1,0 +1,113 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Install DHCP client
+      apt:
+        name: isc-dhcp-client
+        state: present
+        update_cache: yes
+
+    - name: Run dhclient on eth1 (in background)
+      shell: nohup dhclient eth1 &
+      async: 0
+      poll: 0
+
+    - name: Install netstat for network troubleshooting
+      apt:
+        name: net-tools
+        state: present
+        update_cache: yes
+
+    - name: Install BACnet dependencies
+      apt:
+        name:
+          - git
+          - gcc
+          - make
+          - bison
+          - flex
+          - libpcap-dev
+        state: present
+        update_cache: yes
+      tags: bacnet
+
+    - name: Clone BACnet stack repository
+      git:
+        repo: https://github.com/bacnet-stack/bacnet-stack.git
+        dest: /opt/bacnet-stack
+        version: master
+      tags: bacnet
+
+    - name: Build BACnet stack
+      make:
+        chdir: /opt/bacnet-stack
+        target: all
+      tags: bacnet
+
+    - name: Copy bacserv-wrapper.sh
+      copy:
+        dest: /usr/local/bin/bacserv-wrapper.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          IFACE=eth1
+          while true; do
+            IP=$(ip -4 addr show $IFACE | awk '/inet / {print $2}' | cut -d/ -f1)
+            if [ -n "$IP" ]; then
+              export BACNET_IP=$IP
+              exec /opt/bacnet-stack/bin/bacserv
+            fi
+            sleep 2
+          done
+      tags: bacnet
+
+    - name: Create systemd unit for bacserv
+      copy:
+        dest: /etc/systemd/system/bacserv.service
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=BACnet Server (auto-restart on IP change)
+          After=network-online.target
+          Wants=network-online.target
+
+          [Service]
+          Type=simple
+          ExecStart=/usr/local/bin/bacserv-wrapper.sh
+          Restart=always
+          RestartSec=5
+
+          [Install]
+          WantedBy=multi-user.target
+      tags: bacnet
+
+    - name: Reload systemd and enable bacserv service
+      systemd:
+        name: bacserv
+        enabled: yes
+        state: restarted
+        daemon_reload: yes
+      tags: bacnet
+
+    - name: Check if bacserv process is running
+      shell: pgrep -fl bacserv
+      register: bacserv_process
+      changed_when: false
+      tags: bacnet
+
+    - name: Show information about bacserv process
+      debug:
+        var: bacserv_process.stdout_lines
+      tags: bacnet
+
+    - name: Show last lines of bacserv log
+      shell: tail -n 20 /opt/bacnet-stack/bacserv.log
+      register: bacserv_log
+      changed_when: false
+      ignore_errors: true
+
+    - name: Display bacserv log
+      debug:
+        var: bacserv_log.stdout_lines
+      tags: bacnet
