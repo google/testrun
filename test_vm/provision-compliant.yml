@@ -2,6 +2,19 @@
 - hosts: all
   become: true
   tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Python3, pip, venv, and setcap utility
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - libcap2-bin
+        state: present
+
     - name: Install DHCP client
       apt:
         name: isc-dhcp-client
@@ -30,20 +43,17 @@
           - libpcap-dev
         state: present
         update_cache: yes
-      tags: bacnet
 
     - name: Clone BACnet stack repository
       git:
         repo: https://github.com/bacnet-stack/bacnet-stack.git
         dest: /opt/bacnet-stack
         version: master
-      tags: bacnet
 
     - name: Build BACnet stack
       make:
         chdir: /opt/bacnet-stack
         target: all
-      tags: bacnet
 
     - name: Copy bacserv-wrapper.sh
       copy:
@@ -60,7 +70,6 @@
             fi
             sleep 2
           done
-      tags: bacnet
 
     - name: Create systemd unit for bacserv
       copy:
@@ -80,7 +89,6 @@
 
           [Install]
           WantedBy=multi-user.target
-      tags: bacnet
 
     - name: Reload systemd and enable bacserv service
       systemd:
@@ -88,18 +96,15 @@
         enabled: yes
         state: restarted
         daemon_reload: yes
-      tags: bacnet
 
     - name: Check if bacserv process is running
       shell: pgrep -fl bacserv
       register: bacserv_process
       changed_when: false
-      tags: bacnet
 
     - name: Show information about bacserv process
       debug:
         var: bacserv_process.stdout_lines
-      tags: bacnet
 
     - name: Show last lines of bacserv log
       shell: tail -n 20 /opt/bacnet-stack/bacserv.log
@@ -110,4 +115,62 @@
     - name: Display bacserv log
       debug:
         var: bacserv_log.stdout_lines
-      tags: bacnet
+
+    - name: Create venv for modbus
+      become: no
+      command: python3 -m venv /home/vagrant/modbus-venv
+      args:
+        creates: /home/vagrant/modbus-venv
+
+    - name: Create venv for modbus
+      become: no
+      command: python3 -m venv /home/vagrant/modbus-venv
+      args:
+        creates: /home/vagrant/modbus-venv
+
+    - name: Install pyModbusTCP in venv
+      become: no
+      command: /home/vagrant/modbus-venv/bin/pip install pyModbusTCP
+
+    - name: Find real python binary path
+      shell: readlink -f /home/vagrant/modbus-venv/bin/python
+      register: real_python_path
+
+    - name: Allow system python to bind to port 502
+      become: true
+      command: setcap 'cap_net_bind_service=+ep' {{ real_python_path.stdout }}
+
+    - name: Copy Modbus TCP server script (pyModbusTCP)
+      copy:
+        src: ./python/src/modbus_server.py
+        dest: /home/vagrant/modbus_server.py
+        owner: vagrant
+        group: vagrant
+        mode: '0644'
+
+    - name: Ensure modbus server is running (systemd)
+      copy:
+        dest: /etc/systemd/system/modbus-server.service
+        content: |
+          [Unit]
+          Description=Modbus TCP Server (pyModbusTCP)
+          After=network.target
+
+          [Service]
+          Type=simple
+          User=vagrant
+          ExecStart=/home/vagrant/modbus-venv/bin/python /home/vagrant/modbus_server.py
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start modbus-server
+      systemd:
+        name: modbus-server
+        enabled: yes
+        state: started
