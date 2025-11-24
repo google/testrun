@@ -27,3 +27,6 @@ testing/unit/services/output/
 make/DEBIAN/postinst
 
 testrun.log
+
+# Ignore vagrant files
+test_vm/.vagrant/
