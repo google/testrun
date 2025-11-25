@@ -60,6 +60,8 @@ sudo ip link delete enbr99 type bridge
 ### Create and start the network:
 
 ```bash
+sudo virsh net-destroy hostonly-noip || true
+sudo virsh net-undefine hostonly-noip || true
 sudo virsh net-define /tmp/hostonly-noip.xml
 sudo virsh net-start hostonly-noip
 sudo virsh net-autostart hostonly-noip
@@ -78,6 +80,9 @@ You should see hostonly-noip with status active.
 
 
 ```bash
-vagrant up --provider=libvirt
+./mock_ethtool.sh
+hash -r
+DEVICE=COMPLIANT vagrant up --provider=libvirt
 ```
 If you see "Permission denied to /var/run/libvirt/libvirt-sock", check your libvirt group membership and restart your session.
+
