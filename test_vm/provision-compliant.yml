@@ -2,6 +2,7 @@
 - hosts: all
   become: true
   tasks:
+    # Common setup tasks
     - name: Update apt cache
       apt:
         update_cache: yes
@@ -13,8 +14,10 @@
           - python3-pip
           - python3-venv
           - libcap2-bin
+          - net-tools
         state: present
 
+    # Set up networking on eth1
     - name: Install DHCP client
       apt:
         name: isc-dhcp-client
@@ -26,12 +29,7 @@
       async: 0
       poll: 0
 
-    - name: Install netstat for network troubleshooting
-      apt:
-        name: net-tools
-        state: present
-        update_cache: yes
-
+    # BACnet stack setup
     - name: Install BACnet dependencies
       apt:
         name:
@@ -116,6 +114,8 @@
       debug:
         var: bacserv_log.stdout_lines
 
+    # Modbus TCP server setup
+
     - name: Create venv for modbus
       become: no
       command: python3 -m venv /home/vagrant/modbus-venv
@@ -174,3 +174,41 @@
         name: modbus-server
         enabled: yes
         state: started
+
+    # NTP client setup
+
+    - name: Install chrony
+      apt:
+        name: chrony
+        state: present
+        update_cache: yes
+
+    - name: Remove static NTP servers from chrony.conf
+      lineinfile:
+        path: /etc/chrony/chrony.conf
+        regexp: '^(server|pool)'
+        state: absent
+
+    - name: Ensure sourcedir for DHCP is present
+      lineinfile:
+        path: /etc/chrony/chrony.conf
+        line: 'sourcedir /run/chrony-dhcp'
+        state: present
+
+    - name: Restart chrony
+      service:
+        name: chrony
+        state: restarted
+        enabled: yes
+
+    - name: Wait for chrony to sync sources
+      .wait_for:
+        timeout: 10
+
+    - name: Show current chrony sources
+      command: chronyc sources
+      register: chrony_sources
+
+    - name: Print chrony sources
+      ansible.builtin.debug:
+        var: chrony_sources.stdout
