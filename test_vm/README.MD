@@ -10,7 +10,7 @@ This guide will help you set up a Vagrant VM with two network interfaces:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virt-manager \
+sudo apt-get install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils \
                         ruby ruby-dev libvirt-dev zlib1g-dev ebtables dnsmasq-base vagrant
 
 ```
