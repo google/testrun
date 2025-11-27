@@ -202,7 +202,7 @@
         enabled: yes
 
     - name: Wait for chrony to sync sources
-      .wait_for:
+      wait_for:
         timeout: 10
 
     - name: Show current chrony sources
@@ -212,3 +212,83 @@
     - name: Print chrony sources
       ansible.builtin.debug:
         var: chrony_sources.stdout
+
+    # DNS request setup
+
+    - name: Create systemd service for curl
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/curl-google.service
+        content: |
+          [Unit]
+          Description=Curl google.com
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/bin/curl -s -L -o /dev/null -w "%{http_code}\n" https://www.google.com
+
+    - name: Create systemd timer for curl
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/curl-google.timer
+        content: |
+          [Unit]
+          Description=Run curl google.com every 5 seconds
+
+          [Timer]
+          OnBootSec=5
+          OnUnitActiveSec=5
+
+          [Install]
+          WantedBy=timers.target
+
+    - name: Reload systemd daemon
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+    - name: Enable and start curl-google.timer
+      ansible.builtin.systemd:
+        name: curl-google.timer
+        enabled: yes
+        state: started
+
+    # mDNS traffic setup
+
+    - name: Ensure avahi-utils is installed
+      ansible.builtin.apt:
+        name: avahi-utils
+        state: present
+        update_cache: yes
+
+    - name: Create systemd service for mDNS traffic
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/mdns-traffic.service
+        content: |
+          [Unit]
+          Description=Generate mDNS traffic using avahi-publish
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/bin/avahi-publish -s "TestService" _http._tcp 8080
+
+    - name: Create systemd timer for mDNS traffic
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/mdns-traffic.timer
+        content: |
+          [Unit]
+          Description=Run mDNS traffic generator every 5 seconds
+
+          [Timer]
+          OnBootSec=5
+          OnUnitActiveSec=5
+
+          [Install]
+          WantedBy=timers.target
+
+    - name: Reload systemd daemon
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+    - name: Enable and start mdns-traffic.timer
+      ansible.builtin.systemd:
+        name: mdns-traffic.timer
+        enabled: yes
+        state: started
