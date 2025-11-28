@@ -47,7 +47,13 @@ sudo ip link delete enbr99 type bridge
 
 ## 6. Create an Isolated libvirt Network Without IP and DHCP
 
-### Create the file /tmp/hostonly-noip.xml:
+### Create the file /tmp/hostonly-noip.xml
+
+```bash 
+nano /tmp/hostonly-noip.xml
+```
+
+file content
 
 ```xml
 <network>
