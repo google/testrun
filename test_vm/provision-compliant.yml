@@ -356,3 +356,16 @@
         name: tls-emulate.timer
         enabled: yes
         state: started
+
+    # Install and start nginx for HTTP traffic
+
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Ensure nginx is running
+      service:
+        name: nginx
+        state: started
+        enabled: yes
