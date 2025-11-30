@@ -369,3 +369,59 @@
         name: nginx
         state: started
         enabled: yes
+
+    # Install firewall
+
+    - name: Install UFW firewall
+      apt:
+        name: ufw
+        state: present
+        update_cache: yes
+
+    - name: Reset UFW to default
+      command: ufw --force reset
+
+    - name: Set default UFW policy to deny incoming
+      command: ufw default deny incoming
+
+    - name: Set default UFW policy to allow outgoing
+      command: ufw default allow outgoing
+
+    - name: Allow all incoming traffic on eth0
+      command: ufw allow in on eth0
+
+    - name: Allow all outgoing traffic on eth0
+      command: ufw allow out on eth0
+
+    - name: Allow 443/tcp incoming on eth1
+      command: ufw allow in on eth1 to any port 443 proto tcp
+
+    - name: Allow all outgoing traffic on eth1
+      command: ufw allow out on eth1
+
+    - name: Allow BACnet UDP port 47808 incoming on eth1
+      command: ufw allow in on eth1 to any port 47808 proto udp
+
+    - name: Allow BACnet UDP port 47808 outgoing on eth1
+      command: ufw allow out on eth1 to any port 47808 proto udp
+
+    - name: Allow BACnet UDP broadcast on eth1
+      command: ufw allow in on eth1 to 255.255.255.255 port 47808 proto udp
+      ignore_errors: yes
+
+    - name: Allow Modbus TCP port 502 incoming on eth1
+      command: ufw allow in on eth1 to any port 502 proto tcp
+
+    - name: Allow Modbus TCP port 502 outgoing on eth1
+      command: ufw allow out on eth1 to any port 502 proto tcp
+
+    - name: Enable UFW
+      command: ufw --force enable
+
+    - name: Show UFW status
+      command: ufw status verbose
+      register: ufw_status
+
+    - name: Print UFW status
+      debug:
+        var: ufw_status.stdout
