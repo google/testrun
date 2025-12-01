@@ -152,6 +152,7 @@ export class TestrunStatusCardComponent {
       return testData.results.filter(
         result =>
           result.result !== StatusOfTestResult.NotStarted &&
+          result.result !== StatusOfTestResult.InProgress &&
           result.result !== StatusOfTestResult.Error
       ).length;
     }
