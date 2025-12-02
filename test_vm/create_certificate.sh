@@ -122,3 +122,13 @@ CERTS_DIR="$WORKDIR/certs"
 mkdir -p "$CERTS_DIR"
 $SSHPASS scp -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP}:/etc/ssl/certs/myorgca.pem "$CERTS_DIR/myorgca.pem"
 echo "nginx_ip.crt copied from VM to $CERTS_DIR/nginx_ip.crt"
+
+# 9. Add myorgca.pem to trusted store on the client (Ubuntu/Debian)
+if [ -f "$CERTS_DIR/myorgca.pem" ]; then
+  echo "Adding myorgca.pem to trusted store..."
+  sudo cp "$CERTS_DIR/myorgca.pem" /usr/local/share/ca-certificates/myorgca.crt
+  sudo update-ca-certificates
+  echo "myorgca.pem added to trusted store."
+else
+  echo "myorgca.pem not found in $CERTS_DIR, skipping trusted store update."
+fi
