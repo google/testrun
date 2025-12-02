@@ -89,6 +89,10 @@ You should see hostonly-noip with status active.
 ./mock_ethtool.sh
 hash -r
 DEVICE=COMPLIANT vagrant up --provider=libvirt
+DEVICE=COMPLIANT vagrant provision
+./create_certificate.sh <VM IP>
 ```
 If you see "Permission denied to /var/run/libvirt/libvirt-sock", check your libvirt group membership and restart your session.
+
+## 9. Start Testrun
 
