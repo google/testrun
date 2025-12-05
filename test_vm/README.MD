@@ -8,10 +8,14 @@ This guide will help you set up a Vagrant VM with two network interfaces:
 
 ## 1. Install Required Packages and Dependencies
 
+
+
 ```bash
+wget -O- https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+sudo add-apt-repository -y "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
 sudo apt-get update
 sudo apt-get install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils \
-                        ruby ruby-dev libvirt-dev zlib1g-dev ebtables dnsmasq-base vagrant
+                        ruby ruby-dev libvirt-dev zlib1g-dev ebtables dnsmasq-base vagrant ansible
 
 ```
 
@@ -93,6 +97,7 @@ DEVICE=COMPLIANT vagrant provision
 ./create_certificate.sh <VM IP>
 ```
 If you see "Permission denied to /var/run/libvirt/libvirt-sock", check your libvirt group membership and restart your session.
+
 
 ## 9. Start Testrun
 
