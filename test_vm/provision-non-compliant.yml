@@ -1,0 +1,73 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    # Common setup tasks
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Python3, pip, venv, and setcap utility
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - libcap2-bin
+          - net-tools
+        state: present
+
+    # Set up networking on eth1
+    - name: Install DHCP client
+      apt:
+        name: isc-dhcp-client
+        state: present
+        update_cache: yes
+
+    - name: Run dhclient on eth1 (in background)
+      shell: nohup dhclient eth1 &
+      async: 0
+      poll: 0
+
+    # Custom Modbus TCP server NON-COMPLIANT
+
+    - name: Copy Modbus TCP server script (pyModbusTCP)
+      copy:
+        src: ./python/src/modbus_server_non_compliant.py
+        dest: /home/vagrant/modbus_server_non_compliant.py
+        owner: vagrant
+        group: vagrant
+        mode: '0644'
+
+    - name: Create systemd unit for custom Modbus server
+      copy:
+        dest: /etc/systemd/system/custom-modbus-server.service
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=Custom Modbus TCP Error Server
+          After=network.target
+
+          [Service]
+          Type=simple
+          ExecStart=/usr/bin/python3 /home/vagrant/modbus_server_non_compliant.py
+          Restart=always
+
+          [Install
+          WantedBy=multi-user.target
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start custom Modbus server
+      systemd:
+        name: custom-modbus-server
+        enabled: yes
+        state: started
+
+    - name: Show custom Modbus server status
+      systemd:
+        name: custom-modbus-server
+      register: modbus_status
+      changed_when: false
