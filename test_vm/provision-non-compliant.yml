@@ -53,7 +53,7 @@
           ExecStart=/usr/bin/python3 /home/vagrant/modbus_server_non_compliant.py
           Restart=always
 
-          [Install
+          [Install]
           WantedBy=multi-user.target
 
     - name: Reload systemd
