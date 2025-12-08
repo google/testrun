@@ -3,6 +3,10 @@
   become: true
   tasks:
     # Common setup tasks
+
+    - name: Gather facts
+      setup:
+
     - name: Update apt cache
       apt:
         update_cache: yes
@@ -15,15 +19,13 @@
           - python3-venv
           - libcap2-bin
           - net-tools
+          - netcat-openbsd
+          - isc-dhcp-client
+          - vsftpd
         state: present
 
     # Set up networking on eth1
-    - name: Install DHCP client
-      apt:
-        name: isc-dhcp-client
-        state: present
-        update_cache: yes
-
+   
     - name: Run dhclient on eth1 (in background)
       shell: nohup dhclient eth1 &
       async: 0
@@ -71,3 +73,123 @@
         name: custom-modbus-server
       register: modbus_status
       changed_when: false
+
+    # FTP server
+
+    - name: Ensure vsftpd is running and enabled
+      service:
+        name: vsftpd
+        state: started
+        enabled: yes
+
+    - name: Copy custom vsftpd config (optional)
+      copy:
+        src: ./vsftpd.conf
+        dest: /etc/vsftpd.conf
+        owner: root
+        group: root
+        mode: 0644
+      notify: Restart vsftpd
+      when: vsftpd.conf is defined
+
+    # SSH server configuration
+
+    - name: Gather facts
+      setup:
+
+    - name: Set eth0_ip from Ansible facts
+      set_fact:
+        eth0_ip: "{{ ansible_eth0.ipv4.address | default('') }}"
+
+    - name: Fail if eth0_ip is not set
+      fail:
+        msg: "eth0_ip is not set! Please check network configuration."
+      when: eth0_ip == ''
+
+    - name: Debug eth0 IP
+      debug:
+        msg: "eth0 IP is {{ eth0_ip }}"
+
+    - name: Stop and disable ssh.socket (prevents auto-start on all interfaces)
+      service:
+        name: ssh.socket
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    - name: Ensure only eth0 is in ListenAddress for sshd
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^ListenAddress'
+        line: "ListenAddress {{ eth0_ip }}"
+        state: present
+        insertafter: '^#Port'
+
+    - name: Remove all other ListenAddress lines from sshd_config
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^ListenAddress (?!{{ eth0_ip }})'
+        state: absent
+
+    - name: Restart sshd
+      service:
+        name: ssh
+        state: restarted
+
+    - name: Show what is listening on port 22
+      shell: ss -tlnp | grep :22 || netstat -tlnp | grep :22 || true
+      register: port22
+      changed_when: false
+
+    - debug:
+        var: port22.stdout_lines
+
+    - name: Install netcat if not present
+      apt:
+        name: netcat-openbsd
+        state: present
+        update_cache: yes
+
+    - name: Create fake SSH banner systemd service for eth1:22
+      copy:
+        dest: /etc/systemd/system/fake-ssh-banner.service
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=Fake SSH Banner on eth1:22
+          After=network-online.target
+          Wants=network-online.target
+
+          [Service]
+          Type=simple
+          ExecStart=/bin/bash -c '\
+            while true; do \
+              ETH1_IP=$(ip -4 addr show eth1 | grep -oP "(?<=inet\s)\d+(\.\d+){3}"); \
+              if [[ -n "$ETH1_IP" ]]; then \
+                echo "eth1 IP detected: $ETH1_IP"; \
+                break; \
+              fi; \
+              echo "Waiting for eth1 IP..."; \
+              sleep 2; \
+            done; \
+            while true; do echo -e "SSH-1.99-OpenSSH_1.99\r\n" | nc -l -s $ETH1_IP -p 22; done'
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Restart fake-ssh-banner service
+      systemd:
+        name: fake-ssh-banner.service
+        state: restarted
+        enabled: yes
+
+  handlers:
+    - name: Restart vsftpd
+      service:
+        name: vsftpd
+        state: restarted
