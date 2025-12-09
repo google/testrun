@@ -30,6 +30,10 @@
           - netcat-openbsd
           - inetutils-inetd
           - inetutils-telnetd
+          - postfix
+          - dovecot-pop3d
+          - dovecot-imapd
+          - nginx
         state: present
 
     # Set up networking on eth1
@@ -207,19 +211,6 @@
 
     # SMTP POP IMAP server setup
 
-    - name: Install Postfix
-      apt:
-        name: postfix
-        state: present
-        update_cache: yes
-
-    - name: Install Dovecot
-      apt:
-        name:
-          - dovecot-pop3d
-          - dovecot-imapd
-        state: present
-
     - name: Ensure submission and smtps are enabled in Postfix master.cf
       blockinfile:
         path: /etc/postfix/master.cf
@@ -245,6 +236,13 @@
         name: dovecot
         state: restarted
 
+    # HTTP server setup
+
+    - name: Ensure Nginx is running and enabled
+      service:
+        name: nginx
+        state: started
+        enabled: yes
 
   handlers:
     - name: Restart vsftpd
