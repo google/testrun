@@ -34,6 +34,7 @@
           - dovecot-pop3d
           - dovecot-imapd
           - nginx
+          - snmpd
         state: present
 
     # Set up networking on eth1
@@ -243,6 +244,42 @@
         name: nginx
         state: started
         enabled: yes
+
+    # SNMP server 
+
+    - name: Copy SNMP eth1 binding script
+      copy:
+        dest: /usr/local/bin/snmpd-eth1.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ETH1_IP" ]]; then
+                  echo "eth1 IP detected: $ETH1_IP"
+                  break
+              fi
+              echo "Waiting for eth1 IP..."
+              sleep 2
+          done
+
+          # Update snmpd.conf to listen only on eth1
+          sudo sed -i "s/^agentAddress.*/agentAddress  udp:$ETH1_IP:161/" /etc/snmp/snmpd.conf
+
+          # If no agentAddress line exists, add it
+          if ! grep -q "^agentAddress" /etc/snmp/snmpd.conf; then
+              echo "agentAddress  udp:$ETH1_IP:161" | sudo tee -a /etc/snmp/snmpd.conf
+          fi
+
+          # Restart snmpd
+          sudo systemctl restart snmpd
+
+          echo "snmpd is now listening on $ETH1_IP:161 (eth1 only)"
+
+    - name: Run SNMP eth1 binding script in background
+      shell: nohup /usr/local/bin/snmpd-eth1.sh > /var/log/snmpd-eth1.log 2>&1 &
+      args:
+        creates: /var/log/snmpd-eth1.log
 
   handlers:
     - name: Restart vsftpd
