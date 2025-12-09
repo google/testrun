@@ -309,30 +309,59 @@
 
    # TFTP
 
-    - name: Copy fake TFTP port script
+    - name: Kill old fake TFTP netcat processes
+      shell: pkill -f 'nc -u -l -s .* -p 69' || true
+      ignore_errors: yes
+
+    - name: Kill old fake NTP netcat processes
+      shell: pkill -f 'nc -u -l -s .* -p 123' || true
+      ignore_errors: yes
+
+    - name: Copy fake TFTP netcat script
       copy:
-        dest: /usr/local/bin/fake-tftp-eth1.sh
+        dest: /usr/local/bin/fake-tftp-netcat-eth1.sh
         mode: '0755'
         content: |
           #!/bin/bash
           while true; do
               ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
               if [[ -n "$ETH1_IP" ]]; then
-                  echo "eth1 IP detected: $ETH1_IP"
                   break
               fi
-              echo "Waiting for eth1 IP..."
               sleep 2
           done
           while true; do
-              echo -ne "\x00\x05\x00\x01Fake TFTP server\x00" | nc -u -l -s $ETH1_IP -p 69
+              echo -ne "\x00\x05\x00\x01File not found\x00" | nc -u -l -s $ETH1_IP -p 69
           done
 
-    - name: Run fake TFTP port script as background process
-      shell: nohup /usr/local/bin/fake-tftp-eth1.sh > /var/log/fake-tftp-eth1.log 2>&1 &
+    - name: Run fake TFTP netcat script as background process
+      shell: nohup /usr/local/bin/fake-tftp-netcat-eth1.sh > /var/log/fake-tftp-netcat-eth1.log 2>&1 &
       args:
-        creates: /var/log/fake-tftp-eth1.log
+        creates: /var/log/fake-tftp-netcat-eth1.log
 
+      # NTP
+
+    - name: Copy fake NTP netcat script
+      copy:
+        dest: /usr/local/bin/fake-ntp-netcat-eth1.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ETH1_IP" ]]; then
+                  break
+              fi
+              sleep 2
+          done
+          while true; do
+              head -c 48 /dev/zero | nc -u -l -s $ETH1_IP -p 123
+          done
+
+    - name: Run fake NTP netcat script as background process
+      shell: nohup /usr/local/bin/fake-ntp-netcat-eth1.sh > /var/log/fake-ntp-netcat-eth1.log 2>&1 &
+      args:
+        creates: /var/log/fake-ntp-netcat-eth1.log
   handlers:
     - name: Restart vsftpd
       service:
