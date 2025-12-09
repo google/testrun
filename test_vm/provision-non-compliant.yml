@@ -7,6 +7,11 @@
     - name: Gather facts
       setup:
 
+    - name: Ensure main and universe repos are enabled
+      apt_repository:
+        repo: "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} main universe"
+        state: present
+
     - name: Update apt cache
       apt:
         update_cache: yes
@@ -22,6 +27,9 @@
           - netcat-openbsd
           - isc-dhcp-client
           - vsftpd
+          - netcat-openbsd
+          - inetutils-inetd
+          - inetutils-telnetd
         state: present
 
     # Set up networking on eth1
@@ -144,11 +152,6 @@
     - debug:
         var: port22.stdout_lines
 
-    - name: Install netcat if not present
-      apt:
-        name: netcat-openbsd
-        state: present
-        update_cache: yes
 
     - name: Create fake SSH banner systemd service for eth1:22
       copy:
@@ -187,6 +190,61 @@
         name: fake-ssh-banner.service
         state: restarted
         enabled: yes
+
+    # Telnet server setup
+
+    - name: Ensure telnet service is enabled in /etc/inetd.conf
+      lineinfile:
+        path: /etc/inetd.conf
+        regexp: '^#?telnet\s'
+        line: 'telnet  stream  tcp     nowait  root    /usr/sbin/tcpd  /usr/sbin/in.telnetd'
+        state: present
+
+    - name: Restart inetutils-inetd
+      service:
+        name: inetutils-inetd
+        state: restarted
+
+    # SMTP POP IMAP server setup
+
+    - name: Install Postfix
+      apt:
+        name: postfix
+        state: present
+        update_cache: yes
+
+    - name: Install Dovecot
+      apt:
+        name:
+          - dovecot-pop3d
+          - dovecot-imapd
+        state: present
+
+    - name: Ensure submission and smtps are enabled in Postfix master.cf
+      blockinfile:
+        path: /etc/postfix/master.cf
+        block: |
+          submission inet n       -       y       -       -       smtpd
+            -o syslog_name=postfix/submission
+            -o smtpd_tls_security_level=encrypt
+            -o smtpd_sasl_auth_enable=yes
+            -o smtpd_client_restrictions=permit_sasl_authenticated,reject
+          smtps     inet  n       -       y       -       -       smtpd
+            -o syslog_name=postfix/smtps
+            -o smtpd_tls_wrappermode=yes
+            -o smtpd_sasl_auth_enable=yes
+            -o smtpd_client_restrictions=permit_sasl_authenticated,reject
+
+    - name: Restart Postfix
+      service:
+        name: postfix
+        state: restarted
+
+    - name: Restart Dovecot
+      service:
+        name: dovecot
+        state: restarted
+
 
   handlers:
     - name: Restart vsftpd
