@@ -16,7 +16,7 @@
       apt:
         update_cache: yes
 
-    - name: Install Python3, pip, venv, and setcap utility
+    - name: Install Python3, pip, venv, and netcat
       apt:
         name:
           - python3
@@ -26,15 +26,6 @@
           - net-tools
           - netcat-openbsd
           - isc-dhcp-client
-          - vsftpd
-          - netcat-openbsd
-          - inetutils-inetd
-          - inetutils-telnetd
-          - postfix
-          - dovecot-pop3d
-          - dovecot-imapd
-          - nginx
-          - snmpd
         state: present
 
     # Set up networking on eth1
@@ -89,21 +80,29 @@
 
     # FTP server
 
-    - name: Ensure vsftpd is running and enabled
-      service:
-        name: vsftpd
-        state: started
-        enabled: yes
+    - name: Kill old fake FTP netcat processes
+      shell: pkill -f 'nc -l -s .* -p 21' || true
 
-    - name: Copy custom vsftpd config (optional)
+      ignore_errors: yes
+    - name: Copy fake FTP netcat script
       copy:
-        src: ./vsftpd.conf
-        dest: /etc/vsftpd.conf
-        owner: root
-        group: root
-        mode: 0644
-      notify: Restart vsftpd
-      when: vsftpd.conf is defined
+        dest: /usr/local/bin/fake-ftp-netcat-eth1.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ETH1_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              echo -ne "220 Fake FTP server ready\r\n" | nc -l -s $ETH1_IP -p 21
+          done
+    - name: Run fake FTP netcat script as background process
+      shell: nohup /usr/local/bin/fake-ftp-netcat-eth1.sh > /var/log/fake-ftp-netcat-eth1.log 2>&1 &
+      args:
+        creates: /var/log/fake-ftp-netcat-eth1.log
+
 
     # SSH server configuration
 
@@ -198,125 +197,178 @@
 
     # Telnet server setup
 
-    - name: Ensure telnet service is enabled in /etc/inetd.conf
-      lineinfile:
-        path: /etc/inetd.conf
-        regexp: '^#?telnet\s'
-        line: 'telnet  stream  tcp     nowait  root    /usr/sbin/tcpd  /usr/sbin/in.telnetd'
-        state: present
-
-    - name: Restart inetutils-inetd
-      service:
-        name: inetutils-inetd
-        state: restarted
-
-    # SMTP POP IMAP server setup
-
-    - name: Ensure submission and smtps are enabled in Postfix master.cf
-      blockinfile:
-        path: /etc/postfix/master.cf
-        block: |
-          submission inet n       -       y       -       -       smtpd
-            -o syslog_name=postfix/submission
-            -o smtpd_tls_security_level=encrypt
-            -o smtpd_sasl_auth_enable=yes
-            -o smtpd_client_restrictions=permit_sasl_authenticated,reject
-          smtps     inet  n       -       y       -       -       smtpd
-            -o syslog_name=postfix/smtps
-            -o smtpd_tls_wrappermode=yes
-            -o smtpd_sasl_auth_enable=yes
-            -o smtpd_client_restrictions=permit_sasl_authenticated,reject
-
-    - name: Restart Postfix
-      service:
-        name: postfix
-        state: restarted
-
-    - name: Restart Dovecot
-      service:
-        name: dovecot
-        state: restarted
-
-    # HTTP server setup
-
-    - name: Ensure Nginx is running and enabled
-      service:
-        name: nginx
-        state: started
-        enabled: yes
-
-    # SNMP server 
-
-    - name: Copy SNMP eth1 binding script
+    - name: Kill old fake Telnet netcat processes
+      shell: pkill -f 'nc -l -s .* -p 23' || true
+      ignore_errors: yes
+    - name: Copy fake Telnet netcat script
       copy:
-        dest: /usr/local/bin/snmpd-eth1.sh
+        dest: /usr/local/bin/fake-telnet-netcat-eth1.sh
         mode: '0755'
         content: |
           #!/bin/bash
           while true; do
               ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then
-                  echo "eth1 IP detected: $ETH1_IP"
-                  break
-              fi
-              echo "Waiting for eth1 IP..."
+              if [[ -n "$ETH1_IP" ]]; then break; fi
               sleep 2
           done
-
-          # Update snmpd.conf to listen only on eth1
-          sudo sed -i "s/^agentAddress.*/agentAddress  udp:$ETH1_IP:161/" /etc/snmp/snmpd.conf
-
-          # If no agentAddress line exists, add it
-          if ! grep -q "^agentAddress" /etc/snmp/snmpd.conf; then
-              echo "agentAddress  udp:$ETH1_IP:161" | sudo tee -a /etc/snmp/snmpd.conf
-          fi
-
-          # Restart snmpd
-          sudo systemctl restart snmpd
-
-          echo "snmpd is now listening on $ETH1_IP:161 (eth1 only)"
-
-    - name: Run SNMP eth1 binding script in background
-      shell: nohup /usr/local/bin/snmpd-eth1.sh > /var/log/snmpd-eth1.log 2>&1 &
+          while true; do
+              echo -ne "Fake Telnet server\r\n" | nc -l -s $ETH1_IP -p 23
+          done
+    - name: Run fake Telnet netcat script as background process
+      shell: nohup /usr/local/bin/fake-telnet-netcat-eth1.sh > /var/log/fake-telnet-netcat-eth1.log 2>&1 &
       args:
-        creates: /var/log/snmpd-eth1.log
+        creates: /var/log/fake-telnet-netcat-eth1.log
 
-    # VNC
+    # SMTP (TCP/25)
 
-    - name: Copy fake VNC port script
+    - name: Kill old fake SMTP netcat processes
+      shell: pkill -f 'nc -l -s .* -p 25' || true
+      ignore_errors: yes
+    - name: Copy fake SMTP netcat script
       copy:
-        dest: /usr/local/bin/fake-vnc-eth1.sh
+        dest: /usr/local/bin/fake-smtp-netcat-eth1.sh
         mode: '0755'
         content: |
           #!/bin/bash
           while true; do
               ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then
-                  echo "eth1 IP detected: $ETH1_IP"
-                  break
-              fi
-              echo "Waiting for eth1 IP..."
+              if [[ -n "$ETH1_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              echo -ne "220 fake-smtp ESMTP Postfix\r\n" | nc -l -s $ETH1_IP -p 25
+          done
+    - name: Run fake SMTP netcat script as background process
+      shell: nohup /usr/local/bin/fake-smtp-netcat-eth1.sh > /var/log/fake-smtp-netcat-eth1.log 2>&1 &
+      args:
+        creates: /var/log/fake-smtp-netcat-eth1.log
+
+    # POP3 (TCP/110)
+
+    - name: Kill old fake POP3 netcat processes
+
+      shell: pkill -f 'nc -l -s .* -p 110' || true
+      ignore_errors: yes
+    - name: Copy fake POP3 netcat script
+      copy:
+        dest: /usr/local/bin/fake-pop3-netcat-eth1.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ETH1_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              echo -ne "+OK Fake POP3 server ready\r\n" | nc -l -s $ETH1_IP -p 110
+          done
+    - name: Run fake POP3 netcat script as background process
+      shell: nohup /usr/local/bin/fake-pop3-netcat-eth1.sh > /var/log/fake-pop3-netcat-eth1.log 2>&1 &
+      args:
+        creates: /var/log/fake-pop3-netcat-eth1.log
+
+    # IMAP (TCP/143)
+
+    - name: Kill old fake IMAP netcat processes
+      shell: pkill -f 'nc -l -s .* -p 143' || true
+      ignore_errors: yes
+    - name: Copy fake IMAP netcat script
+      copy:
+        dest: /usr/local/bin/fake-imap-netcat-eth1.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ETH1_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              echo -ne "* OK Fake IMAP4rev1 Service Ready\r\n" | nc -l -s $ETH1_IP -p 143
+          done
+    - name: Run fake IMAP netcat script as background process
+      shell: nohup /usr/local/bin/fake-imap-netcat-eth1.sh > /var/log/fake-imap-netcat-eth1.log 2>&1 &
+      args:
+        creates: /var/log/fake-imap-netcat-eth1.log
+
+    # HTTP (TCP/80)
+
+    - name: Kill old fake HTTP netcat processes
+      shell: pkill -f 'nc -l -s .* -p 80' || true
+      ignore_errors: yes
+    - name: Copy fake HTTP netcat script
+      copy:
+        dest: /usr/local/bin/fake-http-netcat-eth1.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ETH1_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              echo -ne "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK" | nc -l -s $ETH1_IP -p 80
+          done
+    - name: Run fake HTTP netcat script as background process
+      shell: nohup /usr/local/bin/fake-http-netcat-eth1.sh > /var/log/fake-http-netcat-eth1.log 2>&1 &
+      args:
+        creates: /var/log/fake-http-netcat-eth1.log
+
+    # SNMP (UDP/161)
+
+    - name: Kill old fake SNMP netcat processes
+      shell: pkill -f 'nc -u -l -s .* -p 161' || true
+      ignore_errors: yes
+    - name: Copy fake SNMP netcat script
+      copy:
+        dest: /usr/local/bin/fake-snmp-netcat-eth1.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ETH1_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              head -c 48 /dev/zero | nc -u -l -s $ETH1_IP -p 161
+          done
+    - name: Run fake SNMP netcat script as background process
+      shell: nohup /usr/local/bin/fake-snmp-netcat-eth1.sh > /var/log/fake-snmp-netcat-eth1.log 2>&1 &
+      args:
+        creates: /var/log/fake-snmp-netcat-eth1.log
+
+    # VNC (TCP/5901)
+
+    - name: Kill old fake VNC netcat processes
+      shell: pkill -f 'nc -l -s .* -p 5901' || true
+      ignore_errors: yes
+    - name: Copy fake VNC netcat script
+      copy:
+        dest: /usr/local/bin/fake-vnc-netcat-eth1.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ETH1_IP" ]]; then break; fi
               sleep 2
           done
           while true; do
               echo -ne "RFB 003.008\n" | nc -l -s $ETH1_IP -p 5901
           done
-
-    - name: Run fake VNC port script as background process
-      shell: nohup /usr/local/bin/fake-vnc-eth1.sh > /var/log/fake-vnc-eth1.log 2>&1 &
+    - name: Run fake VNC netcat script as background process
+      shell: nohup /usr/local/bin/fake-vnc-netcat-eth1.sh > /var/log/fake-vnc-netcat-eth1.log 2>&1 &
       args:
-        creates: /var/log/fake-vnc-eth1.log
+        creates: /var/log/fake-vnc-netcat-eth1.log
 
-   # TFTP
+    # TFTP (UDP/69)
 
     - name: Kill old fake TFTP netcat processes
       shell: pkill -f 'nc -u -l -s .* -p 69' || true
       ignore_errors: yes
-
-    - name: Kill old fake NTP netcat processes
-      shell: pkill -f 'nc -u -l -s .* -p 123' || true
-      ignore_errors: yes
-
     - name: Copy fake TFTP netcat script
       copy:
         dest: /usr/local/bin/fake-tftp-netcat-eth1.sh
@@ -325,22 +377,22 @@
           #!/bin/bash
           while true; do
               ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then
-                  break
-              fi
+              if [[ -n "$ETH1_IP" ]]; then break; fi
               sleep 2
           done
           while true; do
               echo -ne "\x00\x05\x00\x01File not found\x00" | nc -u -l -s $ETH1_IP -p 69
           done
-
     - name: Run fake TFTP netcat script as background process
       shell: nohup /usr/local/bin/fake-tftp-netcat-eth1.sh > /var/log/fake-tftp-netcat-eth1.log 2>&1 &
       args:
         creates: /var/log/fake-tftp-netcat-eth1.log
 
-      # NTP
+    # NTP (UDP/123)
 
+    - name: Kill old fake NTP netcat processes
+      shell: pkill -f 'nc -u -l -s .* -p 123' || true
+      ignore_errors: yes
     - name: Copy fake NTP netcat script
       copy:
         dest: /usr/local/bin/fake-ntp-netcat-eth1.sh
@@ -349,20 +401,16 @@
           #!/bin/bash
           while true; do
               ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then
-                  break
-              fi
+              if [[ -n "$ETH1_IP" ]]; then break; fi
               sleep 2
           done
           while true; do
               head -c 48 /dev/zero | nc -u -l -s $ETH1_IP -p 123
           done
-
     - name: Run fake NTP netcat script as background process
       shell: nohup /usr/local/bin/fake-ntp-netcat-eth1.sh > /var/log/fake-ntp-netcat-eth1.log 2>&1 &
       args:
         creates: /var/log/fake-ntp-netcat-eth1.log
-
 
     # BACnet
 
@@ -385,10 +433,57 @@
               echo -ne "Fake BACnet server\n" | nc -u -l -s $ETH1_IP -p 47808
           done
 
-    - name: Run fake BACnet netcat script as background process
-      shell: nohup /usr/local/bin/fake-bacnet-netcat-eth1.sh > /var/log/fake-bacnet-netcat-eth1.log 2>&1 &
+
+
+    - name: Install ISC DHCP server
+      apt:
+        name: isc-dhcp-server
+        state: present
+        update_cache: yes
+
+    - name: Configure DHCP server to listen on eth1
+      lineinfile:
+        path: /etc/default/isc-dhcp-server
+        regexp: '^INTERFACESv4='
+        line: 'INTERFACESv4="eth1"'
+        state: present
+
+    - name: Configure DHCP subnet
+      copy:
+        dest: /etc/dhcp/dhcpd.conf
+        content: |
+          default-lease-time 600;
+          max-lease-time 7200;
+          authoritative;
+          subnet 10.10.10.0 netmask 255.255.255.0 {
+            range 10.10.10.100 10.10.10.200;
+            option routers 10.10.10.1;
+            option domain-name-servers 8.8.8.8, 8.8.4.4;
+          }
+
+    - name: Copy wait-for-eth1-and-start-dhcpd script
+      copy:
+        dest: /usr/local/bin/wait-eth1-then-dhcpd.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ETH1_IP" ]]; then
+                  echo "eth1 IP detected: $ETH1_IP"
+                  break
+              fi
+              echo "Waiting for eth1 to get an IPv4 address..."
+              sleep 2
+          done
+          echo "Starting isc-dhcp-server..."
+          sudo systemctl start isc-dhcp-server
+          sudo systemctl status isc-dhcp-server --no-pager
+
+    - name: Run wait-for-eth1-and-start-dhcpd script in background
+      shell: nohup /usr/local/bin/wait-eth1-then-dhcpd.sh > /var/log/wait-eth1-then-dhcpd.log 2>&1 &
       args:
-        creates: /var/log/fake-bacnet-netcat-eth1.log
+        creates: /var/log/wait-eth1-then-dhcpd.log
 
   handlers:
     - name: Restart vsftpd
