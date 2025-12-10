@@ -88,6 +88,7 @@ You should see hostonly-noip with status active.
 
 ## 8. Start the Virtual Machine
 
+COMPLIANT DEVICE
 
 ```bash
 ./mock_ethtool.sh
@@ -96,6 +97,17 @@ DEVICE=COMPLIANT vagrant up --provider=libvirt
 DEVICE=COMPLIANT vagrant provision
 ./create_certificate.sh <VM IP>
 ```
+
+
+NON-COMPLIANT DEVICE
+
+```bash
+./restore_ethtool.sh
+hash -r
+DEVICE=NON-COMPLIANT vagrant up --provider=libvirt
+DEVICE=NON-COMPLIANT vagrant provision
+```
+
 If you see "Permission denied to /var/run/libvirt/libvirt-sock", check your libvirt group membership and restart your session.
 
 
