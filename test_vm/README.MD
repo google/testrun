@@ -11,7 +11,7 @@ This guide will help you set up a Vagrant VM with two network interfaces:
 
 
 ```bash
-wget -O- https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+sudo wget -O- https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
 sudo add-apt-repository -y "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
 sudo apt-get update
 sudo apt-get install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils \
