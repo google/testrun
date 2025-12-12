@@ -1,8 +1,20 @@
 ---
 - hosts: all
   become: true
+  vars:
+    dhcp_iface: eth1
+    dhcp_subnet: "10.10.10.0"
+    dhcp_netmask: "255.255.255.0"
+    dhcp_range_start: "10.10.10.100"
+    dhcp_range_end: "10.10.10.200"
+    dhcp_router: "10.10.10.1"
+    dhcp_dns: "8.8.8.8, 8.8.4.4"
   tasks:
     # Common setup tasks
+
+    - name: Assign temporary static IP to eth1 for DHCP server startup
+      command: ip addr add 10.10.10.14/24 dev eth1
+      ignore_errors: yes
 
     - name: Gather facts
       setup:
@@ -15,6 +27,8 @@
     - name: Update apt cache
       apt:
         update_cache: yes
+      ignore_errors: yes
+      timeout: 100
 
     - name: Install Python3, pip, venv, and netcat
       apt:
@@ -433,57 +447,69 @@
               echo -ne "Fake BACnet server\n" | nc -u -l -s $ETH1_IP -p 47808
           done
 
-
-
+    # DHCP
+    
     - name: Install ISC DHCP server
       apt:
         name: isc-dhcp-server
         state: present
-        update_cache: yes
+        update_cache: no
 
-    - name: Configure DHCP server to listen on eth1
+    - name: Configure DHCP server to listen on {{ dhcp_iface }}
       lineinfile:
         path: /etc/default/isc-dhcp-server
         regexp: '^INTERFACESv4='
-        line: 'INTERFACESv4="eth1"'
+        line: 'INTERFACESv4="{{ dhcp_iface }}"'
         state: present
 
-    - name: Configure DHCP subnet
+    - name: Configure DHCP subnet for eth1
       copy:
         dest: /etc/dhcp/dhcpd.conf
         content: |
-          default-lease-time 600;
-          max-lease-time 7200;
+          default-lease-time 10;
+          max-lease-time 10;
           authoritative;
-          subnet 10.10.10.0 netmask 255.255.255.0 {
-            range 10.10.10.100 10.10.10.200;
-            option routers 10.10.10.1;
-            option domain-name-servers 8.8.8.8, 8.8.4.4;
+          subnet {{ dhcp_subnet }} netmask {{ dhcp_netmask }} {
+            range {{ dhcp_range_start }} {{ dhcp_range_end }};
+            option routers {{ dhcp_router }};
+            option domain-name-servers {{ dhcp_dns }};
           }
 
-    - name: Copy wait-for-eth1-and-start-dhcpd script
-      copy:
-        dest: /usr/local/bin/wait-eth1-then-dhcpd.sh
-        mode: '0755'
-        content: |
-          #!/bin/bash
-          while true; do
-              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then
-                  echo "eth1 IP detected: $ETH1_IP"
-                  break
-              fi
-              echo "Waiting for eth1 to get an IPv4 address..."
-              sleep 2
-          done
-          echo "Starting isc-dhcp-server..."
-          sudo systemctl start isc-dhcp-server
-          sudo systemctl status isc-dhcp-server --no-pager
+    - name: Ensure {{ dhcp_iface }} is up (required for dhcpd to start)
+      command: ip link set {{ dhcp_iface }} up
 
-    - name: Run wait-for-eth1-and-start-dhcpd script in background
-      shell: nohup /usr/local/bin/wait-eth1-then-dhcpd.sh > /var/log/wait-eth1-then-dhcpd.log 2>&1 &
-      args:
-        creates: /var/log/wait-eth1-then-dhcpd.log
+    # Если eth1 получает IP по DHCP, этот шаг можно пропустить.
+    # Если нужно назначить статический IP (например, для option routers), раскомментируйте:
+    # - name: Assign static IP to {{ dhcp_iface }} if not present
+    #   command: ip addr add {{ dhcp_router }}/24 dev {{ dhcp_iface }}
+    #   ignore_errors: yes
+
+    - name: Restart and enable isc-dhcp-server
+      service:
+        name: isc-dhcp-server
+        state: restarted
+        enabled: yes
+
+    - name: Check DHCP server status
+      shell: systemctl is-active isc-dhcp-server
+      register: dhcp_status
+
+    - name: Show DHCP server status
+      debug:
+        msg: "DHCP server status: {{ dhcp_status.stdout }}"
+
+    - name: Remove temporary static IP from eth1
+      command: ip addr del 10.10.10.14/24 dev eth1
+      ignore_errors: yes
+
+    # - name: Block ICMP echo-request (ping) on eth1
+    #   ansible.builtin.iptables:
+    #     chain: INPUT
+    #     in_interface: eth1
+    #     protocol: icmp
+    #     icmp_type: echo-request
+    #     jump: DROP
+    #     state: present
 
   handlers:
     - name: Restart vsftpd
