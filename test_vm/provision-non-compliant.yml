@@ -2,31 +2,48 @@
 - hosts: all
   become: true
   vars:
-    dhcp_iface: eth1
+    dhcp_iface: ens5
     dhcp_subnet: "10.10.10.0"
     dhcp_netmask: "255.255.255.0"
     dhcp_range_start: "10.10.10.100"
     dhcp_range_end: "10.10.10.200"
     dhcp_router: "10.10.10.1"
     dhcp_dns: "8.8.8.8, 8.8.4.4"
+    device_mac: "f0:d4:e2:f2:f5:41"   
+    wrong_ip: "10.10.10.99"           
+    target_ip: "10.10.10.1"          
+    iface: "ens5"
   tasks:
     # Common setup tasks
 
-    - name: Assign temporary static IP to eth1 for DHCP server startup
-      command: ip addr add 10.10.10.14/24 dev eth1
+    - name: Assign temporary static IP to ens5 for DHCP server startup
+      command: ip addr add 10.10.10.14/24 dev ens5
       ignore_errors: yes
 
     - name: Gather facts
       setup:
 
-    - name: Ensure main and universe repos are enabled
-      apt_repository:
-        repo: "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} main universe"
-        state: present
+    # - name: Replace sources.list with old-releases mirror
+    #   copy:
+    #     dest: /etc/apt/sources.list
+    #     content: |
+    #       deb http://old-releases.ubuntu.com/ubuntu jammy main restricted universe multiverse
+    #       deb http://old-releases.ubuntu.com/ubuntu jammy-updates main restricted universe multiverse
+    #       deb http://old-releases.ubuntu.com/ubuntu jammy-security main restricted universe multiverse
+    #       deb http://old-releases.ubuntu.com/ubuntu jammy-backports main restricted universe multiverse
+    #     owner: root
+    #     group: root
+    #     mode: '0644'
+
+    # - name: Ensure main and universe repos are enabled
+    #   apt_repository:
+    #     repo: "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} main universe"
+    #     state: present
 
     - name: Update apt cache
       apt:
         update_cache: yes
+        cache_valid_time: 3600
       ignore_errors: yes
       timeout: 100
 
@@ -42,10 +59,10 @@
           - isc-dhcp-client
         state: present
 
-    # Set up networking on eth1
+    # Set up networking on ens5
    
-    - name: Run dhclient on eth1 (in background)
-      shell: nohup dhclient eth1 &
+    - name: Run dhclient on ens5 (in background)
+      shell: nohup dhclient ens5 &
       async: 0
       poll: 0
 
@@ -100,22 +117,22 @@
       ignore_errors: yes
     - name: Copy fake FTP netcat script
       copy:
-        dest: /usr/local/bin/fake-ftp-netcat-eth1.sh
+        dest: /usr/local/bin/fake-ftp-netcat-ens5.sh
         mode: '0755'
         content: |
           #!/bin/bash
           while true; do
-              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then break; fi
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
               sleep 2
           done
           while true; do
-              echo -ne "220 Fake FTP server ready\r\n" | nc -l -s $ETH1_IP -p 21
+              echo -ne "220 Fake FTP server ready\r\n" | nc -l -s $ens5_IP -p 21
           done
     - name: Run fake FTP netcat script as background process
-      shell: nohup /usr/local/bin/fake-ftp-netcat-eth1.sh > /var/log/fake-ftp-netcat-eth1.log 2>&1 &
+      shell: nohup /usr/local/bin/fake-ftp-netcat-ens5.sh > /var/log/fake-ftp-netcat-ens5.log 2>&1 &
       args:
-        creates: /var/log/fake-ftp-netcat-eth1.log
+        creates: /var/log/fake-ftp-netcat-ens5.log
 
 
     # SSH server configuration
@@ -123,18 +140,18 @@
     - name: Gather facts
       setup:
 
-    - name: Set eth0_ip from Ansible facts
+    - name: Set ens4_ip from Ansible facts
       set_fact:
-        eth0_ip: "{{ ansible_eth0.ipv4.address | default('') }}"
+        ens4_ip: "{{ ansible_ens4.ipv4.address | default('') }}"
 
-    - name: Fail if eth0_ip is not set
+    - name: Fail if ens4_ip is not set
       fail:
-        msg: "eth0_ip is not set! Please check network configuration."
-      when: eth0_ip == ''
+        msg: "ens4_ip is not set! Please check network configuration."
+      when: ens4_ip == ''
 
-    - name: Debug eth0 IP
+    - name: Debug ens4 IP
       debug:
-        msg: "eth0 IP is {{ eth0_ip }}"
+        msg: "ens4 IP is {{ ens4_ip }}"
 
     - name: Stop and disable ssh.socket (prevents auto-start on all interfaces)
       service:
@@ -143,18 +160,18 @@
         enabled: no
       ignore_errors: yes
 
-    - name: Ensure only eth0 is in ListenAddress for sshd
+    - name: Ensure only ens4 is in ListenAddress for sshd
       lineinfile:
         path: /etc/ssh/sshd_config
         regexp: '^ListenAddress'
-        line: "ListenAddress {{ eth0_ip }}"
+        line: "ListenAddress {{ ens4_ip }}"
         state: present
         insertafter: '^#Port'
 
     - name: Remove all other ListenAddress lines from sshd_config
       lineinfile:
         path: /etc/ssh/sshd_config
-        regexp: '^ListenAddress (?!{{ eth0_ip }})'
+        regexp: '^ListenAddress (?!{{ ens4_ip }})'
         state: absent
 
     - name: Restart sshd
@@ -171,13 +188,13 @@
         var: port22.stdout_lines
 
 
-    - name: Create fake SSH banner systemd service for eth1:22
+    - name: Create fake SSH banner systemd service for ens5:22
       copy:
         dest: /etc/systemd/system/fake-ssh-banner.service
         mode: '0644'
         content: |
           [Unit]
-          Description=Fake SSH Banner on eth1:22
+          Description=Fake SSH Banner on ens5:22
           After=network-online.target
           Wants=network-online.target
 
@@ -185,15 +202,15 @@
           Type=simple
           ExecStart=/bin/bash -c '\
             while true; do \
-              ETH1_IP=$(ip -4 addr show eth1 | grep -oP "(?<=inet\s)\d+(\.\d+){3}"); \
-              if [[ -n "$ETH1_IP" ]]; then \
-                echo "eth1 IP detected: $ETH1_IP"; \
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP "(?<=inet\s)\d+(\.\d+){3}"); \
+              if [[ -n "$ens5_IP" ]]; then \
+                echo "ens5 IP detected: $ens5_IP"; \
                 break; \
               fi; \
-              echo "Waiting for eth1 IP..."; \
+              echo "Waiting for ens5 IP..."; \
               sleep 2; \
             done; \
-            while true; do echo -e "SSH-1.99-OpenSSH_1.99\r\n" | nc -l -s $ETH1_IP -p 22; done'
+            while true; do echo -e "SSH-1.99-OpenSSH_1.99\r\n" | nc -l -s $ens5_IP -p 22; done'
           Restart=always
 
           [Install]
@@ -216,22 +233,22 @@
       ignore_errors: yes
     - name: Copy fake Telnet netcat script
       copy:
-        dest: /usr/local/bin/fake-telnet-netcat-eth1.sh
+        dest: /usr/local/bin/fake-telnet-netcat-ens5.sh
         mode: '0755'
         content: |
           #!/bin/bash
           while true; do
-              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then break; fi
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
               sleep 2
           done
           while true; do
-              echo -ne "Fake Telnet server\r\n" | nc -l -s $ETH1_IP -p 23
+              echo -ne "Fake Telnet server\r\n" | nc -l -s $ens5_IP -p 23
           done
     - name: Run fake Telnet netcat script as background process
-      shell: nohup /usr/local/bin/fake-telnet-netcat-eth1.sh > /var/log/fake-telnet-netcat-eth1.log 2>&1 &
+      shell: nohup /usr/local/bin/fake-telnet-netcat-ens5.sh > /var/log/fake-telnet-netcat-ens5.log 2>&1 &
       args:
-        creates: /var/log/fake-telnet-netcat-eth1.log
+        creates: /var/log/fake-telnet-netcat-ens5.log
 
     # SMTP (TCP/25)
 
@@ -240,22 +257,22 @@
       ignore_errors: yes
     - name: Copy fake SMTP netcat script
       copy:
-        dest: /usr/local/bin/fake-smtp-netcat-eth1.sh
+        dest: /usr/local/bin/fake-smtp-netcat-ens5.sh
         mode: '0755'
         content: |
           #!/bin/bash
           while true; do
-              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then break; fi
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
               sleep 2
           done
           while true; do
-              echo -ne "220 fake-smtp ESMTP Postfix\r\n" | nc -l -s $ETH1_IP -p 25
+              echo -ne "220 fake-smtp ESMTP Postfix\r\n" | nc -l -s $ens5_IP -p 25
           done
     - name: Run fake SMTP netcat script as background process
-      shell: nohup /usr/local/bin/fake-smtp-netcat-eth1.sh > /var/log/fake-smtp-netcat-eth1.log 2>&1 &
+      shell: nohup /usr/local/bin/fake-smtp-netcat-ens5.sh > /var/log/fake-smtp-netcat-ens5.log 2>&1 &
       args:
-        creates: /var/log/fake-smtp-netcat-eth1.log
+        creates: /var/log/fake-smtp-netcat-ens5.log
 
     # POP3 (TCP/110)
 
@@ -265,22 +282,22 @@
       ignore_errors: yes
     - name: Copy fake POP3 netcat script
       copy:
-        dest: /usr/local/bin/fake-pop3-netcat-eth1.sh
+        dest: /usr/local/bin/fake-pop3-netcat-ens5.sh
         mode: '0755'
         content: |
           #!/bin/bash
           while true; do
-              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then break; fi
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
               sleep 2
           done
           while true; do
-              echo -ne "+OK Fake POP3 server ready\r\n" | nc -l -s $ETH1_IP -p 110
+              echo -ne "+OK Fake POP3 server ready\r\n" | nc -l -s $ens5_IP -p 110
           done
     - name: Run fake POP3 netcat script as background process
-      shell: nohup /usr/local/bin/fake-pop3-netcat-eth1.sh > /var/log/fake-pop3-netcat-eth1.log 2>&1 &
+      shell: nohup /usr/local/bin/fake-pop3-netcat-ens5.sh > /var/log/fake-pop3-netcat-ens5.log 2>&1 &
       args:
-        creates: /var/log/fake-pop3-netcat-eth1.log
+        creates: /var/log/fake-pop3-netcat-ens5.log
 
     # IMAP (TCP/143)
 
@@ -289,22 +306,22 @@
       ignore_errors: yes
     - name: Copy fake IMAP netcat script
       copy:
-        dest: /usr/local/bin/fake-imap-netcat-eth1.sh
+        dest: /usr/local/bin/fake-imap-netcat-ens5.sh
         mode: '0755'
         content: |
           #!/bin/bash
           while true; do
-              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then break; fi
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
               sleep 2
           done
           while true; do
-              echo -ne "* OK Fake IMAP4rev1 Service Ready\r\n" | nc -l -s $ETH1_IP -p 143
+              echo -ne "* OK Fake IMAP4rev1 Service Ready\r\n" | nc -l -s $ens5_IP -p 143
           done
     - name: Run fake IMAP netcat script as background process
-      shell: nohup /usr/local/bin/fake-imap-netcat-eth1.sh > /var/log/fake-imap-netcat-eth1.log 2>&1 &
+      shell: nohup /usr/local/bin/fake-imap-netcat-ens5.sh > /var/log/fake-imap-netcat-ens5.log 2>&1 &
       args:
-        creates: /var/log/fake-imap-netcat-eth1.log
+        creates: /var/log/fake-imap-netcat-ens5.log
 
     # HTTP (TCP/80)
 
@@ -313,22 +330,22 @@
       ignore_errors: yes
     - name: Copy fake HTTP netcat script
       copy:
-        dest: /usr/local/bin/fake-http-netcat-eth1.sh
+        dest: /usr/local/bin/fake-http-netcat-ens5.sh
         mode: '0755'
         content: |
           #!/bin/bash
           while true; do
-              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then break; fi
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
               sleep 2
           done
           while true; do
-              echo -ne "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK" | nc -l -s $ETH1_IP -p 80
+              echo -ne "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK" | nc -l -s $ens5_IP -p 80
           done
     - name: Run fake HTTP netcat script as background process
-      shell: nohup /usr/local/bin/fake-http-netcat-eth1.sh > /var/log/fake-http-netcat-eth1.log 2>&1 &
+      shell: nohup /usr/local/bin/fake-http-netcat-ens5.sh > /var/log/fake-http-netcat-ens5.log 2>&1 &
       args:
-        creates: /var/log/fake-http-netcat-eth1.log
+        creates: /var/log/fake-http-netcat-ens5.log
 
     # SNMP (UDP/161)
 
@@ -337,22 +354,22 @@
       ignore_errors: yes
     - name: Copy fake SNMP netcat script
       copy:
-        dest: /usr/local/bin/fake-snmp-netcat-eth1.sh
+        dest: /usr/local/bin/fake-snmp-netcat-ens5.sh
         mode: '0755'
         content: |
           #!/bin/bash
           while true; do
-              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then break; fi
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
               sleep 2
           done
           while true; do
-              head -c 48 /dev/zero | nc -u -l -s $ETH1_IP -p 161
+              head -c 48 /dev/zero | nc -u -l -s $ens5_IP -p 161
           done
     - name: Run fake SNMP netcat script as background process
-      shell: nohup /usr/local/bin/fake-snmp-netcat-eth1.sh > /var/log/fake-snmp-netcat-eth1.log 2>&1 &
+      shell: nohup /usr/local/bin/fake-snmp-netcat-ens5.sh > /var/log/fake-snmp-netcat-ens5.log 2>&1 &
       args:
-        creates: /var/log/fake-snmp-netcat-eth1.log
+        creates: /var/log/fake-snmp-netcat-ens5.log
 
     # VNC (TCP/5901)
 
@@ -361,22 +378,22 @@
       ignore_errors: yes
     - name: Copy fake VNC netcat script
       copy:
-        dest: /usr/local/bin/fake-vnc-netcat-eth1.sh
+        dest: /usr/local/bin/fake-vnc-netcat-ens5.sh
         mode: '0755'
         content: |
           #!/bin/bash
           while true; do
-              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then break; fi
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
               sleep 2
           done
           while true; do
-              echo -ne "RFB 003.008\n" | nc -l -s $ETH1_IP -p 5901
+              echo -ne "RFB 003.008\n" | nc -l -s $ens5_IP -p 5901
           done
     - name: Run fake VNC netcat script as background process
-      shell: nohup /usr/local/bin/fake-vnc-netcat-eth1.sh > /var/log/fake-vnc-netcat-eth1.log 2>&1 &
+      shell: nohup /usr/local/bin/fake-vnc-netcat-ens5.sh > /var/log/fake-vnc-netcat-ens5.log 2>&1 &
       args:
-        creates: /var/log/fake-vnc-netcat-eth1.log
+        creates: /var/log/fake-vnc-netcat-ens5.log
 
     # TFTP (UDP/69)
 
@@ -385,22 +402,22 @@
       ignore_errors: yes
     - name: Copy fake TFTP netcat script
       copy:
-        dest: /usr/local/bin/fake-tftp-netcat-eth1.sh
+        dest: /usr/local/bin/fake-tftp-netcat-ens5.sh
         mode: '0755'
         content: |
           #!/bin/bash
           while true; do
-              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then break; fi
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
               sleep 2
           done
           while true; do
-              echo -ne "\x00\x05\x00\x01File not found\x00" | nc -u -l -s $ETH1_IP -p 69
+              echo -ne "\x00\x05\x00\x01File not found\x00" | nc -u -l -s $ens5_IP -p 69
           done
     - name: Run fake TFTP netcat script as background process
-      shell: nohup /usr/local/bin/fake-tftp-netcat-eth1.sh > /var/log/fake-tftp-netcat-eth1.log 2>&1 &
+      shell: nohup /usr/local/bin/fake-tftp-netcat-ens5.sh > /var/log/fake-tftp-netcat-ens5.log 2>&1 &
       args:
-        creates: /var/log/fake-tftp-netcat-eth1.log
+        creates: /var/log/fake-tftp-netcat-ens5.log
 
     # NTP (UDP/123)
 
@@ -409,43 +426,46 @@
       ignore_errors: yes
     - name: Copy fake NTP netcat script
       copy:
-        dest: /usr/local/bin/fake-ntp-netcat-eth1.sh
+        dest: /usr/local/bin/fake-ntp-netcat-ens5.sh
         mode: '0755'
         content: |
           #!/bin/bash
           while true; do
-              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then break; fi
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
               sleep 2
           done
           while true; do
-              head -c 48 /dev/zero | nc -u -l -s $ETH1_IP -p 123
+              head -c 48 /dev/zero | nc -u -l -s $ens5_IP -p 123
           done
     - name: Run fake NTP netcat script as background process
-      shell: nohup /usr/local/bin/fake-ntp-netcat-eth1.sh > /var/log/fake-ntp-netcat-eth1.log 2>&1 &
+      shell: nohup /usr/local/bin/fake-ntp-netcat-ens5.sh > /var/log/fake-ntp-netcat-ens5.log 2>&1 &
       args:
-        creates: /var/log/fake-ntp-netcat-eth1.log
+        creates: /var/log/fake-ntp-netcat-ens5.log
 
     # BACnet
 
     - name: Copy fake BACnet netcat script
       copy:
-        dest: /usr/local/bin/fake-bacnet-netcat-eth1.sh
+        dest: /usr/local/bin/fake-bacnet-netcat-ens5.sh
         mode: '0755'
         content: |
           #!/bin/bash
           while true; do
-              ETH1_IP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-              if [[ -n "$ETH1_IP" ]]; then
-                  echo "eth1 IP detected: $ETH1_IP"
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then
+                  echo "ens5 IP detected: $ens5_IP"
                   break
               fi
-              echo "Waiting for eth1 IP..."
+              echo "Waiting for ens5 IP..."
               sleep 2
           done
           while true; do
-              echo -ne "Fake BACnet server\n" | nc -u -l -s $ETH1_IP -p 47808
+              echo -ne "Fake BACnet server\n" | nc -u -l -s $ens5_IP -p 47808
           done
+
+
+     
 
     # DHCP
     
@@ -462,7 +482,7 @@
         line: 'INTERFACESv4="{{ dhcp_iface }}"'
         state: present
 
-    - name: Configure DHCP subnet for eth1
+    - name: Configure DHCP subnet for ens5
       copy:
         dest: /etc/dhcp/dhcpd.conf
         content: |
@@ -478,12 +498,6 @@
     - name: Ensure {{ dhcp_iface }} is up (required for dhcpd to start)
       command: ip link set {{ dhcp_iface }} up
 
-    # Если eth1 получает IP по DHCP, этот шаг можно пропустить.
-    # Если нужно назначить статический IP (например, для option routers), раскомментируйте:
-    # - name: Assign static IP to {{ dhcp_iface }} if not present
-    #   command: ip addr add {{ dhcp_router }}/24 dev {{ dhcp_iface }}
-    #   ignore_errors: yes
-
     - name: Restart and enable isc-dhcp-server
       service:
         name: isc-dhcp-server
@@ -498,18 +512,19 @@
       debug:
         msg: "DHCP server status: {{ dhcp_status.stdout }}"
 
-    - name: Remove temporary static IP from eth1
-      command: ip addr del 10.10.10.14/24 dev eth1
+    - name: Remove temporary static IP from ens5
+      command: ip addr del 10.10.10.14/24 dev ens5
       ignore_errors: yes
 
-    # - name: Block ICMP echo-request (ping) on eth1
-    #   ansible.builtin.iptables:
-    #     chain: INPUT
-    #     in_interface: eth1
-    #     protocol: icmp
-    #     icmp_type: echo-request
-    #     jump: DROP
-    #     state: present
+
+    # # - name: Block ICMP echo-request (ping) on ens5
+    # #   ansible.builtin.iptables:
+    # #     chain: INPUT
+    # #     in_interface: ens5
+    # #     protocol: icmp
+    # #     icmp_type: echo-request
+    # #     jump: DROP
+    # #     state: present
 
   handlers:
     - name: Restart vsftpd
