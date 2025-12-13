@@ -17,15 +17,15 @@
           - net-tools
         state: present
 
-    # Set up networking on eth1
+    # Set up networking on ens5
     - name: Install DHCP client
       apt:
         name: isc-dhcp-client
         state: present
         update_cache: yes
 
-    - name: Run dhclient on eth1 (in background)
-      shell: nohup dhclient eth1 &
+    - name: Run dhclient on ens5 (in background)
+      shell: nohup dhclient ens5 &
       async: 0
       poll: 0
 
@@ -59,7 +59,7 @@
         mode: '0755'
         content: |
           #!/bin/bash
-          IFACE=eth1
+          IFACE=ens5
           while true; do
             IP=$(ip -4 addr show $IFACE | awk '/inet / {print $2}' | cut -d/ -f1)
             if [ -n "$IP" ]; then
@@ -307,9 +307,9 @@
         mode: '0755'
         content: |
           #!/bin/bash
-          # Ждём, пока eth1 не получит IP-адрес
+          # Ждём, пока ens5 не получит IP-адрес
           while true; do
-              IP=$(ip -4 addr show eth1 | awk '/inet / {print $2}' | cut -d/ -f1)
+              IP=$(ip -4 addr show ens5 | awk '/inet / {print $2}' | cut -d/ -f1)
               if [[ -n "$IP" ]]; then
                   break
               fi
@@ -327,7 +327,7 @@
         dest: /etc/systemd/system/tls-emulate.service
         content: |
           [Unit]
-          Description=Emulate outgoing TLS connections via eth1
+          Description=Emulate outgoing TLS connections via ens5
 
           [Service]
           Type=oneshot
@@ -387,33 +387,33 @@
     - name: Set default UFW policy to allow outgoing
       command: ufw default allow outgoing
 
-    - name: Allow all incoming traffic on eth0
-      command: ufw allow in on eth0
+    - name: Allow all incoming traffic on ens4
+      command: ufw allow in on ens4
 
-    - name: Allow all outgoing traffic on eth0
-      command: ufw allow out on eth0
+    - name: Allow all outgoing traffic on ens4
+      command: ufw allow out on ens4
 
-    - name: Allow 443/tcp incoming on eth1
-      command: ufw allow in on eth1 to any port 443 proto tcp
+    - name: Allow 443/tcp incoming on ens5
+      command: ufw allow in on ens5 to any port 443 proto tcp
 
-    - name: Allow all outgoing traffic on eth1
-      command: ufw allow out on eth1
+    - name: Allow all outgoing traffic on ens5
+      command: ufw allow out on ens5
 
-    - name: Allow BACnet UDP port 47808 incoming on eth1
-      command: ufw allow in on eth1 to any port 47808 proto udp
+    - name: Allow BACnet UDP port 47808 incoming on ens5
+      command: ufw allow in on ens5 to any port 47808 proto udp
 
-    - name: Allow BACnet UDP port 47808 outgoing on eth1
-      command: ufw allow out on eth1 to any port 47808 proto udp
+    - name: Allow BACnet UDP port 47808 outgoing on ens5
+      command: ufw allow out on ens5 to any port 47808 proto udp
 
-    - name: Allow BACnet UDP broadcast on eth1
-      command: ufw allow in on eth1 to 255.255.255.255 port 47808 proto udp
+    - name: Allow BACnet UDP broadcast on ens5
+      command: ufw allow in on ens5 to 255.255.255.255 port 47808 proto udp
       ignore_errors: yes
 
-    - name: Allow Modbus TCP port 502 incoming on eth1
-      command: ufw allow in on eth1 to any port 502 proto tcp
+    - name: Allow Modbus TCP port 502 incoming on ens5
+      command: ufw allow in on ens5 to any port 502 proto tcp
 
-    - name: Allow Modbus TCP port 502 outgoing on eth1
-      command: ufw allow out on eth1 to any port 502 proto tcp
+    - name: Allow Modbus TCP port 502 outgoing on ens5
+      command: ufw allow out on ens5 to any port 502 proto tcp
 
     - name: Enable UFW
       command: ufw --force enable
