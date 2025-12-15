@@ -14,6 +14,7 @@
     target_ip: "10.10.10.1"          
     iface: "ens5"
   tasks:
+
     # Common setup tasks
 
     - name: Assign temporary static IP to ens5 for DHCP server startup
@@ -22,23 +23,6 @@
 
     - name: Gather facts
       setup:
-
-    # - name: Replace sources.list with old-releases mirror
-    #   copy:
-    #     dest: /etc/apt/sources.list
-    #     content: |
-    #       deb http://old-releases.ubuntu.com/ubuntu jammy main restricted universe multiverse
-    #       deb http://old-releases.ubuntu.com/ubuntu jammy-updates main restricted universe multiverse
-    #       deb http://old-releases.ubuntu.com/ubuntu jammy-security main restricted universe multiverse
-    #       deb http://old-releases.ubuntu.com/ubuntu jammy-backports main restricted universe multiverse
-    #     owner: root
-    #     group: root
-    #     mode: '0644'
-
-    # - name: Ensure main and universe repos are enabled
-    #   apt_repository:
-    #     repo: "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} main universe"
-    #     state: present
 
     - name: Update apt cache
       apt:
@@ -517,14 +501,115 @@
       ignore_errors: yes
 
 
-    # # - name: Block ICMP echo-request (ping) on ens5
-    # #   ansible.builtin.iptables:
-    # #     chain: INPUT
-    # #     in_interface: ens5
-    # #     protocol: icmp
-    # #     icmp_type: echo-request
-    # #     jump: DROP
-    # #     state: present
+    # BLOCK ICMP 
+
+    - name: Ensure UFW is installed
+      apt:
+        name: ufw
+        state: present
+
+    - name: Set UFW default policy to deny incoming
+      command: ufw default deny incoming
+
+    - name: Set UFW default policy to allow outgoing
+      command: ufw default allow outgoing
+
+    - name: Allow FTP
+      command: ufw allow 21/tcp
+
+    - name: Allow SSH
+      command: ufw allow 22/tcp
+
+    - name: Allow Telnet
+      command: ufw allow 23/tcp
+
+    - name: Allow SMTP
+      command: ufw allow 25/tcp
+
+    - name: Allow POP3
+      command: ufw allow 110/tcp
+
+    - name: Allow IMAP
+      command: ufw allow 143/tcp
+
+    - name: Allow HTTP
+      command: ufw allow 80/tcp
+
+    - name: Allow SNMP
+      command: ufw allow 161/udp
+
+    - name: Allow VNC
+      command: ufw allow 5901/tcp
+
+    - name: Allow TFTP
+      command: ufw allow 69/udp
+
+    - name: Allow NTP
+      command: ufw allow 123/udp
+
+    - name: Allow BACnet
+      command: ufw allow 47808/udp
+
+    - name: Allow Modbus (if TCP)
+      command: ufw allow 502/tcp
+
+    - name: Allow DHCP server port
+      command: ufw allow 67/udp
+
+    - name: Allow DHCP client port
+      command: ufw allow 68/udp
+
+    - name: Enable UFW
+      command: ufw --force enable
+
+
+    - name: Reload UFW
+      command: ufw reload
+
+    - name: Release DHCP lease and flush IP from ens5
+      shell: dhclient -r ens5 && ip addr flush dev ens5
+      ignore_errors: yes
+
+    - name: Block all ICMP echo requests (ping) using sysctl (IPv4)
+      sysctl:
+        name: net.ipv4.icmp_echo_ignore_all
+        value: 1
+        state: present
+        sysctl_set: yes
+        reload: yes
+
+    - name: Block ICMPv6 echo-request (ping) on all interfaces (IPv6)
+      ansible.builtin.iptables:
+        chain: INPUT
+        protocol: ipv6-icmp
+        icmp_type: echo-request
+        jump: DROP
+        state: present
+        ip_version: ipv6
+
+    - name: Disable IPv6 system-wide via sysctl
+      sysctl:
+        name: net.ipv6.conf.all.disable_ipv6
+        value: 1
+        state: present
+        sysctl_set: yes
+        reload: yes
+
+    - name: Disable IPv6 on default interface via sysctl
+      sysctl:
+        name: net.ipv6.conf.default.disable_ipv6
+        value: 1
+        state: present
+        sysctl_set: yes
+        reload: yes
+
+    - name: Disable IPv6 on loopback via sysctl
+      sysctl:
+        name: net.ipv6.conf.lo.disable_ipv6
+        value: 1
+        state: present
+        sysctl_set: yes
+        reload: yes
 
   handlers:
     - name: Restart vsftpd
