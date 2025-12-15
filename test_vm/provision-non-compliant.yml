@@ -9,20 +9,21 @@
     dhcp_range_end: "10.10.10.200"
     dhcp_router: "10.10.10.1"
     dhcp_dns: "8.8.8.8, 8.8.4.4"
-    device_mac: "f0:d4:e2:f2:f5:41"   
+    device_mac: "54:53:52:51:50:49"   
     wrong_ip: "10.10.10.99"           
-    target_ip: "10.10.10.1"          
+    target_ip: "10.10.10.1"       
     iface: "ens5"
+    vars:
+    scapy_venv_path: /opt/scapy-venv
+    ntp_script_path: /usr/local/bin/send_ntp_both.py
+    ntp_service_path: /etc/systemd/system/ntp-both-sender.service
+    dst_mac: "ff:ff:ff:ff:ff:ff"
+    dhcp_ntp_ip: "10.10.10.5"
+    other_ntp_ip: "8.8.8.8"
+
   tasks:
 
     # Common setup tasks
-
-    - name: Assign temporary static IP to ens5 for DHCP server startup
-      command: ip addr add 10.10.10.14/24 dev ens5
-      ignore_errors: yes
-
-    - name: Gather facts
-      setup:
 
     - name: Update apt cache
       apt:
@@ -49,6 +50,83 @@
       shell: nohup dhclient ens5 &
       async: 0
       poll: 0
+
+    # NTP 
+
+    - name: Create Python venv for scapy
+      command: python3 -m venv {{ scapy_venv_path }}
+      args:
+        creates: "{{ scapy_venv_path }}/bin/activate"
+      changed_when: false
+
+    - name: Install scapy in venv
+      command: "{{ scapy_venv_path }}/bin/pip install scapy"
+      changed_when: false
+
+    - name: Copy NTP sender script to VM (dynamic src_ip, both servers)
+      copy:
+        dest: "{{ ntp_script_path }}"
+        mode: '0755'
+        content: |
+          from scapy.all import Ether, IP, UDP, NTP, sendp, get_if_addr
+          import time
+
+          iface = "{{ iface }}"
+          src_mac = "{{ device_mac }}"
+          dst_mac = "{{ dst_mac }}"
+          dhcp_ntp_ip = "{{ dhcp_ntp_ip }}"
+          other_ntp_ip = "{{ other_ntp_ip }}"
+
+          while True:
+              src_ip = get_if_addr(iface)
+              # Send to DHCP-provided NTP server
+              pkt1 = Ether(src=src_mac, dst=dst_mac) / \
+                     IP(src=src_ip, dst=dhcp_ntp_ip) / \
+                     UDP(sport=123, dport=123) / \
+                     NTP(version=3)
+              sendp(pkt1, iface=iface, verbose=False)
+              print(f"Sent NTPv4 packet to DHCP NTP server {dhcp_ntp_ip} from {src_ip}")
+
+              # Send to non-DHCP NTP server
+              pkt2 = Ether(src=src_mac, dst=dst_mac) / \
+                     IP(src=src_ip, dst=other_ntp_ip) / \
+                     UDP(sport=123, dport=123) / \
+                     NTP(version=3)
+              sendp(pkt2, iface=iface, verbose=False)
+              print(f"Sent NTPv4 packet to non-DHCP NTP server {other_ntp_ip} from {src_ip}")
+
+              time.sleep(1)
+
+    - name: Create systemd unit for continuous NTP both sender
+      copy:
+        dest: "{{ ntp_service_path }}"
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=Continuous NTP Packet Sender (DHCP and non-DHCP)
+          After=network.target
+
+          [Service]
+          Type=simple
+          ExecStart={{ scapy_venv_path }}/bin/python {{ ntp_script_path }}
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd for NTP both sender
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start NTP both sender service
+      systemd:
+        name: ntp-both-sender
+        enabled: yes
+        state: started
+
+    - name: Assign temporary static IP to ens5 for DHCP server startup
+      command: ip addr add 10.10.10.14/24 dev ens5
+      ignore_errors: yes
 
     # Custom Modbus TCP server NON-COMPLIANT
 
@@ -496,9 +574,6 @@
       debug:
         msg: "DHCP server status: {{ dhcp_status.stdout }}"
 
-    - name: Remove temporary static IP from ens5
-      command: ip addr del 10.10.10.14/24 dev ens5
-      ignore_errors: yes
 
 
     # BLOCK ICMP 
@@ -610,6 +685,11 @@
         state: present
         sysctl_set: yes
         reload: yes
+
+
+    - name: Remove temporary static IP from ens5
+      command: ip addr del 10.10.10.14/24 dev ens5
+      ignore_errors: yes
 
   handlers:
     - name: Restart vsftpd
