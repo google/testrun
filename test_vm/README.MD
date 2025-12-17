@@ -99,13 +99,22 @@ DEVICE=COMPLIANT vagrant provision
 ```
 
 
-NON-COMPLIANT DEVICE
+NON-COMPLIANT DEVICE (WITHOUT TLS)
 
 ```bash
 ./restore_ethtool.sh
 hash -r
 DEVICE=NON-COMPLIANT vagrant up --provider=libvirt
 DEVICE=NON-COMPLIANT vagrant provision
+```
+
+NON-COMPLIANT DEVICE (TLS ONLY)
+
+```bash
+./restore_ethtool.sh
+hash -r
+DEVICE=NON-COMPLIANT-TLS vagrant up --provider=libvirt
+DEVICE=NON-COMPLIANT-TLS vagrant provision
 ```
 
 If you see "Permission denied to /var/run/libvirt/libvirt-sock", check your libvirt group membership and restart your session.

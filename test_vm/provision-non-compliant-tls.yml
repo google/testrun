@@ -1,0 +1,178 @@
+---
+- name: Non-compliant TLS handshakes from 10.10.10.14 via ens5 every 2s (with pause and logging)
+  hosts: all
+  become: yes
+  vars:
+    fail_tls_script: /usr/local/bin/fail_tls_handshake.sh
+    bind_ip: "10.10.10.14"
+    iface: "ens5"
+    target_host: "www.google.com"
+    target_port: "443"
+    ssl_cert: /etc/ssl/certs/nginx-selfsigned.crt
+    ssl_key: /etc/ssl/private/nginx-selfsigned.key
+
+  tasks:
+    - name: Ensure openssl, dhclient, and nginx are installed
+      apt:
+        name:
+          - openssl
+          - isc-dhcp-client
+          - nginx
+        state: present
+        update_cache: yes
+
+    - name: Run dhclient on ens5 (in background)
+      shell: nohup dhclient {{ iface }} &
+      async: 0
+      poll: 0
+
+  # NGINX
+
+    - name: Ensure openssl, dhclient, and nginx are installed
+      apt:
+        name:
+          - openssl
+          - isc-dhcp-client
+          - nginx
+        state: present
+        update_cache: yes
+
+    - name: Generate self-signed SSL certificate for nginx
+      command: >
+        openssl req -x509 -nodes -days 365 -newkey rsa:2048
+        -keyout {{ ssl_key }} -out {{ ssl_cert }}
+        -subj "/CN=localhost"
+      args:
+        creates: "{{ ssl_cert }}"
+
+    - name: Create nginx HTTPS config
+      copy:
+        dest: /etc/nginx/sites-available/ssl_default
+        content: |
+          server {
+              listen 443 ssl;
+              server_name _;
+              ssl_certificate     {{ ssl_cert }};
+              ssl_certificate_key {{ ssl_key }};
+              ssl_protocols       TLSv1.2 TLSv1.3;
+              ssl_ciphers         HIGH:!aNULL:!MD5;
+              location / {
+                  return 200 'nginx HTTPS is up\n';
+              }
+          }
+          server {
+              listen 80;
+              server_name _;
+              location / {
+                  return 200 'nginx HTTP is up\n';
+              }
+          }
+
+    - name: Enable nginx HTTPS config
+      file:
+        src: /etc/nginx/sites-available/ssl_default
+        dest: /etc/nginx/sites-enabled/ssl_default
+        state: link
+        force: yes
+
+    - name: Remove default nginx config (if exists)
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Ensure nginx is started and enabled
+      systemd:
+        name: nginx
+        state: restarted
+        enabled: yes
+
+
+    - name: Copy fail_tls_handshake.sh script
+      copy:
+        dest: "{{ fail_tls_script }}"
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          iface="{{ iface }}"
+          ip_addr="{{ bind_ip }}"
+          host="{{ target_host }}"
+          port="{{ target_port }}"
+          LOG="/tmp/tls_test.log"
+          echo "=== $(date) ===" >> $LOG
+          echo "IP on $iface:" >> $LOG
+          ip -4 addr show dev $iface >> $LOG
+          echo "Routing table:" >> $LOG
+          ip route >> $LOG
+          # Wait for IP to appear on ens5
+          for i in {1..60}; do
+            if ip -4 addr show dev $iface | grep -q "$ip_addr"; then
+              break
+            fi
+            sleep 2
+          done
+          if ! ip -4 addr show dev $iface | grep -q "$ip_addr"; then
+            echo "No IP $ip_addr on $iface" >> $LOG
+            exit 1
+          fi
+          # TLS 1.2
+          echo "Running TLS 1.2 handshake..." >> $LOG
+          openssl s_client -connect $host:$port -tls1_2 -cipher "CAMELLIA256-SHA256" -bind $ip_addr -ign_eof < /dev/null >> $LOG 2>&1
+
+    - name: Create systemd service for failing TLS handshake
+      copy:
+        dest: /etc/systemd/system/fail-tls-handshake.service
+        content: |
+          [Unit]
+          Description=Fail TLS handshake via ens5 from {{ bind_ip }}
+
+          [Service]
+          Type=oneshot
+          ExecStart={{ fail_tls_script }}
+
+    - name: Create systemd timer for failing TLS handshake
+      copy:
+        dest: /etc/systemd/system/fail-tls-handshake.timer
+        content: |
+          [Unit]
+          Description=Run fail TLS handshake every 2 seconds
+
+          [Timer]
+          OnBootSec=5
+          OnUnitActiveSec=2
+
+          [Install]
+          WantedBy=timers.target
+
+    - name: Reload systemd
+      shell: systemctl daemon-reload
+
+    - name: Enable and start fail-tls-handshake.timer
+      systemd:
+        name: fail-tls-handshake.timer
+        enabled: yes
+        state: started
+
+    # BLOCK ICMP 
+
+    - name: Ensure UFW is installed
+      apt:
+        name: ufw
+        state: present
+
+    - name: Set UFW default policy to deny incoming
+      command: ufw default deny incoming
+
+    - name: Set UFW default policy to allow outgoing
+      command: ufw default allow outgoing
+
+    - name: Allow SSH
+      command: ufw allow 22/tcp
+
+    - name: Allow HTTP
+      command: ufw allow 80/tcp
+
+    - name: Allow SNMP
+      command: ufw allow 443/tcp
+
+    - name: Reload UFW
+      command: ufw reload
