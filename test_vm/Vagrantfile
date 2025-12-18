@@ -20,6 +20,12 @@ Vagrant.configure("2") do |config|
     auto_config: false,
     mac: "54:53:52:51:50:49"
   end
+  if ENV['DEVICE'] == 'NOT-DETECTED'
+    config.vm.network "private_network",
+    libvirt__network_name: "hostonly-noip",
+    auto_config: false,
+    mac: "f0:d4:e2:f2:f5:43"
+  end
   
   config.vm.provider :libvirt do |libvirt|
     libvirt.memory = 2048
@@ -39,6 +45,11 @@ Vagrant.configure("2") do |config|
   if ENV['DEVICE'] == 'NON-COMPLIANT-TLS'
     config.vm.provision "ansible" do |ansible|
       ansible.playbook = "provision-non-compliant-tls.yml"
+    end
+  end
+  if ENV['DEVICE'] == 'NOT-DETECTED'
+    config.vm.provision "ansible" do |ansible|
+      ansible.playbook = "provision-not-detected.yml"
     end
   end
 end
