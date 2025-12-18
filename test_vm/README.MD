@@ -117,6 +117,15 @@ DEVICE=NON-COMPLIANT-TLS vagrant up --provider=libvirt
 DEVICE=NON-COMPLIANT-TLS vagrant provision
 ```
 
+NOT-DETECTED DEVICE 
+
+```bash
+./mock_ethtool.sh
+hash -r
+DEVICE=NOT-DETECTED vagrant up --provider=libvirt
+DEVICE=NOT-DETECTED vagrant provision
+```
+
 If you see "Permission denied to /var/run/libvirt/libvirt-sock", check your libvirt group membership and restart your session.
 
 
