@@ -2,10 +2,8 @@
 - hosts: all
   become: true
   tasks:
+
     # Common setup tasks
-    - name: Update apt cache
-      apt:
-        update_cache: yes
 
     - name: Install Python3, pip, venv, and setcap utility
       apt:
@@ -15,14 +13,20 @@
           - python3-venv
           - libcap2-bin
           - net-tools
-        state: present
-
-    # Set up networking on ens5
-    - name: Install DHCP client
-      apt:
-        name: isc-dhcp-client
+          - isc-dhcp-client
+          - git
+          - gcc
+          - make
+          - bison
+          - flex
+          - libpcap-dev
+          - chrony
+          - openssl
+          - nginx
         state: present
         update_cache: yes
+
+    # Set up networking on ens5
 
     - name: Run dhclient on ens5 (in background)
       shell: nohup dhclient ens5 &
@@ -30,17 +34,6 @@
       poll: 0
 
     # BACnet stack setup
-    - name: Install BACnet dependencies
-      apt:
-        name:
-          - git
-          - gcc
-          - make
-          - bison
-          - flex
-          - libpcap-dev
-        state: present
-        update_cache: yes
 
     - name: Clone BACnet stack repository
       git:
@@ -94,25 +87,6 @@
         enabled: yes
         state: restarted
         daemon_reload: yes
-
-    - name: Check if bacserv process is running
-      shell: pgrep -fl bacserv
-      register: bacserv_process
-      changed_when: false
-
-    - name: Show information about bacserv process
-      debug:
-        var: bacserv_process.stdout_lines
-
-    - name: Show last lines of bacserv log
-      shell: tail -n 20 /opt/bacnet-stack/bacserv.log
-      register: bacserv_log
-      changed_when: false
-      ignore_errors: true
-
-    - name: Display bacserv log
-      debug:
-        var: bacserv_log.stdout_lines
 
     # Modbus TCP server setup
 
@@ -177,12 +151,6 @@
 
     # NTP client setup
 
-    - name: Install chrony
-      apt:
-        name: chrony
-        state: present
-        update_cache: yes
-
     - name: Remove static NTP servers from chrony.conf
       lineinfile:
         path: /etc/chrony/chrony.conf
@@ -204,14 +172,6 @@
     - name: Wait for chrony to sync sources
       wait_for:
         timeout: 10
-
-    - name: Show current chrony sources
-      command: chronyc sources
-      register: chrony_sources
-
-    - name: Print chrony sources
-      ansible.builtin.debug:
-        var: chrony_sources.stdout
 
     # DNS request setup
 
@@ -295,12 +255,6 @@
 
     # Outbound TLS traffic setup
 
-    - name: Ensure openssl is installed
-      ansible.builtin.apt:
-        name: openssl
-        state: present
-        update_cache: yes
-
     - name: Copy TLS emulation script and make it executable
       ansible.builtin.copy:
         dest: /usr/local/bin/tls_emulate.sh
@@ -359,69 +313,8 @@
 
     # Install and start nginx for HTTP traffic
 
-    - name: Install nginx
-      apt:
-        name: nginx
-        state: present
-
     - name: Ensure nginx is running
       service:
         name: nginx
         state: started
         enabled: yes
-
-    # Install firewall
-
-    - name: Install UFW firewall
-      apt:
-        name: ufw
-        state: present
-        update_cache: yes
-
-    - name: Reset UFW to default
-      command: ufw --force reset
-
-    - name: Set default UFW policy to deny incoming
-      command: ufw default deny incoming
-
-    - name: Set default UFW policy to allow outgoing
-      command: ufw default allow outgoing
-
-    - name: Allow all incoming traffic on ens4
-      command: ufw allow in on ens4
-
-    - name: Allow all outgoing traffic on ens4
-      command: ufw allow out on ens4
-
-    - name: Allow 443/tcp incoming on ens5
-      command: ufw allow in on ens5 to any port 443 proto tcp
-
-    - name: Allow all outgoing traffic on ens5
-      command: ufw allow out on ens5
-
-    - name: Allow BACnet UDP port 47808 incoming on ens5
-      command: ufw allow in on ens5 to any port 47808 proto udp
-
-    - name: Allow BACnet UDP port 47808 outgoing on ens5
-      command: ufw allow out on ens5 to any port 47808 proto udp
-
-    - name: Allow BACnet UDP broadcast on ens5
-      command: ufw allow in on ens5 to 255.255.255.255 port 47808 proto udp
-      ignore_errors: yes
-
-    - name: Allow Modbus TCP port 502 incoming on ens5
-      command: ufw allow in on ens5 to any port 502 proto tcp
-
-    - name: Allow Modbus TCP port 502 outgoing on ens5
-      command: ufw allow out on ens5 to any port 502 proto tcp
-
-    - name: Enable UFW
-      command: ufw --force enable
-
-    - name: Show UFW status
-      command: ufw status verbose
-      register: ufw_status
-
-    - name: Print UFW status
-      debug:
-        var: ufw_status.stdout
