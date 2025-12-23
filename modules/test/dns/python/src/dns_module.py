@@ -55,7 +55,6 @@ class DNSModule(TestModule):
     page_max_height = 850
     header_height = 48
     summary_height = 135
-    row_height = 44
     loader=FileSystemLoader(self._report_template_folder)
     template = Environment(
                             loader=loader,
@@ -144,11 +143,11 @@ class DNSModule(TestModule):
           continue
 
         lines = (len(text) + char_limit - 1) // char_limit
+        max_lines_in_row = max(max_lines_in_row, lines)
 
-        if lines > max_lines_in_row:
-          max_lines_in_row = lines
-
-      estimated_row_height = base_row_height + ((max_lines_in_row - 1) * pixels_per_extra_line)
+      estimated_row_height = (
+          base_row_height + (max_lines_in_row - 1) * pixels_per_extra_line
+      )
 
       if (current_page_height + estimated_row_height) > page_useful_space:
         pages_content.append(current_page_rows)
