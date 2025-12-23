@@ -120,26 +120,62 @@ class DNSModule(TestModule):
                             'dat': dat,
                             'count': count,
                             })
-    # Handling the possible table split
-    table_height = (len(module_data) + 1) * row_height
+
+    col_limits = {
+        'res_ip': 16,
+        'dat': 40,
+    }
+
+    pixels_per_extra_line = 18
+    base_row_height = 44
+
     page_useful_space = page_max_height - header_height - summary_height
-    pages = table_height // (page_useful_space)
-    rows_on_page = (page_useful_space) // row_height
-    start = 0
+
+    pages_content = []
+    current_page_rows = []
+    current_page_height = 0
+
+    for row in module_data:
+      max_lines_in_row = 1
+
+      for field, char_limit in col_limits.items():
+        text = str(row.get(field, '') or '')
+        if not text:
+          continue
+
+        lines = (len(text) + char_limit - 1) // char_limit
+
+        if lines > max_lines_in_row:
+          max_lines_in_row = lines
+
+      estimated_row_height = base_row_height + ((max_lines_in_row - 1) * pixels_per_extra_line)
+
+      if (current_page_height + estimated_row_height) > page_useful_space:
+        pages_content.append(current_page_rows)
+        current_page_rows = []
+        current_page_height = 0
+
+      current_page_rows.append(row)
+      current_page_height += estimated_row_height
+
+    if current_page_rows:
+      pages_content.append(current_page_rows)
+
     report_html = ''
-    for page in range(pages+1):
-      end = start + min(len(module_data), rows_on_page)
-      module_header_repr = module_header if page == 0 else None
+    if not pages_content:
+      pages_content = [[]]
+
+    for i, page_rows in enumerate(pages_content):
+      module_header_repr = module_header if i == 0 else None
       page_html = template.render(
-                                base_template=self._base_template_file,
-                                module_header=module_header_repr,
-                                summary_headers=summary_headers,
-                                summary_data=summary_data,
-                                module_data_headers=module_data_headers,
-                                module_data=module_data[start:end]
-                              )
+          base_template=self._base_template_file,
+          module_header=module_header_repr,
+          summary_headers=summary_headers,
+          summary_data=summary_data,
+          module_data_headers=module_data_headers,
+          module_data=page_rows
+      )
       report_html += page_html
-      start = end
 
     LOGGER.debug('Module report:\n' + report_html)
 
