@@ -21,7 +21,6 @@ import {
 } from '@angular/core';
 import {
   IResult,
-  RequiredResult,
   StatusOfTestResult,
   StatusResultClassName,
 } from '../../../../model/testrun-status';
@@ -103,10 +102,7 @@ export class TestrunTableComponent {
     return item.name + item.result;
   }
 
-  public isNonCompliantAndRequired(result: string, requiredResult: string) {
-    return (
-      result === StatusOfTestResult.NonCompliant &&
-      requiredResult === RequiredResult.Required
-    );
+  public isNonCompliant(result: string) {
+    return result === StatusOfTestResult.NonCompliant;
   }
 }
