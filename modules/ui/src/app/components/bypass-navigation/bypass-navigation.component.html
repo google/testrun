@@ -13,14 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="navigation-bypass-container" tabindex="-1">
-  <button
-    tabindex="0"
-    mat-button
-    class="navigation-bypass-button"
-    (click)="onClick($event)"
-    (keydown.enter)="onClick($event)"
-    (keydown.space)="onClick($event)">
-    {{ label() }}
-  </button>
-</div>
+<app-bypass
+  label="Skip to navigation"
+  (click)="skipToNavigation()"></app-bypass>
