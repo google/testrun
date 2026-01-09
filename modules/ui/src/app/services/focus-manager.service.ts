@@ -21,7 +21,7 @@ export class FocusManagerService {
     parentEl: Document | Element | null
   ): HTMLElement | undefined | null {
     return parentEl?.querySelector(
-      'button:not([disabled="true"]):not([tabindex="-1"]), a:not([disabled="true"]), input:not([disabled="true"]), table, [tabindex="0"]'
+      'button:not(.navigation-bypass-button):not([disabled="true"]):not([tabindex="-1"]), a:not([disabled="true"]), input:not([disabled="true"]), table, [tabindex="0"]:not(.navigation-bypass-button)'
     );
   }
 }
