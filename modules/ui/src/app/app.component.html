@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<app-bypass></app-bypass>
+<app-bypass-content></app-bypass-content>
 <ng-container *ngIf="viewModel$ | async as vm">
   <mat-drawer-container hasBackdrop="false" class="app-container" autosize>
     <mat-drawer
@@ -119,6 +119,7 @@ limitations under the License.
         </div>
       </mat-toolbar>
       <div class="app-content-main" role="main" id="main">
+        <app-bypass-navigation></app-bypass-navigation>
         <ng-container
           *ngTemplateOutlet="
             callouts;

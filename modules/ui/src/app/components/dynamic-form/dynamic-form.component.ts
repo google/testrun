@@ -18,6 +18,7 @@ import {
   HostListener,
   inject,
   Input,
+  OnDestroy,
   OnInit,
   Renderer2,
   viewChildren,
@@ -53,6 +54,10 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { ProfileValidators } from '../../pages/risk-assessment/profile-form/profile.validators';
 import { DomSanitizer } from '@angular/platform-browser';
+import { Subject } from 'rxjs/internal/Subject';
+import { takeUntil } from 'rxjs/internal/operators/takeUntil';
+import { startWith } from 'rxjs/internal/operators/startWith';
+import { pairwise } from 'rxjs/internal/operators/pairwise';
 @Component({
   selector: 'app-dynamic-form',
 
@@ -79,13 +84,14 @@ import { DomSanitizer } from '@angular/platform-browser';
   styleUrl: './dynamic-form.component.scss',
   encapsulation: ViewEncapsulation.None,
 })
-export class DynamicFormComponent implements OnInit {
+export class DynamicFormComponent implements OnInit, OnDestroy {
   readonly formFields = viewChildren(MatFormField);
 
   private fb = inject(FormBuilder);
   private profileValidators = inject(ProfileValidators);
   private domSanitizer = inject(DomSanitizer);
   private renderer = inject(Renderer2);
+  private destroy$: Subject<boolean> = new Subject<boolean>();
 
   public readonly FormControlType = FormControlType;
 
@@ -124,13 +130,20 @@ export class DynamicFormComponent implements OnInit {
     this.createProfileForm(this.format);
   }
 
+  ngOnDestroy() {
+    this.destroy$.next(true);
+    this.destroy$.unsubscribe();
+  }
+
   createProfileForm(questions: QuestionFormat[]) {
     questions.forEach((question, index) => {
       if (question.type === FormControlType.SELECT_MULTIPLE) {
-        this.formGroup.addControl(
-          index.toString(),
-          this.getMultiSelectGroup(question)
-        );
+        const multiSelect = this.getMultiSelectGroup(question);
+        this.formGroup.addControl(index.toString(), multiSelect);
+        const noneKey = this.getNoneOptionIndex(question.options);
+        if (noneKey) {
+          this.applyNoneLogic(multiSelect, noneKey.toString());
+        }
       } else {
         const validators = this.getValidators(
           question.type,
@@ -209,5 +222,40 @@ export class DynamicFormComponent implements OnInit {
         }
       }
     });
+  }
+
+  private applyNoneLogic(control: AbstractControl, noneKey: string) {
+    control.valueChanges
+      .pipe(takeUntil(this.destroy$), startWith(control.value), pairwise())
+      .subscribe(([prev, curr]) => {
+        const changedKey = Object.keys(curr).find(
+          key => curr[key] === true && prev[key] === false
+        );
+
+        if (!changedKey) {
+          return;
+        }
+
+        if (changedKey == noneKey) {
+          const newValue = { ...curr };
+
+          Object.keys(newValue).forEach(key => {
+            if (key !== noneKey) {
+              newValue[key] = false;
+            }
+          });
+
+          control.setValue(newValue, { emitEvent: false });
+        } else if (curr[noneKey] === true) {
+          control.patchValue({ [noneKey]: false }, { emitEvent: false });
+        }
+      });
+  }
+
+  private getNoneOptionIndex(options: OptionType[] | undefined): number | null {
+    if (!options) return null;
+    return options.findIndex(option =>
+      this.getOptionValue(option)?.toLowerCase().includes('none')
+    );
   }
 }
