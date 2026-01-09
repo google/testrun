@@ -14,31 +14,33 @@
  * limitations under the License.
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { BypassComponent } from './bypass.component';
 import { Component } from '@angular/core';
+import { FocusManagerService } from '../../services/focus-manager.service';
+import SpyObj = jasmine.SpyObj;
+import { BypassNavigationComponent } from './bypass-navigation.component';
 
 @Component({
-  selector: 'app-test-bypass',
+  selector: 'app-test-bypass-navigation',
   template:
-    '<app-bypass label="Label" (click)="test()"></app-bypass>' +
-    '<div id="main"><button id="test-button"></button></div>',
+    '<app-bypass-navigation></app-bypass-navigation>' +
+    '<div class=".nav-items-container"><button id="test-button"></button></div>',
   standalone: false,
 })
-class TestBypassComponent {
-  test() {}
-}
+class TestBypassNavigationComponent {}
 
-describe('BypassComponent', () => {
-  let component: TestBypassComponent;
-  let fixture: ComponentFixture<TestBypassComponent>;
+describe('BypassNavigationComponent', () => {
+  let component: TestBypassNavigationComponent;
+  let fixture: ComponentFixture<TestBypassNavigationComponent>;
+  let mockService: SpyObj<FocusManagerService>;
 
   beforeEach(() => {
+    mockService = jasmine.createSpyObj(['focusFirstElementInContainer']);
     TestBed.configureTestingModule({
-      imports: [BypassComponent],
-      declarations: [TestBypassComponent],
+      imports: [BypassNavigationComponent],
+      declarations: [TestBypassNavigationComponent],
+      providers: [{ provide: FocusManagerService, useValue: mockService }],
     });
-    fixture = TestBed.createComponent(TestBypassComponent);
+    fixture = TestBed.createComponent(TestBypassNavigationComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -48,23 +50,14 @@ describe('BypassComponent', () => {
   });
 
   describe('DOM tests', () => {
-    it('should have label', () => {
-      const button = fixture.nativeElement.querySelector(
-        '.navigation-bypass-button'
-      ) as HTMLButtonElement;
-
-      expect(button.textContent?.trim()).toBe('Label');
-    });
-
     it('should emit event on button click', () => {
-      const testSpy = spyOn(component, 'test');
       const button = fixture.nativeElement.querySelector(
         '.navigation-bypass-button'
       ) as HTMLButtonElement;
 
       button?.click();
 
-      expect(testSpy).toHaveBeenCalled();
+      expect(mockService.focusFirstElementInContainer).toHaveBeenCalled();
     });
   });
 });
