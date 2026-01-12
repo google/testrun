@@ -5,3 +5,4 @@
 # User defined packages
 scapy==2.6.0
 pyshark==0.6
+dnspython==2.8.0
