@@ -94,6 +94,10 @@
             "ntp2.t-online.de",
             "ntp3.t-online.de",
             "ntp4.t-online.de"
+          ],
+          "dns_servers": [
+            "8.8.8.8",
+            "1.1.1.1"
           ]
         },
         "recommendations": [
