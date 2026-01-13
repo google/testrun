@@ -41,6 +41,8 @@ describe('ListItemComponent', () => {
     { action: 'Delete', icon: 'delete_icon' },
   ];
 
+  const testEntity: Entity = { id: 1, name: 'test' };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
@@ -55,14 +57,15 @@ describe('ListItemComponent', () => {
     fixture = TestBed.createComponent(ListItemComponent<Entity>);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('actions', testActions);
-    fixture.componentRef.setInput('entity', { id: 1, name: 'test' } as Entity);
+    fixture.componentRef.setInput('entity', testEntity);
+
     compiled = fixture.nativeElement as HTMLElement;
     loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
   });
 
   describe('menu', () => {
-    let menu;
+    let menu: MatMenuHarness;
     let items: MatMenuItemHarness[];
 
     beforeEach(async () => {
@@ -103,5 +106,68 @@ describe('ListItemComponent', () => {
 
     expect(button).toBeTruthy();
     expect(button?.textContent).toContain('more_vert');
+  });
+
+  it('should call hide on outEvent', () => {
+    const hideSpy = spyOn(component.tooltip, 'hide');
+    component.outEvent();
+
+    expect(hideSpy).toHaveBeenCalled();
+  });
+
+  describe('tooltip logic', () => {
+    let mockTooltipElement: HTMLElement;
+
+    beforeEach(() => {
+      mockTooltipElement = document.createElement('div');
+    });
+
+    it('should show tooltip and query container on mouseenter (onEvent)', () => {
+      const messageFn = (e: Entity) => `Info: ${e.name}`;
+      fixture.componentRef.setInput('tooltipMessage', messageFn);
+
+      const showSpy = spyOn(component.tooltip, 'show');
+
+      const querySpy = spyOn(document, 'querySelector').and.returnValue(
+        mockTooltipElement
+      );
+
+      const event = new MouseEvent('mouseenter', {
+        clientX: 100,
+        clientY: 200,
+      });
+      component.onEvent(event);
+
+      expect(component.tooltip.message).toBe('Info: test');
+      expect(showSpy).toHaveBeenCalledWith(0, { x: 100, y: 200 });
+      expect(querySpy).toHaveBeenCalledWith(
+        '.mat-mdc-tooltip-panel:has(.list-item-tooltip)'
+      );
+    });
+
+    it('should update container position on mousemove (onMoveEvent)', () => {
+      component.tooltip.message = 'Already set message';
+
+      spyOn(document, 'querySelector').and.returnValue(mockTooltipElement);
+
+      const x = 150;
+      const y = 250;
+      const event = new MouseEvent('mousemove', { clientX: x, clientY: y });
+
+      component.onMoveEvent(event);
+
+      expect(mockTooltipElement.style.top).toBe(`${y}px`);
+      expect(mockTooltipElement.style.left).toBe(`${x}px`);
+    });
+
+    it('should NOT update styles if tooltip message is missing', () => {
+      component.tooltip.message = '';
+      const querySpy = spyOn(document, 'querySelector');
+
+      const event = new MouseEvent('mousemove');
+      component.onMoveEvent(event);
+
+      expect(querySpy).not.toHaveBeenCalled();
+    });
   });
 });
