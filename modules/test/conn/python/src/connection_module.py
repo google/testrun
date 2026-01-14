@@ -599,12 +599,7 @@ class ConnectionModule(TestModule):
 
   def _ping(self, host, ipv6=False):
     LOGGER.info('Pinging: ' + str(host))
-    cmd = 'ping -c 1 '
-    cmd += ' -6 ' if ipv6 else ''
-    cmd += str(host)
-    #cmd = 'ping -c 1 ' + str(host)
-    success = util.run_command(cmd, output=False)  # pylint: disable=E1120
-    return success
+    return self._dhcp_util.ping(host, ipv6=ipv6)
 
   def restore_failover_dhcp_server(self, subnet):
     # Configure the subnet range

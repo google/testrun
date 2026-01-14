@@ -475,7 +475,7 @@ class TLSUtil():
       return cert_valid, details
     else:
       LOGGER.info('Failed to resolve public certificate')
-      return None, 'Failed to resolve public certificate'
+      return None, ['Failed to resolve public certificate']
 
   def write_cert_to_file(self, cert_name, cert):
     try:
