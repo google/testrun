@@ -151,11 +151,11 @@
 
     # NTP client setup
 
-    - name: Remove static NTP servers from chrony.conf
-      lineinfile:
-        path: /etc/chrony/chrony.conf
-        regexp: '^(server|pool)'
-        state: absent
+    # - name: Remove static NTP servers from chrony.conf
+    #   lineinfile:
+    #     path: /etc/chrony/chrony.conf
+    #     regexp: '^(server|pool)'
+    #     state: absent
 
     - name: Ensure sourcedir for DHCP is present
       lineinfile:
