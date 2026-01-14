@@ -357,7 +357,7 @@ class NTPModule(TestModule):
                            'server and to untrusted non-DHCP provided server')
       elif ntp_to_remote:
         if ntp_to_remote_trusted:
-          result = True, ('Device sent NTP request to trusted ' +
+          result = False, ('Device sent NTP request to trusted ' +
                            'non-DHCP provided server')
         else:
           result = False, ('Device sent NTP request to untrusted ' +
