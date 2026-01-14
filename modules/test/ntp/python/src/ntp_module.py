@@ -19,6 +19,7 @@ import os
 from collections import defaultdict
 from jinja2 import Environment, FileSystemLoader
 import pyshark
+from ntp_white_list import NTPWhitelistResolver
 
 LOG_NAME = 'test_ntp'
 MODULE_REPORT_FILE_NAME = 'ntp_report.j2.html'
@@ -52,6 +53,7 @@ class NTPModule(TestModule):
 
     global LOGGER
     LOGGER = self._get_logger()
+
 
   def generate_module_report(self):
     # Load Jinja2 template
@@ -297,8 +299,16 @@ class NTPModule(TestModule):
     LOGGER.info(result[1])
     return result
 
-  def _ntp_network_ntp_dhcp(self):
+  def _ntp_network_ntp_dhcp(self, config):
     LOGGER.info('Running ntp.network.ntp_dhcp')
+    try:
+      ntp_whitelist_resolver = NTPWhitelistResolver(
+          config=config,
+          logger=LOGGER
+      )
+    except Exception as e:
+      LOGGER.error(f'Error initializing NTPWhitelistResolver: {e}')
+      return 'Error', 'Failed to initialize NTP whitelist resolver'
 
     # Read the pcap files
     packet_capture = (rdpcap(self.startup_capture_file) +
@@ -312,6 +322,7 @@ class NTPModule(TestModule):
     device_sends_ntp = False
     ntp_to_local = False
     ntp_to_remote = False
+    ntp_to_remote_ips = set()
 
     for packet in packet_capture:
       if NTP in packet and packet.src == self._device_mac:
@@ -321,23 +332,43 @@ class NTPModule(TestModule):
           dest_ip = packet[IP].dst
         elif IPv6 in packet:
           dest_ip = packet[IPv6].dst
+        LOGGER.info(f'Device sent NTP request to {dest_ip}')
         if dest_ip == self._ntp_server:
           LOGGER.info('Device sent NTP request to DHCP provided NTP server')
           ntp_to_local = True
         else:
           LOGGER.info('Device sent NTP request to non-DHCP provided NTP server')
           ntp_to_remote = True
+          ntp_to_remote_ips.add(dest_ip)
 
+    ntp_to_remote_trusted = bool(ntp_to_remote_ips) and all(
+        ntp_whitelist_resolver.is_ip_whitelisted(ip) for ip in ntp_to_remote_ips
+    )
+
+    #tested
     result = 'Feature Not Detected', 'Device has not sent any NTP requests'
 
     if device_sends_ntp:
       if ntp_to_local and ntp_to_remote:
-        result = False, ('Device sent NTP request to DHCP provided ' +
-                         'server and non-DHCP provided server')
+        if ntp_to_remote_trusted:
+          # tested
+          result = True, ('Device sent NTP request to DHCP provided ' +
+                          'server and trusted non-DHCP provided servers')
+        else:
+          #tested
+          result = False, ('Device sent NTP request to DHCP provided ' +
+                           'server and to untrusted non-DHCP provided server')
       elif ntp_to_remote:
-        result = ('Feature Not Detected',
-                  'Device sent NTP request to non-DHCP provided server')
+        if ntp_to_remote_trusted:
+          # tested
+          result = True, ('Device sent NTP request to trusted ' +
+                           'non-DHCP provided server')
+        else:
+          # tested
+          result = False, ('Device sent NTP request to untrusted ' +
+                           'non-DHCP provided server')
       elif ntp_to_local:
+        # tested
         result = True, 'Device sent NTP request to DHCP provided server'
 
     LOGGER.info(result[1])
