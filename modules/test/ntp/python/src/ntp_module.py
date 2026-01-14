@@ -345,30 +345,24 @@ class NTPModule(TestModule):
         ntp_whitelist_resolver.is_ip_whitelisted(ip) for ip in ntp_to_remote_ips
     )
 
-    #tested
     result = 'Feature Not Detected', 'Device has not sent any NTP requests'
 
     if device_sends_ntp:
       if ntp_to_local and ntp_to_remote:
         if ntp_to_remote_trusted:
-          # tested
           result = True, ('Device sent NTP request to DHCP provided ' +
                           'server and trusted non-DHCP provided servers')
         else:
-          #tested
           result = False, ('Device sent NTP request to DHCP provided ' +
                            'server and to untrusted non-DHCP provided server')
       elif ntp_to_remote:
         if ntp_to_remote_trusted:
-          # tested
           result = True, ('Device sent NTP request to trusted ' +
                            'non-DHCP provided server')
         else:
-          # tested
           result = False, ('Device sent NTP request to untrusted ' +
                            'non-DHCP provided server')
       elif ntp_to_local:
-        # tested
         result = True, 'Device sent NTP request to DHCP provided server'
 
     LOGGER.info(result[1])
