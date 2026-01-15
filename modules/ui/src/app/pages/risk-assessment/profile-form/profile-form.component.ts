@@ -319,7 +319,9 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
       if (question.type === FormControlType.SELECT_MULTIPLE) {
         question.options?.forEach((item, idx) => {
           if ((answer?.answer as number[])?.includes(idx)) {
-            this.getFormGroup(index).controls[idx].setValue(true);
+            this.getFormGroup(index).controls[idx].setValue(true, {
+              emitEvent: false,
+            });
           } else {
             this.getFormGroup(index).controls[idx].setValue(false);
           }
