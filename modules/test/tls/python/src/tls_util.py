@@ -24,6 +24,7 @@ import requests
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding
 from ipaddress import IPv4Address
 from scapy.all import rdpcap, IP, Ether, TCP, UDP
 
@@ -241,26 +242,75 @@ class TLSUtil():
         return True, 'Device signed by cert:' + ca_file
     return False, 'Device certificate has not been signed'
 
+  # Determine if the provided file contains a certificate chain
+  def _is_cert_chain(self, file_path: str) -> bool:
+    with open(file_path, 'r', encoding='utf-8') as f:
+      content = f.read()
+      count = content.count('-----BEGIN CERTIFICATE-----')
+    if count > 1:
+      return True
+    return False
+
+  # Check if certificate is CA
+  def _is_cert_ca(self, cert_obj: x509.Certificate) -> bool:
+    is_ca = False
+    try:
+      ext = cert_obj.extensions.get_extension_for_class(x509.BasicConstraints)
+      is_ca = ext.value.ca
+    except x509.ExtensionNotFound:
+      return False
+    if not is_ca:
+      return False
+    return True
+
+
+  # Check if certificate is Root
+  def _is_cert_root(self, cert_obj: x509.Certificate) -> bool:
+    issuer = cert_obj.issuer
+    subject = cert_obj.subject
+
+
+    # Если это CA, проверяем Root или Intermediate
+    if issuer == subject:
+      # Дополнительная проверка: совпадает ли подпись (самоподписанность)
+      cert_obj.public_key().verify(
+        cert_obj.signature,
+        cert_obj.tbs_certificate_bytes,
+        padding.PKCS1v15(),
+        cert_obj.signature_hash_algorithm,
+      )
+      return True
+    return False
+
+  def _load_cert(self, file_path: str) -> x509.Certificate:
+    with open(file_path, 'rb') as f:
+      return x509.load_pem_x509_certificate(f.read())
+
   def validate_local_ca_signature(self, device_cert_path):
     bin_file = self._bin_dir + '/check_cert_signature.sh'
+    is_device_cert_chain = self._is_cert_chain(device_cert_path)
+    LOGGER.info(f'----Device certificate is chain, {is_device_cert_chain} -----')
     # Get a list of all root certificates
-    root_certs = os.listdir(self._root_certs_dir)
-    LOGGER.info('Root Certs Found: ' + str(len(root_certs)))
-    for root_cert in root_certs:
+    local_certs = os.listdir(self._root_certs_dir)
+    LOGGER.info('Root Certs Found: ' + str(len(local_certs)))
+    for local_cert in local_certs:
       try:
         # Create the file path
-        root_cert_path = os.path.join(self._root_certs_dir, root_cert)
+        root_cert_path = os.path.join(self._root_certs_dir, local_cert)
         LOGGER.info('Checking root cert: ' + str(root_cert_path))
+        local_cert_obj = self._load_cert(root_cert_path)
+        LOGGER.info(f'----------Device cert is CA: {self._is_cert_ca(local_cert_obj)}')
+        LOGGER.info(f'----------Device cert is Root: {self._is_cert_root(local_cert_obj)}')
         args = f'"{root_cert_path}" "{device_cert_path}"'
         command = f'{bin_file} {args}'
         response = util.run_command(command)
         if f'{device_cert_path}: OK' in str(response):
-          LOGGER.info('Device signed by cert:' + root_cert)
+          LOGGER.info('Device signed by cert:' + local_cert)
           return True, root_cert_path
         else:
-          LOGGER.info('Device not signed by cert: ' + root_cert)
+          LOGGER.info('Device not signed by cert: ' + local_cert)
       except Exception as e:  # pylint: disable=W0718
-        LOGGER.error('Failed to check cert:' + root_cert)
+        LOGGER.error('Failed to check cert:' + local_cert)
         LOGGER.error(str(e))
     return False, None
 
