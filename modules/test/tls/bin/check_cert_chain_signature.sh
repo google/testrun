@@ -14,12 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-INTERMEDIATE="$1"
+ROOT="$1"
 DEVICE_CERT="$2"
 
-echo "INTERMEDIATE: $INTERMEDIATE"
+echo "ROOT: $ROOT"
 echo "DEVICE_CERT: $DEVICE_CERT"
 
-response=$(openssl verify -untrusted "$INTERMEDIATE" "$DEVICE_CERT")
+response=$(openssl verify -untrusted "$ROOT" "$DEVICE_CERT")
 
 echo "$response"
