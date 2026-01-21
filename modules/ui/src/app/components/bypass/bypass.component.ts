@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 import { Component, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-bypass',
-  imports: [CommonModule, MatButtonModule],
+  imports: [MatButtonModule],
   templateUrl: './bypass.component.html',
   styleUrls: ['./bypass.component.scss'],
 })

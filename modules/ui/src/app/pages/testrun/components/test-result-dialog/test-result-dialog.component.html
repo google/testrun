@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    https://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,13 +29,17 @@ limitations under the License.
   <section class="result-info-steps">
     <p class="info-label steps">Steps to resolve</p>
     <ul class="info-steps-list">
-      <li *ngFor="let point of data.testResult.recommendations">{{ point }}</li>
+      @for (point of data.testResult.recommendations; track point) {
+        <li>{{ point }}</li>
+      }
     </ul>
-    <div *ngIf="data.testResult.details" class="details-info">
-      <p class="info-label">Details</p>
-      <p class="info-details">{{ data.testResult.details }}</p>
-      <p></p>
-    </div>
+    @if (data.testResult.details) {
+      <div class="details-info">
+        <p class="info-label">Details</p>
+        <p class="info-details">{{ data.testResult.details }}</p>
+        <p></p>
+      </div>
+    }
   </section>
 </mat-dialog-content>
 <mat-dialog-actions align="end" class="actions-container">

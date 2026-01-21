@@ -20,7 +20,7 @@ import { Component, ViewEncapsulation, viewChild, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CdkStep } from '@angular/cdk/stepper';
 import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
-import { CommonModule } from '@angular/common';
+
 import { MatInputModule } from '@angular/material/input';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -31,7 +31,6 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
     CdkStep,
     StepperComponent,
     MatFormField,
-    CommonModule,
     ReactiveFormsModule,
     MatInputModule,
     MatFormFieldModule,

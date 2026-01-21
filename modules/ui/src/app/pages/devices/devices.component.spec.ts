@@ -91,7 +91,7 @@ describe('DevicesComponent', () => {
 
     fixture = TestBed.createComponent(DevicesComponent);
     component = fixture.componentInstance;
-    router = TestBed.get(Router);
+    router = TestBed.inject(Router);
     compiled = fixture.nativeElement as HTMLElement;
   });
 

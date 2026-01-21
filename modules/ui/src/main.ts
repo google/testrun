@@ -16,11 +16,10 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app-routing.module';
-import { IMqttServiceOptions } from 'ngx-mqtt/lib/mqtt.model';
-import { importProvidersFrom } from '@angular/core';
+import { importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 import { EffectsModule } from '@ngrx/effects';
 import { AppEffects } from './app/store/effects';
-import { MqttModule } from 'ngx-mqtt';
+import { IMqttServiceOptions, MqttModule } from 'ngx-mqtt';
 import { StoreModule } from '@ngrx/store';
 import { appFeatureKey, rootReducer } from './app/store/reducers';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -43,6 +42,7 @@ const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
 
 bootstrapApplication(AppComponent, {
   providers: [
+    provideZoneChangeDetection(),
     importProvidersFrom(
       NoopAnimationsModule,
       RouterModule.forRoot(routes, { useHash: true }),

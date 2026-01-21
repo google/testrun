@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    https://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,62 +21,58 @@ limitations under the License.
     'max-height': 'calc(100vh - ' + (topPosition + dialogTitle) + 'px)',
   }">
   <form [formGroup]="filterForm" class="filter-form">
-    <mat-form-field
-      appearance="outline"
-      class="text-field"
-      *ngIf="data.filter === FilterName.DeviceInfo">
-      <mat-label>Device</mat-label>
-      <input
-        class="text-field-input"
-        formControlName="deviceInfo"
-        matInput
-        aria-label="device name" />
-      <mat-error
-        *ngIf="deviceInfo.hasError('invalid_format')"
-        role="alert"
-        aria-live="assertive">
-        <span
-          >Please, check. The device model name must be a maximum of 64
-          characters. Only letters, numbers, and accented letters are
-          permitted.</span
-        >
-      </mat-error>
-    </mat-form-field>
-    <mat-form-field
-      appearance="outline"
-      class="text-field"
-      *ngIf="data.filter === FilterName.DeviceFirmware">
-      <mat-label>Firmware</mat-label>
-      <input
-        class="text-field-input firmware-input"
-        formControlName="deviceFirmware"
-        matInput
-        aria-label="device firmware" />
-      <mat-error
-        *ngIf="deviceFirmware.hasError('invalid_format')"
-        role="alert"
-        aria-live="assertive">
-        <span
-          >Please, check. The firmware name must be a maximum of 64 characters.
-          Only letters, numbers, and accented letters are permitted.</span
-        >
-      </mat-error>
-    </mat-form-field>
-    <div
-      class="filter-result"
-      formArrayName="results"
-      *ngIf="data.filter === FilterName.Results">
-      <p
-        *ngFor="let result of results.controls; let i = index"
-        class="filter-result-item">
-        <mat-checkbox [formControlName]="i">
-          {{ resultList[i].value }}
-        </mat-checkbox>
-      </p>
-    </div>
+    @if (data.filter === FilterName.DeviceInfo) {
+      <mat-form-field appearance="outline" class="text-field">
+        <mat-label>Device</mat-label>
+        <input
+          class="text-field-input"
+          formControlName="deviceInfo"
+          matInput
+          aria-label="device name" />
+        @if (deviceInfo.hasError('invalid_format')) {
+          <mat-error role="alert" aria-live="assertive">
+            <span
+              >Please, check. The device model name must be a maximum of 64
+              characters. Only letters, numbers, and accented letters are
+              permitted.</span
+            >
+          </mat-error>
+        }
+      </mat-form-field>
+    }
+    @if (data.filter === FilterName.DeviceFirmware) {
+      <mat-form-field appearance="outline" class="text-field">
+        <mat-label>Firmware</mat-label>
+        <input
+          class="text-field-input firmware-input"
+          formControlName="deviceFirmware"
+          matInput
+          aria-label="device firmware" />
+        @if (deviceFirmware.hasError('invalid_format')) {
+          <mat-error role="alert" aria-live="assertive">
+            <span
+              >Please, check. The firmware name must be a maximum of 64
+              characters. Only letters, numbers, and accented letters are
+              permitted.</span
+            >
+          </mat-error>
+        }
+      </mat-form-field>
+    }
+    @if (data.filter === FilterName.Results) {
+      <div class="filter-result" formArrayName="results">
+        @for (result of results.controls; track result; let i = $index) {
+          <p class="filter-result-item">
+            <mat-checkbox [formControlName]="i">
+              {{ resultList[i].value }}
+            </mat-checkbox>
+          </p>
+        }
+      </div>
+    }
   </form>
 
-  <ng-container *ngIf="data.filter === FilterName.Started">
+  @if (data.filter === FilterName.Started) {
     <mat-form-field appearance="outline" class="date-field">
       <mat-label>Dates</mat-label>
       <mat-date-range-input>
@@ -95,21 +91,21 @@ limitations under the License.
           #endDate="ngModel"
           (dateChange)="endDateChanged($event)" />
       </mat-date-range-input>
-      <mat-error
-        *ngIf="startDate.invalid || endDate.invalid"
-        role="alert"
-        aria-live="assertive">
-        <span>Please, select the correct date range in mm/dd/yyyy format.</span>
-      </mat-error>
+      @if (startDate.invalid || endDate.invalid) {
+        <mat-error role="alert" aria-live="assertive">
+          <span
+            >Please, select the correct date range in mm/dd/yyyy format.</span
+          >
+        </mat-error>
+      }
     </mat-form-field>
-
     <mat-calendar
       [selected]="selectedRangeValue"
       (selectedChange)="selectedChange($event)"
       [maxDate]="today"
       class="date-calendar">
     </mat-calendar>
-  </ng-container>
+  }
 </mat-dialog-content>
 <mat-dialog-actions align="end" class="filter-dialog-actions">
   <button (click)="cancel()" class="cancel-button" mat-button>Cancel</button>
