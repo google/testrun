@@ -28,8 +28,6 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from ipaddress import IPv4Address
 from scapy.all import rdpcap, IP, Ether, TCP, UDP
 
-from tls_test import is_cert_ca, is_cert_root
-
 LOG_NAME = 'tls_util'
 LOGGER = None
 DEFAULT_BIN_DIR = '/testrun/bin'
@@ -244,104 +242,58 @@ class TLSUtil():
         return True, 'Device signed by cert:' + ca_file
     return False, 'Device certificate has not been signed'
 
-  # Determine if the provided file contains a certificate chain
-  def _is_cert_chain(self, file_path: str) -> bool:
-    with open(file_path, 'r', encoding='utf-8') as f:
-      content = f.read()
-      count = content.count('-----BEGIN CERTIFICATE-----')
-    if count > 1:
-      return True
-    return False
-
-  # Check if certificate is CA
-  def _is_cert_ca(self, cert_obj: x509.Certificate) -> bool:
-    is_ca = False
-    try:
-      ext = cert_obj.extensions.get_extension_for_class(x509.BasicConstraints)
-      is_ca = ext.value.ca
-    except x509.ExtensionNotFound:
-      return False
-    if not is_ca:
-      return False
-    return True
-
-
   # Check if certificate is Root
-  def _is_cert_root(self, cert_obj: x509.Certificate) -> bool:
-    issuer = cert_obj.issuer
-    subject = cert_obj.subject
-
-
-    # Если это CA, проверяем Root или Intermediate
-    if issuer == subject:
-      # Дополнительная проверка: совпадает ли подпись (самоподписанность)
-      cert_obj.public_key().verify(
-        cert_obj.signature,
-        cert_obj.tbs_certificate_bytes,
-        padding.PKCS1v15(),
-        cert_obj.signature_hash_algorithm,
-      )
-      return True
-    return False
-
-  def _load_cert(self, file_path: str) -> x509.Certificate:
+  def _is_cert_root(self, file_path: str) -> bool:
     with open(file_path, 'rb') as f:
-      return x509.load_pem_x509_certificate(f.read())
+      cert_obj = x509.load_pem_x509_certificate(f.read())
+      issuer = cert_obj.issuer
+      subject = cert_obj.subject
+
+      if issuer == subject:
+        cert_obj.public_key().verify(
+          cert_obj.signature,
+          cert_obj.tbs_certificate_bytes,
+          padding.PKCS1v15(),
+          cert_obj.signature_hash_algorithm,
+        )
+        return True
+      return False
 
   def validate_local_ca_signature(self, device_cert_path):
-    root_script = os.path.join(self._bin_dir, '/check_cert_signature.sh')
-    root_chain_script = os.path.join(
-      self._bin_dir,
-      '/check_cert_chain_signature.sh'
-    )
+    root_script = os.path.join(self._bin_dir, 'check_cert_signature.sh')
     intermidiate_script = os.path.join(
       self._bin_dir,
-      '/check_intermediate_cert_signature.sh'
+      'check_cert_intermidiate_signature.sh'
     )
-    is_device_cert_chain = self._is_cert_chain(device_cert_path)
-    LOGGER.info(f'----Device certificate is chain, {is_device_cert_chain} -----')
+
     # Get a list of all root certificates
     local_certs = os.listdir(self._root_certs_dir)
-    LOGGER.info('Root Certs Found: ' + str(len(local_certs)))
+    LOGGER.info('Local Certs Found: ' + str(len(local_certs)))
     for local_cert in local_certs:
       try:
         # Create the file path
         local_cert_path = os.path.join(self._root_certs_dir, local_cert)
         LOGGER.info('Checking root cert: ' + str(local_cert_path))
-        local_cert_obj = self._load_cert(local_cert_path)
-        is_local_cert_ca = self._is_cert_ca(local_cert_obj)
-        is_local_cert_root = self._is_cert_root(local_cert_obj)
-        LOGGER.info(f'----------Device cert is CA: {is_cert_ca}')
-        LOGGER.info(f'----------Device cert is Root: {is_cert_root}')
-        if is_local_cert_ca:
-          args = f'"{local_cert_path}" "{device_cert_path}"'
-          if not is_device_cert_chain and is_local_cert_root:
-            # Check if root cert
-            command = f'{str(root_script)} {args}'
-            response = util.run_command(command)
-            if f'{device_cert_path}: OK' in str(response):
-              LOGGER.info('Device signed by cert:' + local_cert)
-              return True, local_cert_path
-            else:
-              LOGGER.info('Device not signed by cert: ' + local_cert)
-          elif is_device_cert_chain and is_local_cert_root:
-            # Check if root cert and device cert is chain
-            command = f'{str(root_chain_script)} {args}'
-            response = util.run_command(command)
-            if f'{device_cert_path}: OK' in str(response):
-              LOGGER.info('Device signed by cert:' + local_cert)
-              return True, local_cert_path
-            else:
-              LOGGER.info('Device not signed by cert: ' + local_cert)
-          else:
-            # Check if intermediate cert an
-            command = f'{str(intermidiate_script)} {args}'
-            response = util.run_command(command)
-            if f'{device_cert_path}: OK' in str(response):
-              LOGGER.info('Device signed by cert:' + local_cert)
-              return True, local_cert_path
-            else:
-              LOGGER.info('Device not signed by cert: ' + local_cert)
+        is_local_cert_root = self._is_cert_root(local_cert_path)
+        args = f'"{local_cert_path}" "{device_cert_path}"'
+        is_device_cert_valid = False
+        if is_local_cert_root:
+          # Check if root cert
+          command = f'{os.path.abspath(root_script)} {args}'
+          response = util.run_command(command)
+          if f'{device_cert_path}: OK' in str(response):
+            is_device_cert_valid = True
+        else:
+          # Intermediate cert
+          command = f'{os.path.abspath(intermidiate_script)} {args}'
+          response = util.run_command(command)
+          if f'{device_cert_path}: OK' in str(response):
+            is_device_cert_valid = True
+        if is_device_cert_valid:
+          LOGGER.info('Device signed by cert:' + local_cert)
+          return True, local_cert_path
+        else:
+          LOGGER.info('Device not signed by cert: ' + local_cert)
       except Exception as e:  # pylint: disable=W0718
         LOGGER.error('Failed to check cert:' + local_cert)
         LOGGER.error(str(e))
