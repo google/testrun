@@ -8,7 +8,7 @@
     <div class="result-list-header-label" style="left: 7in">Required result</div>
   </div>
   {% for test_result in page %}
-    {% if test_result['result'] == 'Non-Compliant' and test_result['required_result'] in ["Required", "Required if Applicable"] %}
+    {% if test_result['result'] == 'Non-Compliant' %}
     {% if test_result['details'] %}
     <div class="result-line result-line-result-with-details result-line-result-non-compliant-required" style="height: {{ test_result['height'] | default(38.4) }}px">
     {% else%}
@@ -71,7 +71,7 @@
       {% endif %}
     </div>
     {% if test_result['details']%}
-    {% if test_result['result'] == 'Non-Compliant' and test_result['required_result'] in ["Required", "Required if Applicable"] %}
+    {% if test_result['result'] == 'Non-Compliant' %}
     <div class="result-line-details result-line-result result-line-result-non-compliant-required">
     {% else %}
     <div class="result-line-details result-line-result">
