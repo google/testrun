@@ -95,7 +95,18 @@ COMPLIANT DEVICE
 hash -r
 DEVICE=COMPLIANT vagrant up --provider=libvirt
 DEVICE=COMPLIANT vagrant provision
+```
+
+For single sertificate run
+
+```bash
 ./create_certificate.sh <VM IP>
+```
+
+For sertificate chain run
+
+```bash
+./create_cert_chain.sh <VM IP>
 ```
 
 
