@@ -46,7 +46,7 @@ describe('SnackBarComponent', () => {
     component = fixture.componentInstance;
     store = TestBed.inject(MockStore);
     compiled = fixture.nativeElement as HTMLElement;
-    spyOn(store, 'dispatch').and.callFake(() => {});
+    spyOn(store, 'dispatch').and.callThrough();
     fixture.detectChanges();
   });
 

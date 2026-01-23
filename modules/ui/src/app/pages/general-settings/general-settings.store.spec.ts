@@ -79,7 +79,7 @@ describe('GeneralSettingsStore', () => {
     settingsStore = TestBed.inject(GeneralSettingsStore);
     store = TestBed.inject(MockStore);
     fb = TestBed.inject(FormBuilder);
-    spyOn(store, 'dispatch').and.callFake(() => {});
+    spyOn(store, 'dispatch').and.callThrough();
   });
 
   it('should be created', () => {

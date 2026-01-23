@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    https://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,64 +16,70 @@ limitations under the License.
 <form [formGroup]="initiateForm" class="progress-initiate-form">
   <span class="progress-initiate-form-title">Start new Testrun</span>
 
-  <section
-    *ngIf="devices$ | async as devices"
-    class="progress-initiate-form-content">
-    <ng-container *ngIf="selectedDevice === null">
-      <ng-container *ngFor="let device of devices">
+  @if (devices$ | async; as devices) {
+    <section class="progress-initiate-form-content">
+      @if (selectedDevice === null) {
+        @for (device of devices; track device) {
+          @if (device.status !== DeviceStatus.INVALID) {
+            <app-device-item
+              [deviceView]="DeviceView.Basic"
+              [class.device-item-focused]="device === prevDevice"
+              (itemClicked)="deviceSelected(device)"
+              [device]="device"></app-device-item>
+          }
+        }
+      }
+      @if (selectedDevice !== null) {
         <app-device-item
-          *ngIf="device.status !== DeviceStatus.INVALID"
           [deviceView]="DeviceView.Basic"
-          [class.device-item-focused]="device === prevDevice"
-          (itemClicked)="deviceSelected(device)"
-          [device]="device"></app-device-item>
-      </ng-container>
-    </ng-container>
-    <app-device-item
-      *ngIf="selectedDevice !== null"
-      [deviceView]="DeviceView.Basic"
-      class="selected-device"
-      [tabIndex]="-1"
-      [device]="selectedDevice"></app-device-item>
-    <mat-form-field
-      [class.hidden]="selectedDevice === null"
-      appearance="outline">
-      <mat-label>Firmware</mat-label>
-      <input
-        class="firmware-input"
-        formControlName="firmware"
-        matInput
-        #firmwareInput />
-      <mat-hint>Please enter device firmware</mat-hint>
-      <mat-error
-        *ngIf="firmware.hasError('invalid_format')"
-        role="alert"
-        aria-live="assertive">
-        <span
-          >Please, check. The firmware value must be a maximum of 64 characters.
-          Only letters, numbers, and accented letters are permitted.</span
-        >
-      </mat-error>
-      <mat-error *ngIf="firmware.errors?.['required']">
-        <span>Firmware is <strong>required</strong></span>
-      </mat-error>
-    </mat-form-field>
-    <ng-container *ngIf="selectedDevice !== null">
-      <app-device-tests
-        [deviceForm]="initiateForm"
-        [deviceTestModules]="selectedDevice.test_modules"
-        [testModules]="testModules">
-      </app-device-tests>
-    </ng-container>
-    <mat-error *ngIf="error$ | async" class="device-tests-error">
-      <span>{{ error$ | async }}</span>
-    </mat-error>
-    <ng-container *ngIf="selectedDevice !== null">
-      <app-callout [type]="CalloutType.Info">
-        Top Tip: Your device must be powered off before starting Testrun
-      </app-callout>
-    </ng-container>
-  </section>
+          class="selected-device"
+          [tabIndex]="-1"
+          [device]="selectedDevice"></app-device-item>
+      }
+      <mat-form-field
+        [class.hidden]="selectedDevice === null"
+        appearance="outline">
+        <mat-label>Firmware</mat-label>
+        <input
+          class="firmware-input"
+          formControlName="firmware"
+          matInput
+          #firmwareInput />
+        <mat-hint>Please enter device firmware</mat-hint>
+        @if (firmware.hasError('invalid_format')) {
+          <mat-error role="alert" aria-live="assertive">
+            <span
+              >Please, check. The firmware value must be a maximum of 64
+              characters. Only letters, numbers, and accented letters are
+              permitted.</span
+            >
+          </mat-error>
+        }
+        @if (firmware.errors?.['required']) {
+          <mat-error>
+            <span>Firmware is <strong>required</strong></span>
+          </mat-error>
+        }
+      </mat-form-field>
+      @if (selectedDevice !== null) {
+        <app-device-tests
+          [deviceForm]="initiateForm"
+          [deviceTestModules]="selectedDevice.test_modules"
+          [testModules]="testModules">
+        </app-device-tests>
+      }
+      @if (error$ | async) {
+        <mat-error class="device-tests-error">
+          <span>{{ error$ | async }}</span>
+        </mat-error>
+      }
+      @if (selectedDevice !== null) {
+        <app-callout [type]="CalloutType.Info">
+          Top Tip: Your device must be powered off before starting Testrun
+        </app-callout>
+      }
+    </section>
+  }
 
   <mat-dialog-actions class="progress-initiate-form-actions">
     <button
@@ -103,7 +109,7 @@ limitations under the License.
 </form>
 
 <ng-template #selectFirmware>
-  <ng-container *ngIf="selectedDevice !== null">
+  @if (selectedDevice !== null) {
     <app-device-item [device]="selectedDevice"></app-device-item>
     <mat-form-field appearance="outline">
       <mat-label>Firmware</mat-label>
@@ -112,9 +118,11 @@ limitations under the License.
         formControlName="firmware"
         matInput />
       <mat-hint>Please enter device firmware</mat-hint>
-      <mat-error *ngIf="firmware.errors?.['required']">
-        <span>Firmware is <strong>required</strong></span>
-      </mat-error>
+      @if (firmware.errors?.['required']) {
+        <mat-error>
+          <span>Firmware is <strong>required</strong></span>
+        </mat-error>
+      }
     </mat-form-field>
-  </ng-container>
+  }
 </ng-template>

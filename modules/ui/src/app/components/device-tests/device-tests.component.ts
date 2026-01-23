@@ -21,7 +21,7 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import {
   FormArray,
   FormControl,
@@ -34,7 +34,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 @Component({
   selector: 'app-device-tests',
 
-  imports: [CommonModule, MatCheckboxModule, ReactiveFormsModule],
+  imports: [MatCheckboxModule, ReactiveFormsModule],
   templateUrl: './device-tests.component.html',
   styleUrls: ['./device-tests.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

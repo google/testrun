@@ -14,7 +14,7 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { SystemInterfaces, SettingOption } from '../../../../model/setting';
-import { KeyValuePipe, NgForOf, NgIf } from '@angular/common';
+import { KeyValuePipe } from '@angular/common';
 
 @Component({
   selector: 'app-settings-dropdown',
@@ -24,8 +24,6 @@ import { KeyValuePipe, NgForOf, NgIf } from '@angular/common';
     MatFormFieldModule,
     MatSelectModule,
     KeyValuePipe,
-    NgIf,
-    NgForOf,
   ],
   templateUrl: './settings-dropdown.component.html',
   styleUrl: './settings-dropdown.component.scss',

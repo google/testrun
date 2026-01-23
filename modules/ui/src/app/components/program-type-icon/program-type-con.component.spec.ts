@@ -41,6 +41,6 @@ describe('ProgramTypeIconComponent', () => {
   it('should have svgIcon provided from type', () => {
     const iconEl = compiled.querySelector('.icon');
 
-    expect(iconEl?.getAttribute('ng-reflect-svg-icon')).toEqual('pilot');
+    expect(iconEl?.getAttribute('data-mat-icon-name')).toEqual('pilot');
   });
 });
