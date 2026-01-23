@@ -1,45 +1,42 @@
-# Requirements for the core module
+anyio==4.12.1
+boolean.py==5.0
+brotli==1.2.0
+CacheControl==0.14.4
+certifi==2026.1.4
+cffi==2.0.0
+charset-normalizer==3.4.4
+cssselect2==0.8.0
+cyclonedx-python-lib==11.6.0
+defusedxml==0.7.1
+filelock==3.20.3
+fonttools==4.61.1
+idna==3.11
+license-expression==30.4.4
+markdown-it-py==4.0.0
+mdurl==0.1.2
+msgpack==1.1.2
+packageurl-python==0.17.6
+packaging==26.0
+pillow==12.1.0
+pip-api==0.0.34
+pip-requirements-parser==32.0.1
+pip_audit==2.10.0
+platformdirs==4.5.1
+py-serializable==2.1.0
+pycparser==3.0
+pydyf==0.12.1
+Pygments==2.19.2
+pyparsing==3.3.2
+pyphen==0.17.2
 requests==2.32.5
-
-# Requirements for the net_orc module
-docker==7.1.0
-ipaddress==1.0.23
-netifaces==0.11.0
-scapy==2.7.0rc1
-
-# Requirments for the test_orc module
-weasyprint==61.2
-pydyf==0.8.0
-
-# Requirements for the API
-fastapi==0.109.1
-psutil==5.9.8
-uvicorn==0.27.0
-python-multipart==0.0.19
-pydantic==2.7.1
-
-# Requirements for testing
-pytest==7.4.4
-pytest-timeout==2.2.0
-responses==0.25.3
-
-
-# Requirements for the report
-markdown==3.5.2
-
-# Requirements for the session
-cryptography==44.0.1
-pytz==2024.1
-
-# Requirements for the risk profile
-python-dateutil==2.9.0
-
-# Requirements for MQTT client
-paho-mqtt==2.1.0
-
-# Requirements for background tasks
-APScheduler==3.10.4
-
-# Requirements for reports generation
-Jinja2==3.1.6
-beautifulsoup4==4.12.3
+rich==14.2.0
+sortedcontainers==2.4.0
+starlette==0.52.1
+tinycss2==1.5.1
+tinyhtml5==2.0.0
+tomli==2.4.0
+tomli_w==1.2.0
+urllib3==2.6.3
+weasyprint==68.0
+webencodings==0.5.1
+zopfli==0.4.0
