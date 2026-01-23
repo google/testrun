@@ -20,7 +20,7 @@ import {
   Output,
   inject,
 } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { CertificatesStore } from './certificates.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
@@ -34,7 +34,6 @@ import { CertificateUploadButtonComponent } from './components/certificate-uploa
   imports: [
     MatButtonModule,
     CertificateUploadButtonComponent,
-    CommonModule,
     CertificatesTableComponent,
   ],
   providers: [CertificatesStore, DatePipe],

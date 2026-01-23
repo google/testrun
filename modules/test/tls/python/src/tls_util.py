@@ -24,6 +24,7 @@ import requests
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding
 from ipaddress import IPv4Address
 from scapy.all import rdpcap, IP, Ether, TCP, UDP
 
@@ -241,26 +242,60 @@ class TLSUtil():
         return True, 'Device signed by cert:' + ca_file
     return False, 'Device certificate has not been signed'
 
+  # Check if certificate is Root
+  def _is_cert_root(self, file_path: str) -> bool:
+    with open(file_path, 'rb') as f:
+      cert_obj = x509.load_pem_x509_certificate(f.read())
+      issuer = cert_obj.issuer
+      subject = cert_obj.subject
+
+      if issuer == subject:
+        cert_obj.public_key().verify(
+          cert_obj.signature,
+          cert_obj.tbs_certificate_bytes,
+          padding.PKCS1v15(),
+          cert_obj.signature_hash_algorithm,
+        )
+        return True
+      return False
+
   def validate_local_ca_signature(self, device_cert_path):
-    bin_file = self._bin_dir + '/check_cert_signature.sh'
+    root_script = os.path.join(self._bin_dir, 'check_cert_signature.sh')
+    intermidiate_script = os.path.join(
+      self._bin_dir,
+      'check_cert_intermidiate_signature.sh'
+    )
+
     # Get a list of all root certificates
-    root_certs = os.listdir(self._root_certs_dir)
-    LOGGER.info('Root Certs Found: ' + str(len(root_certs)))
-    for root_cert in root_certs:
+    local_certs = os.listdir(self._root_certs_dir)
+    LOGGER.info('Local Certs Found: ' + str(len(local_certs)))
+    for local_cert in local_certs:
       try:
         # Create the file path
-        root_cert_path = os.path.join(self._root_certs_dir, root_cert)
-        LOGGER.info('Checking root cert: ' + str(root_cert_path))
-        args = f'"{root_cert_path}" "{device_cert_path}"'
-        command = f'{bin_file} {args}'
-        response = util.run_command(command)
-        if f'{device_cert_path}: OK' in str(response):
-          LOGGER.info('Device signed by cert:' + root_cert)
-          return True, root_cert_path
+        local_cert_path = os.path.join(self._root_certs_dir, local_cert)
+        LOGGER.info('Checking root cert: ' + str(local_cert_path))
+        is_local_cert_root = self._is_cert_root(local_cert_path)
+        args = f'"{local_cert_path}" "{device_cert_path}"'
+        is_device_cert_valid = False
+        if is_local_cert_root:
+          # Check if root cert
+          command = f'{os.path.abspath(root_script)} {args}'
+          response = util.run_command(command)
+          if f'{device_cert_path}: OK' in str(response):
+            is_device_cert_valid = True
         else:
-          LOGGER.info('Device not signed by cert: ' + root_cert)
+          # Intermediate cert
+          command = f'{os.path.abspath(intermidiate_script)} {args}'
+          response = util.run_command(command)
+          if f'{device_cert_path}: OK' in str(response):
+            is_device_cert_valid = True
+        if is_device_cert_valid:
+          LOGGER.info('Device signed by cert:' + local_cert)
+          return True, local_cert_path
+        else:
+          LOGGER.info('Device not signed by cert: ' + local_cert)
       except Exception as e:  # pylint: disable=W0718
-        LOGGER.error('Failed to check cert:' + root_cert)
+        LOGGER.error('Failed to check cert:' + local_cert)
         LOGGER.error(str(e))
     return False, None
 

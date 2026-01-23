@@ -147,7 +147,7 @@ describe('AppStore', () => {
     store.overrideSelector(selectInterfaces, {});
     store.overrideSelector(selectStatus, null);
 
-    spyOn(store, 'dispatch').and.callFake(() => {});
+    spyOn(store, 'dispatch').and.callThrough();
   });
 
   afterEach(() => {

@@ -20,8 +20,24 @@ mkdir -p "$WORKDIR"
 mkdir -p "$CERTS_DIR"
 cd "$WORKDIR"
 
-# Create CA extension config for intermediates
-cat > ca_ext.cnf <<EOF
+# Create CA extension configs for each CA
+cat > root_ca_ext.cnf <<EOF
+[ v3_ca ]
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer:always
+basicConstraints = critical,CA:true,pathlen:2
+keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+EOF
+
+cat > int1_ca_ext.cnf <<EOF
+[ v3_ca ]
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer:always
+basicConstraints = critical,CA:true,pathlen:1
+keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+EOF
+
+cat > int2_ca_ext.cnf <<EOF
 [ v3_ca ]
 subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid:always,issuer:always
@@ -31,19 +47,19 @@ EOF
 
 # 1. Root CA
 openssl genrsa -out rootCA.key 4096
-openssl req -x509 -new -nodes -key rootCA.key -sha256 -days 3650 -out rootCA.pem -subj "/C=RU/O=MyOrgRoot/CN=MyRootCA"
+openssl req -x509 -new -nodes -key rootCA.key -sha256 -days 3650 -out rootCA.pem -subj "/C=RU/O=MyOrgRoot/CN=MyRootCA" -extensions v3_ca -config root_ca_ext.cnf
 
 # 2. Intermediate CA 1
 openssl genrsa -out int1CA.key 4096
 openssl req -new -key int1CA.key -out int1CA.csr -subj "/C=RU/O=MyOrgInt1/CN=MyInt1CA"
 openssl x509 -req -in int1CA.csr -CA rootCA.pem -CAkey rootCA.key -CAcreateserial \
-  -out int1CA.pem -days 1825 -sha256 -extfile ca_ext.cnf -extensions v3_ca
+  -out int1CA.pem -days 1825 -sha256 -extfile int1_ca_ext.cnf -extensions v3_ca
 
 # 3. Intermediate CA 2
 openssl genrsa -out int2CA.key 4096
 openssl req -new -key int2CA.key -out int2CA.csr -subj "/C=RU/O=MyOrgInt2/CN=MyInt2CA"
 openssl x509 -req -in int2CA.csr -CA int1CA.pem -CAkey int1CA.key -CAcreateserial \
-  -out int2CA.pem -days 1825 -sha256 -extfile ca_ext.cnf -extensions v3_ca
+  -out int2CA.pem -days 1825 -sha256 -extfile int2_ca_ext.cnf -extensions v3_ca
 
 # 4. nginx server key and CSR
 cat > openssl_nginx.cnf <<EOF
@@ -113,10 +129,10 @@ $SSHPASS ssh -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP} "sudo systemctl res
 echo "nginx configured with multi-level CA chain on $VM_IP"
 
 # 9. Copy nginx_fullchain.pem, int2CA.pem, int1CA.pem, rootCA.pem from VM to certs subdirectory in working directory
-$SSHPASS scp -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP}:/etc/ssl/certs/nginx_fullchain.pem "$CERTS_DIR/nginx_fullchain.pem"
+# $SSHPASS scp -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP}:/etc/ssl/certs/nginx_fullchain.pem "$CERTS_DIR/nginx_fullchain.pem"
 $SSHPASS scp -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP}:/etc/ssl/certs/int2CA.pem "$CERTS_DIR/int2CA.pem"
-$SSHPASS scp -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP}:/etc/ssl/certs/int1CA.pem "$CERTS_DIR/int1CA.pem"
-$SSHPASS scp -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP}:/etc/ssl/certs/rootCA.pem "$CERTS_DIR/rootCA.pem"
+# $SSHPASS scp -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP}:/etc/ssl/certs/int1CA.pem "$CERTS_DIR/int1CA.pem"
+# $SSHPASS scp -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP}:/etc/ssl/certs/rootCA.pem "$CERTS_DIR/rootCA.pem"
 echo "Certificates copied from VM to $CERTS_DIR/"
 
 # 10. Add rootCA.pem to trusted store on the client (Ubuntu/Debian)

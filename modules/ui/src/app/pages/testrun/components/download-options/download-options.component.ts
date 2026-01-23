@@ -19,7 +19,7 @@ import {
   Input,
   inject,
 } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import {
   ResultOfTestrun,
@@ -37,12 +37,7 @@ export enum DownloadOption {
   selector: 'app-download-options',
   templateUrl: './download-options.component.html',
   styleUrl: './download-options.component.scss',
-  imports: [
-    CommonModule,
-    MatButtonModule,
-    MatIconModule,
-    DownloadReportZipComponent,
-  ],
+  imports: [MatButtonModule, MatIconModule, DownloadReportZipComponent],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    https://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,31 +14,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <mat-chip-set aria-label="Filters" role="grid">
-  <ng-container *ngFor="let item of filters | keyvalue">
-    <mat-chip-row
-      tabindex="0"
-      class="filter-chip"
-      *ngIf="!isValueEmpty(item.value)"
-      (removed)="clearFilter(item.key)">
-      <ng-container *ngIf="item.key === 'deviceInfo'"
-        >Device contains "{{ item.value }}"</ng-container
-      >
-      <ng-container *ngIf="item.key === 'deviceFirmware'">
-        Firmware contains "{{ item.value }}"
-      </ng-container>
-      <ng-container
-        *ngIf="item.key !== 'deviceFirmware' && item.key !== 'deviceInfo'">
-        {{ item.value }}
-      </ng-container>
-      <button
-        class="filter-chip-remove"
-        [attr.aria-label]="'clear filter ' + item.value"
-        matChipRemove
-        [tabIndex]="0">
-        <mat-icon fontSet="material-icons-outlined">close</mat-icon>
-      </button>
-    </mat-chip-row>
-  </ng-container>
+  @for (item of filters | keyvalue; track item) {
+    @if (!isValueEmpty(item.value)) {
+      <mat-chip-row
+        tabindex="0"
+        class="filter-chip"
+        (removed)="clearFilter(item.key)">
+        @if (item.key === 'deviceInfo') {
+          Device contains "{{ item.value }}"
+        }
+        @if (item.key === 'deviceFirmware') {
+          Firmware contains "{{ item.value }}"
+        }
+        @if (item.key !== 'deviceFirmware' && item.key !== 'deviceInfo') {
+          {{ item.value }}
+        }
+        <button
+          class="filter-chip-remove"
+          [attr.aria-label]="'clear filter ' + item.value"
+          matChipRemove
+          [tabIndex]="0">
+          <mat-icon fontSet="material-icons-outlined">close</mat-icon>
+        </button>
+      </mat-chip-row>
+    }
+  }
   <div
     tabindex="0"
     mat-chip-row

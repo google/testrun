@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2023 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,6 @@ DEVICE_CERT="$2"
 echo "INTERMEDIATE: $INTERMEDIATE"
 echo "DEVICE_CERT: $DEVICE_CERT"
 
-response=$(openssl verify -untrusted "$INTERMEDIATE" "$DEVICE_CERT")
+response=$(openssl verify -CAfile "$INTERMEDIATE" -partial_chain "$DEVICE_CERT")
 
 echo "$response"

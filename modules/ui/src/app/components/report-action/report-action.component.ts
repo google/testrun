@@ -4,13 +4,13 @@ import {
   Input,
   inject,
 } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { TestrunStatus } from '../../model/testrun-status';
 
 @Component({
   selector: 'app-report-action',
 
-  imports: [CommonModule],
+  imports: [],
   template: '',
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,

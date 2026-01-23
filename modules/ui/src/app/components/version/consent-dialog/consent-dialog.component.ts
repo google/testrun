@@ -23,7 +23,7 @@ import { ConsentDialogResult, Version } from '../../../model/version';
 import { MatButtonModule } from '@angular/material/button';
 import { CalloutComponent } from '../../callout/callout.component';
 import { CalloutType } from '../../../model/callout-type';
-import { NgIf } from '@angular/common';
+
 import { MatCheckbox } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
 import { timer } from 'rxjs';
@@ -40,7 +40,6 @@ type DialogData = {
     MatDialogModule,
     MatButtonModule,
     CalloutComponent,
-    NgIf,
     MatCheckbox,
     FormsModule,
   ],
