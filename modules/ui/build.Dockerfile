@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Image name: testrun/build-ui
-FROM node:22-alpine as build
+FROM node:22 as build
 
 # Set the working directory
 WORKDIR /modules/ui
