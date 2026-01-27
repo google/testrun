@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-https://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-@if (viewModel$ | async; as vm) {
+<ng-container *ngIf="viewModel$ | async as vm">
   <app-list-layout
     [title]="LayoutType.Profile"
     addEntityText="Create Risk Profile"
@@ -30,26 +30,26 @@ limitations under the License.
       menuItemClicked($event, vm.profiles, vm.selectedProfile)
     ">
   </app-list-layout>
+
   <ng-template #content>
-    @if (!isOpenProfileForm) {
-      <app-no-entity-selected
-        image="/assets/icons/score.svg"
-        header="No risk profile selected"
-        message="Select a profile from the list on the left to view or edit the profile.">
-      </app-no-entity-selected>
-    }
-    @if (isOpenProfileForm) {
-      <app-profile-form
-        #profileFormComponent
-        [selectedProfile]="vm.selectedProfile"
-        [profiles]="vm.profiles"
-        [profileFormat]="vm.profileFormat"
-        (saveProfile)="saveProfileClicked($event, vm.selectedProfile)"
-        (deleteCopy)="deleteCopy($event, vm.profiles)"
-        (setCopy)="setCopy($event, vm.profiles)"
-        (discard)="discard($event, vm.profiles)"></app-profile-form>
-    }
+    <app-no-entity-selected
+      *ngIf="!isOpenProfileForm"
+      image="/assets/icons/score.svg"
+      header="No risk profile selected"
+      message="Select a profile from the list on the left to view or edit the profile.">
+    </app-no-entity-selected>
+    <app-profile-form
+      #profileFormComponent
+      *ngIf="isOpenProfileForm"
+      [selectedProfile]="vm.selectedProfile"
+      [profiles]="vm.profiles"
+      [profileFormat]="vm.profileFormat"
+      (saveProfile)="saveProfileClicked($event, vm.selectedProfile)"
+      (deleteCopy)="deleteCopy($event, vm.profiles)"
+      (setCopy)="setCopy($event, vm.profiles)"
+      (discard)="discard($event, vm.profiles)"></app-profile-form>
   </ng-template>
+
   <ng-template #empty>
     <app-empty-page
       image="/assets/icons/empty-profiles.svg"
@@ -58,6 +58,7 @@ limitations under the License.
       <ng-container *ngTemplateOutlet="addRiskProfileButton"></ng-container>
     </app-empty-page>
   </ng-template>
+
   <ng-template #addRiskProfileButton>
     <button
       (click)="openForm()"
@@ -69,6 +70,7 @@ limitations under the License.
       Create Risk Profile
     </button>
   </ng-template>
+
   <ng-template #itemTemplate let-entity="entity">
     <app-profile-item
       [profile]="entity"
@@ -76,4 +78,4 @@ limitations under the License.
       (profileClicked)="profileClicked($event)">
     </app-profile-item>
   </ng-template>
-}
+</ng-container>

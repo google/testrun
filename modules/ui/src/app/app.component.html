@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-https://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <app-bypass-content></app-bypass-content>
-@if (viewModel$ | async; as vm) {
+<ng-container *ngIf="viewModel$ | async as vm">
   <mat-drawer-container hasBackdrop="false" class="app-container" autosize>
     <mat-drawer
       mode="side"
@@ -75,6 +75,7 @@ limitations under the License.
           (consentShownEvent)="consentShown()"></app-version>
       </div>
     </mat-drawer>
+
     <mat-drawer-content class="app-content" role="region">
       <mat-toolbar class="app-toolbar">
         <a
@@ -106,6 +107,7 @@ limitations under the License.
             (keydown.enter)="onNavigationClick()">
             <mat-icon>tune</mat-icon>
           </button>
+
           <app-wifi
             [on]="vm.hasInternetConnection"
             [disable]="
@@ -132,11 +134,11 @@ limitations under the License.
       </div>
     </mat-drawer-content>
   </mat-drawer-container>
-  @if (vm.isTestingComplete) {
-    <app-testing-complete
-      [data]="vm.testrunStatus"
-      [profiles]="vm.riskProfiles"></app-testing-complete>
-  }
+
+  <app-testing-complete
+    *ngIf="vm.isTestingComplete"
+    [data]="vm.testrunStatus"
+    [profiles]="vm.riskProfiles"></app-testing-complete>
   <ng-container
     *ngTemplateOutlet="
       tips;
@@ -152,7 +154,7 @@ limitations under the License.
       }
     ">
   </ng-container>
-}
+</ng-container>
 
 <ng-template
   #navButtonRoute
@@ -168,12 +170,10 @@ limitations under the License.
     routerLinkActive="app-sidebar-button-active"
     (keydown.space)="onNavigationClick()"
     (keydown.enter)="onNavigationClick()">
-    @if (svgIcon) {
-      <mat-icon svgIcon="{{ svgIcon }}"></mat-icon>
-    }
-    @if (icon) {
-      <mat-icon class="material-symbols-outlined">{{ icon }}</mat-icon>
-    }
+    <mat-icon *ngIf="svgIcon" svgIcon="{{ svgIcon }}"></mat-icon>
+    <mat-icon *ngIf="icon" class="material-symbols-outlined">{{
+      icon
+    }}</mat-icon>
     <span class="sidebar-button-label">{{ label }}</span>
   </button>
 </ng-template>
@@ -186,36 +186,39 @@ limitations under the License.
   let-hasExpiredDevices="hasExpiredDevices"
   let-calloutState="calloutState">
   <div class="app-callout-container">
-    @if (error && error.isSettingMissed) {
-      <app-callout
-        [type]="CalloutType.Error"
-        action="System settings"
-        (onAction)="navigateToSettings()">
-        @if (error.devicePortMissed && error.internetPortMissed) {
-          No ports detected. Please connect and configure network and device
-          connections in the System settings panel.
-        } @else {
-          Selected port is missing! Please define a valid one using System
-          settings panel.
-        }
-      </app-callout>
-    }
-    @if (hasExpiredDevices && !calloutState.get('outdated_devices_callout')) {
-      <app-callout
-        id="outdated_devices_callout"
-        role="alert"
-        aria-live="assertive"
-        [closable]="true"
-        [type]="CalloutType.Error"
-        (calloutClosed)="calloutClosed($event)"
-        [action]="!isDevicesRoute ? 'Devices' : ''"
-        (onAction)="navigateToDeviceRepository()">
-        Further information is required in your device configurations.
-        @if (!isDevicesRoute) {
-          Please update your Devices to continue testing.
-        }
-      </app-callout>
-    }
+    <app-callout
+      [type]="CalloutType.Error"
+      *ngIf="error && error.isSettingMissed"
+      action="System settings"
+      (onAction)="navigateToSettings()">
+      <ng-container
+        *ngIf="
+          error.devicePortMissed && error.internetPortMissed;
+          else onePortMissed
+        ">
+        No ports detected. Please connect and configure network and device
+        connections in the System settings panel.
+      </ng-container>
+      <ng-template #onePortMissed>
+        Selected port is missing! Please define a valid one using System
+        settings panel.
+      </ng-template>
+    </app-callout>
+    <app-callout
+      id="outdated_devices_callout"
+      role="alert"
+      aria-live="assertive"
+      [closable]="true"
+      [type]="CalloutType.Error"
+      (calloutClosed)="calloutClosed($event)"
+      *ngIf="hasExpiredDevices && !calloutState.get('outdated_devices_callout')"
+      [action]="!isDevicesRoute ? 'Devices' : ''"
+      (onAction)="navigateToDeviceRepository()">
+      Further information is required in your device configurations.
+      <ng-container *ngIf="!isDevicesRoute"
+        >Please update your Devices to continue testing.
+      </ng-container>
+    </app-callout>
   </div>
 </ng-template>
 
@@ -230,54 +233,50 @@ limitations under the License.
   let-hasRiskProfiles="hasRiskProfiles"
   let-hasDevices="hasDevices">
   <div class="tips-container">
-    @if (hasConnectionSettings === false) {
-      <app-help-tip
-        [data]="HelpTips.step1"
-        [target]="settingTipTarget"
-        (onCLoseTip)="onCLoseTip($event)"
-        (onAction)="navigateToSettings()">
-      </app-help-tip>
-    }
-    @if (
-      hasConnectionSettings === true &&
-      (hasDevices === false ||
-        (!!calloutState.get('outdated_devices_callout') &&
-          isAllDevicesOutdated))
-    ) {
-      <app-help-tip
-        [data]="HelpTips.step2"
-        [target]="deviceTipTarget"
-        (onCLoseTip)="onCLoseTip($event)"
-        (onAction)="navigateToAddDevice()">
-      </app-help-tip>
-    }
-    @if (
-      hasConnectionSettings === true &&
-      hasDevices &&
-      (!systemStatus || systemStatus === StatusOfTestrun.Idle) &&
-      isStatusLoaded === true &&
-      !reports.length &&
-      !isAllDevicesOutdated
-    ) {
-      <app-help-tip
-        [data]="HelpTips.step3"
-        [target]="testingTipTarget"
-        (onCLoseTip)="onCLoseTip($event)"
-        (onAction)="navigateToRuntime()">
-      </app-help-tip>
-    }
-    @if (
-      hasConnectionSettings === true &&
-      hasDevices === true &&
-      hasRiskProfiles === false &&
-      systemStatus === StatusOfTestrun.InProgress
-    ) {
-      <app-help-tip
-        [data]="HelpTips.step4"
-        [target]="riskAssessmentTipTarget"
-        (onCLoseTip)="onCLoseTip($event)"
-        (onAction)="navigateToAddRiskAssessment()">
-      </app-help-tip>
-    }
+    <app-help-tip
+      *ngIf="hasConnectionSettings === false"
+      [data]="HelpTips.step1"
+      [target]="settingTipTarget"
+      (onCLoseTip)="onCLoseTip($event)"
+      (onAction)="navigateToSettings()">
+    </app-help-tip>
+    <app-help-tip
+      *ngIf="
+        hasConnectionSettings === true &&
+        (hasDevices === false ||
+          (!!calloutState.get('outdated_devices_callout') &&
+            isAllDevicesOutdated))
+      "
+      [data]="HelpTips.step2"
+      [target]="deviceTipTarget"
+      (onCLoseTip)="onCLoseTip($event)"
+      (onAction)="navigateToAddDevice()">
+    </app-help-tip>
+    <app-help-tip
+      *ngIf="
+        hasConnectionSettings === true &&
+        hasDevices &&
+        (!systemStatus || systemStatus === StatusOfTestrun.Idle) &&
+        isStatusLoaded === true &&
+        !reports.length &&
+        !isAllDevicesOutdated
+      "
+      [data]="HelpTips.step3"
+      [target]="testingTipTarget"
+      (onCLoseTip)="onCLoseTip($event)"
+      (onAction)="navigateToRuntime()">
+    </app-help-tip>
+    <app-help-tip
+      *ngIf="
+        hasConnectionSettings === true &&
+        hasDevices === true &&
+        hasRiskProfiles === false &&
+        systemStatus === StatusOfTestrun.InProgress
+      "
+      [data]="HelpTips.step4"
+      [target]="riskAssessmentTipTarget"
+      (onCLoseTip)="onCLoseTip($event)"
+      (onAction)="navigateToAddRiskAssessment()">
+    </app-help-tip>
   </div>
 </ng-template>

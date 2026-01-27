@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { DownloadReportComponent } from '../download-report/download-report.component';
 import { ReportActionComponent } from '../report-action/report-action.component';
 
@@ -22,7 +22,7 @@ import { ReportActionComponent } from '../report-action/report-action.component'
   selector: 'app-download-report-pdf',
   templateUrl: './download-report-pdf.component.html',
 
-  imports: [DownloadReportComponent],
+  imports: [CommonModule, DownloadReportComponent],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

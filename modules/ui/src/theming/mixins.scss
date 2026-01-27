@@ -43,8 +43,8 @@
   text-align: center;
   padding: 4px;
   z-index: 1;
-  width: var(--mat-icon-button-state-layer-size);
-  height: var(--mat-icon-button-state-layer-size);
+  width: var(--mdc-icon-button-state-layer-size);
+  height: var(--mdc-icon-button-state-layer-size);
   &:hover:before {
     content: '';
     position: absolute;

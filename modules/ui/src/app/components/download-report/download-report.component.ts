@@ -15,7 +15,7 @@
  */
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { ResultOfTestrun, TestrunStatus } from '../../model/testrun-status';
-import { DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ReportActionComponent } from '../report-action/report-action.component';
 
@@ -24,7 +24,7 @@ import { ReportActionComponent } from '../report-action/report-action.component'
   templateUrl: './download-report.component.html',
   styleUrls: ['./download-report.component.scss'],
 
-  imports: [MatTooltipModule],
+  imports: [CommonModule, MatTooltipModule],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

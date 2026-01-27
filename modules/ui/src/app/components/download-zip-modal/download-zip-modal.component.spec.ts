@@ -87,7 +87,7 @@ describe('DownloadZipModalComponent', () => {
 
       TestBed.compileComponents();
       fixture = TestBed.createComponent(DownloadZipModalComponent);
-      router = TestBed.inject(Router);
+      router = TestBed.get(Router);
       component = fixture.componentInstance;
       fixture.detectChanges();
     });
@@ -229,7 +229,7 @@ describe('DownloadZipModalComponent', () => {
 
       TestBed.compileComponents();
       fixture = TestBed.createComponent(DownloadZipModalComponent);
-      router = TestBed.inject(Router);
+      router = TestBed.get(Router);
       component = fixture.componentInstance;
       fixture.detectChanges();
     });

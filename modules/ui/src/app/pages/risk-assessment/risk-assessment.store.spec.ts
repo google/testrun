@@ -71,7 +71,7 @@ describe('RiskAssessmentStore', () => {
     riskAssessmentStore = TestBed.inject(RiskAssessmentStore);
 
     mockFocusManagerService.focusFirstElementInContainer.calls.reset();
-    spyOn(store, 'dispatch').and.callThrough();
+    spyOn(store, 'dispatch').and.callFake(() => {});
   });
 
   it('should be created', () => {

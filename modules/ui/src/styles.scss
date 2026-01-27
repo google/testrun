@@ -159,7 +159,7 @@ body {
 }
 
 .device-form-dialog .mat-mdc-dialog-container {
-  --mat-dialog-container-shape: 12px;
+  --mdc-dialog-container-shape: 12px;
   border-radius: 12px;
 }
 
@@ -344,16 +344,16 @@ body:has(app-help-tip) .app-toolbar-button.app-toolbar-button-help-tips {
 }
 
 .mat-mdc-form-field {
-  --mat-form-field-outlined-focus-label-text-color: #1a73e8;
+  --mdc-outlined-text-field-focus-label-text-color: #1a73e8;
 }
 
 .mat-mdc-button .mat-mdc-button-persistent-ripple::before {
-  --mat-button-text-state-layer-color: #1f1f1f;
+  --mat-text-button-state-layer-color: #1f1f1f;
 }
 
 .setting-field {
-  --mat-form-field-outlined-disabled-outline-color: rgba(0, 0, 0, 0.38);
-  --mat-form-field-outlined-disabled-label-text-color: rgba(0, 0, 0, 0.58);
+  --mdc-outlined-text-field-disabled-outline-color: rgba(0, 0, 0, 0.38);
+  --mdc-outlined-text-field-disabled-label-text-color: rgba(0, 0, 0, 0.58);
 }
 
 .snack-bar-info.mat-mdc-snack-bar-container .mdc-snackbar__surface {
@@ -422,7 +422,7 @@ body #main {
   }
   &.mat-mdc-button.cdk-program-focused:focus-visible
     .mat-mdc-button-persistent-ripple::before {
-    opacity: var(--mat-button-text-focus-state-layer-opacity);
+    opacity: var(--mat-text-button-focus-state-layer-opacity);
   }
 }
 

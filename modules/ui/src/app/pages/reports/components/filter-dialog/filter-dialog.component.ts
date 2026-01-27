@@ -143,7 +143,7 @@ export class FilterDialogComponent
 
   private dialog_actions_height = 50;
 
-  @HostListener('window:resize')
+  @HostListener('window:resize', ['$event'])
   onResize() {
     this.setDialogView();
   }

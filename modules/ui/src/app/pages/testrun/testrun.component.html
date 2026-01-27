@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-https://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,15 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-@if (viewModel$ | async; as vm) {
-  @if (vm.systemStatus; as data) {
-    @if (
-      isTestrunInProgress(data.status) ||
-      data.status === StatusOfTestrun.Cancelled ||
-      data.status === StatusOfTestrun.Cancelling ||
-      data.status === StatusOfTestrun.Stopping ||
-      data.finished
-    ) {
+<ng-container *ngIf="viewModel$ | async as vm">
+  <ng-container *ngIf="vm.systemStatus as data; else empty">
+    <ng-container
+      *ngIf="
+        isTestrunInProgress(data.status) ||
+        data.status === StatusOfTestrun.Cancelled ||
+        data.status === StatusOfTestrun.Cancelling ||
+        data.status === StatusOfTestrun.Stopping ||
+        data.finished
+      ">
       <mat-toolbar class="progress-toolbar">
         <div class="toolbar-col-left">
           <div class="toolbar-row top">
@@ -31,23 +32,20 @@ limitations under the License.
               [matTooltip]="getTestRunName(data)">
               {{ getTestRunName(data) }}
             </h2>
-            @if (data.tags?.length) {
-              <span class="toolbar-tag-container">
-                @for (tag of data.tags; track tag) {
-                  <span
-                    tabindex="0"
-                    class="toolbar-tag"
-                    [attr.aria-label]="tag"
-                    [matTooltip]="
-                      tag === 'VSA'
-                        ? 'Device qualification requires Vendor Security Assessment'
-                        : tag
-                    "
-                    >{{ tag }}</span
-                  >
-                }
-              </span>
-            }
+            <span *ngIf="data.tags?.length" class="toolbar-tag-container">
+              <span
+                tabindex="0"
+                class="toolbar-tag"
+                *ngFor="let tag of data.tags"
+                [attr.aria-label]="tag"
+                [matTooltip]="
+                  tag === 'VSA'
+                    ? 'Device qualification requires Vendor Security Assessment'
+                    : tag
+                "
+                >{{ tag }}</span
+              >
+            </span>
           </div>
           <div class="toolbar-row bottom">
             <app-testrun-status-card [systemStatus]="vm.systemStatus">
@@ -55,55 +53,36 @@ limitations under the License.
           </div>
         </div>
       </mat-toolbar>
-      @if (!resultIsEmpty(data.tests)) {
-        <section
-          class="progress-table"
-          [class.progress-table-progress-empty]="
-            isTestrunInProgress(data.status)
-          ">
-          <app-testrun-table [dataSource]="vm.dataSource"></app-testrun-table>
-          <app-spinner></app-spinner>
-        </section>
-      }
-      @if (isTestrunInProgress(data.status)) {
-        <button
-          (click)="openStopTestrunDialog()"
-          class="stop-button"
-          aria-label="Stop testrun"
-          mat-flat-button>
-          <mat-icon fontSet="material-symbols-outlined" class="filled">
-            cancel
-          </mat-icon>
-          Stop
-        </button>
-      }
-      @if (data.report) {
-        <app-download-options
-          [data]="data"
-          [profiles]="vm.profiles"></app-download-options>
-      }
-    }
-    @if (!data.started) {
+      <section
+        *ngIf="!resultIsEmpty(data.tests)"
+        class="progress-table"
+        [class.progress-table-progress-empty]="
+          isTestrunInProgress(data.status)
+        ">
+        <app-testrun-table [dataSource]="vm.dataSource"></app-testrun-table>
+        <app-spinner></app-spinner>
+      </section>
+      <button
+        *ngIf="isTestrunInProgress(data.status)"
+        (click)="openStopTestrunDialog()"
+        class="stop-button"
+        aria-label="Stop testrun"
+        mat-flat-button>
+        <mat-icon fontSet="material-symbols-outlined" class="filled">
+          cancel
+        </mat-icon>
+        Stop
+      </button>
+      <app-download-options
+        *ngIf="data.report"
+        [data]="data"
+        [profiles]="vm.profiles"></app-download-options>
+    </ng-container>
+    <ng-container *ngIf="!data.started">
       <ng-container *ngTemplateOutlet="empty"></ng-container>
-    }
-  } @else {
-    <div class="progress-content-empty">
-      <div class="empty-content">
-        <p class="empty-content-heading">Start device testing</p>
-        <p class="empty-content-info">
-          Click the button below to configure your testing task
-        </p>
-        <ng-container
-          *ngTemplateOutlet="
-            startNewTestrunButton;
-            context: {
-              hasDevices: vm.hasDevices,
-              isAllDevicesOutdated: vm.isAllDevicesOutdated,
-            }
-          "></ng-container>
-      </div>
-    </div>
-  }
+    </ng-container>
+  </ng-container>
+
   <ng-template #empty>
     <div class="progress-content-empty">
       <div class="empty-content">
@@ -111,6 +90,7 @@ limitations under the License.
         <p class="empty-content-info">
           Click the button below to configure your testing task
         </p>
+
         <ng-container
           *ngTemplateOutlet="
             startNewTestrunButton;
@@ -122,6 +102,7 @@ limitations under the License.
       </div>
     </div>
   </ng-template>
+
   <ng-template
     #startNewTestrunButton
     let-hasDevices="hasDevices"
@@ -144,4 +125,4 @@ limitations under the License.
       Start Testing
     </button>
   </ng-template>
-}
+</ng-container>

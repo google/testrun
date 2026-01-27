@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-https://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,57 +13,53 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-@if (data) {
-  <div class="download-actions">
-    @if (isOpenDownloadOptions) {
-      <button
-        (click)="downloadPdf(data)"
-        class="download-option"
-        aria-label="Download PDF report"
-        mat-flat-button>
-        <mat-icon fontSet="material-symbols-outlined" class="filled">
-          lab_profile
-        </mat-icon>
-        {{ DownloadOption.PDF }}
-      </button>
-    }
-    @if (isOpenDownloadOptions) {
-      <app-download-report-zip
-        class="download-option"
-        [report]="data.report"
-        [export]="data.export"
-        [profiles]="profiles">
-        <mat-icon
-          class="download-report-icon"
-          fontSet="material-symbols-outlined"
-          class="filled">
-          archive
-        </mat-icon>
-        <span>{{ DownloadOption.ZIP }}</span>
-      </app-download-report-zip>
-    }
-    <button
-      (click)="openDownloadOptions()"
-      class="download-button"
-      [class.download-button-opened]="isOpenDownloadOptions"
-      color="primary"
-      [attr.aria-label]="
-        isOpenDownloadOptions
-          ? 'Hide download options'
-          : 'Show download options'
-      "
-      mat-flat-button>
-      @if (!isOpenDownloadOptions) {
-        <mat-icon fontSet="material-symbols-outlined" class="filled">
-          download
-        </mat-icon>
-      }
-      @if (isOpenDownloadOptions) {
-        <mat-icon fontSet="material-symbols-outlined" class="filled">
-          close
-        </mat-icon>
-      }
-      {{ isOpenDownloadOptions ? '' : 'Download' }}
-    </button>
-  </div>
-}
+<div class="download-actions" *ngIf="data">
+  <button
+    *ngIf="isOpenDownloadOptions"
+    (click)="downloadPdf(data)"
+    class="download-option"
+    aria-label="Download PDF report"
+    mat-flat-button>
+    <mat-icon fontSet="material-symbols-outlined" class="filled">
+      lab_profile
+    </mat-icon>
+    {{ DownloadOption.PDF }}
+  </button>
+  <app-download-report-zip
+    *ngIf="isOpenDownloadOptions"
+    class="download-option"
+    [report]="data.report"
+    [export]="data.export"
+    [profiles]="profiles">
+    <mat-icon
+      class="download-report-icon"
+      fontSet="material-symbols-outlined"
+      class="filled">
+      archive
+    </mat-icon>
+    <span>{{ DownloadOption.ZIP }}</span>
+  </app-download-report-zip>
+  <button
+    (click)="openDownloadOptions()"
+    class="download-button"
+    [class.download-button-opened]="isOpenDownloadOptions"
+    color="primary"
+    [attr.aria-label]="
+      isOpenDownloadOptions ? 'Hide download options' : 'Show download options'
+    "
+    mat-flat-button>
+    <mat-icon
+      *ngIf="!isOpenDownloadOptions"
+      fontSet="material-symbols-outlined"
+      class="filled">
+      download
+    </mat-icon>
+    <mat-icon
+      *ngIf="isOpenDownloadOptions"
+      fontSet="material-symbols-outlined"
+      class="filled">
+      close
+    </mat-icon>
+    {{ isOpenDownloadOptions ? '' : 'Download' }}
+  </button>
+</div>

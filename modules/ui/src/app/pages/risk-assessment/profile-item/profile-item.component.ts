@@ -57,7 +57,7 @@ export class ProfileItemComponent {
 
   readonly tooltip = viewChild.required<MatTooltip>('tooltip');
 
-  @HostListener('focusout')
+  @HostListener('focusout', ['$event'])
   outEvent(): void {
     if (this.profile.status === ProfileStatus.EXPIRED) {
       this.tooltip().message = this.EXPIRED_TOOLTIP;

@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-https://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-@if (dataLoaded()) {
+<ng-container *ngIf="dataLoaded()">
   <table
     [dataSource]="dataSource()"
     [trackBy]="trackByName"
@@ -27,6 +27,7 @@ limitations under the License.
         {{ data.name }}
       </td>
     </ng-container>
+
     <ng-container matColumnDef="organisation">
       <th
         *matHeaderCellDef
@@ -39,6 +40,7 @@ limitations under the License.
         {{ data.organisation }}
       </td>
     </ng-container>
+
     <ng-container matColumnDef="expires">
       <th
         *matHeaderCellDef
@@ -51,6 +53,7 @@ limitations under the License.
         {{ data.expires | date: 'dd MMM yyyy' }}
       </td>
     </ng-container>
+
     <ng-container matColumnDef="status">
       <th
         *matHeaderCellDef
@@ -82,7 +85,9 @@ limitations under the License.
         </button>
       </td>
     </ng-container>
+
     <tr *matHeaderRowDef="displayedColumns(); sticky: true" mat-header-row></tr>
+
     <tr class="mat-row" *matNoDataRow>
       <td
         class="mat-cell empty-data-cell"
@@ -104,13 +109,14 @@ limitations under the License.
         </div>
       </td>
     </tr>
+
     <tr
       *matRowDef="let row; columns: displayedColumns()"
       mat-row
       [class.uploading]="row.uploading"
       [class.certificate-selected]="row.name === selectedCertificate()"></tr>
   </table>
-}
+</ng-container>
 
 <ng-template #emptyMessage let-header="header" let-message="message">
   <app-empty-message

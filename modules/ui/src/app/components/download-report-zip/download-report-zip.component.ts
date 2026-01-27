@@ -22,7 +22,7 @@ import {
   OnInit,
   inject,
 } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Profile } from '../../model/profile';
 import { MatDialog } from '@angular/material/dialog';
 import { DownloadZipModalComponent } from '../download-zip-modal/download-zip-modal.component';
@@ -35,7 +35,7 @@ import { TestingType } from '../../model/device';
   templateUrl: './download-report-zip.component.html',
   styleUrl: './download-report-zip.component.scss',
 
-  imports: [MatTooltipModule],
+  imports: [CommonModule, MatTooltipModule],
   providers: [DatePipe, MatTooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -76,13 +76,13 @@ export class DownloadReportZipComponent
   readonly tabIndex = 0;
 
   @HostListener('mouseenter')
-  @HostListener('keyup')
+  @HostListener('keyup', ['$event'])
   onEvent(): void {
     this.tooltip.show();
   }
 
   @HostListener('mouseleave')
-  @HostListener('keydown')
+  @HostListener('keydown', ['$event'])
   outEvent(): void {
     this.tooltip.hide();
   }

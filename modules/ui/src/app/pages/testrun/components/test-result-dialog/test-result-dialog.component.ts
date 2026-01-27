@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-
+import { CommonModule } from '@angular/common';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
@@ -30,7 +30,7 @@ interface DialogData {
 
 @Component({
   selector: 'app-test-result-dialog',
-  imports: [MatDialogModule, MatButtonModule],
+  imports: [MatDialogModule, MatButtonModule, CommonModule],
   templateUrl: './test-result-dialog.component.html',
   styleUrl: './test-result-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

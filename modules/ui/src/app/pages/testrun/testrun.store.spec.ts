@@ -78,7 +78,7 @@ describe('TestrunStore', () => {
 
     testrunStore = TestBed.inject(TestrunStore);
     store = TestBed.inject(MockStore);
-    spyOn(store, 'dispatch').and.callThrough();
+    spyOn(store, 'dispatch').and.callFake(() => {});
   });
 
   it('should be created', () => {

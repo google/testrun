@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-https://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,20 +26,20 @@ limitations under the License.
         formControlName="manufacturer"
         placeholder="Device Manufacturer"
         matInput />
-      @if (manufacturer.hasError('invalid_format')) {
-        <mat-error class="error-multiline" role="alert" aria-live="assertive">
-          <span
-            >Please, check. The manufacturer name must be a maximum of 28
-            characters. Only letters, numbers, and accented letters are
-            permitted.</span
-          >
-        </mat-error>
-      }
-      @if (manufacturer.errors?.['required']) {
-        <mat-error>
-          <span>Device Manufacturer is <strong>required</strong></span>
-        </mat-error>
-      }
+      <mat-error
+        *ngIf="manufacturer.hasError('invalid_format')"
+        class="error-multiline"
+        role="alert"
+        aria-live="assertive">
+        <span
+          >Please, check. The manufacturer name must be a maximum of 28
+          characters. Only letters, numbers, and accented letters are
+          permitted.</span
+        >
+      </mat-error>
+      <mat-error *ngIf="manufacturer.errors?.['required']">
+        <span>Device Manufacturer is <strong>required</strong></span>
+      </mat-error>
     </mat-form-field>
     <label class="field-label" for="device-qualification-form-model">
       Device model
@@ -51,20 +51,20 @@ limitations under the License.
         formControlName="model"
         placeholder="New Device"
         matInput />
-      @if (model.hasError('invalid_format')) {
-        <mat-error class="error-multiline" role="alert" aria-live="assertive">
-          <span
-            >Please, check. The device model name must be a maximum of 28
-            characters. Only letters, numbers, and accented letters are
-            permitted.</span
-          >
-        </mat-error>
-      }
-      @if (model.errors?.['required']) {
-        <mat-error>
-          <span>Device Model is <strong>required</strong></span>
-        </mat-error>
-      }
+      <mat-error
+        *ngIf="model.hasError('invalid_format')"
+        class="error-multiline"
+        role="alert"
+        aria-live="assertive">
+        <span
+          >Please, check. The device model name must be a maximum of 28
+          characters. Only letters, numbers, and accented letters are
+          permitted.</span
+        >
+      </mat-error>
+      <mat-error *ngIf="model.errors?.['required']">
+        <span>Device Model is <strong>required</strong></span>
+      </mat-error>
     </mat-form-field>
     <label class="field-label" for="device-qualification-form-mac-address">
       MAC address
@@ -81,27 +81,24 @@ limitations under the License.
         mask="AA:AA:AA:AA:AA:AA"
         shownMaskExpression="__:__:__:__:__:__"
         type="text" />
-      @if (mac_addr.errors?.['required'] && !mac_addr.errors?.['pattern']) {
-        <mat-error>
-          <span>MAC address is <strong>required</strong></span>
-        </mat-error>
-      }
-      @if (mac_addr.errors?.['pattern']) {
-        <mat-error class="device-form-mac-address-error">
-          <span
-            >Please, check. A MAC address consists of 12 hexadecimal digits (0
-            to 9, a to f, or A to F).</span
-          >
-        </mat-error>
-      }
-      @if (mac_addr.errors?.['has_same_mac_address']) {
-        <mat-error>
-          <span
-            >This MAC address is already used for another device in the
-            repository.</span
-          >
-        </mat-error>
-      }
+      <mat-error
+        *ngIf="mac_addr.errors?.['required'] && !mac_addr.errors?.['pattern']">
+        <span>MAC address is <strong>required</strong></span>
+      </mat-error>
+      <mat-error
+        *ngIf="mac_addr.errors?.['pattern']"
+        class="device-form-mac-address-error">
+        <span
+          >Please, check. A MAC address consists of 12 hexadecimal digits (0 to
+          9, a to f, or A to F).</span
+        >
+      </mat-error>
+      <mat-error *ngIf="mac_addr.errors?.['has_same_mac_address']">
+        <span
+          >This MAC address is already used for another device in the
+          repository.</span
+        >
+      </mat-error>
     </mat-form-field>
 
     <mat-label class="device-qualification-form-journey-label"
@@ -131,29 +128,27 @@ limitations under the License.
         </span>
       </mat-radio-button>
     </mat-radio-group>
-    @if (testModules().length > 0) {
-      <app-device-tests
-        class="device-qualification-form-test-modules-container"
-        [class.device-qualification-form-test-modules-container-error]="
-          test_modules.touched && test_modules.errors?.['required']
-        "
-        [deviceForm]="deviceQualificationForm"
-        [deviceTestModules]="initialDevice()?.test_modules"
-        [testModules]="testModules()">
-      </app-device-tests>
-    }
-    @if (test_modules.touched && test_modules.errors?.['required']) {
-      <mat-error class="device-qualification-form-test-modules-error">
-        At least one test has to be selected to save a Device.
-      </mat-error>
-    }
+    <app-device-tests
+      *ngIf="testModules().length > 0"
+      class="device-qualification-form-test-modules-container"
+      [class.device-qualification-form-test-modules-container-error]="
+        test_modules.touched && test_modules.errors?.['required']
+      "
+      [deviceForm]="deviceQualificationForm"
+      [deviceTestModules]="initialDevice()?.test_modules"
+      [testModules]="testModules()">
+    </app-device-tests>
+    <mat-error
+      *ngIf="test_modules.touched && test_modules.errors?.['required']"
+      class="device-qualification-form-test-modules-error">
+      At least one test has to be selected to save a Device.
+    </mat-error>
 
-    @if (format.length > 0) {
-      <app-dynamic-form
-        class="device-qualification-form-step-content"
-        [format]="format"
-        [optionKey]="'text'"></app-dynamic-form>
-    }
+    <app-dynamic-form
+      *ngIf="format.length > 0"
+      class="device-qualification-form-step-content"
+      [format]="format"
+      [optionKey]="'text'"></app-dynamic-form>
   </section>
 </form>
 <div class="device-qualification-form-actions">

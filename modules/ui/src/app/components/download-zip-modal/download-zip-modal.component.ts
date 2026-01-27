@@ -18,7 +18,7 @@ import {
   RiskResultClassName,
 } from '../../model/profile';
 import { MatButtonModule } from '@angular/material/button';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgForOf, NgIf } from '@angular/common';
 import { MatFormField } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
@@ -62,6 +62,8 @@ export interface DialogCloseResult {
     MatDialogActions,
     MatDialogModule,
     MatButtonModule,
+    NgIf,
+    NgForOf,
     MatFormField,
     MatSelectModule,
     MatOptionModule,

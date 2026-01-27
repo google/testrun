@@ -20,7 +20,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
-
+import { CommonModule } from '@angular/common';
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import {
   ActivatedRoute,
@@ -33,7 +33,7 @@ import { filter, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-settings',
-  imports: [MatToolbarModule, MatTabsModule, RouterModule],
+  imports: [CommonModule, MatToolbarModule, MatTabsModule, RouterModule],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

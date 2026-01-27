@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-https://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,34 +18,28 @@ limitations under the License.
   [class.disabled]="disabled"
   [class.no-actions-menu]="!actions().length">
   <ng-content></ng-content>
-  @if (actions().length) {
-    <button
-      [disabled]="disabled"
-      fontSet="material-symbols-outlined"
-      mat-icon-button
-      aria-label="Actions"
-      matTooltip="Actions"
-      [matMenuTriggerFor]="menu">
-      <mat-icon>more_vert</mat-icon>
-    </button>
-  }
+  <button
+    *ngIf="actions().length"
+    [disabled]="disabled"
+    fontSet="material-symbols-outlined"
+    mat-icon-button
+    aria-label="Actions"
+    matTooltip="Actions"
+    [matMenuTriggerFor]="menu">
+    <mat-icon>more_vert</mat-icon>
+  </button>
 </div>
 
 <mat-menu #menu="matMenu" class="list-item-menu">
-  @for (action of actions(); track trackByAction($index, action)) {
-    <button
-      class="list-item-menu-item"
-      mat-menu-item
-      (click)="menuItemClicked.emit(action.action)">
-      @if (action.icon) {
-        <mat-icon fontSet="material-symbols-outlined">{{
-          action.icon
-        }}</mat-icon>
-      }
-      @if (action.svgIcon) {
-        <mat-icon svgIcon="{{ action.svgIcon }}"></mat-icon>
-      }
-      <span>{{ action.action }}</span>
-    </button>
-  }
+  <button
+    class="list-item-menu-item"
+    mat-menu-item
+    *ngFor="let action of actions(); trackBy: trackByAction"
+    (click)="menuItemClicked.emit(action.action)">
+    <mat-icon *ngIf="action.icon" fontSet="material-symbols-outlined">{{
+      action.icon
+    }}</mat-icon>
+    <mat-icon *ngIf="action.svgIcon" svgIcon="{{ action.svgIcon }}"></mat-icon>
+    <span>{{ action.action }}</span>
+  </button>
 </mat-menu>

@@ -21,7 +21,7 @@ import {
   Output,
   inject,
 } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { ReportActionComponent } from '../../../../components/report-action/report-action.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -33,7 +33,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 @Component({
   selector: 'app-delete-report',
 
-  imports: [MatButtonModule, MatTooltipModule],
+  imports: [CommonModule, MatButtonModule, MatTooltipModule],
   templateUrl: './delete-report.component.html',
   styleUrls: ['./delete-report.component.scss'],
   providers: [DatePipe],

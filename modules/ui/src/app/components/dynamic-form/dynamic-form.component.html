@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-https://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-@for (control of format; track control; let i = $index) {
+<ng-container *ngFor="let control of format; index as i">
   <ng-container
     *ngTemplateOutlet="
       formField;
@@ -27,7 +27,7 @@ limitations under the License.
         description: control.description,
       }
     "></ng-container>
-}
+</ng-container>
 
 <ng-template
   #formField
@@ -40,8 +40,8 @@ limitations under the License.
   <label class="field-label" for="{{ formControlName }}-group">
     {{ label }}
   </label>
-  @switch (type) {
-    @case (FormControlType.TEXT) {
+  <ng-container [ngSwitch]="type">
+    <ng-container *ngSwitchCase="FormControlType.TEXT">
       <ng-container
         *ngTemplateOutlet="
           text;
@@ -50,8 +50,9 @@ limitations under the License.
             description: description,
           }
         "></ng-container>
-    }
-    @case (FormControlType.TEXTAREA) {
+    </ng-container>
+
+    <ng-container *ngSwitchCase="FormControlType.TEXTAREA">
       <ng-container
         *ngTemplateOutlet="
           textarea;
@@ -60,8 +61,9 @@ limitations under the License.
             description: description,
           }
         "></ng-container>
-    }
-    @case (FormControlType.EMAIL_MULTIPLE) {
+    </ng-container>
+
+    <ng-container *ngSwitchCase="FormControlType.EMAIL_MULTIPLE">
       <ng-container
         *ngTemplateOutlet="
           emailMultiple;
@@ -70,8 +72,9 @@ limitations under the License.
             description: description,
           }
         "></ng-container>
-    }
-    @case (FormControlType.SELECT) {
+    </ng-container>
+
+    <ng-container *ngSwitchCase="FormControlType.SELECT">
       <ng-container
         *ngTemplateOutlet="
           select;
@@ -82,8 +85,9 @@ limitations under the License.
             label: label,
           }
         "></ng-container>
-    }
-    @case (FormControlType.SELECT_MULTIPLE) {
+    </ng-container>
+
+    <ng-container *ngSwitchCase="FormControlType.SELECT_MULTIPLE">
       <ng-container
         *ngTemplateOutlet="
           selectMultiple;
@@ -93,8 +97,9 @@ limitations under the License.
             description: description,
           }
         "></ng-container>
-    }
-    @default {
+    </ng-container>
+
+    <ng-container *ngSwitchDefault>
       <ng-container
         *ngTemplateOutlet="
           text;
@@ -103,8 +108,8 @@ limitations under the License.
             description: description,
           }
         "></ng-container>
-    }
-  }
+    </ng-container>
+  </ng-container>
 </ng-template>
 
 <ng-template
@@ -120,28 +125,25 @@ limitations under the License.
       matInput
       id="{{ formControlName }}-group"
       [formControlName]="formControlName" />
-    @if (description) {
-      <mat-hint class="field-hint">{{ description }}</mat-hint>
-    }
-    @if (getControl(formControlName).hasError('invalid_format')) {
-      <mat-error role="alert" aria-live="assertive">
-        <span>Please, check. “ and \ are not allowed.</span>
-      </mat-error>
-    }
-    @if (getControl(formControlName).hasError('required')) {
-      <mat-error>
-        <span>The field is required</span>
-      </mat-error>
-    }
-    @if (getControl(formControlName).hasError('maxlength')) {
-      <mat-error>
-        <span
-          >The field must be a maximum of
-          {{ getControl(formControlName).getError('maxlength').requiredLength }}
-          characters.</span
-        >
-      </mat-error>
-    }
+    <mat-hint *ngIf="description" class="field-hint">{{
+      description
+    }}</mat-hint>
+    <mat-error
+      *ngIf="getControl(formControlName).hasError('invalid_format')"
+      role="alert"
+      aria-live="assertive">
+      <span>Please, check. “ and \ are not allowed.</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span>The field is required</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('maxlength')">
+      <span
+        >The field must be a maximum of
+        {{ getControl(formControlName).getError('maxlength').requiredLength }}
+        characters.</span
+      >
+    </mat-error>
   </mat-form-field>
 </ng-template>
 
@@ -159,28 +161,25 @@ limitations under the License.
       cdkTextareaAutosize
       id="{{ formControlName }}-group"
       [formControlName]="formControlName"></textarea>
-    @if (description) {
-      <mat-hint class="field-hint">{{ description }}</mat-hint>
-    }
-    @if (getControl(formControlName).hasError('invalid_format')) {
-      <mat-error role="alert" aria-live="assertive">
-        <span>Please, check. “ and \ are not allowed.</span>
-      </mat-error>
-    }
-    @if (getControl(formControlName).hasError('required')) {
-      <mat-error>
-        <span>The field is required</span>
-      </mat-error>
-    }
-    @if (getControl(formControlName).hasError('maxlength')) {
-      <mat-error>
-        <span
-          >The field must be a maximum of
-          {{ getControl(formControlName).getError('maxlength').requiredLength }}
-          characters.</span
-        >
-      </mat-error>
-    }
+    <mat-hint *ngIf="description" class="field-hint">{{
+      description
+    }}</mat-hint>
+    <mat-error
+      *ngIf="getControl(formControlName).hasError('invalid_format')"
+      role="alert"
+      aria-live="assertive">
+      <span>Please, check. “ and \ are not allowed.</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span>The field is required</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('maxlength')">
+      <span
+        >The field must be a maximum of
+        {{ getControl(formControlName).getError('maxlength').requiredLength }}
+        characters.</span
+      >
+    </mat-error>
   </mat-form-field>
 </ng-template>
 
@@ -197,31 +196,25 @@ limitations under the License.
       matInput
       id="{{ formControlName }}-group"
       [formControlName]="formControlName" />
-    @if (description) {
-      <mat-hint class="field-hint">{{ description }}</mat-hint>
-    }
-    @if (getControl(formControlName).hasError('required')) {
-      <mat-error>
-        <span>The field is required</span>
-      </mat-error>
-    }
-    @if (getControl(formControlName).hasError('invalid_format')) {
-      <mat-error>
-        <span
-          >Please, check the email address. Valid e-mail can contain only latin
-          letters, numbers, &#64; and . (dot).</span
-        >
-      </mat-error>
-    }
-    @if (getControl(formControlName).hasError('maxlength')) {
-      <mat-error>
-        <span
-          >The field must be a maximum of
-          {{ getControl(formControlName).getError('maxlength').requiredLength }}
-          characters.</span
-        >
-      </mat-error>
-    }
+    <mat-hint *ngIf="description" class="field-hint">{{
+      description
+    }}</mat-hint>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span>The field is required</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('invalid_format')">
+      <span
+        >Please, check the email address. Valid e-mail can contain only latin
+        letters, numbers, &#64; and . (dot).</span
+      >
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('maxlength')">
+      <span
+        >The field must be a maximum of
+        {{ getControl(formControlName).getError('maxlength').requiredLength }}
+        characters.</span
+      >
+    </mat-error>
   </mat-form-field>
 </ng-template>
 
@@ -233,20 +226,18 @@ limitations under the License.
   <section
     class="field-select-multiple form-field"
     [formGroup]="getFormGroup(formControlName)">
-    @for (option of options; track option; let i = $index) {
-      <p class="field-select-checkbox">
-        <mat-checkbox
-          [formControlName]="i"
-          (keydown.tab)="
-            markSectionAsDirty(i, options.length, formControlName)
-          ">
-          <span [innerHTML]="getOptionValue(option)"></span>
-        </mat-checkbox>
-      </p>
-    }
-    @if (description) {
-      <mat-hint class="field-hint">{{ description }}</mat-hint>
-    }
+    <p
+      *ngFor="let option of options; let i = index"
+      class="field-select-checkbox">
+      <mat-checkbox
+        [formControlName]="i"
+        (keydown.tab)="markSectionAsDirty(i, options.length, formControlName)">
+        <span [innerHTML]="getOptionValue(option)"></span>
+      </mat-checkbox>
+    </p>
+    <mat-hint *ngIf="description" class="field-hint">{{
+      description
+    }}</mat-hint>
   </section>
 </ng-template>
 
@@ -268,22 +259,19 @@ limitations under the License.
       <mat-select-trigger>
         {{ getControl(formControlName).value }}
       </mat-select-trigger>
-      @for (option of options; track option; let i = $index) {
-        <mat-option
-          [value]="getOptionValue(option)"
-          [innerHTML]="getSanitizedOptionValue(option)">
-        </mat-option>
-      }
+      <mat-option
+        *ngFor="let option of options; let i = index"
+        [value]="getOptionValue(option)"
+        [innerHTML]="getSanitizedOptionValue(option)">
+      </mat-option>
     </mat-select>
-    @if (description) {
-      <mat-hint class="field-hint">{{ description }}</mat-hint>
-    }
-    @if (getControl(formControlName).hasError('required')) {
-      <mat-error>
-        <span role="alert" aria-live="assertive" [attr.aria-label]="label">
-          The field is required
-        </span>
-      </mat-error>
-    }
+    <mat-hint *ngIf="description" class="field-hint">{{
+      description
+    }}</mat-hint>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span role="alert" aria-live="assertive" [attr.aria-label]="label">
+        The field is required
+      </span>
+    </mat-error>
   </mat-form-field>
 </ng-template>

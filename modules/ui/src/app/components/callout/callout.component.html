@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-https://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,39 +14,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="callout-container" [ngClass]="type()">
-  @if (type() !== CalloutType.InfoPilot) {
-    <mat-icon class="callout-icon" fontSet="material-symbols-outlined">
-      {{ type() }}
-    </mat-icon>
-  }
-  @if (type() === CalloutType.InfoPilot) {
-    <span class="callout-icon info-pilot">
-      <app-program-type-icon [type]="ProgramType.Pilot"></app-program-type-icon
-    ></span>
-  }
+  <mat-icon
+    *ngIf="type() !== CalloutType.InfoPilot"
+    class="callout-icon"
+    fontSet="material-symbols-outlined">
+    {{ type() }}
+  </mat-icon>
+  <span
+    *ngIf="type() === CalloutType.InfoPilot"
+    class="callout-icon info-pilot">
+    <app-program-type-icon [type]="ProgramType.Pilot"></app-program-type-icon
+  ></span>
   <p class="callout-context">
     <ng-content></ng-content>
   </p>
   <div class="callout-action-container">
-    @if (action()) {
-      <a
-        (click)="onAction.emit()"
-        (keydown.enter)="onAction.emit()"
-        (keydown.space)="onAction.emit()"
-        tabindex="0"
-        role="link"
-        class="callout-action callout-action-link"
-        >{{ action() }}</a
-      >
-    }
-    @if (closable()) {
-      <button
-        class="callout-action callout-close-button"
-        mat-button
-        (click)="calloutClosed.emit(id())">
-        Dismiss
-      </button>
-    }
+    <a
+      *ngIf="action()"
+      (click)="onAction.emit()"
+      (keydown.enter)="onAction.emit()"
+      (keydown.space)="onAction.emit()"
+      tabindex="0"
+      role="link"
+      class="callout-action callout-action-link"
+      >{{ action() }}</a
+    >
+    <button
+      *ngIf="closable()"
+      class="callout-action callout-close-button"
+      mat-button
+      (click)="calloutClosed.emit(id())">
+      Dismiss
+    </button>
   </div>
   <div class="callout-border"></div>
 </div>

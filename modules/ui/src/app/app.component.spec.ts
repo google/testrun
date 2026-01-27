@@ -209,9 +209,9 @@ describe('AppComponent', () => {
     store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(AppComponent);
     component = fixture.componentInstance;
-    router = TestBed.inject(Router);
+    router = TestBed.get(Router);
     compiled = fixture.nativeElement as HTMLElement;
-    spyOn(store, 'dispatch').and.callThrough();
+    spyOn(store, 'dispatch').and.callFake(() => {});
     component.appStore.updateSettingMissedError(null);
   });
 

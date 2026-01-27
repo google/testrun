@@ -25,6 +25,7 @@ import { ComponentWithAnnouncement } from '../component-with-announcement';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
 
 interface DialogData {
   icon?: string;
@@ -38,7 +39,7 @@ interface DialogData {
   templateUrl: './simple-dialog.component.html',
   styleUrls: ['./simple-dialog.component.scss'],
 
-  imports: [MatDialogModule, MatButtonModule, MatIconModule],
+  imports: [MatDialogModule, MatButtonModule, MatIconModule, CommonModule],
 })
 export class SimpleDialogComponent extends ComponentWithAnnouncement(
   EscapableDialogComponent

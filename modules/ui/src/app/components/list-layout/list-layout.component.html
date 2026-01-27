@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-https://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-@if (entities().length > 0 || isOpenEntityForm()) {
+<ng-container *ngIf="entities().length > 0 || isOpenEntityForm(); else empty">
   <mat-drawer-container class="layout-container">
     <mat-drawer
       mode="side"
@@ -42,33 +42,31 @@ limitations under the License.
               [value]="searchText()"
               (input)="updateQuery($event)"
               placeholder="Search" />
-            @if (searchText().length > 2) {
-              <button
-                (click)="clearSearch()"
-                class="clear-search-button"
-                mat-icon-button
-                aria-label="Clear search">
-                <mat-icon>close</mat-icon>
-              </button>
-            } @else {
+            <button
+              *ngIf="searchText().length > 2; else searchIcon"
+              (click)="clearSearch()"
+              class="clear-search-button"
+              mat-icon-button
+              aria-label="Clear search">
+              <mat-icon>close</mat-icon>
+            </button>
+            <ng-template #searchIcon>
               <mat-icon>search</mat-icon>
-            }
+            </ng-template>
           </div>
         </mat-toolbar-row>
       </mat-toolbar>
       <div class="entity-list-container">
         <section class="entity-list">
-          @if (isOpenEntityForm() && !initialEntity()) {
-            <div class="fake-list-item">
-              <mat-icon svgIcon="draft" class="profile-draft-icon"></mat-icon>
-              {{
-                title() === LayoutType.Device
-                  ? 'New device'
-                  : 'New risk profile'
-              }}
-            </div>
-          }
-          @for (entity of filtered(); track entity; let i = $index) {
+          <div
+            *ngIf="isOpenEntityForm() && !initialEntity()"
+            class="fake-list-item">
+            <mat-icon svgIcon="draft" class="profile-draft-icon"></mat-icon>
+            {{
+              title() === LayoutType.Device ? 'New device' : 'New risk profile'
+            }}
+          </div>
+          <ng-container *ngFor="let entity of filtered(); index as i">
             <app-list-item
               [entity]="entity"
               [actions]="getActions(entity)"
@@ -83,23 +81,20 @@ limitations under the License.
                   }
                 "></ng-container>
             </app-list-item>
-          }
+          </ng-container>
         </section>
       </div>
     </mat-drawer>
     <mat-drawer-content>
-      @if (content()) {
-        <section class="content">
-          <ng-container *ngTemplateOutlet="content()!"></ng-container>
-        </section>
-      }
+      <section class="content" *ngIf="content()">
+        <ng-container *ngTemplateOutlet="content()!"></ng-container>
+      </section>
     </mat-drawer-content>
   </mat-drawer-container>
-} @else {
+</ng-container>
+<ng-template #empty>
   <h2 class="title title-empty">{{ title() }}</h2>
-  @if (emptyContent()) {
-    <div class="content-empty">
-      <ng-container *ngTemplateOutlet="emptyContent()!"></ng-container>
-    </div>
-  }
-}
+  <div class="content-empty" *ngIf="emptyContent()">
+    <ng-container *ngTemplateOutlet="emptyContent()!"></ng-container>
+  </div>
+</ng-template>

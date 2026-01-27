@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 import { Component, inject } from '@angular/core';
-
+import { CommonModule } from '@angular/common';
 import { filter, take } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-escapable-dialog',
 
-  imports: [],
+  imports: [CommonModule],
   template: '',
 })
 export class EscapableDialogComponent {

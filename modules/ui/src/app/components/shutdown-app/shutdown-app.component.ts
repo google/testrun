@@ -20,7 +20,7 @@ import {
   OnDestroy,
   inject,
 } from '@angular/core';
-
+import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
@@ -33,7 +33,7 @@ import { SimpleDialogComponent } from '../simple-dialog/simple-dialog.component'
 @Component({
   selector: 'app-shutdown-app',
 
-  imports: [MatButtonModule, MatIcon, MatTooltipModule],
+  imports: [CommonModule, MatButtonModule, MatIcon, MatTooltipModule],
   templateUrl: './shutdown-app.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
