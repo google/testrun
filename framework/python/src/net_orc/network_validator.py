@@ -15,6 +15,7 @@
 """Holds logic for validation of network services prior to runtime."""
 import json
 import os
+import pwd
 import shutil
 import time
 import docker
@@ -179,44 +180,50 @@ class NetworkValidator:
 
     LOGGER.info('Validation device ' + device.name + ' has finished')
 
-  def _get_host_user(self):
-    user = self._get_os_user()
+  def _get_sudo_user(self):
+    """Returns the username of the sudo user."""
+    return os.environ.get('SUDO_USER')
 
-    # If primary method failed, try secondary
+  def _get_pwd_user(self):
+    """Returns the username of the current user using pwd module"""
+    user = None
+    user = pwd.getpwuid(os.getuid()).pw_name
+    return user
+
+  def _get_host_user(self):
+    """Returns the username of the host user"""
+    user_functions = [
+      self._get_sudo_user,
+      os.getlogin,
+      getpass.getuser,
+      self._get_pwd_user
+    ]
+    user = None
+    error_messages = []
+    for func in user_functions:
+      try:
+        user = func()
+        if user is not None:
+          break
+      except (KeyError, ImportError, ModuleNotFoundError, OSError) as e:
+      # Handle specific exceptions individually
+        if isinstance(e, KeyError):
+          error_message = 'USER environment variable not set or unavailable.'
+          error_messages.append(error_message)
+        elif isinstance(e, ImportError):
+          error_messages.append('Unable to import the getpass module.')
+        elif isinstance(e, ModuleNotFoundError):
+          error_messages.append('The getpass module was not found.')
+        elif isinstance(e, OSError):
+          error_message = 'OS error occurred while retrieving the username.'
+          error_messages.append(error_message)
+        else:
+          error_messages.append('An exception occurred: ' + str(e))
     if user is None:
-      user = self._get_user()
+      LOGGER.error(next(error_messages))
 
     LOGGER.debug(f'Network validator host user: {user}')
-    return user
 
-  def _get_os_user(self):
-    user = None
-    try:
-      user = os.getlogin()
-    except OSError:
-      # Handle the OSError exception
-      LOGGER.error('An OS error occurred while retrieving the login name.')
-    except Exception as error: # pylint: disable=W0703
-      # Catch any other unexpected exceptions
-      LOGGER.error('An exception occurred:', error)
-    return user
-
-  def _get_user(self):
-    user = None
-    try:
-      user = getpass.getuser()
-    except (KeyError, ImportError, ModuleNotFoundError, OSError) as e:
-      # Handle specific exceptions individually
-      if isinstance(e, KeyError):
-        LOGGER.error('USER environment variable not set or unavailable.')
-      elif isinstance(e, ImportError):
-        LOGGER.error('Unable to import the getpass module.')
-      elif isinstance(e, ModuleNotFoundError):
-        LOGGER.error('The getpass module was not found.')
-      elif isinstance(e, OSError):
-        LOGGER.error('An OS error occurred while retrieving the username.')
-      else:
-        LOGGER.error('An exception occurred:', e)
     return user
 
   def _get_device_status(self, module):
