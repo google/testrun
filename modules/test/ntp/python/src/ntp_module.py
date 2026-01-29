@@ -345,6 +345,12 @@ class NTPModule(TestModule):
         ntp_whitelist_resolver.is_ip_whitelisted(ip) for ip in ntp_to_remote_ips
     )
 
+    for ip in ntp_to_remote_ips:
+      if ntp_whitelist_resolver.is_ip_whitelisted(ip):
+        LOGGER.info(f'NTP server {ip} is in the trusted whitelist')
+      else:
+        LOGGER.info(f'NTP server {ip} is NOT in the trusted whitelist')
+
     result = 'Feature Not Detected', 'Device has not sent any NTP requests'
 
     if device_sends_ntp:

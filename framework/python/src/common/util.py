@@ -15,6 +15,7 @@
 """Provides basic utilities for Testrun."""
 import getpass
 import os
+import pwd
 import subprocess
 import shlex
 import typing as t
@@ -55,51 +56,53 @@ def interface_exists(interface):
   """Checks whether an interface is available"""
   return interface in netifaces.interfaces()
 
+
 def prettify(mac_string):
   """Formats a MAC address with colons"""
   return ':'.join([f'{ord(b):02x}' for b in mac_string])
 
-def get_host_user():
+
+def get_sudo_user() -> t.Optional[str]:
+  """Returns the username of the sudo user if running under sudo, else None."""
+  return os.environ.get('SUDO_USER')
+
+
+def get_pwd_user() -> t.Optional[str]:
+  """Returns the username of the current user using pwd module"""
+  user = None
+  user = pwd.getpwuid(os.getuid()).pw_name
+  return user
+
+
+def get_host_user()-> t.Optional[str]:
   """Returns the username of the host user"""
-  user = get_os_user()
-
-  # If primary method failed, try secondary
-  if user is None:
-    user = get_user()
-
-  return user
-
-def get_os_user():
-  """Attempts to get the username using os library"""
+  user_functions = [get_sudo_user, os.getlogin, getpass.getuser, get_pwd_user]
   user = None
-  try:
-    user = os.getlogin()
-  except OSError:
-    # Handle the OSError exception
-    LOGGER.error('An OS error occurred whilst calling os.getlogin()')
-  except Exception: # pylint: disable=W0703
-    # Catch any other unexpected exceptions
-    LOGGER.error('An unknown exception occurred whilst calling os.getlogin()')
-  return user
-
-def get_user():
-  """Attempts to get the host user using the getpass library"""
-  user = None
-  try:
-    user = getpass.getuser()
-  except (KeyError, ImportError, ModuleNotFoundError, OSError) as e:
+  error_messages = []
+  for func in user_functions:
+    try:
+      user = func()
+      if user is not None:
+        break
+    except (KeyError, ImportError, ModuleNotFoundError, OSError) as e:
     # Handle specific exceptions individually
-    if isinstance(e, KeyError):
-      LOGGER.error('USER environment variable not set or unavailable.')
-    elif isinstance(e, ImportError):
-      LOGGER.error('Unable to import the getpass module.')
-    elif isinstance(e, ModuleNotFoundError):
-      LOGGER.error('The getpass module was not found.')
-    elif isinstance(e, OSError):
-      LOGGER.error('An OS error occurred while retrieving the username.')
-    else:
-      LOGGER.error('An exception occurred:', e)
+      if isinstance(e, KeyError):
+        error_message = 'USER environment variable not set or unavailable.'
+        error_messages.append(error_message)
+      elif isinstance(e, ImportError):
+        error_messages.append('Unable to import the getpass module.')
+      elif isinstance(e, ModuleNotFoundError):
+        error_messages.append('The getpass module was not found.')
+      elif isinstance(e, OSError):
+        error_message = 'OS error occurred while retrieving the username.'
+        error_messages.append(error_message)
+      else:
+        error_messages.append('An exception occurred: ' + str(e))
+  if user is None:
+    LOGGER.error(next(error_messages))
+
   return user
+
 
 def set_file_owner(path, owner):
   """Change the owner of a file"""
