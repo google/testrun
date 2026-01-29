@@ -31,7 +31,14 @@
       {
         "name": "connection.switch.arp_inspection",
         "test_description": "The device implements ARP correctly as per RFC826",
-        "expected_behavior": "Device continues to operate correctly when ARP inspection is enabled on the switch.  No functionality is lost with ARP inspection enabled."
+        "expected_behavior": "Device continues to operate correctly when ARP inspection is enabled on the switch.  No functionality is lost with ARP inspection enabled.",
+        "recommendations": [
+          "Remove Secondary IP Addresses (IP Aliases)",
+          "Disable Virtual Network Bridges (Docker/LXC)",
+          "Flush ARP Cache and Neighbor Table",
+          "Restart Network Services / Reboot Device",
+          "Verify DHCP Client Configuration"
+        ]
       },
       {
         "name": "connection.switch.dhcp_snooping",
