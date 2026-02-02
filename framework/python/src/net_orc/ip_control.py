@@ -264,11 +264,11 @@ class IPControl:
       return False
     return True
 
-  def ping_via_gateway(self, host):
+  def ping_via_gateway(self, host: str) -> bool:
     """Ping the host trough the gateway container"""
     command = f'timeout 3 docker exec tr-ct-gateway ping -W 1 -c 1 {host}'
     output = util.run_command(command, supress_error=True)
-    if '0% packet loss' in output[0]:
+    if re.search(r'\s0% packet loss', output[0]):
       return True
     return False
 
