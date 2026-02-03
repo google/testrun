@@ -32,7 +32,7 @@ from jinja2 import Environment, FileSystemLoader
 
 LOG_NAME = 'test_tls'
 MODULE_REPORT_FILE_NAME = 'tls_report.j2.html'
-MODULE_REPORT_STYLED_FILE_NAME = 'tls_report_styled.j2.html'
+MODULE_REPORT_STYLED_FILE_NAME = 'tls_report_styled.jinja2'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 TLS_CAPTURE_FILE = '/runtime/output/tls.pcap'
@@ -89,17 +89,9 @@ class TLSModule(TestModule):
     pages = {}
     outbound_conns = None
 
-    # List of capture files to scan
-    pcap_files = [
-        self.startup_capture_file, self.monitor_capture_file,
-        self.tls_capture_file
-    ]
-    certificates = self.extract_certificates_from_pcap(pcap_files,
-                                                       self._device_mac)
-
     # Report styles
     with open(os.path.join(self._report_template_folder,
-                           self._css_file),
+                          self._css_file),
               'r',
               encoding='UTF-8'
               ) as style_file:
@@ -107,14 +99,23 @@ class TLSModule(TestModule):
 
     # Load Testrun logo to base64
     with open(os.path.join(self._report_template_folder,
-                           self._logo_file), 'rb') as f:
+                          self._logo_file), 'rb') as f:
       logo = base64.b64encode(f.read()).decode('utf-8')
+
+    # List of capture files to scan
+    pcap_files = [
+        self.startup_capture_file, self.monitor_capture_file,
+        self.tls_capture_file
+    ]
+    certificates = self.extract_certificates_from_pcap(pcap_files,
+                                                      self._device_mac)
+
 
     if len(certificates) > 0:
 
       # pylint: disable=W0612
       for cert_num, ((ip_address, port),
-                     cert) in enumerate(certificates.items()):
+                    cert) in enumerate(certificates.items()):
         pages[cert_num] = {}
 
         # Extract certificate data
@@ -223,6 +224,8 @@ class TLSModule(TestModule):
                                     )
       report_jinja_styled = template.render(
                                   base_template=self._base_template_styled_file,
+                                  styles=styles,
+                                  logo=logo,
                                   module_header = module_header,
                                   )
     outbound_conns = self._tls_util.get_all_outbound_connections(
@@ -264,9 +267,10 @@ class TLSModule(TestModule):
 
     # Write the styled content to a file
     with open(jinja_path_styled, 'w', encoding='utf-8') as file:
-      file.write(jinja_path_styled)
+      file.write(report_jinja_styled)
 
     LOGGER.info('Module report generated at: ' + str(jinja_path))
+
     return jinja_path
 
   def format_extension_value(self, value):
