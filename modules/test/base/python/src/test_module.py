@@ -46,7 +46,7 @@ class TestModule:
     self._base_template_file=os.environ.get('BASE_TEMPLATE_FILE')
     self._base_template_styled_file=os.environ.get('BASE_TEMPLATE_STYLED_FILE')
     self._css_file=os.environ.get('CSS_FILE')
-    self._icon_file=os.environ.get('ICON_FILE')
+    self._logo_file=os.environ.get('LOGO_FILE')
     self._log_level = os.environ.get('LOG_LEVEL', None)
     self._add_logger(log_name=log_name)
     self._config = self._read_config(

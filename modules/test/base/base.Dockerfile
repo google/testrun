@@ -89,7 +89,7 @@ ENV BASE_TEMPLATE_STYLED_FILE=module_report_styled_base.jinja2
 # Styles
 ENV CSS_FILE=test_report_styles.css
 # ICON
-ENV ICON_FILE=testrun.png
+ENV LOGO_FILE=testrun.png
 
 # Copy base template
 COPY resources/report/$BASE_TEMPLATE_FILE $REPORT_TEMPLATE_PATH/
@@ -101,7 +101,7 @@ COPY resources/report/$BASE_TEMPLATE_STYLED_FILE $REPORT_TEMPLATE_PATH/
 COPY resources/report/$CSS_FILE $REPORT_TEMPLATE_PATH/
 
 # Copy icon
-COPY resources/report/$ICON_FILE $REPORT_TEMPLATE_PATH/
+COPY resources/report/$LOGO_FILE $REPORT_TEMPLATE_PATH/
 
 # Start the test module
 ENTRYPOINT [ "/testrun/bin/start" ]

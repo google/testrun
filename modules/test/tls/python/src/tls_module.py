@@ -17,6 +17,7 @@
 from test_module import TestModule
 from tls_util import TLSUtil
 from http_scan import HTTPScan
+import base64
 import os
 import subprocess
 from binascii import hexlify
@@ -95,6 +96,20 @@ class TLSModule(TestModule):
     ]
     certificates = self.extract_certificates_from_pcap(pcap_files,
                                                        self._device_mac)
+
+    # Report styles
+    with open(os.path.join(self._report_template_folder,
+                           self._css_file),
+              'r',
+              encoding='UTF-8'
+              ) as style_file:
+      styles = style_file.read()
+
+    # Load Testrun logo to base64
+    with open(os.path.join(self._report_template_folder,
+                           self._logo_file), 'rb') as f:
+      logo = base64.b64encode(f.read()).decode('utf-8')
+
     if len(certificates) > 0:
 
       # pylint: disable=W0612
@@ -188,7 +203,7 @@ class TLSModule(TestModule):
         page_html_styled = template.render(
                                   base_template=self._base_template_styled_file,
                                   styles=styles,
-                                  icon=icon,
+                                  logo=logo,
                                   module_header=module_header_repr,
                                   summary_headers=summary_headers,
                                   summary_data=page['summary_data'],
@@ -207,9 +222,9 @@ class TLSModule(TestModule):
                                     module_header = module_header,
                                     )
       report_jinja_styled = template.render(
-                                        base_template=self._base_template_file,
-                                        module_header = module_header,
-                                    )
+                                  base_template=self._base_template_styled_file,
+                                  module_header = module_header,
+                                  )
     outbound_conns = self._tls_util.get_all_outbound_connections(
         device_mac=self._device_mac, capture_files=pcap_files)
 
