@@ -84,9 +84,14 @@ ENV PATH="/opt/venv/bin:$PATH"
 ENV REPORT_TEMPLATE_PATH=/testrun/resources
 # Jinja base template 
 ENV BASE_TEMPLATE_FILE=module_report_base.jinja2
+# Styles
+ENV CSS_FILE=test_report_styles.css
 
 # Copy base template
 COPY resources/report/$BASE_TEMPLATE_FILE $REPORT_TEMPLATE_PATH/
+
+# Copy styles
+COPY resources/report/$BASE_TEMPLATE_FILE $CSS_FILE/
 
 # Start the test module
 ENTRYPOINT [ "/testrun/bin/start" ]
