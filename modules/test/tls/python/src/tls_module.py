@@ -26,12 +26,12 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, dsa, ec
 from cryptography.x509 import AuthorityKeyIdentifier, SubjectKeyIdentifier, BasicConstraints, KeyUsage
 from cryptography.x509 import GeneralNames, DNSName, ExtendedKeyUsage, ObjectIdentifier, SubjectAlternativeName
-from jinja2 import Environment, FileSystemLoader, BaseLoader
+from jinja2 import Environment, FileSystemLoader
 
 
 LOG_NAME = 'test_tls'
 MODULE_REPORT_FILE_NAME = 'tls_report.j2.html'
-MODULE_REPORT_HTML_FILE_NAME = 'tls_report.html'
+MODULE_REPORT_STYLED_FILE_NAME = 'tls_report_styled.j2.html'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 TLS_CAPTURE_FILE = '/runtime/output/tls.pcap'
@@ -39,21 +39,7 @@ GATEWAY_CAPTURE_FILE = '/runtime/network/gateway.pcap'
 LOGGER = None
 REPORT_TEMPLATE_FILE = 'report_template.jinja2'
 OUTBOUND_CONNS_PER_PAGE = 18
-TEST_REPORT_STYLES = 'test_report_styles.css'
-RESOURCES_DIR = 'resources/report'
-MODULE_REPORT_TEMPLATE = 'module/report/template'
 
-# Locate parent directory
-current_dir = os.path.dirname(os.path.realpath(__file__))
-
-# Locate the test-run root directory, 4 levels, src->python->framework->test-run
-root_dir = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.dirname(current_dir))))
-
-# Obtain the report resources directory
-report_resource_dir = os.path.join(root_dir, RESOURCES_DIR)
-
-test_run_img_file = os.path.join(report_resource_dir, 'testrun.png')
 
 class TLSModule(TestModule):
   """The TLS testing module."""
@@ -183,6 +169,7 @@ class TLSModule(TestModule):
                                           ]
 
     report_jinja = ''
+    report_jinja_styled = ''
     if pages:
       for num,page in pages.items():
         module_header_repr = module_header if num == 0 else None
@@ -198,14 +185,31 @@ class TLSModule(TestModule):
                                   cert_ext=cert_ext,
                                   ountbound_headers=outbound_headers,
                                 )
+        page_html_styled = template.render(
+                                  base_template=self._base_template_styled_file,
+                                  styles=styles,
+                                  icon=icon,
+                                  module_header=module_header_repr,
+                                  summary_headers=summary_headers,
+                                  summary_data=page['summary_data'],
+                                  cert_info_data=page['cert_info_data'],
+                                  subject_data=page['subject_data'],
+                                  cert_table_headers=cert_table_headers,
+                                  cert_ext=cert_ext,
+                                  ountbound_headers=outbound_headers,
+                              )
         report_jinja += page_html
+        report_jinja_styled += page_html_styled
 
     else:
       report_jinja = template.render(
                                     base_template=self._base_template_file,
                                     module_header = module_header,
                                     )
-
+      report_jinja_styled = template.render(
+                                        base_template=self._base_template_file,
+                                        module_header = module_header,
+                                    )
     outbound_conns = self._tls_util.get_all_outbound_connections(
         device_mac=self._device_mac, capture_files=pcap_files)
 
@@ -224,62 +228,31 @@ class TLSModule(TestModule):
                               ountbound_headers=outbound_headers,
                               outbound_conns=outbound_conns_chunk
                             )
+          out_page_styled = template.render(
+                              base_template=self._base_template_styled_file,
+                              ountbound_headers=outbound_headers,
+                              outbound_conns=outbound_conns_chunk
+                          )
           report_jinja += out_page
+          report_jinja_styled += out_page_styled
 
     LOGGER.debug('Module report:\n' + report_jinja)
 
-    self.generate_module_html(module_header, report_jinja)
-
     # Use os.path.join to create the complete file path
     jinja_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
+    jinja_path_styled = os.path.join(
+        self._results_dir, MODULE_REPORT_STYLED_FILE_NAME)
 
     # Write the content to a file
     with open(jinja_path, 'w', encoding='utf-8') as file:
       file.write(report_jinja)
 
+    # Write the styled content to a file
+    with open(jinja_path_styled, 'w', encoding='utf-8') as file:
+      file.write(jinja_path_styled)
+
     LOGGER.info('Module report generated at: ' + str(jinja_path))
     return jinja_path
-
-  def generate_module_html(self, module_header, report_jinja):
-    # Load html template
-    template = Environment(
-        loader=FileSystemLoader(
-            report_resource_dir
-        ),
-        trim_blocks=True,
-        lstrip_blocks=True
-    ).get_template(MODULE_REPORT_TEMPLATE)
-
-    env_module = Environment(loader=BaseLoader())
-
-    # Report styles
-    with open(os.path.join(report_resource_dir,
-                           TEST_REPORT_STYLES),
-              'r',
-              encoding='UTF-8'
-              ) as style_file:
-      styles = style_file.read()
-
-    # Load Testrun logo to base64
-    with open(test_run_img_file, 'rb') as f:
-      logo = base64.b64encode(f.read()).decode('utf-8')
-
-    # Render html
-    module_template = env_module.from_string(report_jinja).render(
-        title = 'Testrun report',
-        name=module_header,
-        logo=logo,
-    )
-
-    html_template = template.render(styles=styles,
-                                    template=module_template)
-
-    # Use os.path.join to create the complete file path
-    html_path = os.path.join(self._results_dir, MODULE_REPORT_HTML_FILE_NAME)
-
-    # Write the content to a file
-    with open(html_path, 'w', encoding='utf-8') as file:
-      file.write(html_template)
 
   def format_extension_value(self, value):
     if isinstance(value, bytes):
