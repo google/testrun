@@ -17,7 +17,6 @@
 from test_module import TestModule
 from tls_util import TLSUtil
 from http_scan import HTTPScan
-import base64
 import os
 import subprocess
 from binascii import hexlify
@@ -88,11 +87,6 @@ class TLSModule(TestModule):
     outbound_headers = ['Destination IP', 'Port']
     pages = {}
     outbound_conns = None
-
-    # Load Testrun logo to base64
-    with open(os.path.join(self._report_template_folder,
-                          self._logo_file), 'rb') as f:
-      logo = base64.b64encode(f.read()).decode('utf-8')
 
     # List of capture files to scan
     pcap_files = [
@@ -177,31 +171,45 @@ class TLSModule(TestModule):
                                           ]
 
     report_jinja = ''
-
+    report_jinja_preview = ''
     if pages:
       for num,page in pages.items():
         module_header_repr = module_header if num == 0 else None
         cert_ext=page['cert_ext'] if 'cert_ext' in page else None
         page_html = template.render(
-                                  base_template=self._base_template_file,
-                                  logo=logo,
-                                  module_header=module_header_repr,
-                                  summary_headers=summary_headers,
-                                  summary_data=page['summary_data'],
-                                  cert_info_data=page['cert_info_data'],
-                                  subject_data=page['subject_data'],
-                                  cert_table_headers=cert_table_headers,
-                                  cert_ext=cert_ext,
-                                  ountbound_headers=outbound_headers,
-                                )
+          base_template=self._base_template_file,
+          module_header=module_header_repr,
+          summary_headers=summary_headers,
+          summary_data=page['summary_data'],
+          cert_info_data=page['cert_info_data'],
+          subject_data=page['subject_data'],
+          cert_table_headers=cert_table_headers,
+          cert_ext=cert_ext,
+          ountbound_headers=outbound_headers,
+        )
         report_jinja += page_html
+        page_html = template.render(
+          base_template=self._base_template_file_preview,
+          module_header=module_header_repr,
+          summary_headers=summary_headers,
+          summary_data=page['summary_data'],
+          cert_info_data=page['cert_info_data'],
+          subject_data=page['subject_data'],
+          cert_table_headers=cert_table_headers,
+          cert_ext=cert_ext,
+          ountbound_headers=outbound_headers,
+        )
+        report_jinja_preview += page_html
 
     else:
       report_jinja = template.render(
-                                    base_template=self._base_template_file,
-                                    logo=logo,
-                                    module_header = module_header,
-                                    )
+        base_template=self._base_template_file,
+        module_header = module_header,
+      )
+      report_jinja_preview = template.render(
+        base_template=self._base_template_file_preview,
+        module_header = module_header,
+      )
 
     outbound_conns = self._tls_util.get_all_outbound_connections(
         device_mac=self._device_mac, capture_files=pcap_files)
@@ -218,19 +226,24 @@ class TLSModule(TestModule):
           outbound_conns_chunk = outbound_conns[start:end]
           out_page = template.render(
                               base_template=self._base_template_file,
-                              logo=logo,
+                              ountbound_headers=outbound_headers,
+                              outbound_conns=outbound_conns_chunk
+                            )
+          out_page_preview = template.render(
+                              base_template=self._base_template_file_preview,
                               ountbound_headers=outbound_headers,
                               outbound_conns=outbound_conns_chunk
                             )
 
           report_jinja += out_page
+          report_jinja_preview += out_page_preview
 
     LOGGER.debug('Module report:\n' + report_jinja)
 
+    # Generate styled report for a preview
     jinja_path_styled = os.path.join(
         self._results_dir, MODULE_REPORT_STYLED_FILE_NAME)
-
-    self._render_styled_report(report_jinja, jinja_path_styled)
+    self._render_styled_report(report_jinja_preview, jinja_path_styled)
 
     # Use os.path.join to create the complete file path
     jinja_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)

@@ -84,6 +84,8 @@ ENV PATH="/opt/venv/bin:$PATH"
 ENV REPORT_TEMPLATE_PATH=/testrun/resources
 # Jinja base template 
 ENV BASE_TEMPLATE_FILE=module_report_base.jinja2
+# Jinja preview template
+ENV BASE_TEMPLATE_PREVIEW_FILE=module_report_base_preview.jinja2
 # Jinja base template
 ENV BASE_TEMPLATE_STYLED_FILE=module_report_styled.jinja2
 # Styles
@@ -93,6 +95,9 @@ ENV LOGO_FILE=testrun.png
 
 # Copy base template
 COPY resources/report/$BASE_TEMPLATE_FILE $REPORT_TEMPLATE_PATH/
+
+# Copy base preview template
+COPY resources/report/$BASE_TEMPLATE_PREVIEW_FILE $REPORT_TEMPLATE_PATH/
 
 # Copy base template (with styles)
 COPY resources/report/$BASE_TEMPLATE_STYLED_FILE $REPORT_TEMPLATE_PATH/

@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Base class for all core test module functions"""
+
+import base64
 import json
 import logger
 import os
 import util
 from datetime import datetime
 import traceback
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, BaseLoader
 
 from common.statuses import TestResult
 
@@ -45,6 +47,9 @@ class TestModule:
     self._device_test_pack = json.loads(os.environ.get('DEVICE_TEST_PACK', ''))
     self._report_template_folder = os.environ.get('REPORT_TEMPLATE_PATH')
     self._base_template_file=os.environ.get('BASE_TEMPLATE_FILE')
+    self._base_template_file_preview=os.environ.get(
+      'BASE_TEMPLATE_PREVIEW_FILE'
+    )
     self._base_template_styled_file=os.environ.get('BASE_TEMPLATE_STYLED_FILE')
     self._css_file=os.environ.get('CSS_FILE')
     self._logo_file=os.environ.get('LOGO_FILE')
@@ -243,15 +248,26 @@ class TestModule:
               ) as style_file:
       styles = style_file.read()
 
-      loader=FileSystemLoader(self._report_template_folder)
-      template = Environment(
-          loader=loader,
-          trim_blocks=True,
-          lstrip_blocks=True
-      ).get_template(self._base_template_styled_file)
+    # Load Testrun logo to base64
+    with open(os.path.join(self._report_template_folder,
+                          self._logo_file), 'rb') as f:
+      logo = base64.b64encode(f.read()).decode('utf-8')
+
+    loader=FileSystemLoader(self._report_template_folder)
+    template = Environment(
+        loader=loader,
+        trim_blocks=True,
+        lstrip_blocks=True
+    ).get_template(self._base_template_styled_file)
+
+    module_template = Environment(loader=BaseLoader()
+                                  ).from_string(jinja_report).render(
+                                    title = 'Testrun report',
+                                    logo=logo,
+                                  )
 
     report_jinja_styled = template.render(
-        template=jinja_report,
+        template=module_template,
         styles=styles
     )
     # Write the styled content to a file
