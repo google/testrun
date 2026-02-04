@@ -18,6 +18,7 @@ import os
 import util
 from datetime import datetime
 import traceback
+from jinja2 import Environment, FileSystemLoader
 
 from common.statuses import TestResult
 
@@ -232,3 +233,27 @@ class TestModule:
     if text:
       return text.split('\n')[0]
     return None
+
+  def _render_styled_report(self, jinja_report, result_path):
+    # Report styles
+    with open(os.path.join(self._report_template_folder,
+                           self._css_file),
+              'r',
+              encoding='UTF-8'
+              ) as style_file:
+      styles = style_file.read()
+
+      loader=FileSystemLoader(self._report_template_folder)
+      template = Environment(
+          loader=loader,
+          trim_blocks=True,
+          lstrip_blocks=True
+      ).get_template(self._base_template_styled_file)
+
+    report_jinja_styled = template.render(
+        template=jinja_report,
+        styles=styles
+    )
+    # Write the styled content to a file
+    with open(result_path, 'w', encoding='utf-8') as file:
+      file.write(report_jinja_styled)

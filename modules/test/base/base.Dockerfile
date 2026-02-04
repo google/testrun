@@ -85,7 +85,7 @@ ENV REPORT_TEMPLATE_PATH=/testrun/resources
 # Jinja base template 
 ENV BASE_TEMPLATE_FILE=module_report_base.jinja2
 # Jinja base template
-ENV BASE_TEMPLATE_STYLED_FILE=module_report_styled_base.jinja2
+ENV BASE_TEMPLATE_STYLED_FILE=module_report_styled.jinja2
 # Styles
 ENV CSS_FILE=test_report_styles.css
 # ICON

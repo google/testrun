@@ -89,14 +89,6 @@ class TLSModule(TestModule):
     pages = {}
     outbound_conns = None
 
-    # Report styles
-    with open(os.path.join(self._report_template_folder,
-                          self._css_file),
-              'r',
-              encoding='UTF-8'
-              ) as style_file:
-      styles = style_file.read()
-
     # Load Testrun logo to base64
     with open(os.path.join(self._report_template_folder,
                           self._logo_file), 'rb') as f:
@@ -185,13 +177,14 @@ class TLSModule(TestModule):
                                           ]
 
     report_jinja = ''
-    report_jinja_styled = ''
+
     if pages:
       for num,page in pages.items():
         module_header_repr = module_header if num == 0 else None
         cert_ext=page['cert_ext'] if 'cert_ext' in page else None
         page_html = template.render(
                                   base_template=self._base_template_file,
+                                  logo=logo,
                                   module_header=module_header_repr,
                                   summary_headers=summary_headers,
                                   summary_data=page['summary_data'],
@@ -201,33 +194,15 @@ class TLSModule(TestModule):
                                   cert_ext=cert_ext,
                                   ountbound_headers=outbound_headers,
                                 )
-        page_html_styled = template.render(
-                                  base_template=self._base_template_styled_file,
-                                  styles=styles,
-                                  logo=logo,
-                                  module_header=module_header_repr,
-                                  summary_headers=summary_headers,
-                                  summary_data=page['summary_data'],
-                                  cert_info_data=page['cert_info_data'],
-                                  subject_data=page['subject_data'],
-                                  cert_table_headers=cert_table_headers,
-                                  cert_ext=cert_ext,
-                                  ountbound_headers=outbound_headers,
-                              )
         report_jinja += page_html
-        report_jinja_styled += page_html_styled
 
     else:
       report_jinja = template.render(
                                     base_template=self._base_template_file,
+                                    logo=logo,
                                     module_header = module_header,
                                     )
-      report_jinja_styled = template.render(
-                                  base_template=self._base_template_styled_file,
-                                  styles=styles,
-                                  logo=logo,
-                                  module_header = module_header,
-                                  )
+
     outbound_conns = self._tls_util.get_all_outbound_connections(
         device_mac=self._device_mac, capture_files=pcap_files)
 
@@ -243,31 +218,26 @@ class TLSModule(TestModule):
           outbound_conns_chunk = outbound_conns[start:end]
           out_page = template.render(
                               base_template=self._base_template_file,
+                              logo=logo,
                               ountbound_headers=outbound_headers,
                               outbound_conns=outbound_conns_chunk
                             )
-          out_page_styled = template.render(
-                              base_template=self._base_template_styled_file,
-                              ountbound_headers=outbound_headers,
-                              outbound_conns=outbound_conns_chunk
-                          )
+
           report_jinja += out_page
-          report_jinja_styled += out_page_styled
 
     LOGGER.debug('Module report:\n' + report_jinja)
 
-    # Use os.path.join to create the complete file path
-    jinja_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
     jinja_path_styled = os.path.join(
         self._results_dir, MODULE_REPORT_STYLED_FILE_NAME)
+
+    self._render_styled_report(report_jinja, jinja_path_styled)
+
+    # Use os.path.join to create the complete file path
+    jinja_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
 
     # Write the content to a file
     with open(jinja_path, 'w', encoding='utf-8') as file:
       file.write(report_jinja)
-
-    # Write the styled content to a file
-    with open(jinja_path_styled, 'w', encoding='utf-8') as file:
-      file.write(report_jinja_styled)
 
     LOGGER.info('Module report generated at: ' + str(jinja_path))
 
