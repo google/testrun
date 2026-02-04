@@ -491,7 +491,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
     self._set_status(TestrunStatus.IN_PROGRESS)
-    
+
     # Start testrun timer
     self.get_session().start_timer()
 
