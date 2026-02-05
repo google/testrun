@@ -268,7 +268,8 @@ class TestModule:
 
     report_jinja_styled = template.render(
         template=module_template,
-        styles=styles
+        styles=styles,
+        logo=logo,
     )
     # Write the styled content to a file
     with open(result_path, 'w', encoding='utf-8') as file:
