@@ -206,14 +206,17 @@ class DHCPUtil():
       LOGGER.error('Failed to confirm a valid active lease for the device')
     return ping_success
 
-  def ping(self, host, ipv6=False):
+  def ping(self, host, ipv6=False, retries=5, delay=2, timeout=2):
     if ipv6:
-      command = f'ping -c 1 -6 {host}'
+      command = f'ping -c 1 -W {timeout} -6 {host}'
     else:
-      command = f'ping -c 1 {host}'
-    out, _ = util.run_command(command, supress_error=True)
-    if re.search(r'\s0% packet loss', out):
-      return True
+      command = f'ping -c 1 -W {timeout} {host}'
+    for attempt in range(1, retries + 1):
+      out, _ = util.run_command(command, supress_error=True)
+      if re.search(r'\s0% packet loss', out):
+        return True
+      LOGGER.info(f"Ping failed on attempt {attempt}")
+      time.sleep(delay)
     return False
 
   def add_reserved_lease(self,
