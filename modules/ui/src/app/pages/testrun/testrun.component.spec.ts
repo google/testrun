@@ -537,12 +537,12 @@ describe('TestrunComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have disabled "Start" button', () => {
+      it('should not have "Start" button', () => {
         const startBtn = compiled.querySelector(
           '.start-button'
         ) as HTMLButtonElement;
 
-        expect(startBtn.disabled).toBeTrue();
+        expect(startBtn).toBeNull();
       });
 
       it('should have "Stop" button', () => {
