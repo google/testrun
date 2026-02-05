@@ -175,6 +175,8 @@ class TestrunSession():
     self.reset()
     self._status = TestrunStatus.STARTING
     self.pause_message = False
+
+  def start_timer(self):
     self._started = datetime.datetime.now()
 
   def get_started(self):
