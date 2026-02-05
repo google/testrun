@@ -82,27 +82,11 @@ limitations under the License.
           [data]="data"
           [profiles]="vm.profiles"></app-download-options>
       }
-    }
-    @if (!data.started) {
+    } @else {
       <ng-container *ngTemplateOutlet="empty"></ng-container>
     }
   } @else {
-    <div class="progress-content-empty">
-      <div class="empty-content">
-        <p class="empty-content-heading">Start device testing</p>
-        <p class="empty-content-info">
-          Click the button below to configure your testing task
-        </p>
-        <ng-container
-          *ngTemplateOutlet="
-            startNewTestrunButton;
-            context: {
-              hasDevices: vm.hasDevices,
-              isAllDevicesOutdated: vm.isAllDevicesOutdated,
-            }
-          "></ng-container>
-      </div>
-    </div>
+    <ng-container *ngTemplateOutlet="empty"></ng-container>
   }
   <ng-template #empty>
     <div class="progress-content-empty">
