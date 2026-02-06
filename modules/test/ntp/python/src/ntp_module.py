@@ -182,12 +182,13 @@ class NTPModule(TestModule):
                                   module_data=module_table_data[start:end])
       report_html += page_html
 
-      page_html = template.render(base_template=self._base_template_file_preview,
-                                  module_header=module_header_repr,
-                                  summary_headers=summary_headers,
-                                  summary_data=summary_data,
-                                  module_data_headers=module_data_headers,
-                                  module_data=module_table_data[start:end])
+      page_html = template.render(
+          base_template=self._base_template_file_preview,
+          module_header=module_header_repr,
+          summary_headers=summary_headers,
+          summary_data=summary_data,
+          module_data_headers=module_data_headers,
+          module_data=module_table_data[start:end])
       report_jinja_preview += page_html
 
       start = end
