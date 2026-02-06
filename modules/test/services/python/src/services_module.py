@@ -23,6 +23,7 @@ from jinja2 import Environment, FileSystemLoader
 
 LOG_NAME = 'test_services'
 MODULE_REPORT_FILE_NAME = 'services_report.j2.html'
+MODULE_REPORT_STYLED_FILE_NAME = 'services_report_styled.jinja2'
 NMAP_SCAN_RESULTS_SCAN_FILE = 'services_scan_results.json'
 LOGGER = None
 REPORT_TEMPLATE_FILE = 'report_template.jinja2'
@@ -129,8 +130,21 @@ class ServicesModule(TestModule):
                                 module_data_headers=module_data_headers,
                                 module_data=module_data,
                               )
+    html_content_preview = template.render(
+        base_template=self._base_template_file_preview,
+        module_header=module_header,
+        summary_headers=summary_headers,
+        summary_data=summary_data,
+        module_data_headers=module_data_headers,
+        module_data=module_data,
+    )
 
     LOGGER.debug('Module report:\n' + html_content)
+
+    # Generate styled report for a preview
+    jinja_path_styled = os.path.join(
+        self._results_dir, MODULE_REPORT_STYLED_FILE_NAME)
+    self._render_styled_report(html_content_preview, jinja_path_styled)
 
     # Use os.path.join to create the complete file path
     report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
