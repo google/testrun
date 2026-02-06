@@ -174,18 +174,22 @@ class NTPModule(TestModule):
     for page in range(pages + 1):
       end = start + min(len(module_table_data), rows_on_page)
       module_header_repr = module_header if page == 0 else None
-      page_html = template.render(base_template=self._base_template_file,
-                                  module_header=module_header_repr,
-                                  summary_headers=summary_headers,
-                                  summary_data=summary_data,
-                                  module_data_headers=module_data_headers,
-                                  module_data=module_table_data[start:end])
-      page_html_styled = template.render(base_template=self._base_template_file_preview,
-                                  module_header=module_header_repr,
-                                  summary_headers=summary_headers,
-                                  summary_data=summary_data,
-                                  module_data_headers=module_data_headers,
-                                  module_data=module_table_data[start:end])
+      page_html = template.render(
+        base_template=self._base_template_file,
+        module_header=module_header_repr,
+        summary_headers=summary_headers,
+        summary_data=summary_data,
+        module_data_headers=module_data_headers,
+        module_data=module_table_data[start:end]
+        )
+      page_html_styled = template.render(
+        base_template=self._base_template_file_preview,
+        module_header=module_header_repr,
+        summary_headers=summary_headers,
+        summary_data=summary_data,
+        module_data_headers=module_data_headers,
+        module_data=module_table_data[start:end]
+        )
       report_html += page_html
       report_html_styled += page_html_styled
       start = end
@@ -196,7 +200,9 @@ class NTPModule(TestModule):
     report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
 
     # Use os.path.join to create the complete file path for styled report
-    report_path_styled = os.path.join(self._results_dir, MODULE_REPORT_STYLED_FILE_NAME)
+    report_path_styled = os.path.join(
+      self._results_dir, MODULE_REPORT_STYLED_FILE_NAME
+      )
     # Generate the styled report for preview
     self._render_styled_report(report_html_styled, report_path_styled)
 
