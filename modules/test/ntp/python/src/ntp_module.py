@@ -23,6 +23,7 @@ from ntp_white_list import NTPWhitelistResolver
 
 LOG_NAME = 'test_ntp'
 MODULE_REPORT_FILE_NAME = 'ntp_report.j2.html'
+MODULE_REPORT_STYLED_FILE_NAME = 'ntp_report_styled.jinja2'
 NTP_SERVER_CAPTURE_FILE = '/runtime/network/ntp.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
@@ -169,6 +170,7 @@ class NTPModule(TestModule):
     rows_on_page = ((page_useful_space) // row_height) - 1
     start = 0
     report_html = ''
+    report_jinja_preview = ''
     for page in range(pages + 1):
       end = start + min(len(module_table_data), rows_on_page)
       module_header_repr = module_header if page == 0 else None
@@ -179,9 +181,24 @@ class NTPModule(TestModule):
                                   module_data_headers=module_data_headers,
                                   module_data=module_table_data[start:end])
       report_html += page_html
+
+      page_html = template.render(
+          base_template=self._base_template_file_preview,
+          module_header=module_header_repr,
+          summary_headers=summary_headers,
+          summary_data=summary_data,
+          module_data_headers=module_data_headers,
+          module_data=module_table_data[start:end])
+      report_jinja_preview += page_html
+
       start = end
 
     LOGGER.debug('Module report:\n' + report_html)
+
+    # Generate styled report for a preview
+    jinja_path_styled = os.path.join(
+        self._results_dir, MODULE_REPORT_STYLED_FILE_NAME)
+    self._render_styled_report(report_jinja_preview, jinja_path_styled)
 
     # Use os.path.join to create the complete file path
     report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
