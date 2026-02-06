@@ -215,7 +215,7 @@ class DHCPUtil():
       out, _ = util.run_command(command, supress_error=True)
       if re.search(r'\s0% packet loss', out):
         return True
-      LOGGER.info(f"Ping failed on attempt {attempt}")
+      LOGGER.info(f'Ping failed on attempt {attempt}')
       time.sleep(delay)
     return False
 
