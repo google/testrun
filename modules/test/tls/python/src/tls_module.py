@@ -31,7 +31,7 @@ from jinja2 import Environment, FileSystemLoader
 
 LOG_NAME = 'test_tls'
 MODULE_REPORT_FILE_NAME = 'tls_report.j2.html'
-MODULE_REPORT_STYLED_FILE_NAME = 'tls_report_styled.jinja2'
+MODULE_REPORT_STYLED_FILE_NAME = 'tls_report.jinja2'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 TLS_CAPTURE_FILE = '/runtime/output/tls.pcap'
