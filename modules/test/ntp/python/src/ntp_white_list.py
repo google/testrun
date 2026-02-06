@@ -1,6 +1,8 @@
 """Module to resolve NTP whitelist domains to IP addresses asynchronously."""
 
 import asyncio
+import concurrent.futures
+import threading
 import dns.asyncresolver
 from logging import Logger
 
@@ -99,8 +101,18 @@ class NTPWhitelistResolver:
       semaphore_limit: int = 50,
       timeout: int = 30
   ) -> set[str]:
-    return asyncio.run(
-      self._get_ips_whitelist(self.config, semaphore_limit, timeout))
+    # Always run in a separate thread to ensure we have a clean event loop context
+    def run_in_thread():
+      new_loop = asyncio.new_event_loop()
+      asyncio.set_event_loop(new_loop)
+      try:
+        return new_loop.run_until_complete(
+            self._get_ips_whitelist(self.config, semaphore_limit, timeout))
+      finally:
+        new_loop.close()
+    
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+      return executor.submit(run_in_thread).result()
 
   # Check if an IP is whitelisted
   def is_ip_whitelisted(self, ip: str) -> bool:
