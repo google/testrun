@@ -185,7 +185,7 @@ class DNSModule(TestModule):
           module_data_headers=module_data_headers,
           module_data=page_rows
       )
-    report_jinja_preview += page_html
+      report_jinja_preview += page_html
 
     LOGGER.debug('Module report:\n' + report_html)
 
@@ -235,7 +235,6 @@ class DNSModule(TestModule):
             qname = dns_layer.qd.qname.decode() if dns_layer.qd.qname else 'N/A'
           else:
             qname = 'N/A'
-
           resolved_ip = 'N/A'
           # If it's a response packet, extract the resolved IP address
           # from the answer section
@@ -253,14 +252,15 @@ class DNSModule(TestModule):
                 elif answer.type == 28: # Indicates AAAA record (IPv6 address)
                   resolved_ip = answer.rdata  # Extract IPv6 address
                   break  # Stop after finding the first valid resolved IP
-
+          qname = qname.rstrip('.') if (isinstance(qname, str)
+                                        and qname.endswith('.')) else qname
           dns_data.append({
               'Timestamp': float(packet.time),  # Timestamp of the DNS packet
               'Source': source_ip,
               'Destination': destination_ip,
               'ResolvedIP': resolved_ip,  # Adding the resolved IP address
               'Type': dns_type,
-              'Data': qname[:-1]
+              'Data': qname,
           })
 
     # Filter unique entries based on 'Timestamp'
