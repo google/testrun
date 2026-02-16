@@ -289,6 +289,7 @@ class TLSUtil():
         args = f'"{local_cert_path}" "{device_cert_path}"'
         args_conn = f' "{host}" "{port}" "{local_cert_path}"'
         is_device_cert_valid = False
+        log_msg = f'Attempting to connect to device with cert: {local_cert}'
         if is_local_cert_root:
           # Check if root cert
           command = f'{os.path.abspath(root_script)} {args}'
@@ -296,7 +297,7 @@ class TLSUtil():
           if f'{device_cert_path}: OK' in str(response):
             is_device_cert_valid = True
           else:
-            LOGGER.info('Attempting to connect to device with cert: ' + local_cert)
+            LOGGER.info(log_msg)
             script_abs_path = os.path.abspath(root_script_connect)
             command = f'{script_abs_path} {args_conn}'
             response = util.run_command(command)
@@ -311,7 +312,7 @@ class TLSUtil():
           if f'{device_cert_path}: OK' in str(response):
             is_device_cert_valid = True
           else:
-            LOGGER.info('Attempting to connect to device with cert: ' + local_cert)
+            LOGGER.info(log_msg)
             script_abs_path = os.path.abspath(intermidiate_script_connect)
             command = f'{script_abs_path} {args_conn}'
             response = util.run_command(command)
