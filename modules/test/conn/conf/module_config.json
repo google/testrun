@@ -41,6 +41,15 @@
         ]
       },
       {
+        "name": "connection.target_ping",
+        "test_description": "The device under test responds to an ICMP echo (ping) request.",
+        "expected_behavior": "The device under test responds to an ICMP echo (ping) request.",
+        "recommendations": [
+          "Configure device to allow ICMP requests (ping)",
+          "Create a firewall exception to allow ICMP requests from LAN"
+        ]
+      },
+      {
         "name": "connection.switch.dhcp_snooping",
         "test_description": "The device operates as a DHCP client and operates correctly when DHCP snooping is enabled on a switch.",
         "expected_behavior": "Device continues to operate correctly when DHCP snooping is enabled on the switch."
@@ -131,15 +140,6 @@
         "recommendations": [
           "Ensure that all ports on the device are isolated",
           "Ensure only one DHCP client is running"
-        ]
-      },
-      {
-        "name": "connection.target_ping",
-        "test_description": "The device under test responds to an ICMP echo (ping) request.",
-        "expected_behavior": "The device under test responds to an ICMP echo (ping) request.",
-        "recommendations": [
-          "Configure device to allow ICMP requests (ping)",
-          "Create a firewall exception to allow ICMP requests from LAN"
         ]
       },
       {
