@@ -131,8 +131,8 @@ echo "nginx configured with multi-level CA chain on $VM_IP"
 # 9. Copy nginx_fullchain.pem, int2CA.pem, int1CA.pem, rootCA.pem from VM to certs subdirectory in working directory
 # $SSHPASS scp -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP}:/etc/ssl/certs/nginx_fullchain.pem "$CERTS_DIR/nginx_fullchain.pem"
 $SSHPASS scp -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP}:/etc/ssl/certs/int2CA.pem "$CERTS_DIR/int2CA.pem"
-# $SSHPASS scp -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP}:/etc/ssl/certs/int1CA.pem "$CERTS_DIR/int1CA.pem"
-# $SSHPASS scp -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP}:/etc/ssl/certs/rootCA.pem "$CERTS_DIR/rootCA.pem"
+$SSHPASS scp -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP}:/etc/ssl/certs/int1CA.pem "$CERTS_DIR/int1CA.pem"
+$SSHPASS scp -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP}:/etc/ssl/certs/rootCA.pem "$CERTS_DIR/rootCA.pem"
 echo "Certificates copied from VM to $CERTS_DIR/"
 
 # 10. Add rootCA.pem to trusted store on the client (Ubuntu/Debian)
