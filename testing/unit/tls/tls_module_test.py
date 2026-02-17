@@ -841,7 +841,7 @@ class TLSModuleTest(unittest.TestCase):
     print('\ntls_module_trusted_ca_cert_chain_test')
     cert_path = os.path.join(CERT_DIR, 'device_cert_local.crt')
     cert_valid = TLS_UTIL.validate_local_ca_signature(
-        device_cert_path=cert_path)
+        device_cert_path=cert_path, host='10.10.10.14', port='443')
     self.assertEqual(cert_valid[0], True)
 
   def tls_module_ca_cert_spaces_test(self):
@@ -862,7 +862,7 @@ class TLSModuleTest(unittest.TestCase):
     tls_util = TLSUtil(log, cert_out_dir=OUTPUT_DIR, root_certs_dir=tmp_dir)
 
     cert_valid = tls_util.validate_local_ca_signature(
-        device_cert_path=cert_path)
+        device_cert_path=cert_path, host='10.10.10.14', port='443')
     self.assertEqual(cert_valid[0], True)
 
   def download_public_cert(self, hostname, port=443):

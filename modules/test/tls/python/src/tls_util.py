@@ -237,7 +237,10 @@ class TLSUtil():
 
       device_cert_path = os.path.join(self._cert_out_dir, self._dev_cert_file)
       signed, ca_file = self.validate_local_ca_signature(
-          device_cert_path=device_cert_path)
+          device_cert_path=device_cert_path,
+          host=host,
+          port=port
+      )
       if signed:
         return True, 'Device signed by cert:' + ca_file
     return False, 'Device certificate has not been signed'
@@ -259,12 +262,21 @@ class TLSUtil():
         return True
       return False
 
-  def validate_local_ca_signature(self, device_cert_path):
+  def validate_local_ca_signature(self, device_cert_path, host, port):
     root_script = os.path.join(self._bin_dir, 'check_cert_signature.sh')
     intermidiate_script = os.path.join(
       self._bin_dir,
       'check_cert_intermidiate_signature.sh'
     )
+    root_script_connect =os.path.join(
+      self._bin_dir,
+      'openssl_connect_root.sh'
+    )
+    intermidiate_script_connect =os.path.join(
+      self._bin_dir,
+      'openssl_connect_intermidiate.sh'
+    )
+    openssl_conn_condition = 'Verify return code: 0 (ok)'
 
     # Get a list of all root certificates
     local_certs = os.listdir(self._root_certs_dir)
@@ -273,22 +285,41 @@ class TLSUtil():
       try:
         # Create the file path
         local_cert_path = os.path.join(self._root_certs_dir, local_cert)
-        LOGGER.info('Checking root cert: ' + str(local_cert_path))
         is_local_cert_root = self._is_cert_root(local_cert_path)
         args = f'"{local_cert_path}" "{device_cert_path}"'
+        args_conn = f' "{host}" "{port}" "{local_cert_path}"'
         is_device_cert_valid = False
+        log_msg = f'Attempting to connect to device with cert: {local_cert}'
         if is_local_cert_root:
           # Check if root cert
           command = f'{os.path.abspath(root_script)} {args}'
           response = util.run_command(command)
           if f'{device_cert_path}: OK' in str(response):
             is_device_cert_valid = True
+          else:
+            LOGGER.info(log_msg)
+            script_abs_path = os.path.abspath(root_script_connect)
+            command = f'{script_abs_path} {args_conn}'
+            response = util.run_command(command)
+            if openssl_conn_condition in str(response):
+              is_device_cert_valid = True
+            else:
+              LOGGER.info('Connection attempt failed with cert: ' + local_cert)
         else:
           # Intermediate cert
           command = f'{os.path.abspath(intermidiate_script)} {args}'
           response = util.run_command(command)
           if f'{device_cert_path}: OK' in str(response):
             is_device_cert_valid = True
+          else:
+            LOGGER.info(log_msg)
+            script_abs_path = os.path.abspath(intermidiate_script_connect)
+            command = f'{script_abs_path} {args_conn}'
+            response = util.run_command(command)
+            if openssl_conn_condition in str(response):
+              is_device_cert_valid = True
+            else:
+              LOGGER.info('Connection attempt failed with cert: ' + local_cert)
         if is_device_cert_valid:
           LOGGER.info('Device signed by cert:' + local_cert)
           return True, local_cert_path
