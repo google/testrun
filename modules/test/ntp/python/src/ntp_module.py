@@ -23,6 +23,7 @@ from ntp_white_list import NTPWhitelistResolver
 
 LOG_NAME = 'test_ntp'
 MODULE_REPORT_FILE_NAME = 'ntp_report.j2.html'
+MODULE_REPORT_STYLED_FILE_NAME = 'ntp_report.jinja2'
 NTP_SERVER_CAPTURE_FILE = '/runtime/network/ntp.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
@@ -142,7 +143,7 @@ class NTPModule(TestModule):
 
       # Generate the HTML table with the count column
       for (src, dst, typ,
-           version), avg_diff in average_time_between_requests.items():
+          version), avg_diff in average_time_between_requests.items():
         cnt = len(timestamps[(src, dst, typ, version)])
 
         # Sync Average only applies to client requests
@@ -169,22 +170,41 @@ class NTPModule(TestModule):
     rows_on_page = ((page_useful_space) // row_height) - 1
     start = 0
     report_html = ''
+    report_html_styled = ''
     for page in range(pages + 1):
       end = start + min(len(module_table_data), rows_on_page)
       module_header_repr = module_header if page == 0 else None
-      page_html = template.render(base_template=self._base_template_file,
-                                  module_header=module_header_repr,
-                                  summary_headers=summary_headers,
-                                  summary_data=summary_data,
-                                  module_data_headers=module_data_headers,
-                                  module_data=module_table_data[start:end])
+      page_html = template.render(
+        base_template=self._base_template_file,
+        module_header=module_header_repr,
+        summary_headers=summary_headers,
+        summary_data=summary_data,
+        module_data_headers=module_data_headers,
+        module_data=module_table_data[start:end]
+        )
+      page_html_styled = template.render(
+        base_template=self._base_template_file_preview,
+        module_header=module_header_repr,
+        summary_headers=summary_headers,
+        summary_data=summary_data,
+        module_data_headers=module_data_headers,
+        module_data=module_table_data[start:end]
+        )
       report_html += page_html
+      report_html_styled += page_html_styled
       start = end
 
     LOGGER.debug('Module report:\n' + report_html)
 
     # Use os.path.join to create the complete file path
     report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
+
+    # Use os.path.join to create the complete file path for styled report
+    report_path_styled = os.path.join(
+      self._results_dir, MODULE_REPORT_STYLED_FILE_NAME
+      )
+    # Generate the styled report for preview
+    self._render_styled_report(report_html_styled, report_path_styled)
 
     # Write the content to a file
     with open(report_path, 'w', encoding='utf-8') as file:

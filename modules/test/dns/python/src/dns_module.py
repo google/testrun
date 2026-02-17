@@ -22,6 +22,7 @@ from jinja2 import Environment, FileSystemLoader
 
 LOG_NAME = 'test_dns'
 MODULE_REPORT_FILE_NAME = 'dns_report.j2.html'
+MODULE_REPORT_STYLED_FILE_NAME = 'dns_report.jinja2'
 DNS_SERVER_CAPTURE_FILE = '/runtime/network/dns.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
@@ -161,6 +162,7 @@ class DNSModule(TestModule):
       pages_content.append(current_page_rows)
 
     report_html = ''
+    report_jinja_preview = ''
     if not pages_content:
       pages_content = [[]]
 
@@ -175,8 +177,22 @@ class DNSModule(TestModule):
           module_data=page_rows
       )
       report_html += page_html
+      page_html = template.render(
+          base_template=self._base_template_file_preview,
+          module_header=module_header_repr,
+          summary_headers=summary_headers,
+          summary_data=summary_data,
+          module_data_headers=module_data_headers,
+          module_data=page_rows
+      )
+      report_jinja_preview += page_html
 
     LOGGER.debug('Module report:\n' + report_html)
+
+    # Generate styled report for a preview
+    jinja_path_styled = os.path.join(
+        self._results_dir, MODULE_REPORT_STYLED_FILE_NAME)
+    self._render_styled_report(report_jinja_preview, jinja_path_styled)
 
     # Use os.path.join to create the complete file path
     report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
@@ -219,7 +235,6 @@ class DNSModule(TestModule):
             qname = dns_layer.qd.qname.decode() if dns_layer.qd.qname else 'N/A'
           else:
             qname = 'N/A'
-
           resolved_ip = 'N/A'
           # If it's a response packet, extract the resolved IP address
           # from the answer section
@@ -237,14 +252,15 @@ class DNSModule(TestModule):
                 elif answer.type == 28: # Indicates AAAA record (IPv6 address)
                   resolved_ip = answer.rdata  # Extract IPv6 address
                   break  # Stop after finding the first valid resolved IP
-
+          qname = qname.rstrip('.') if (isinstance(qname, str)
+                                        and qname.endswith('.')) else qname
           dns_data.append({
               'Timestamp': float(packet.time),  # Timestamp of the DNS packet
               'Source': source_ip,
               'Destination': destination_ip,
               'ResolvedIP': resolved_ip,  # Adding the resolved IP address
               'Type': dns_type,
-              'Data': qname[:-1]
+              'Data': qname,
           })
 
     # Filter unique entries based on 'Timestamp'
