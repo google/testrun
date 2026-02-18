@@ -997,13 +997,20 @@ question {question.get('question')}''')
           if now > cert.not_valid_after_utc:
             status = 'Expired'
 
+          # Determine if certificate is root or intermediate.
+          if cert.issuer == cert.subject:
+            cert_type = 'root'
+          else:
+            cert_type = 'intermediate'
+
           # Craft python dictionary with values
           cert_obj = {
               'name': common_name,
               'status': status,
               'organisation': issuer,
               'expires': cert.not_valid_after_utc,
-              'filename': cert_file
+              'filename': cert_file,
+              'type': cert_type,
           }
 
           # Add certificate to list
