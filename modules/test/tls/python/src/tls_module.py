@@ -530,12 +530,13 @@ class TLSModule(TestModule):
     else:
       result_state = False
       result_message = 'TLS 1.0 or higher was not detected'
-    result_details = [
+    result_details = tuple({
                       *tls_1_0_valid[2],
                       *tls_1_1_valid[2],
                       *tls_1_2_valid[2],
                       *tls_1_3_valid[2]
-                    ]
+                    })
+    LOGGER.info(f'TLS 1.0 Client Validation details: {result_details}')
     result_tags = list(
         set(tls_1_0_valid[3] + tls_1_1_valid[3] + tls_1_2_valid[3] +
             tls_1_3_valid[3]))
