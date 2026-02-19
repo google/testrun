@@ -206,8 +206,8 @@ export class RiskAssessmentComponent
     this.liveAnnouncer.clear();
     if (!selectedProfile) {
       this.saveProfile(profile, () => {
-        this.store.setFocusOnCreateButton();
         this.store.scrollToSelectedProfile();
+        this.store.setFocusOnSelectedProfile();
       });
     } else if (
       this.compareProfiles(profile, selectedProfile) ||
@@ -379,10 +379,13 @@ export class RiskAssessmentComponent
       onSave: (profile: Profile) => {
         if (profile.status === ProfileStatus.VALID) {
           this.openSuccessDialog(profile, focusElement);
-        } else {
-          focusElement();
         }
         this.store.updateSelectedProfile(profile);
+        if (profile.status !== ProfileStatus.VALID) {
+          timer(100).subscribe(() => {
+            focusElement();
+          });
+        }
       },
     });
   }
