@@ -33,24 +33,29 @@
         fill="white" />
     </svg>
   </div>
-  <button
-    *ngFor="let item of menuItems()"
-    mat-menu-item
-    class="side-add-menu-button"
-    [class.with-description]="item.description !== null"
-    (click)="item.onClick()"
-    (keydown.tab)="focusButton($event)"
-    (keydown.escape)="focusButton($event)"
-    [disabled]="item.disabled$ | async">
-    <mat-icon *ngIf="item.svgIcon" svgIcon="{{ item.svgIcon }}"></mat-icon>
-    <mat-icon
-      *ngIf="item.icon"
-      class="material-symbols-outlined side-add-menu-button-icon"
-      >{{ item.icon }}</mat-icon
-    >
-    <div class="side-add-menu-button-label">{{ item.label }}</div>
-    <div *ngIf="item.description" class="side-add-menu-button-description">
-      {{ item.description }}
-    </div>
-  </button>
+  @for (item of menuItems(); track item) {
+    <button
+      mat-menu-item
+      class="side-add-menu-button"
+      [class.with-description]="item.description !== null"
+      (click)="item.onClick()"
+      (keydown.tab)="focusButton($event)"
+      (keydown.escape)="focusButton($event)"
+      [disabled]="item.disabled$ | async">
+      @if (item.svgIcon) {
+        <mat-icon svgIcon="{{ item.svgIcon }}"></mat-icon>
+      }
+      @if (item.icon) {
+        <mat-icon class="material-symbols-outlined side-add-menu-button-icon">{{
+          item.icon
+        }}</mat-icon>
+      }
+      <div class="side-add-menu-button-label">{{ item.label }}</div>
+      @if (item.description) {
+        <div class="side-add-menu-button-description">
+          {{ item.description }}
+        </div>
+      }
+    </button>
+  }
 </mat-menu>

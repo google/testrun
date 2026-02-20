@@ -32,7 +32,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatError, MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { CommonModule } from '@angular/common';
+
 import {
   AbstractControl,
   FormBuilder,
@@ -63,7 +63,6 @@ import { tap } from 'rxjs/internal/operators/tap';
   selector: 'app-profile-form',
   imports: [
     MatButtonModule,
-    CommonModule,
     ReactiveFormsModule,
     MatInputModule,
     MatError,
@@ -319,7 +318,9 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
       if (question.type === FormControlType.SELECT_MULTIPLE) {
         question.options?.forEach((item, idx) => {
           if ((answer?.answer as number[])?.includes(idx)) {
-            this.getFormGroup(index).controls[idx].setValue(true);
+            this.getFormGroup(index).controls[idx].setValue(true, {
+              emitEvent: false,
+            });
           } else {
             this.getFormGroup(index).controls[idx].setValue(false);
           }

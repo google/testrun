@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    https://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<ng-container *ngIf="systemStatus as data">
+@if (systemStatus; as data) {
   <div
     class="progress-card"
     [ngClass]="getClass(data.status, data.result)"
@@ -26,7 +26,6 @@ limitations under the License.
         <span>{{ getTestsResult(data) }}</span>
       </p>
     </div>
-
     <div class="progress-card-info progress-card-info-status">
       <div>
         <p class="progress-card-info-title">{{ getTestStatusText(data) }}</p>
@@ -34,52 +33,49 @@ limitations under the License.
           <span>{{ getTestStatus(data) }}</span>
         </p>
       </div>
-      <div
-        *ngIf="
-          data.finished &&
-          (data.status === StatusOfTestrun.Proceed ||
-            data.status === StatusOfTestrun.DoNotProceed)
-        ">
-        <p class="progress-card-info-title">Preliminary Pilot Recommendation</p>
-        <p class="progress-card-info-text">
-          <span>{{ data.status }}</span>
-        </p>
+      @if (
+        data.finished &&
+        (data.status === StatusOfTestrun.Proceed ||
+          data.status === StatusOfTestrun.DoNotProceed)
+      ) {
+        <div>
+          <p class="progress-card-info-title">
+            Preliminary Pilot Recommendation
+          </p>
+          <p class="progress-card-info-text">
+            <span>{{ data.status }}</span>
+          </p>
+        </div>
+      }
+    </div>
+    @if (!data.finished && data.status !== StatusOfTestrun.InProgress) {
+      <div class="progress-card-status">
+        @switch (data.status) {
+          @case (StatusOfTestrun.Validating) {
+            <ng-container [ngTemplateOutlet]="Validating"> </ng-container>
+          }
+          @case (StatusOfTestrun.WaitingForDevice) {
+            <ng-container [ngTemplateOutlet]="WaitingForDevice"> </ng-container>
+          }
+          @case (StatusOfTestrun.Monitoring) {
+            <ng-container [ngTemplateOutlet]="Monitoring"> </ng-container>
+          }
+          @case (StatusOfTestrun.Cancelling) {
+            <ng-container [ngTemplateOutlet]="Cancelling"> </ng-container>
+          }
+        }
       </div>
-    </div>
-    <div
-      *ngIf="!data.finished && data.status !== StatusOfTestrun.InProgress"
-      class="progress-card-status"
-      [ngSwitch]="data.status">
-      <ng-container
-        *ngSwitchCase="StatusOfTestrun.Validating"
-        [ngTemplateOutlet]="Validating">
-      </ng-container>
-      <ng-container
-        *ngSwitchCase="StatusOfTestrun.WaitingForDevice"
-        [ngTemplateOutlet]="WaitingForDevice">
-      </ng-container>
-      <ng-container
-        *ngSwitchCase="StatusOfTestrun.Monitoring"
-        [ngTemplateOutlet]="Monitoring">
-      </ng-container>
-      <ng-container
-        *ngSwitchCase="StatusOfTestrun.Cancelling"
-        [ngTemplateOutlet]="Cancelling">
-      </ng-container>
-    </div>
-
-    <div
-      *ngIf="data.status === StatusOfTestrun.Stopping"
-      class="progress-card-status">
-      <ng-container [ngTemplateOutlet]="Cancelling"> </ng-container>
-    </div>
-
-    <ng-container
-      *ngIf="
-        (data.finished && data.status !== StatusOfTestrun.Stopping) ||
-        data.status === StatusOfTestrun.InProgress ||
-        data.status === StatusOfTestrun.Cancelled
-      ">
+    }
+    @if (data.status === StatusOfTestrun.Stopping) {
+      <div class="progress-card-status">
+        <ng-container [ngTemplateOutlet]="Cancelling"> </ng-container>
+      </div>
+    }
+    @if (
+      (data.finished && data.status !== StatusOfTestrun.Stopping) ||
+      data.status === StatusOfTestrun.InProgress ||
+      data.status === StatusOfTestrun.Cancelled
+    ) {
       <ng-container
         *ngTemplateOutlet="
           WithProgressBar;
@@ -87,9 +83,9 @@ limitations under the License.
             data: data,
           }
         "></ng-container>
-    </ng-container>
+    }
   </div>
-</ng-container>
+}
 
 <ng-template #Cancelling>
   <ng-container

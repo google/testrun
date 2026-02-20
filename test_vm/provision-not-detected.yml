@@ -1,0 +1,82 @@
+---
+- hosts: all
+  become: true
+  tasks:
+
+    # Set up networking on ens5
+    - name: Install dependencies
+      apt:
+        name: 
+          - isc-dhcp-client
+          - ufw
+        state: present
+        update_cache: yes
+
+    - name: Run dhclient on ens5 (in background)
+      shell: nohup dhclient ens5 &
+      async: 0
+      poll: 0
+
+    # ARP packet control
+    - name: Copy arp_control.sh script
+      copy:
+        dest: /usr/local/bin/arp_control.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          iface="ens5"
+          ip_addr=""
+          while true; do
+            ip_addr=$(ip -4 addr show dev $iface | awk '/inet / {print $2}' | cut -d/ -f1)
+            if [[ -n "$ip_addr" ]]; then
+              ip link set dev $iface arp off
+              echo "$(date): IP $ip_addr detected, ARP disabled on $iface"
+            else
+              ip link set dev $iface arp on
+              echo "$(date): No IP on $iface, ARP enabled"
+            fi
+            sleep 2
+          done
+
+    - name: Run arp_control.sh in background
+      shell: nohup /usr/local/bin/arp_control.sh &
+      async: 0
+      poll: 0
+
+    # DNS request setup
+
+    - name: Create systemd service for curl
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/curl-google.service
+        content: |
+          [Unit]
+          Description=Curl google.com
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/bin/curl -s -L -o /dev/null -w "%{http_code}\n" https://www.google.com
+
+    - name: Create systemd timer for curl
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/curl-google.timer
+        content: |
+          [Unit]
+          Description=Run curl google.com every 5 seconds
+
+          [Timer]
+          OnBootSec=5
+          OnUnitActiveSec=5
+
+          [Install]
+          WantedBy=timers.target
+
+    - name: Reload systemd daemon
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+    - name: Enable and start curl-google.timer
+      ansible.builtin.systemd:
+        name: curl-google.timer
+        enabled: yes
+        state: started
+

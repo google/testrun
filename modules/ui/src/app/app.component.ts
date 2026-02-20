@@ -46,7 +46,6 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { TestingCompleteComponent } from './components/testing-complete/testing-complete.component';
-import { BypassComponent } from './components/bypass/bypass.component';
 import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.component';
 import { SpinnerComponent } from './components/spinner/spinner.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -63,6 +62,8 @@ import { Observable } from 'rxjs/internal/Observable';
 import { of } from 'rxjs/internal/observable/of';
 import { HelpTipComponent } from './components/help-tip/help-tip.component';
 import { HelpTips } from './model/tip-config';
+import { BypassContentComponent } from './components/bypass-content/bypass-content.component';
+import { BypassNavigationComponent } from './components/bypass-navigation/bypass-navigation.component';
 
 export interface AddMenuItem {
   icon?: string;
@@ -113,7 +114,8 @@ const navKeys = [
     MatFormFieldModule,
     MatSnackBarModule,
     SpinnerComponent,
-    BypassComponent,
+    BypassContentComponent,
+    BypassNavigationComponent,
     VersionComponent,
     CalloutComponent,
     HelpTipComponent,

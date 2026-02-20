@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    https://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<ng-container *ngIf="data.testrunStatus">
+@if (data.testrunStatus) {
   <div class="testing-result-heading">
     <p class="testing-result-title">
       {{ data.testrunStatus.device.manufacturer }}
@@ -41,40 +41,44 @@ limitations under the License.
       {{ data.testrunStatus.description }}
     </p>
   </div>
-</ng-container>
-<span *ngIf="!data.testrunStatus" class="risk-profile-select-form-title"
-  >Download ZIP file</span
->
-<p class="risk-profile-select-form-content" *ngIf="profiles.length === 1">
-  Risk Profile is required for device verification. Please consider going to
-  <a
-    tabindex="0"
-    role="link"
-    class="redirect-link"
-    aria-label="Go to Risk Assessment tab"
-    (keydown.enter)="cancel(null)"
-    (keydown.space)="cancel(null)"
-    (click)="cancel(null)"
-    >Risk Assessment</a
-  >
-  and creating a profile to attach to your report.
-</p>
+}
+@if (!data.testrunStatus) {
+  <span class="risk-profile-select-form-title">Download ZIP file</span>
+}
+@if (profiles.length === 1) {
+  <p class="risk-profile-select-form-content">
+    Risk Profile is required for device verification. Please consider going to
+    <a
+      tabindex="0"
+      role="link"
+      class="redirect-link"
+      aria-label="Go to Risk Assessment tab"
+      (keydown.enter)="cancel(null)"
+      (keydown.space)="cancel(null)"
+      (click)="cancel(null)"
+      >Risk Assessment</a
+    >
+    and creating a profile to attach to your report.
+  </p>
+}
 
-<p class="risk-profile-select-form-content" *ngIf="profiles.length > 1">
-  Risk Profile is required for device verification. Please select a profile from
-  the list, or go to
-  <a
-    tabindex="0"
-    role="link"
-    class="redirect-link"
-    aria-label="Go to Risk Assessment tab"
-    (keydown.enter)="cancel(null)"
-    (keydown.space)="cancel(null)"
-    (click)="cancel(null)"
-    >Risk Assessment</a
-  >
-  and create a new one to attach to your report.
-</p>
+@if (profiles.length > 1) {
+  <p class="risk-profile-select-form-content">
+    Risk Profile is required for device verification. Please select a profile
+    from the list, or go to
+    <a
+      tabindex="0"
+      role="link"
+      class="redirect-link"
+      aria-label="Go to Risk Assessment tab"
+      (keydown.enter)="cancel(null)"
+      (keydown.space)="cancel(null)"
+      (click)="cancel(null)"
+      >Risk Assessment</a
+    >
+    and create a new one to attach to your report.
+  </p>
+}
 
 <div>
   <mat-form-field appearance="outline" class="profile-select">
@@ -85,52 +89,54 @@ limitations under the License.
       aria-label="Please choose a Risk Profile from the list">
       <mat-select-trigger>
         {{ selectedProfile.name }}
-        <span
-          *ngIf="selectedProfile.risk"
-          class="profile-item-risk"
-          [ngClass]="getRiskClass(selectedProfile.risk)">
-          {{ selectedProfile.risk }} risk
-        </span>
-      </mat-select-trigger>
-      <mat-option
-        *ngFor="let profile of profiles"
-        [value]="profile"
-        class="profile-item-option">
-        <div class="select-container">
+        @if (selectedProfile.risk) {
           <span
-            *ngIf="profile.risk"
             class="profile-item-risk"
-            [ngClass]="getRiskClass(profile.risk)">
-            {{ profile.risk }} risk
+            [ngClass]="getRiskClass(selectedProfile.risk)">
+            {{ selectedProfile.risk }} risk
           </span>
-          <span class="profile-item-name">
-            {{ profile.name }}
-          </span>
-          <span class="profile-item-created">
-            {{ profile.created | date: 'dd MMM yyyy' }}
-          </span>
-        </div>
-      </mat-option>
+        }
+      </mat-select-trigger>
+      @for (profile of profiles; track profile) {
+        <mat-option [value]="profile" class="profile-item-option">
+          <div class="select-container">
+            @if (profile.risk) {
+              <span
+                class="profile-item-risk"
+                [ngClass]="getRiskClass(profile.risk)">
+                {{ profile.risk }} risk
+              </span>
+            }
+            <span class="profile-item-name">
+              {{ profile.name }}
+            </span>
+            <span class="profile-item-created">
+              {{ profile.created | date: 'dd MMM yyyy' }}
+            </span>
+          </div>
+        </mat-option>
+      }
     </mat-select>
     <mat-hint>Please choose a Risk Profile from the list</mat-hint>
   </mat-form-field>
 
   <mat-dialog-actions class="risk-profile-select-form-actions">
-    <app-download-report
-      *ngIf="data.testrunStatus"
-      [data]="data.testrunStatus"
-      [tabindex]="-1"
-      [href]="data.testrunStatus.report">
-      <button
-        (click)="cancel(undefined)"
-        class="download-pdf-button"
-        color="primary"
-        aria-label="Download PDF report"
-        mat-button
-        type="button">
-        Download PDF report
-      </button>
-    </app-download-report>
+    @if (data.testrunStatus) {
+      <app-download-report
+        [data]="data.testrunStatus"
+        [tabindex]="-1"
+        [href]="data.testrunStatus.report">
+        <button
+          (click)="cancel(undefined)"
+          class="download-pdf-button"
+          color="primary"
+          aria-label="Download PDF report"
+          mat-button
+          type="button">
+          Download PDF report
+        </button>
+      </app-download-report>
+    }
     <div>
       <button
         (click)="cancel(undefined)"

@@ -67,16 +67,23 @@ Testrun installs under the `/usr/local/testrun` directory. Testing data is avail
 ## Start Testrun
 
 Follow these steps to start Testrun:
-1. Attach the network interfaces.
-    -  Connect one USB Ethernet adapter to the internet source (e.g., router or switch) using an Ethernet cable.
-    -  Connect the other USB Ethernet adapter directly to the IoT device you want to test using an Ethernet cable.
 
-    Notes:
-    
-    -  Disable both adapters in the host system (IPv4, IPv6, and general) by opening **Settings**, then **Network**.
-    -  Keep the DUT powered off until prompted. Otherwise, Testrun will not be able to fully capture the device behavior during startup - resulting in inaccurate test results.
+1. Connect the ethernet cables.
 
-1. Start Testrun with the command `sudo testrun`
+This is where you physically plug in the ethernet cables to your hardware: PC, IoT device, Internet connection. You must use two separate network ports on your PC (either two built-in ports, two USB-ethernet adapters, or one of each).    
+
+* **Internet Connection**.
+  * If using a USB adapter: Plug the USB end of the adapter into your PC. Then, connect an ethernet cable to the adapter's ethernet port and plug the other end of the cable into your internet source (like a router or network switch)
+  * If using a built-in port: Connect an ethernet cable from your PC's built-in port directly to your internet source.
+* **IoT Device Connection**. Using a second ethernet cable, plug the other network port (the remaining built-in port or the other USB adapter) directly into the IoT device you intend to test.
+    - If using a USB Adapter: Plug the USB end of the second adapter into your PC. Then, connect an ethernet cable to the adapter's ethernet port and plug the other end of the cable directly into the IoT device you intend to test.
+    - If using a built-in port: Connect an ethernet cable from the remaining built-in port directly into the IoT device you intend to test.
+
+  Notes:
+    -  **Disable Host Networking**: You must disable both network adapters in the host system. Open Settings, then Network, and turn off IPv4, IPv6, and general network functions for both interfaces.
+    -  **Keep Device Powered Off**: Keep the DUT (Device Under Test) physically connected to your PC using the ethernet cable but powered off until you are prompted to turn it on later in the setup process. If the device starts up early, Testrun won't be able to fully capture its behavior during startup, which will result in inaccurate test results.
+
+2. Start Testrun with the command `sudo testrun`
     -  To run Testrun in network-only mode (without running any tests), use the `--net-only` option.
     -  To run Testrun with just one interface (connected to the device), use the `--single-intf` option.
     

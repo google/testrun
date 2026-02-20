@@ -176,7 +176,7 @@ describe('TestrunComponent', () => {
       );
       store = TestBed.inject(MockStore);
       fixture = TestBed.createComponent(TestrunComponent);
-      spyOn(store, 'dispatch').and.callFake(() => {});
+      spyOn(store, 'dispatch').and.callThrough();
       component = fixture.componentInstance;
     });
 
@@ -305,7 +305,7 @@ describe('TestrunComponent', () => {
       testRunServiceMock.fetchSystemStatus.and.returnValue(
         of(MOCK_PROGRESS_DATA_IN_PROGRESS)
       );
-      spyOn(store, 'dispatch').and.callFake(() => {});
+      spyOn(store, 'dispatch').and.callThrough();
       component = fixture.componentInstance;
     });
 
@@ -537,12 +537,12 @@ describe('TestrunComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have disabled "Start" button', () => {
+      it('should not have "Start" button', () => {
         const startBtn = compiled.querySelector(
           '.start-button'
         ) as HTMLButtonElement;
 
-        expect(startBtn.disabled).toBeTrue();
+        expect(startBtn).toBeNull();
       });
 
       it('should have "Stop" button', () => {

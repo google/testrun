@@ -18,9 +18,9 @@ limitations under the License.
     tabindex="0"
     mat-button
     class="navigation-bypass-button"
-    (click)="skipToMainContent($event)"
-    (keydown.enter)="skipToMainContent($event)"
-    (keydown.space)="skipToMainContent($event)">
-    Skip to main content
+    (click)="onClick($event)"
+    (keydown.enter)="onClick($event)"
+    (keydown.space)="onClick($event)">
+    {{ label() }}
   </button>
 </div>

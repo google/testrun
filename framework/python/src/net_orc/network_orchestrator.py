@@ -16,6 +16,7 @@ all of the virtual network services"""
 import ipaddress
 import json
 import os
+import re
 from scapy.all import sniff, wrpcap, BOOTP, AsyncSniffer
 from scapy.error import Scapy_Exception
 import shutil
@@ -356,8 +357,10 @@ class NetworkOrchestrator:
     host = net_module.net_config.ipv4_address
     namespace = 'tr-ctns-' + net_module.dir_name
     cmd = 'ip netns exec ' + namespace + ' ping -c 1 ' + str(host)
-    success = util.run_command(cmd, output=False)
-    return success
+    out, _  = util.run_command(cmd, supress_error=True)
+    if re.search(r'\s0% packet loss', out):
+      return True
+    return False
 
   def _ci_pre_network_create(self):
     """ Stores network properties to restore network after

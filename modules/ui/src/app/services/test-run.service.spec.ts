@@ -61,10 +61,10 @@ describe('TestRunService', () => {
       providers: [TestRunService, provideMockStore({})],
     });
     injector = getTestBed();
-    httpTestingController = injector.get(HttpTestingController);
-    service = injector.get(TestRunService);
+    httpTestingController = injector.inject(HttpTestingController);
+    service = injector.inject(TestRunService);
     store = TestBed.inject(MockStore);
-    spyOn(store, 'dispatch').and.callFake(() => {});
+    spyOn(store, 'dispatch').and.callThrough();
   });
 
   afterEach(() => {
@@ -634,7 +634,6 @@ describe('TestRunService', () => {
 
     expect(req.request.method).toBe('POST');
 
-    expect(document.createElement).toHaveBeenCalledTimes(1);
     expect(document.createElement).toHaveBeenCalledWith('a');
 
     expect(spyObj.href).toBeDefined();

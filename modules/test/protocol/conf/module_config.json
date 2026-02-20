@@ -52,7 +52,13 @@
               "count": 1
             }
           }
-        }
+        },
+        "recommendations": [
+          "Set Default Unit ID (Ensure Slave ID matches test config, usually 1)",
+          "Populate Modbus Map (Ensure there are readable registers defined)",
+          "Allow Anonymous Access (Standard Modbus does not support auth)",
+          "Verify the TCP connection limit is not reached by active clients (SCADA/HMI); increase the limit if needed"
+        ]
       }
     ]
   }

@@ -13,23 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, input, output } from '@angular/core';
+
 import { MatButtonModule } from '@angular/material/button';
-import { FocusManagerService } from '../../services/focus-manager.service';
 
 @Component({
   selector: 'app-bypass',
-
-  imports: [CommonModule, MatButtonModule],
+  imports: [MatButtonModule],
   templateUrl: './bypass.component.html',
   styleUrls: ['./bypass.component.scss'],
 })
 export class BypassComponent {
-  private readonly focusManagerService = inject(FocusManagerService);
+  label = input.required<string>();
+  click = output<void>();
 
-  skipToMainContent(event: Event) {
+  onClick(event: Event) {
     event.preventDefault();
-    this.focusManagerService.focusFirstElementInContainer();
+    this.click.emit();
   }
 }

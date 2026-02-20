@@ -22,6 +22,7 @@ from jinja2 import Environment, FileSystemLoader
 
 LOG_NAME = 'test_dns'
 MODULE_REPORT_FILE_NAME = 'dns_report.j2.html'
+MODULE_REPORT_STYLED_FILE_NAME = 'dns_report.jinja2'
 DNS_SERVER_CAPTURE_FILE = '/runtime/network/dns.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
@@ -55,7 +56,6 @@ class DNSModule(TestModule):
     page_max_height = 850
     header_height = 48
     summary_height = 135
-    row_height = 44
     loader=FileSystemLoader(self._report_template_folder)
     template = Environment(
                             loader=loader,
@@ -120,28 +120,79 @@ class DNSModule(TestModule):
                             'dat': dat,
                             'count': count,
                             })
-    # Handling the possible table split
-    table_height = (len(module_data) + 1) * row_height
+
+    col_limits = {
+        'res_ip': 16,
+        'dat': 40,
+    }
+
+    pixels_per_extra_line = 18
+    base_row_height = 44
+
     page_useful_space = page_max_height - header_height - summary_height
-    pages = table_height // (page_useful_space)
-    rows_on_page = (page_useful_space) // row_height
-    start = 0
+
+    pages_content = []
+    current_page_rows = []
+    current_page_height = 0
+
+    for row in module_data:
+      max_lines_in_row = 1
+
+      for field, char_limit in col_limits.items():
+        text = str(row.get(field, '') or '')
+        if not text:
+          continue
+
+        lines = (len(text) + char_limit - 1) // char_limit
+        max_lines_in_row = max(max_lines_in_row, lines)
+
+      estimated_row_height = (
+          base_row_height + (max_lines_in_row - 1) * pixels_per_extra_line
+      )
+
+      if (current_page_height + estimated_row_height) > page_useful_space:
+        pages_content.append(current_page_rows)
+        current_page_rows = []
+        current_page_height = 0
+
+      current_page_rows.append(row)
+      current_page_height += estimated_row_height
+
+    if current_page_rows:
+      pages_content.append(current_page_rows)
+
     report_html = ''
-    for page in range(pages+1):
-      end = start + min(len(module_data), rows_on_page)
-      module_header_repr = module_header if page == 0 else None
+    report_jinja_preview = ''
+    if not pages_content:
+      pages_content = [[]]
+
+    for i, page_rows in enumerate(pages_content):
+      module_header_repr = module_header if i == 0 else None
       page_html = template.render(
-                                base_template=self._base_template_file,
-                                module_header=module_header_repr,
-                                summary_headers=summary_headers,
-                                summary_data=summary_data,
-                                module_data_headers=module_data_headers,
-                                module_data=module_data[start:end]
-                              )
+          base_template=self._base_template_file,
+          module_header=module_header_repr,
+          summary_headers=summary_headers,
+          summary_data=summary_data,
+          module_data_headers=module_data_headers,
+          module_data=page_rows
+      )
       report_html += page_html
-      start = end
+      page_html = template.render(
+          base_template=self._base_template_file_preview,
+          module_header=module_header_repr,
+          summary_headers=summary_headers,
+          summary_data=summary_data,
+          module_data_headers=module_data_headers,
+          module_data=page_rows
+      )
+      report_jinja_preview += page_html
 
     LOGGER.debug('Module report:\n' + report_html)
+
+    # Generate styled report for a preview
+    jinja_path_styled = os.path.join(
+        self._results_dir, MODULE_REPORT_STYLED_FILE_NAME)
+    self._render_styled_report(report_jinja_preview, jinja_path_styled)
 
     # Use os.path.join to create the complete file path
     report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
@@ -184,7 +235,6 @@ class DNSModule(TestModule):
             qname = dns_layer.qd.qname.decode() if dns_layer.qd.qname else 'N/A'
           else:
             qname = 'N/A'
-
           resolved_ip = 'N/A'
           # If it's a response packet, extract the resolved IP address
           # from the answer section
@@ -202,14 +252,15 @@ class DNSModule(TestModule):
                 elif answer.type == 28: # Indicates AAAA record (IPv6 address)
                   resolved_ip = answer.rdata  # Extract IPv6 address
                   break  # Stop after finding the first valid resolved IP
-
+          qname = qname.rstrip('.') if (isinstance(qname, str)
+                                        and qname.endswith('.')) else qname
           dns_data.append({
               'Timestamp': float(packet.time),  # Timestamp of the DNS packet
               'Source': source_ip,
               'Destination': destination_ip,
               'ResolvedIP': resolved_ip,  # Adding the resolved IP address
               'Type': dns_type,
-              'Data': qname[:-1]
+              'Data': qname,
           })
 
     # Filter unique entries based on 'Timestamp'

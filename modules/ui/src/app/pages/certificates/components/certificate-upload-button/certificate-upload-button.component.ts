@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-certificate-upload-button',
-
-  imports: [MatButtonModule],
+  imports: [MatButtonModule, MatTooltipModule],
   templateUrl: './certificate-upload-button.component.html',
   styleUrl: './certificate-upload-button.component.scss',
 })

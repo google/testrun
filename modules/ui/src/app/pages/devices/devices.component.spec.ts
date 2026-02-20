@@ -91,7 +91,7 @@ describe('DevicesComponent', () => {
 
     fixture = TestBed.createComponent(DevicesComponent);
     component = fixture.componentInstance;
-    router = TestBed.get(Router);
+    router = TestBed.inject(Router);
     compiled = fixture.nativeElement as HTMLElement;
   });
 
@@ -169,9 +169,9 @@ describe('DevicesComponent', () => {
     });
 
     it('should disable device if deviceInProgress is exist', () => {
-      const item = compiled.querySelector('app-device-item');
+      const item = compiled.querySelector('app-device-item button');
 
-      expect(item?.getAttribute('ng-reflect-disabled')).toBeTruthy();
+      expect(item?.getAttribute('disabled')).not.toBeNull();
     });
   });
 

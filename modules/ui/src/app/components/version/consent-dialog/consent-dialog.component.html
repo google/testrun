@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    https://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -53,34 +53,34 @@ limitations under the License.
     </ul>
   </section>
 
-  <section
-    class="section-container"
-    *ngIf="data.version.update_available === true">
-    <app-callout [type]="CalloutType.Warning">
-      <span class="section-title">Software is outdated!</span>
-      <p class="section-content consent">
-        You are currently using an outdated software (<b>{{
-          data.version.installed_version
-        }}</b
-        >).
-        <br />
-        The latest version number is <b>{{ data.version.latest_version }}</b
-        >. Please consider to update or continue at your own risk.
-      </p>
-      <p class="section-action-container">
-        <a
-          href="{{ data.version.latest_version_url }}"
-          target="_blank"
-          class="download-link"
-          color="primary"
-          mat-button
-          type="button"
-          aria-label="Download new version">
-          Download
-        </a>
-      </p>
-    </app-callout>
-  </section>
+  @if (data.version.update_available === true) {
+    <section class="section-container">
+      <app-callout [type]="CalloutType.Warning">
+        <span class="section-title">Software is outdated!</span>
+        <p class="section-content consent">
+          You are currently using an outdated software (<b>{{
+            data.version.installed_version
+          }}</b
+          >).
+          <br />
+          The latest version number is <b>{{ data.version.latest_version }}</b
+          >. Please consider to update or continue at your own risk.
+        </p>
+        <p class="section-action-container">
+          <a
+            href="{{ data.version.latest_version_url }}"
+            target="_blank"
+            class="download-link"
+            color="primary"
+            mat-button
+            type="button"
+            aria-label="Download new version">
+            Download
+          </a>
+        </p>
+      </app-callout>
+    </section>
+  }
   <section class="section-container-info">
     <app-callout [type]="CalloutType.Info">
       Testrun uses Google Analytics to learn about how our users use the

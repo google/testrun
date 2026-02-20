@@ -1,0 +1,320 @@
+---
+- hosts: all
+  become: true
+  tasks:
+
+    # Common setup tasks
+
+    - name: Install Python3, pip, venv, and setcap utility
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - libcap2-bin
+          - net-tools
+          - isc-dhcp-client
+          - git
+          - gcc
+          - make
+          - bison
+          - flex
+          - libpcap-dev
+          - chrony
+          - openssl
+          - nginx
+        state: present
+        update_cache: yes
+
+    # Set up networking on ens5
+
+    - name: Run dhclient on ens5 (in background)
+      shell: nohup dhclient ens5 &
+      async: 0
+      poll: 0
+
+    # BACnet stack setup
+
+    - name: Clone BACnet stack repository
+      git:
+        repo: https://github.com/bacnet-stack/bacnet-stack.git
+        dest: /opt/bacnet-stack
+        version: master
+
+    - name: Build BACnet stack
+      make:
+        chdir: /opt/bacnet-stack
+        target: all
+
+    - name: Copy bacserv-wrapper.sh
+      copy:
+        dest: /usr/local/bin/bacserv-wrapper.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          IFACE=ens5
+          while true; do
+            IP=$(ip -4 addr show $IFACE | awk '/inet / {print $2}' | cut -d/ -f1)
+            if [ -n "$IP" ]; then
+              export BACNET_IP=$IP
+              exec /opt/bacnet-stack/bin/bacserv
+            fi
+            sleep 2
+          done
+
+    - name: Create systemd unit for bacserv
+      copy:
+        dest: /etc/systemd/system/bacserv.service
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=BACnet Server (auto-restart on IP change)
+          After=network-online.target
+          Wants=network-online.target
+
+          [Service]
+          Type=simple
+          ExecStart=/usr/local/bin/bacserv-wrapper.sh
+          Restart=always
+          RestartSec=5
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd and enable bacserv service
+      systemd:
+        name: bacserv
+        enabled: yes
+        state: restarted
+        daemon_reload: yes
+
+    # Modbus TCP server setup
+
+    - name: Create venv for modbus
+      become: no
+      command: python3 -m venv /home/vagrant/modbus-venv
+      args:
+        creates: /home/vagrant/modbus-venv
+
+    - name: Create venv for modbus
+      become: no
+      command: python3 -m venv /home/vagrant/modbus-venv
+      args:
+        creates: /home/vagrant/modbus-venv
+
+    - name: Install pyModbusTCP in venv
+      become: no
+      command: /home/vagrant/modbus-venv/bin/pip install pyModbusTCP
+
+    - name: Find real python binary path
+      shell: readlink -f /home/vagrant/modbus-venv/bin/python
+      register: real_python_path
+
+    - name: Allow system python to bind to port 502
+      become: true
+      command: setcap 'cap_net_bind_service=+ep' {{ real_python_path.stdout }}
+
+    - name: Copy Modbus TCP server script (pyModbusTCP)
+      copy:
+        src: ./python/src/modbus_server.py
+        dest: /home/vagrant/modbus_server.py
+        owner: vagrant
+        group: vagrant
+        mode: '0644'
+
+    - name: Ensure modbus server is running (systemd)
+      copy:
+        dest: /etc/systemd/system/modbus-server.service
+        content: |
+          [Unit]
+          Description=Modbus TCP Server (pyModbusTCP)
+          After=network.target
+
+          [Service]
+          Type=simple
+          User=vagrant
+          ExecStart=/home/vagrant/modbus-venv/bin/python /home/vagrant/modbus_server.py
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start modbus-server
+      systemd:
+        name: modbus-server
+        enabled: yes
+        state: started
+
+    # NTP client setup
+
+    # - name: Remove static NTP servers from chrony.conf
+    #   lineinfile:
+    #     path: /etc/chrony/chrony.conf
+    #     regexp: '^(server|pool)'
+    #     state: absent
+
+    - name: Ensure sourcedir for DHCP is present
+      lineinfile:
+        path: /etc/chrony/chrony.conf
+        line: 'sourcedir /run/chrony-dhcp'
+        state: present
+
+    - name: Restart chrony
+      service:
+        name: chrony
+        state: restarted
+        enabled: yes
+
+    - name: Wait for chrony to sync sources
+      wait_for:
+        timeout: 10
+
+    # DNS request setup
+
+    - name: Create systemd service for curl
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/curl-google.service
+        content: |
+          [Unit]
+          Description=Curl google.com
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/bin/curl -s -L -o /dev/null -w "%{http_code}\n" https://www.google.com
+
+    - name: Create systemd timer for curl
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/curl-google.timer
+        content: |
+          [Unit]
+          Description=Run curl google.com every 5 seconds
+
+          [Timer]
+          OnBootSec=5
+          OnUnitActiveSec=5
+
+          [Install]
+          WantedBy=timers.target
+
+    - name: Reload systemd daemon
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+    - name: Enable and start curl-google.timer
+      ansible.builtin.systemd:
+        name: curl-google.timer
+        enabled: yes
+        state: started
+
+    # mDNS traffic setup
+
+    - name: Ensure avahi-utils is installed
+      ansible.builtin.apt:
+        name: avahi-utils
+        state: present
+        update_cache: yes
+
+    - name: Create systemd service for mDNS traffic
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/mdns-traffic.service
+        content: |
+          [Unit]
+          Description=Generate mDNS traffic using avahi-publish
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/bin/avahi-publish -s "TestService" _http._tcp 8080
+
+    - name: Create systemd timer for mDNS traffic
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/mdns-traffic.timer
+        content: |
+          [Unit]
+          Description=Run mDNS traffic generator every 5 seconds
+
+          [Timer]
+          OnBootSec=5
+          OnUnitActiveSec=5
+
+          [Install]
+          WantedBy=timers.target
+
+    - name: Reload systemd daemon
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+    - name: Enable and start mdns-traffic.timer
+      ansible.builtin.systemd:
+        name: mdns-traffic.timer
+        enabled: yes
+        state: started
+
+    # Outbound TLS traffic setup
+
+    - name: Copy TLS emulation script and make it executable
+      ansible.builtin.copy:
+        dest: /usr/local/bin/tls_emulate.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          # Wait for IP
+          while true; do
+              IP=$(ip -4 addr show ens5 | awk '/inet / {print $2}' | cut -d/ -f1)
+              if [[ -n "$IP" ]]; then
+                  break
+              fi
+              sleep 1
+          done
+          # TLS 1.0
+          openssl s_client -connect tls-v1-0.badssl.com:1010 -tls1 -bind "$IP"
+          # TLS 1.2
+          openssl s_client -connect tls-v1-2.badssl.com:1012 -tls1_2 -bind "$IP"
+          # TLS 1.3
+          openssl s_client -connect tls13.badssl.com:443 -tls1_3 -bind "$IP"
+
+    - name: Create systemd service for TLS emulation
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/tls-emulate.service
+        content: |
+          [Unit]
+          Description=Emulate outgoing TLS connections via ens5
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/local/bin/tls_emulate.sh
+
+    - name: Create systemd timer for TLS emulation
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/tls-emulate.timer
+        content: |
+          [Unit]
+          Description=Run TLS emulation every 5 seconds
+
+          [Timer]
+          OnBootSec=5
+          OnUnitActiveSec=5
+
+          [Install]
+          WantedBy=timers.target
+
+    - name: Reload systemd daemon
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+    - name: Enable and start tls-emulate.timer
+      ansible.builtin.systemd:
+        name: tls-emulate.timer
+        enabled: yes
+        state: started
+
+    # Install and start nginx for HTTP traffic
+
+    - name: Ensure nginx is running
+      service:
+        name: nginx
+        state: started
+        enabled: yes

@@ -1,0 +1,636 @@
+---
+- hosts: all
+  become: true
+  vars:
+    dhcp_iface: ens5
+    dhcp_subnet: "10.10.10.0"
+    dhcp_netmask: "255.255.255.0"
+    dhcp_range_start: "10.10.10.100"
+    dhcp_range_end: "10.10.10.200"
+    dhcp_router: "10.10.10.1"
+    dhcp_dns: "8.8.8.8, 8.8.4.4"
+    device_mac: "54:53:52:51:50:49"   
+    wrong_ip: "10.10.10.99"           
+    target_ip: "10.10.10.1"       
+    iface: "ens5"
+    vars:
+    scapy_venv_path: /opt/scapy-venv
+    ntp_script_path: /usr/local/bin/send_ntp_both.py
+    ntp_service_path: /etc/systemd/system/ntp-both-sender.service
+    dst_mac: "ff:ff:ff:ff:ff:ff"
+    dhcp_ntp_ip: "10.10.10.5"
+    other_ntp_ip: "8.8.8.8"
+
+  tasks:
+
+    # Common setup tasks
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      ignore_errors: yes
+      timeout: 100
+
+    - name: Install Python3, pip, venv, and netcat
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - libcap2-bin
+          - net-tools
+          - netcat-openbsd
+          - isc-dhcp-client
+        state: present
+
+    # Set up networking on ens5
+   
+    - name: Run dhclient on ens5 (in background)
+      shell: nohup dhclient ens5 &
+      async: 0
+      poll: 0
+
+    # NTP 
+
+    - name: Create Python venv for scapy
+      command: python3 -m venv {{ scapy_venv_path }}
+      args:
+        creates: "{{ scapy_venv_path }}/bin/activate"
+      changed_when: false
+
+    - name: Install scapy in venv
+      command: "{{ scapy_venv_path }}/bin/pip install scapy"
+      changed_when: false
+
+    - name: Copy NTP sender script to VM (dynamic src_ip, both servers)
+      copy:
+        dest: "{{ ntp_script_path }}"
+        mode: '0755'
+        content: |
+          from scapy.all import Ether, IP, UDP, NTP, sendp, get_if_addr
+          import time
+
+          iface = "{{ iface }}"
+          src_mac = "{{ device_mac }}"
+          dst_mac = "{{ dst_mac }}"
+          dhcp_ntp_ip = "{{ dhcp_ntp_ip }}"
+          other_ntp_ip = "{{ other_ntp_ip }}"
+
+          while True:
+              src_ip = get_if_addr(iface)
+              # Send to DHCP-provided NTP server
+              pkt1 = Ether(src=src_mac, dst=dst_mac) / \
+                     IP(src=src_ip, dst=dhcp_ntp_ip) / \
+                     UDP(sport=123, dport=123) / \
+                     NTP(version=3)
+              sendp(pkt1, iface=iface, verbose=False)
+              print(f"Sent NTPv4 packet to DHCP NTP server {dhcp_ntp_ip} from {src_ip}")
+
+              # Send to non-DHCP NTP server
+              pkt2 = Ether(src=src_mac, dst=dst_mac) / \
+                     IP(src=src_ip, dst=other_ntp_ip) / \
+                     UDP(sport=123, dport=123) / \
+                     NTP(version=3)
+              sendp(pkt2, iface=iface, verbose=False)
+              print(f"Sent NTPv4 packet to non-DHCP NTP server {other_ntp_ip} from {src_ip}")
+
+              time.sleep(1)
+
+    - name: Create systemd unit for continuous NTP both sender
+      copy:
+        dest: "{{ ntp_service_path }}"
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=Continuous NTP Packet Sender (DHCP and non-DHCP)
+          After=network.target
+
+          [Service]
+          Type=simple
+          ExecStart={{ scapy_venv_path }}/bin/python {{ ntp_script_path }}
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd for NTP both sender
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start NTP both sender service
+      systemd:
+        name: ntp-both-sender
+        enabled: yes
+        state: started
+
+    - name: Assign temporary static IP to ens5 for DHCP server startup
+      command: ip addr add 10.10.10.14/24 dev ens5
+      ignore_errors: yes
+
+    # Custom Modbus TCP server NON-COMPLIANT
+
+    - name: Copy Modbus TCP server script (pyModbusTCP)
+      copy:
+        src: ./python/src/modbus_server_non_compliant.py
+        dest: /home/vagrant/modbus_server_non_compliant.py
+        owner: vagrant
+        group: vagrant
+        mode: '0644'
+
+    - name: Create systemd unit for custom Modbus server
+      copy:
+        dest: /etc/systemd/system/custom-modbus-server.service
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=Custom Modbus TCP Error Server
+          After=network.target
+
+          [Service]
+          Type=simple
+          ExecStart=/usr/bin/python3 /home/vagrant/modbus_server_non_compliant.py
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start custom Modbus server
+      systemd:
+        name: custom-modbus-server
+        enabled: yes
+        state: started
+
+    - name: Show custom Modbus server status
+      systemd:
+        name: custom-modbus-server
+      register: modbus_status
+      changed_when: false
+
+    # FTP server
+
+    - name: Kill old fake FTP netcat processes
+      shell: pkill -f 'nc -l -s .* -p 21' || true
+
+      ignore_errors: yes
+    - name: Copy fake FTP netcat script
+      copy:
+        dest: /usr/local/bin/fake-ftp-netcat-ens5.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              echo -ne "220 Fake FTP server ready\r\n" | nc -l -s $ens5_IP -p 21
+          done
+    - name: Run fake FTP netcat script as background process
+      shell: nohup /usr/local/bin/fake-ftp-netcat-ens5.sh > /var/log/fake-ftp-netcat-ens5.log 2>&1 &
+      args:
+        creates: /var/log/fake-ftp-netcat-ens5.log
+
+
+    # SSH server configuration
+
+    - name: Gather facts
+      setup:
+
+    - name: Set ens4_ip from Ansible facts
+      set_fact:
+        ens4_ip: "{{ ansible_ens4.ipv4.address | default('') }}"
+
+    - name: Fail if ens4_ip is not set
+      fail:
+        msg: "ens4_ip is not set! Please check network configuration."
+      when: ens4_ip == ''
+
+    - name: Debug ens4 IP
+      debug:
+        msg: "ens4 IP is {{ ens4_ip }}"
+
+    - name: Stop and disable ssh.socket (prevents auto-start on all interfaces)
+      service:
+        name: ssh.socket
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    - name: Ensure only ens4 is in ListenAddress for sshd
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^ListenAddress'
+        line: "ListenAddress {{ ens4_ip }}"
+        state: present
+        insertafter: '^#Port'
+
+    - name: Remove all other ListenAddress lines from sshd_config
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^ListenAddress (?!{{ ens4_ip }})'
+        state: absent
+
+    - name: Restart sshd
+      service:
+        name: ssh
+        state: restarted
+
+    - name: Show what is listening on port 22
+      shell: ss -tlnp | grep :22 || netstat -tlnp | grep :22 || true
+      register: port22
+      changed_when: false
+
+    - debug:
+        var: port22.stdout_lines
+
+
+    - name: Create fake SSH banner systemd service for ens5:22
+      copy:
+        dest: /etc/systemd/system/fake-ssh-banner.service
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=Fake SSH Banner on ens5:22
+          After=network-online.target
+          Wants=network-online.target
+
+          [Service]
+          Type=simple
+          ExecStart=/bin/bash -c '\
+            while true; do \
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP "(?<=inet\s)\d+(\.\d+){3}"); \
+              if [[ -n "$ens5_IP" ]]; then \
+                echo "ens5 IP detected: $ens5_IP"; \
+                break; \
+              fi; \
+              echo "Waiting for ens5 IP..."; \
+              sleep 2; \
+            done; \
+            while true; do echo -e "SSH-1.99-OpenSSH_1.99\r\n" | nc -l -s $ens5_IP -p 22; done'
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Restart fake-ssh-banner service
+      systemd:
+        name: fake-ssh-banner.service
+        state: restarted
+        enabled: yes
+
+    # Telnet server setup
+
+    - name: Kill old fake Telnet netcat processes
+      shell: pkill -f 'nc -l -s .* -p 23' || true
+      ignore_errors: yes
+    - name: Copy fake Telnet netcat script
+      copy:
+        dest: /usr/local/bin/fake-telnet-netcat-ens5.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              echo -ne "Fake Telnet server\r\n" | nc -l -s $ens5_IP -p 23
+          done
+    - name: Run fake Telnet netcat script as background process
+      shell: nohup /usr/local/bin/fake-telnet-netcat-ens5.sh > /var/log/fake-telnet-netcat-ens5.log 2>&1 &
+      args:
+        creates: /var/log/fake-telnet-netcat-ens5.log
+
+    # SMTP (TCP/25)
+
+    - name: Kill old fake SMTP netcat processes
+      shell: pkill -f 'nc -l -s .* -p 25' || true
+      ignore_errors: yes
+    - name: Copy fake SMTP netcat script
+      copy:
+        dest: /usr/local/bin/fake-smtp-netcat-ens5.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              echo -ne "220 fake-smtp ESMTP Postfix\r\n" | nc -l -s $ens5_IP -p 25
+          done
+    - name: Run fake SMTP netcat script as background process
+      shell: nohup /usr/local/bin/fake-smtp-netcat-ens5.sh > /var/log/fake-smtp-netcat-ens5.log 2>&1 &
+      args:
+        creates: /var/log/fake-smtp-netcat-ens5.log
+
+    # POP3 (TCP/110)
+
+    - name: Kill old fake POP3 netcat processes
+
+      shell: pkill -f 'nc -l -s .* -p 110' || true
+      ignore_errors: yes
+    - name: Copy fake POP3 netcat script
+      copy:
+        dest: /usr/local/bin/fake-pop3-netcat-ens5.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              echo -ne "+OK Fake POP3 server ready\r\n" | nc -l -s $ens5_IP -p 110
+          done
+    - name: Run fake POP3 netcat script as background process
+      shell: nohup /usr/local/bin/fake-pop3-netcat-ens5.sh > /var/log/fake-pop3-netcat-ens5.log 2>&1 &
+      args:
+        creates: /var/log/fake-pop3-netcat-ens5.log
+
+    # IMAP (TCP/143)
+
+    - name: Kill old fake IMAP netcat processes
+      shell: pkill -f 'nc -l -s .* -p 143' || true
+      ignore_errors: yes
+    - name: Copy fake IMAP netcat script
+      copy:
+        dest: /usr/local/bin/fake-imap-netcat-ens5.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              echo -ne "* OK Fake IMAP4rev1 Service Ready\r\n" | nc -l -s $ens5_IP -p 143
+          done
+    - name: Run fake IMAP netcat script as background process
+      shell: nohup /usr/local/bin/fake-imap-netcat-ens5.sh > /var/log/fake-imap-netcat-ens5.log 2>&1 &
+      args:
+        creates: /var/log/fake-imap-netcat-ens5.log
+
+    # HTTP (TCP/80)
+
+    - name: Kill old fake HTTP netcat processes
+      shell: pkill -f 'nc -l -s .* -p 80' || true
+      ignore_errors: yes
+    - name: Copy fake HTTP netcat script
+      copy:
+        dest: /usr/local/bin/fake-http-netcat-ens5.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              echo -ne "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK" | nc -l -s $ens5_IP -p 80
+          done
+    - name: Run fake HTTP netcat script as background process
+      shell: nohup /usr/local/bin/fake-http-netcat-ens5.sh > /var/log/fake-http-netcat-ens5.log 2>&1 &
+      args:
+        creates: /var/log/fake-http-netcat-ens5.log
+
+    # SNMP (UDP/161)
+
+    - name: Kill old fake SNMP netcat processes
+      shell: pkill -f 'nc -u -l -s .* -p 161' || true
+      ignore_errors: yes
+    - name: Copy fake SNMP netcat script
+      copy:
+        dest: /usr/local/bin/fake-snmp-netcat-ens5.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              head -c 48 /dev/zero | nc -u -l -s $ens5_IP -p 161
+          done
+    - name: Run fake SNMP netcat script as background process
+      shell: nohup /usr/local/bin/fake-snmp-netcat-ens5.sh > /var/log/fake-snmp-netcat-ens5.log 2>&1 &
+      args:
+        creates: /var/log/fake-snmp-netcat-ens5.log
+
+    # VNC (TCP/5901)
+
+    - name: Kill old fake VNC netcat processes
+      shell: pkill -f 'nc -l -s .* -p 5901' || true
+      ignore_errors: yes
+    - name: Copy fake VNC netcat script
+      copy:
+        dest: /usr/local/bin/fake-vnc-netcat-ens5.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              echo -ne "RFB 003.008\n" | nc -l -s $ens5_IP -p 5901
+          done
+    - name: Run fake VNC netcat script as background process
+      shell: nohup /usr/local/bin/fake-vnc-netcat-ens5.sh > /var/log/fake-vnc-netcat-ens5.log 2>&1 &
+      args:
+        creates: /var/log/fake-vnc-netcat-ens5.log
+
+    # TFTP (UDP/69)
+
+    - name: Kill old fake TFTP netcat processes
+      shell: pkill -f 'nc -u -l -s .* -p 69' || true
+      ignore_errors: yes
+    - name: Copy fake TFTP netcat script
+      copy:
+        dest: /usr/local/bin/fake-tftp-netcat-ens5.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              echo -ne "\x00\x05\x00\x01File not found\x00" | nc -u -l -s $ens5_IP -p 69
+          done
+    - name: Run fake TFTP netcat script as background process
+      shell: nohup /usr/local/bin/fake-tftp-netcat-ens5.sh > /var/log/fake-tftp-netcat-ens5.log 2>&1 &
+      args:
+        creates: /var/log/fake-tftp-netcat-ens5.log
+
+    # NTP (UDP/123)
+
+    - name: Kill old fake NTP netcat processes
+      shell: pkill -f 'nc -u -l -s .* -p 123' || true
+      ignore_errors: yes
+    - name: Copy fake NTP netcat script
+      copy:
+        dest: /usr/local/bin/fake-ntp-netcat-ens5.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then break; fi
+              sleep 2
+          done
+          while true; do
+              head -c 48 /dev/zero | nc -u -l -s $ens5_IP -p 123
+          done
+    - name: Run fake NTP netcat script as background process
+      shell: nohup /usr/local/bin/fake-ntp-netcat-ens5.sh > /var/log/fake-ntp-netcat-ens5.log 2>&1 &
+      args:
+        creates: /var/log/fake-ntp-netcat-ens5.log
+
+    # BACnet
+
+    - name: Copy fake BACnet netcat script
+      copy:
+        dest: /usr/local/bin/fake-bacnet-netcat-ens5.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          while true; do
+              ens5_IP=$(ip -4 addr show ens5 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+              if [[ -n "$ens5_IP" ]]; then
+                  echo "ens5 IP detected: $ens5_IP"
+                  break
+              fi
+              echo "Waiting for ens5 IP..."
+              sleep 2
+          done
+          while true; do
+              echo -ne "Fake BACnet server\n" | nc -u -l -s $ens5_IP -p 47808
+          done
+
+
+     
+
+    # DHCP
+    
+    - name: Install ISC DHCP server
+      apt:
+        name: isc-dhcp-server
+        state: present
+        update_cache: no
+
+    - name: Configure DHCP server to listen on {{ dhcp_iface }}
+      lineinfile:
+        path: /etc/default/isc-dhcp-server
+        regexp: '^INTERFACESv4='
+        line: 'INTERFACESv4="{{ dhcp_iface }}"'
+        state: present
+
+    - name: Configure DHCP subnet for ens5
+      copy:
+        dest: /etc/dhcp/dhcpd.conf
+        content: |
+          default-lease-time 10;
+          max-lease-time 10;
+          authoritative;
+          subnet {{ dhcp_subnet }} netmask {{ dhcp_netmask }} {
+            range {{ dhcp_range_start }} {{ dhcp_range_end }};
+            option routers {{ dhcp_router }};
+            option domain-name-servers {{ dhcp_dns }};
+          }
+
+    - name: Ensure {{ dhcp_iface }} is up (required for dhcpd to start)
+      command: ip link set {{ dhcp_iface }} up
+
+    - name: Restart and enable isc-dhcp-server
+      service:
+        name: isc-dhcp-server
+        state: restarted
+        enabled: yes
+
+    - name: Check DHCP server status
+      shell: systemctl is-active isc-dhcp-server
+      register: dhcp_status
+
+    - name: Show DHCP server status
+      debug:
+        msg: "DHCP server status: {{ dhcp_status.stdout }}"
+
+
+
+    # BLOCK ICMP 
+
+
+    - name: Release DHCP lease and flush IP from ens5
+      shell: dhclient -r ens5 && ip addr flush dev ens5
+      ignore_errors: yes
+
+    - name: Block all ICMP echo requests (ping) using sysctl (IPv4)
+      sysctl:
+        name: net.ipv4.icmp_echo_ignore_all
+        value: 1
+        state: present
+        sysctl_set: yes
+        reload: yes
+
+    - name: Block ICMPv6 echo-request (ping) on all interfaces (IPv6)
+      ansible.builtin.iptables:
+        chain: INPUT
+        protocol: ipv6-icmp
+        icmp_type: echo-request
+        jump: DROP
+        state: present
+        ip_version: ipv6
+
+    - name: Disable IPv6 system-wide via sysctl
+      sysctl:
+        name: net.ipv6.conf.all.disable_ipv6
+        value: 1
+        state: present
+        sysctl_set: yes
+        reload: yes
+
+    - name: Disable IPv6 on default interface via sysctl
+      sysctl:
+        name: net.ipv6.conf.default.disable_ipv6
+        value: 1
+        state: present
+        sysctl_set: yes
+        reload: yes
+
+    - name: Disable IPv6 on loopback via sysctl
+      sysctl:
+        name: net.ipv6.conf.lo.disable_ipv6
+        value: 1
+        state: present
+        sysctl_set: yes
+        reload: yes
+
+
+    - name: Remove temporary static IP from ens5
+      command: ip addr del 10.10.10.14/24 dev ens5
+      ignore_errors: yes
+
+  handlers:
+    - name: Restart vsftpd
+      service:
+        name: vsftpd
+        state: restarted

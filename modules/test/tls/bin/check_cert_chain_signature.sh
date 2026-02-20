@@ -17,7 +17,7 @@
 INTERMEDIATE="$1"
 DEVICE_CERT="$2"
 
-echo "ROOT: $ROOT_CERT"
+echo "INTERMEDIATE: $INTERMEDIATE"
 echo "DEVICE_CERT: $DEVICE_CERT"
 
 response=$(openssl verify -untrusted "$INTERMEDIATE" "$DEVICE_CERT")

@@ -17,29 +17,26 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { BypassComponent } from './bypass.component';
 import { Component } from '@angular/core';
-import { FocusManagerService } from '../../services/focus-manager.service';
-import SpyObj = jasmine.SpyObj;
 
 @Component({
   selector: 'app-test-bypass',
   template:
-    '<app-bypass></app-bypass>' +
+    '<app-bypass label="Label" (click)="test()"></app-bypass>' +
     '<div id="main"><button id="test-button"></button></div>',
   standalone: false,
 })
-class TestBypassComponent {}
+class TestBypassComponent {
+  test() {}
+}
 
 describe('BypassComponent', () => {
   let component: TestBypassComponent;
   let fixture: ComponentFixture<TestBypassComponent>;
-  let mockService: SpyObj<FocusManagerService>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj(['focusFirstElementInContainer']);
     TestBed.configureTestingModule({
       imports: [BypassComponent],
       declarations: [TestBypassComponent],
-      providers: [{ provide: FocusManagerService, useValue: mockService }],
     });
     fixture = TestBed.createComponent(TestBypassComponent);
     component = fixture.componentInstance;
@@ -51,14 +48,23 @@ describe('BypassComponent', () => {
   });
 
   describe('DOM tests', () => {
+    it('should have label', () => {
+      const button = fixture.nativeElement.querySelector(
+        '.navigation-bypass-button'
+      ) as HTMLButtonElement;
+
+      expect(button.textContent?.trim()).toBe('Label');
+    });
+
     it('should emit event on button click', () => {
+      const testSpy = spyOn(component, 'test');
       const button = fixture.nativeElement.querySelector(
         '.navigation-bypass-button'
       ) as HTMLButtonElement;
 
       button?.click();
 
-      expect(mockService.focusFirstElementInContainer).toHaveBeenCalled();
+      expect(testSpy).toHaveBeenCalled();
     });
   });
 });

@@ -10,7 +10,7 @@ packaging==24.1
 pycparser==2.22
 pyshark==0.6
 termcolor==2.4.0
-urllib3==2.5.0
+urllib3==2.6.0
 
 # User defined packages
 cryptography==44.0.1

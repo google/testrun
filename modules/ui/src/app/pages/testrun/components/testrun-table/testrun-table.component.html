@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    https://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<ng-container *ngIf="dataSource">
+@if (dataSource) {
   <mat-table [dataSource]="dataSource" [trackBy]="trackTest">
     <ng-container matColumnDef="name">
       <mat-header-cell mat-header-cell *matHeaderCellDef>
@@ -23,19 +23,19 @@ limitations under the License.
         <span class="item-cell">{{ element.name }}</span>
       </mat-cell>
     </ng-container>
-
     <ng-container matColumnDef="description">
       <mat-header-cell mat-header-cell *matHeaderCellDef>
         Description
       </mat-header-cell>
       <mat-cell mat-cell *matCellDef="let element" class="cell-addition-info">
         <p class="item-cell">{{ element.description }}</p>
-        <p *ngIf="element.details" class="details-info">
-          {{ element.details }}
-        </p>
+        @if (element.details) {
+          <p class="details-info">
+            {{ element.details }}
+          </p>
+        }
       </mat-cell>
     </ng-container>
-
     <ng-container matColumnDef="result">
       <mat-header-cell mat-header-cell *matHeaderCellDef>
         Result
@@ -43,15 +43,12 @@ limitations under the License.
       <mat-cell mat-cell *matCellDef="let element">
         <span
           class="cell-result-text"
-          [class.highlight]="
-            isNonCompliantAndRequired(element.result, element.required_result)
-          "
+          [class.highlight]="isNonCompliant(element.result)"
           [ngClass]="getResultClass(element.result)">
           <span>{{ element.result }}</span>
         </span>
       </mat-cell>
     </ng-container>
-
     <ng-container matColumnDef="requiredResult">
       <mat-header-cell mat-header-cell *matHeaderCellDef>
         Required Result
@@ -67,19 +64,16 @@ limitations under the License.
         </span>
       </mat-cell>
     </ng-container>
-
     <ng-container matColumnDef="clickableIcon">
       <mat-header-cell mat-header-cell *matHeaderCellDef> </mat-header-cell>
       <mat-cell mat-cell *matCellDef="let element">
-        <mat-icon
-          *ngIf="element.recommendations"
-          class="clickable-icon"
-          fontSet="material-symbols-outlined">
-          info
-        </mat-icon>
+        @if (element.recommendations) {
+          <mat-icon class="clickable-icon" fontSet="material-symbols-outlined">
+            info
+          </mat-icon>
+        }
       </mat-cell>
     </ng-container>
-
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
     <mat-row
       *matRowDef="
@@ -96,4 +90,4 @@ limitations under the License.
       (keydown.enter)="onRowSelected(row)"
       (keydown.space)="onRowSelected(row)"></mat-row>
   </mat-table>
-</ng-container>
+}
