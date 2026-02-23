@@ -39,7 +39,7 @@
       git:
         repo: https://github.com/bacnet-stack/bacnet-stack.git
         dest: /opt/bacnet-stack
-        version: master
+        version: bacnet-stack-1.4.2
 
     - name: Build BACnet stack
       make:
@@ -57,6 +57,7 @@
             IP=$(ip -4 addr show $IFACE | awk '/inet / {print $2}' | cut -d/ -f1)
             if [ -n "$IP" ]; then
               export BACNET_IP=$IP
+              export BACNET_PORT=47808
               exec /opt/bacnet-stack/bin/bacserv
             fi
             sleep 2
@@ -75,7 +76,7 @@
           [Service]
           Type=simple
           ExecStart=/usr/local/bin/bacserv-wrapper.sh
-          Restart=always
+          Restart=on-failure
           RestartSec=5
 
           [Install]
