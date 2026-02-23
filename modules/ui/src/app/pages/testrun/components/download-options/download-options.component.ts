@@ -18,6 +18,9 @@ import {
   Component,
   Input,
   inject,
+  QueryList,
+  ViewChildren,
+  AfterViewInit,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -28,6 +31,20 @@ import {
 import { DownloadReportZipComponent } from '../../../../components/download-report-zip/download-report-zip.component';
 import { Profile } from '../../../../model/profile';
 import { MatButtonModule } from '@angular/material/button';
+import { CdkTrapFocus, FocusKeyManager } from '@angular/cdk/a11y';
+import { Directive, ElementRef } from '@angular/core';
+import { FocusableOption } from '@angular/cdk/a11y';
+
+@Directive({
+  selector: '[appMenuItem]',
+  standalone: true,
+})
+export class MenuItemDirective implements FocusableOption {
+  constructor(public element: ElementRef) {}
+  focus() {
+    this.element.nativeElement.focus();
+  }
+}
 
 export enum DownloadOption {
   PDF = 'PDF Report',
@@ -37,12 +54,22 @@ export enum DownloadOption {
   selector: 'app-download-options',
   templateUrl: './download-options.component.html',
   styleUrl: './download-options.component.scss',
-  imports: [MatButtonModule, MatIconModule, DownloadReportZipComponent],
+  imports: [
+    MatButtonModule,
+    MatIconModule,
+    DownloadReportZipComponent,
+    CdkTrapFocus,
+    MenuItemDirective,
+  ],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DownloadOptionsComponent {
+export class DownloadOptionsComponent implements AfterViewInit {
+  @ViewChildren(MenuItemDirective) items!: QueryList<MenuItemDirective>;
+
   private datePipe = inject(DatePipe);
+  private keyManager!: FocusKeyManager<MenuItemDirective>;
+
   isOpenDownloadOptions: boolean = false;
   @Input() profiles: Profile[] = [];
   @Input() data!: TestrunStatus;
@@ -94,5 +121,21 @@ export class DownloadOptionsComponent {
 
   openDownloadOptions(): void {
     this.isOpenDownloadOptions = !this.isOpenDownloadOptions;
+  }
+
+  ngAfterViewInit() {
+    this.keyManager = new FocusKeyManager(this.items)
+      .withWrap()
+      .withVerticalOrientation(true);
+  }
+
+  handleKeydown(event: KeyboardEvent) {
+    if (this.isOpenDownloadOptions) {
+      this.keyManager.onKeydown(event);
+
+      if (event.key === 'Tab') {
+        this.isOpenDownloadOptions = false;
+      }
+    }
   }
 }
