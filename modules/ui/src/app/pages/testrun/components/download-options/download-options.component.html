@@ -14,9 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 @if (data) {
-  <div class="download-actions">
+  <div
+    role="menu"
+    tabindex="-1"
+    class="download-actions"
+    [cdkTrapFocus]="isOpenDownloadOptions"
+    (keydown)="handleKeydown($event)">
     @if (isOpenDownloadOptions) {
       <button
+        role="menuitem"
+        appMenuItem
         (click)="downloadPdf(data)"
         class="download-option"
         aria-label="Download PDF report"
@@ -26,9 +33,9 @@ limitations under the License.
         </mat-icon>
         {{ DownloadOption.PDF }}
       </button>
-    }
-    @if (isOpenDownloadOptions) {
       <app-download-report-zip
+        role="menuitem"
+        appMenuItem
         class="download-option"
         [report]="data.report"
         [export]="data.export"
@@ -43,6 +50,8 @@ limitations under the License.
       </app-download-report-zip>
     }
     <button
+      role="menuitem"
+      appMenuItem
       (click)="openDownloadOptions()"
       class="download-button"
       [class.download-button-opened]="isOpenDownloadOptions"
