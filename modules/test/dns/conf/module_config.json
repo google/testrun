@@ -33,7 +33,12 @@
       {
         "name": "dns.mdns",
         "test_description": "Does the device have MDNS (or any kind of IP multicast)",
-        "expected_behavior": "Device may send MDNS requests"
+        "expected_behavior": "Device may send MDNS requests",
+        "recommendations": [
+          "Enable mDNS support in the device network configuration",
+          "Check if the network switch has IGMP Snooping enabled, which might block multicast",
+          "Ensure the device is on a network segment that allows multicast traffic"
+        ]
       }
     ]
   }

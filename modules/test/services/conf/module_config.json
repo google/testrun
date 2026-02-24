@@ -377,6 +377,12 @@
         "name": "protocol.services.bacnet",
         "test_description": "Report whether the device is running a BACnet server",
         "expected_behavior": "The device may or may not be running a BACnet server",
+        "recommendations": [
+          "Verify if the BACnet service is enabled in the device settings",
+          "Check if UDP port 47808 is open and not blocked by a firewall",
+          "Ensure the BACnet stack is properly initialized on the device",
+          "Ensure the BACnet service is running on the same network interface to which the device under test is connected"
+        ],
         "config": {
           "services": [
             "bacnet"
