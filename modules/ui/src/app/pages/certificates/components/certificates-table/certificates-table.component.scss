@@ -53,7 +53,8 @@
   line-height: 16px;
   letter-spacing: 0.3px;
   white-space: nowrap;
-  &.valid, &.root {
+  &.valid,
+  &.root {
     background: colors.$tertiary-container;
     color: colors.$on-tertiary-container;
   }

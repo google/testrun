@@ -74,7 +74,9 @@ limitations under the License.
         Type
       </th>
       <td *matCellDef="let data" class="text-nowrap" mat-cell>
-        <span [ngClass]="data.type?.toLowerCase()" class="cell-result table-cell-type">
+        <span
+          [ngClass]="data.type?.toLowerCase()"
+          class="cell-result table-cell-type">
           {{ data.type }}
         </span>
       </td>
