@@ -56,12 +56,26 @@ limitations under the License.
         *matHeaderCellDef
         mat-header-cell
         mat-sort-header
-        sortActionDescription="Sort by duration time">
+        sortActionDescription="Sort by status">
         Status
       </th>
       <td *matCellDef="let data" class="text-nowrap" mat-cell>
         <span [ngClass]="data.status?.toLowerCase()" class="cell-result">
           {{ data.status }}
+        </span>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="type">
+      <th
+        *matHeaderCellDef
+        mat-header-cell
+        mat-sort-header
+        sortActionDescription="Sort by type">
+        Type
+      </th>
+      <td *matCellDef="let data" class="text-nowrap" mat-cell>
+        <span [ngClass]="data.type?.toLowerCase()" class="cell-result table-cell-type">
+          {{ data.type }}
         </span>
       </td>
     </ng-container>

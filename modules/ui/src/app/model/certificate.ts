@@ -19,9 +19,15 @@ export interface Certificate {
   organisation?: string;
   expires?: string;
   uploading?: boolean;
+  type?: CertificateType;
 }
 
 export enum CertificateStatus {
   Valid = 'Valid',
   Expired = 'Expired',
+}
+
+export enum CertificateType {
+  Root = 'root',
+  Intermediate = 'intermediate',
 }
