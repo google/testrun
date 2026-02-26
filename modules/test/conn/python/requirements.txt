@@ -7,6 +7,6 @@ pycparser==2.22
 six==1.16.0
 
 # User defined packages
-pyOpenSSL==24.3.0
+pyOpenSSL==25.3.0
 scapy==2.7.0
 python-dateutil==2.9.0.post0
