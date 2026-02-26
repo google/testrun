@@ -3,7 +3,7 @@
 # packages to prevent auto-upgrades of stable dependencies
 appdirs==1.4.4
 certifi==2024.8.30
-cffi==1.17.1
+cffi==2.0.0
 charset-normalizer==3.3.2
 idna==3.8
 packaging==24.1
