@@ -53,13 +53,18 @@
   line-height: 16px;
   letter-spacing: 0.3px;
   white-space: nowrap;
-  &.valid {
+  &.valid,
+  &.root {
     background: colors.$tertiary-container;
     color: colors.$on-tertiary-container;
   }
   &.expired {
     background: colors.$error-container;
     color: colors.$on-error-container;
+  }
+  &.intermediate {
+    background: colors.$secondary-container;
+    color: colors.$on-secondary-container;
   }
 }
 
@@ -124,4 +129,8 @@
 
 .results-content-filter-empty {
   margin-top: 60px;
+}
+
+.table-cell-type {
+  text-transform: capitalize;
 }
