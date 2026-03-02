@@ -365,7 +365,7 @@ class NTPModule(TestModule):
         ntp_whitelist_resolver.is_ip_whitelisted(ip) for ip in ntp_to_remote_ips
     )
 
-    result_details = [f"NTP request to {self._ntp_server}"]
+    result_details = [f'NTP request to {self._ntp_server}']
 
     for ip in ntp_to_remote_ips:
       if ntp_whitelist_resolver.is_ip_whitelisted(ip):
