@@ -372,7 +372,7 @@ class NTPModule(TestModule):
         LOGGER.info(f'NTP server {ip} is in the trusted whitelist')
       else:
         LOGGER.info(f'NTP server {ip} is NOT in the trusted whitelist')
-      result_details.append(f"NTP request to {ip}")
+      result_details.append(f'NTP request to {ip}')
 
     result_state = 'Feature Not Detected'
     result_message = 'Device has not sent any NTP requests'
