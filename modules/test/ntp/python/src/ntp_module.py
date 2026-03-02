@@ -365,31 +365,44 @@ class NTPModule(TestModule):
         ntp_whitelist_resolver.is_ip_whitelisted(ip) for ip in ntp_to_remote_ips
     )
 
+    result_details = [f"NTP request to {self._ntp_server}"]
+
     for ip in ntp_to_remote_ips:
       if ntp_whitelist_resolver.is_ip_whitelisted(ip):
         LOGGER.info(f'NTP server {ip} is in the trusted whitelist')
       else:
         LOGGER.info(f'NTP server {ip} is NOT in the trusted whitelist')
+      result_details.append(f"NTP request to {ip}")
 
-    result = 'Feature Not Detected', 'Device has not sent any NTP requests'
+    result_state = 'Feature Not Detected'
+    result_message = 'Device has not sent any NTP requests'
+
 
     if device_sends_ntp:
       if ntp_to_local and ntp_to_remote:
         if ntp_to_remote_trusted:
-          result = True, ('Device sent NTP request to DHCP provided ' +
+          result_state = True
+          result_message = ('Device sent NTP request to DHCP provided ' +
                           'server and trusted non-DHCP provided servers')
         else:
-          result = False, ('Device sent NTP request to DHCP provided ' +
+          result_state = False
+          result_message = ('Device sent NTP request to DHCP provided ' +
                            'server and to untrusted non-DHCP provided server')
       elif ntp_to_remote:
         if ntp_to_remote_trusted:
-          result = False, ('Device sent NTP request to trusted ' +
+          result_state = False
+          result_message = ('Device sent NTP request to trusted ' +
                            'non-DHCP provided server')
         else:
-          result = False, ('Device sent NTP request to untrusted ' +
+          result_state =  False
+          result_message = ('Device sent NTP request to untrusted ' +
                            'non-DHCP provided server')
       elif ntp_to_local:
-        result = True, 'Device sent NTP request to DHCP provided server'
+        result_state = True
+        result_message ='Device sent NTP request to DHCP provided server'
 
-    LOGGER.info(result[1])
-    return result
+    if not ntp_to_local:
+      result_details.pop(0)
+
+    LOGGER.info(result_state)
+    return result_state, result_message, result_details
