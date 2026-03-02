@@ -23,8 +23,8 @@
       },
       {
         "name": "ntp.network.ntp_dhcp",
-        "test_description": "Accept NTP address over DHCP",
-        "expected_behavior": "Device can accept NTP server address, provided by the DHCP server (DHCP OFFER PACKET)",
+        "test_description": "Accept NTP address over DHCP or from public trusted sources",
+        "expected_behavior": "Device can accept NTP server address, provided by the DHCP server (DHCP OFFER PACKET) or from public trusted sources.",
         "config": {
           "pools_with_subdomains": [
             "pool.ntp.org",
@@ -101,7 +101,11 @@
           ]
         },
         "recommendations": [
-          "Install an NTP client that supports fetching the NTP servers from DHCP options"
+          "Install an NTP client that supports fetching the NTP servers from DHCP options",
+          "Verify that the device is configured to accept DHCP Option 42",
+          "Delete any hardcoded public IPs",
+          "Change the NTP setting from 'Static/Manual' to 'Authomatic/DCHP'",
+          "Restart the NTP daemon"
         ]
       }
     ]
