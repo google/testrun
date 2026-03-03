@@ -33,6 +33,7 @@ import { EntityAction, EntityActionResult } from '../../model/entity-action';
 import { Device } from '../../model/device';
 import { LayoutType } from '../../model/layout-type';
 import { Profile } from '../../model/profile';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-list-layout',
@@ -43,6 +44,7 @@ import { Profile } from '../../model/profile';
     MatToolbarModule,
     MatIconModule,
     ListItemComponent,
+    MatTooltipModule,
   ],
   providers: [DatePipe],
   templateUrl: './list-layout.component.html',
