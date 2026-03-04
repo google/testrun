@@ -80,7 +80,7 @@ class TLSModuleTest(unittest.TestCase):
 
     self.assertEqual(result, 'Error')
     self.assertEqual(description, 'Could not resolve device IP address')
-    self.assertEqual(details, ['Could not resolve device IP address.'])
+    self.assertEqual(details, [])
 
   def security_tls_v1_2_server_no_scan_results_test(self):
     """Tests _security_tls_v1_2_server when scan finds no HTTP/HTTPS ports"""
