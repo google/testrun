@@ -454,7 +454,6 @@ class TLSModule(TestModule):
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       description = 'Could not resolve device IP address'
-      details.append('Could not resolve device IP address.')
       return 'Error', description, details
 
   def _security_tls_v1_3_server(self):
