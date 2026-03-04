@@ -27,7 +27,6 @@ import {
 } from '../../model/testrun-status';
 import { Subject, takeUntil, timer } from 'rxjs';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { TestrunInitiateFormComponent } from './components/testrun-initiate-form/testrun-initiate-form.component';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { LoaderService } from '../../services/loader.service';
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from '../../services/loaderConfig';
@@ -49,6 +48,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TestrunTableComponent } from './components/testrun-table/testrun-table.component';
 import { TestrunStatusCardComponent } from './components/testrun-status-card/testrun-status-card.component';
 import { DownloadOptionsComponent } from './components/download-options/download-options.component';
+import { TestrunDialogService } from '../../services/testrun-dialog.service';
 
 @Component({
   selector: 'app-progress',
@@ -78,6 +78,7 @@ import { DownloadOptionsComponent } from './components/download-options/download
   ],
 })
 export class TestrunComponent implements OnInit, OnDestroy {
+  private readonly testRunDialogService = inject(TestrunDialogService);
   private readonly testRunService = inject(TestRunService);
   dialog = inject(MatDialog);
   private readonly focusManagerService = inject(FocusManagerService);
@@ -161,32 +162,15 @@ export class TestrunComponent implements OnInit, OnDestroy {
   }
 
   openTestRunModal(testModules: TestModule[]): void {
-    const dialogRef = this.dialog.open(TestrunInitiateFormComponent, {
-      ariaLabel: 'Initiate testrun',
-      autoFocus: true,
-      hasBackdrop: true,
-      disableClose: true,
-      panelClass: 'initiate-test-run-dialog',
-      data: {
-        testModules,
-      },
-    });
-
-    dialogRef
-      ?.afterClosed()
+    this.testRunDialogService
+      .openInitiateDialog({ testModules })
       .pipe(takeUntil(this.destroy$))
-      .subscribe((status: TestrunStatus) => {
+      .subscribe(status => {
         if (status) {
-          // @ts-expect-error data layer is not null
-          window.dataLayer.push({
-            event: 'successful_testrun_initiation',
-          });
           this.testrunStore.setStatus(status);
         }
         this.testrunStore.setIsOpenStartTestrun(false);
-        timer(1000).subscribe(() => {
-          this.focusManagerService.focusFirstElementInContainer();
-        });
+        this.testRunDialogService.handleFocus(1000);
       });
   }
 

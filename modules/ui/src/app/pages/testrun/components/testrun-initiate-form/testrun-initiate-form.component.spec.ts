@@ -152,6 +152,8 @@ describe('ProgressInitiateFormComponent', () => {
       });
 
       it('should have "invalid_format" error when field does not meet validation rules', () => {
+        component.selectedDevice = device;
+        fixture.detectChanges();
         [
           'very long value very long value very long value very long value very long value very long value very long value',
           '!as&@3$',
@@ -239,12 +241,12 @@ describe('ProgressInitiateFormComponent', () => {
       it('should focus firmware', fakeAsync(() => {
         component.selectedDevice = device;
         component.setFirmwareFocus = true;
-        const firmwareSpy = spyOn(
-          component.firmwareInput().nativeElement,
-          'focus'
-        );
         component.ngAfterViewChecked();
         fixture.detectChanges();
+        const firmwareSpy = spyOn(
+          component.firmwareInput()?.nativeElement,
+          'focus'
+        );
         tick(100);
 
         expect(firmwareSpy).toHaveBeenCalled();

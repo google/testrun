@@ -102,7 +102,7 @@ export class TestrunInitiateFormComponent
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
   private store = inject<Store<AppState>>(Store);
 
-  readonly firmwareInput = viewChild.required<ElementRef>('firmwareInput');
+  readonly firmwareInput = viewChild<ElementRef>('firmwareInput');
   initiateForm!: FormGroup;
   devices$ = this.store.select(selectDevices);
   selectedDevice: Device | null = null;
