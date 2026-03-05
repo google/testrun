@@ -36,7 +36,6 @@ import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dia
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { Routes } from '../../model/routes';
 import { Router } from '@angular/router';
-import { TestrunInitiateFormComponent } from '../testrun/components/testrun-initiate-form/testrun-initiate-form.component';
 import { DevicesStore } from './devices.store';
 import { DeviceQualificationFromComponent } from './components/device-qualification-from/device-qualification-from.component';
 import { CommonModule } from '@angular/common';
@@ -56,6 +55,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { CanComponentDeactivate } from '../../guards/can-deactivate.guard';
 import { Observable } from 'rxjs/internal/Observable';
 import { of } from 'rxjs/internal/observable/of';
+import { TestrunDialogService } from '../../services/testrun-dialog.service';
 
 @Component({
   selector: 'app-device-repository',
@@ -90,6 +90,7 @@ export class DevicesComponent
   private readonly liveAnnouncer = inject(LiveAnnouncer);
   private readonly route = inject(Router);
   private readonly devicesStore = inject(DevicesStore);
+  private readonly testRunDialogService = inject(TestrunDialogService);
   dialog = inject(MatDialog);
   private element = inject(ElementRef);
   private destroy$: Subject<boolean> = new Subject<boolean>();
@@ -140,38 +141,18 @@ export class DevicesComponent
     devices: Device[],
     testModules: TestModule[]
   ): void {
-    const dialogRef = this.dialog.open(TestrunInitiateFormComponent, {
-      ariaLabel: 'Initiate testrun',
-      data: {
-        devices,
-        device: selectedDevice,
-        testModules,
-      },
-      autoFocus: 'dialog',
-      hasBackdrop: true,
-      disableClose: true,
-      panelClass: 'initiate-test-run-dialog',
-    });
-
-    dialogRef
-      ?.afterClosed()
+    this.testRunDialogService
+      .openInitiateDialog({ device: selectedDevice, devices, testModules })
       .pipe(takeUntil(this.destroy$))
       .subscribe(status => {
         if (status) {
           this.devicesStore.setStatus(status);
-          // @ts-expect-error data layer is not null
-          window.dataLayer.push({
-            event: 'successful_testrun_initiation',
+          this.route.navigate([Routes.Testing]).then(() => {
+            this.testRunDialogService.handleFocus(100);
           });
-          this.route.navigate([Routes.Testing]).then(() =>
-            timer(100).subscribe(() => {
-              this.focusManagerService.focusFirstElementInContainer();
-            })
-          );
         }
       });
   }
-
   async openForm(device: Device | null = null) {
     this.devicesStore.selectDevice(device);
     this.isOpenDeviceForm = true;
