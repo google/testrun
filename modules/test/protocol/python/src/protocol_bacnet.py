@@ -33,7 +33,7 @@ DEFAULT_BIN_DIR = '/testrun/bin'
 
 @dataclass
 class BACnetDevice:
-  device_id: int
+  device_id: str
   ip: str
 
 
@@ -82,7 +82,7 @@ class BACnet():
       for device_info in self.bacnet.discoveredDevices.values():
         self.devices.append(
           BACnetDevice(
-              device_id=device_info['object_instance'][1],
+              device_id=str(device_info['object_instance'][1]),
               ip=str(device_info['address'])
             )
           )
