@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module run all the DNS related unit tests"""
-from protocol_bacnet import BACnet
+from protocol_bacnet import BACnet, BACnetDevice
 import unittest
 import os
 import sys
@@ -52,8 +52,10 @@ class ProtocolModuleTest(unittest.TestCase):
   # Test the BACNet traffic for a matching Object ID and HW address
   def bacnet_protocol_traffic_test(self):
     LOGGER.info(f'Running { inspect.currentframe().f_code.co_name}')
-    result = BACNET.validate_bacnet_source(object_id='1761001',
-                                           device_hw_addr=HW_ADDR)
+    result = BACNET.validate_bacnet_source(
+      BACnetDevice(device_id='1761001', ip='10.10.10.14'),
+      device_hw_addr=HW_ADDR
+    )
     LOGGER.info(f'Test Result: {result}')
     self.assertEqual(result, True)
 
@@ -61,8 +63,10 @@ class ProtocolModuleTest(unittest.TestCase):
   # do not match
   def bacnet_protocol_traffic_fail_test(self):
     LOGGER.info(f'Running { inspect.currentframe().f_code.co_name}')
-    result = BACNET.validate_bacnet_source(object_id='1761001',
-                                           device_hw_addr=HW_ADDR_BAD)
+    result = BACNET.validate_bacnet_source(
+      BACnetDevice(device_id='1761001', ip='10.10.10.14'),
+      device_hw_addr=HW_ADDR_BAD
+    )
     LOGGER.info(f'Test Result: {result}')
     self.assertEqual(result, False)
 
@@ -71,7 +75,7 @@ class ProtocolModuleTest(unittest.TestCase):
   def bacnet_protocol_validate_device_test(self):
     LOGGER.info(f'Running { inspect.currentframe().f_code.co_name}')
     # Load bacnet devices to simulate a discovery
-    bac_dev = ('TestDevice', 'Testrun', '10.10.10.14', 1761001)
+    bac_dev = BACnetDevice(device_id='1761001', ip='10.10.10.14')
     BACNET.devices = [bac_dev]
     result = BACNET.validate_device()
     LOGGER.info(f'Test Result: {result}')
@@ -82,7 +86,7 @@ class ProtocolModuleTest(unittest.TestCase):
   def bacnet_protocol_validate_device_fail_test(self):
     LOGGER.info(f'Running { inspect.currentframe().f_code.co_name}')
     # Load bacnet devices to simulate a discovery
-    bac_dev = ('TestDevice', 'Testrun', '10.10.10.14', 1761001)
+    bac_dev = BACnetDevice(device_id='1761001', ip='10.10.10.14')
     BACNET.devices = [bac_dev]
     # Change the MAC address to a different device than expected
     BACNET.device_hw_addr = HW_ADDR_BAD
