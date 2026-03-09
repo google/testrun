@@ -36,7 +36,8 @@ limitations under the License.
     <button
       class="list-item-menu-item"
       mat-menu-item
-      (click)="menuItemClicked.emit(action.action)">
+      (click)="menuItemClicked.emit(action.action)"
+      [attr.aria-label]="action.action">
       @if (action.icon) {
         <mat-icon fontSet="material-symbols-outlined">{{
           action.icon
