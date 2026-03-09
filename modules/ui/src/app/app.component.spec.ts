@@ -213,6 +213,7 @@ describe('AppComponent', () => {
     compiled = fixture.nativeElement as HTMLElement;
     spyOn(store, 'dispatch').and.callThrough();
     component.appStore.updateSettingMissedError(null);
+    mockLiveAnnouncer.announce.and.resolveTo();
   });
 
   it('should create the app', () => {

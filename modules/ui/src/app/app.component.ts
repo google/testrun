@@ -16,9 +16,7 @@
 import {
   AfterViewInit,
   Component,
-  effect,
   ElementRef,
-  viewChild,
   inject,
   ViewChild,
   ChangeDetectorRef,
@@ -64,6 +62,8 @@ import { HelpTipComponent } from './components/help-tip/help-tip.component';
 import { HelpTips } from './model/tip-config';
 import { BypassContentComponent } from './components/bypass-content/bypass-content.component';
 import { BypassNavigationComponent } from './components/bypass-navigation/bypass-navigation.component';
+import { A11yModule, LiveAnnouncer } from '@angular/cdk/a11y';
+import { delay } from 'rxjs/internal/operators/delay';
 
 export interface AddMenuItem {
   icon?: string;
@@ -101,6 +101,7 @@ const navKeys = [
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   imports: [
+    A11yModule,
     MatButtonModule,
     MatIconModule,
     MatToolbarModule,
@@ -139,6 +140,7 @@ export class AppComponent implements AfterViewInit {
   appStore = inject(AppStore);
   private renderer = inject(Renderer2);
   private el = inject(ElementRef);
+  private liveAnnouncer = inject(LiveAnnouncer);
 
   public readonly CalloutType = CalloutType;
   public readonly StatusOfTestrun = StatusOfTestrun;
@@ -146,8 +148,6 @@ export class AppComponent implements AfterViewInit {
   public readonly Routes = Routes;
   viewModel$ = this.appStore.viewModel$;
 
-  readonly riskAssessmentLink = viewChild<ElementRef>('riskAssessmentLink');
-  private skipCount = 0;
   @ViewChild('settingButton', { static: false }) settingButton!: MatButton;
   settingTipTarget!: HTMLElement;
   deviceTipTarget!: HTMLElement;
@@ -205,6 +205,7 @@ export class AppComponent implements AfterViewInit {
   ];
 
   constructor() {
+    this.subscribeToNavigation();
     this.appStore.getDevices();
     this.appStore.getRiskProfiles();
     this.appStore.getSystemStatus();
@@ -241,13 +242,6 @@ export class AppComponent implements AfterViewInit {
       'qualification',
       this.domSanitizer.bypassSecurityTrustResourceUrl(QUALIFICATION_URL)
     );
-    effect(() => {
-      if (this.skipCount === 0 && this.riskAssessmentLink()) {
-        this.riskAssessmentLink()?.nativeElement.focus();
-      } else if (this.skipCount > 0) {
-        this.skipCount--;
-      }
-    });
   }
 
   ngAfterViewInit() {
@@ -262,18 +256,6 @@ export class AppComponent implements AfterViewInit {
     this.riskAssessmentTipTarget = document.querySelector(
       '.app-sidebar-button.app-sidebar-button-risk-assessment'
     ) as HTMLElement;
-
-    this.viewModel$
-      .pipe(
-        filter(({ isStatusLoaded }) => isStatusLoaded === true),
-        take(1)
-      )
-      .subscribe(({ systemStatus }) => {
-        if (systemStatus === StatusOfTestrun.InProgress) {
-          // link should not be focused after page is just loaded
-          this.skipCount = 1;
-        }
-      });
 
     this.cdr.detectChanges();
   }
@@ -340,5 +322,19 @@ export class AppComponent implements AfterViewInit {
         this.focusManagerService.focusFirstElementInContainer();
       });
     }
+  }
+
+  private subscribeToNavigation() {
+    this.route.events
+      .pipe(
+        filter(e => e instanceof NavigationEnd),
+        delay(10)
+      )
+      .subscribe(() => {
+        this.liveAnnouncer.announce(document.title, 'polite').then(() => {
+          const mainContainer = window.document.querySelector('#main');
+          this.appStore.setFocusOnPage(mainContainer);
+        });
+      });
   }
 }
