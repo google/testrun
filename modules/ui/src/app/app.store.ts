@@ -265,7 +265,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
   setFocusOnPage = this.effect<Document | Element | null | undefined>(
     trigger$ => {
       return trigger$.pipe(
-        delay(100),
+        delay(2000),
         tap(element => {
           this.focusManagerService.focusFirstElementInContainer(element);
         })
