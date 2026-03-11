@@ -17,11 +17,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  ElementRef,
   inject,
   input,
   output,
   signal,
   TemplateRef,
+  viewChild,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -54,6 +56,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 export class ListLayoutComponent<T extends object> {
   private datePipe = inject(DatePipe);
   readonly LayoutType = LayoutType;
+  readonly searchInput = viewChild.required<ElementRef>('searchInput');
   title = input<string>('');
   addEntityText = input<string>('');
   entityDisabled = input<(arg: T) => boolean>();
@@ -86,6 +89,7 @@ export class ListLayoutComponent<T extends object> {
 
   clearSearch(): void {
     this.searchText.set('');
+    this.searchInput().nativeElement.focus();
   }
 
   updateQuery(e: Event) {
