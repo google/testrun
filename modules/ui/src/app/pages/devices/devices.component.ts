@@ -146,7 +146,6 @@ export class DevicesComponent
       .pipe(takeUntil(this.destroy$))
       .subscribe(status => {
         if (status) {
-          this.devicesStore.setStatus(status);
           this.route.navigate([Routes.Testing]).then(() => {
             this.testRunDialogService.handleFocus(100);
           });

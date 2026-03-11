@@ -167,9 +167,8 @@ export class AppComponent implements AfterViewInit {
     }
   }
 
-  navigateToRuntime = () => {
-    this.route.navigate([Routes.Testing]);
-    this.appStore.setIsOpenStartTestrun();
+  startTestrun = (focusFirstElementOnPage?: boolean) => {
+    this.appStore.startTestrun(focusFirstElementOnPage);
   };
 
   navigateToAddDevice = () => {
@@ -187,7 +186,7 @@ export class AppComponent implements AfterViewInit {
       svgIcon: 'testrun_logo_small',
       label: 'Start Testing',
       description: 'Configure your testing tasks',
-      onClick: this.navigateToRuntime,
+      onClick: this.startTestrun,
       disabled$: this.appStore.testrunButtonDisabled$,
     },
     {
