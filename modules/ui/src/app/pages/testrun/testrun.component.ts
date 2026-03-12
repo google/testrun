@@ -17,7 +17,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnDestroy,
-  OnInit,
   inject,
 } from '@angular/core';
 import {
@@ -34,7 +33,6 @@ import { FocusManagerService } from '../../services/focus-manager.service';
 import { TestrunStore } from './testrun.store';
 import { TestRunService } from '../../services/test-run.service';
 import { TestModule } from '../../model/device';
-import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -77,7 +75,7 @@ import { TestrunDialogService } from '../../services/testrun-dialog.service';
     TestrunStore,
   ],
 })
-export class TestrunComponent implements OnInit, OnDestroy {
+export class TestrunComponent implements OnDestroy {
   private readonly testRunDialogService = inject(TestrunDialogService);
   private readonly testRunService = inject(TestRunService);
   dialog = inject(MatDialog);
@@ -87,19 +85,6 @@ export class TestrunComponent implements OnInit, OnDestroy {
   public readonly StatusOfTestrun = StatusOfTestrun;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   viewModel$ = this.testrunStore.viewModel$;
-
-  ngOnInit(): void {
-    combineLatest([
-      this.testrunStore.isOpenStartTestrun$,
-      this.testrunStore.testModules$,
-    ])
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(([isOpenStartTestrun, testModules]) => {
-        if (isOpenStartTestrun) {
-          this.openTestRunModal(testModules);
-        }
-      });
-  }
 
   isTestrunInProgress(status?: string) {
     return this.testRunService.testrunInProgress(status);
@@ -165,11 +150,7 @@ export class TestrunComponent implements OnInit, OnDestroy {
     this.testRunDialogService
       .openInitiateDialog({ testModules })
       .pipe(takeUntil(this.destroy$))
-      .subscribe(status => {
-        if (status) {
-          this.testrunStore.setStatus(status);
-        }
-        this.testrunStore.setIsOpenStartTestrun(false);
+      .subscribe(() => {
         this.testRunDialogService.handleFocus(1000);
       });
   }
