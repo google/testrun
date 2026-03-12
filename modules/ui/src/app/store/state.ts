@@ -39,7 +39,6 @@ export interface AppState {
   // app, devices
   isOpenAddDevice: boolean;
   // app, testrun
-  isOpenStartTestrun: boolean;
   isStopTestrun: boolean;
   isOpenWaitSnackBar: boolean;
   deviceInProgress: Device | null;
@@ -62,7 +61,6 @@ export const initialState: AppState = {
   deviceInProgress: null,
   riskProfiles: [],
   hasRiskProfiles: false,
-  isOpenStartTestrun: false,
   systemStatus: null,
   isTestingComplete: false,
   status: null,

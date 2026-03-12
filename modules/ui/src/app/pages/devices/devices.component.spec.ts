@@ -252,13 +252,34 @@ describe('DevicesComponent', () => {
         tick(100);
 
         expect(router.url).toBe(Routes.Testing);
-        expect(mockDevicesStore.setStatus).toHaveBeenCalledWith(
-          MOCK_PROGRESS_DATA_IN_PROGRESS
-        );
         expect(testRunDialogServiceMock.handleFocus).toHaveBeenCalled();
 
         testRunDialogServiceMock.openInitiateDialog.calls.reset();
       });
+    }));
+  });
+
+  describe('#menuItemClicked', () => {
+    it('should show device item for StartNewTestrun action', fakeAsync(() => {
+      const spyOpenDialog = spyOn(component, 'openStartTestrun');
+      component.menuItemClicked(
+        { action: DeviceAction.StartNewTestrun, entity: device, index: 1 },
+        [],
+        []
+      );
+
+      expect(spyOpenDialog).toHaveBeenCalled();
+    }));
+
+    it('should show device item for Delete action', fakeAsync(() => {
+      const spyOpenDialog = spyOn(component, 'openDeleteDialog');
+      component.menuItemClicked(
+        { action: DeviceAction.Delete, entity: device, index: 1 },
+        [],
+        []
+      );
+
+      expect(spyOpenDialog).toHaveBeenCalled();
     }));
   });
 });

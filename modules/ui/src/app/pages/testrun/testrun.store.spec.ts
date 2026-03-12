@@ -21,7 +21,6 @@ import {
   selectHasConnectionSettings,
   selectHasDevices,
   selectIsAllDevicesOutdated,
-  selectIsOpenStartTestrun,
   selectRiskProfiles,
   selectSystemStatus,
   selectTestModules,
@@ -29,7 +28,6 @@ import {
 import {
   fetchSystemStatus,
   fetchSystemStatusSuccess,
-  setIsOpenStartTestrun,
   setIsStopTestrun,
   setTestrunStatus,
 } from '../../store/actions';
@@ -68,7 +66,6 @@ describe('TestrunStore', () => {
             { selector: selectIsAllDevicesOutdated, value: false },
             { selector: selectSystemStatus, value: null },
             { selector: selectHasConnectionSettings, value: true },
-            { selector: selectIsOpenStartTestrun, value: false },
             { selector: selectRiskProfiles, value: [] },
             { selector: selectTestModules, value: [] },
           ],
@@ -251,16 +248,6 @@ describe('TestrunStore', () => {
         testrunStore.stopTestrun();
 
         expect(store.dispatch).toHaveBeenCalledWith(setIsStopTestrun());
-      });
-    });
-
-    describe('setIsOpenStartTestrun', () => {
-      it('should dispatch action setIsOpenStartTestrun', () => {
-        testrunStore.setIsOpenStartTestrun(true);
-
-        expect(store.dispatch).toHaveBeenCalledWith(
-          setIsOpenStartTestrun({ isOpenStartTestrun: true })
-        );
       });
     });
 
