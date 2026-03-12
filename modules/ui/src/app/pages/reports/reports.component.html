@@ -58,6 +58,13 @@ limitations under the License.
             mat-sort-header
             sortActionDescription="Sort by duration time">
             Duration
+            <svg
+              matSortHeaderIcon
+              matTooltip="Sort by Duration"
+              viewBox="0 -960 960 960">
+              <path
+                d="M440-240v-368L296-464l-56-56 240-240 240 240-56 56-144-144v368h-80Z"></path>
+            </svg>
           </th>
           <td *matCellDef="let data" class="text-nowrap" mat-cell>
             {{ data.duration }}
@@ -101,6 +108,13 @@ limitations under the License.
             mat-sort-header
             sortActionDescription="Sort by assessment type">
             Assessment type
+            <svg
+              matSortHeaderIcon
+              matTooltip="Sort by assessment type"
+              viewBox="0 -960 960 960">
+              <path
+                d="M440-240v-368L296-464l-56-56 240-240 240 240-56 56-144-144v368h-80Z"></path>
+            </svg>
           </th>
           <td *matCellDef="let data" mat-cell>
             {{ data.program }}
