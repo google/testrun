@@ -53,7 +53,6 @@ describe('ProgressInitiateFormComponent', () => {
     'systemStatus$',
     'getSystemStatus',
     'fetchVersion',
-    'setIsOpenStartTestrun',
   ]);
   testRunServiceMock.getDevices.and.returnValue(
     new BehaviorSubject<Device[] | null>([device, device])

@@ -49,17 +49,13 @@ import {
   selectHasDevices,
   selectHasRiskProfiles,
   selectIsAllDevicesOutdated,
-  selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectRiskProfiles,
   selectSystemStatus,
   selectTestModules,
 } from '../../store/selectors';
 import { TestrunStore } from './testrun.store';
-import {
-  fetchSystemStatusSuccess,
-  setTestrunStatus,
-} from '../../store/actions';
+import { setTestrunStatus } from '../../store/actions';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from '../../services/notification.service';
 import { Profile } from '../../model/profile';
@@ -127,7 +123,6 @@ describe('TestrunComponent', () => {
             selectors: [
               { selector: selectHasDevices, value: false },
               { selector: selectIsAllDevicesOutdated, value: false },
-              { selector: selectIsOpenStartTestrun, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
               { selector: selectHasRiskProfiles, value: false },
               { selector: selectRiskProfiles, value: [] },
@@ -191,22 +186,6 @@ describe('TestrunComponent', () => {
       expect(component).toBeTruthy();
     });
 
-    describe('openTestRunModal on first flow', () => {
-      beforeEach(() => {
-        testRunDialogServiceMock.openInitiateDialog.and.returnValue(
-          of(MOCK_PROGRESS_DATA_IN_PROGRESS)
-        );
-        store.overrideSelector(selectIsOpenStartTestrun, true);
-        component.ngOnInit();
-      });
-
-      it('should open the modal if isOpenStartTestrun$ as true', () => {
-        component.ngOnInit();
-
-        expect(testRunDialogServiceMock.openInitiateDialog).toHaveBeenCalled();
-      });
-    });
-
     describe('#stopTestrun', () => {
       it('should update system status to Cancelling', () => {
         store.overrideSelector(
@@ -257,7 +236,6 @@ describe('TestrunComponent', () => {
               { selector: selectDevices, value: [] },
               { selector: selectHasDevices, value: false },
               { selector: selectIsAllDevicesOutdated, value: false },
-              { selector: selectIsOpenStartTestrun, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
               { selector: selectHasRiskProfiles, value: false },
               { selector: selectRiskProfiles, value: [] },
@@ -387,12 +365,9 @@ describe('TestrunComponent', () => {
         startBtn.click();
 
         expect(testRunDialogServiceMock.openInitiateDialog).toHaveBeenCalled();
-        expect(store.dispatch).toHaveBeenCalledWith(
-          fetchSystemStatusSuccess({
-            systemStatus: MOCK_PROGRESS_DATA_IN_PROGRESS,
-          })
-        );
+
         tick(1000);
+
         expect(testRunDialogServiceMock.handleFocus).toHaveBeenCalled();
 
         testRunDialogServiceMock.openInitiateDialog.calls.reset();

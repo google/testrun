@@ -7,6 +7,9 @@ import { Observable } from 'rxjs/internal/Observable';
 import { tap } from 'rxjs/operators';
 import { timer } from 'rxjs';
 import { Device, TestModule } from '../model/device';
+import { Store } from '@ngrx/store';
+import { AppState } from '../store/state';
+import { fetchSystemStatusSuccess } from '../store/actions';
 
 export interface TestrunData {
   testModules: TestModule[];
@@ -16,6 +19,7 @@ export interface TestrunData {
 
 @Injectable({ providedIn: 'root' })
 export class TestrunDialogService {
+  private store = inject<Store<AppState>>(Store);
   dialog = inject(MatDialog);
   focusManagerService = inject(FocusManagerService);
 
@@ -35,6 +39,7 @@ export class TestrunDialogService {
       tap(status => {
         if (status) {
           this.sendAnalytics();
+          this.setStatus(status);
         }
       })
     );
@@ -49,5 +54,13 @@ export class TestrunDialogService {
   private sendAnalytics(): void {
     // @ts-expect-error data layer is not null
     window.dataLayer?.push({ event: 'successful_testrun_initiation' });
+  }
+
+  setStatus(systemStatus: TestrunStatus) {
+    this.store.dispatch(
+      fetchSystemStatusSuccess({
+        systemStatus,
+      })
+    );
   }
 }
