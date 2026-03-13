@@ -36,6 +36,7 @@ export class FilterHeaderComponent {
   @Input({ required: true }) activeFilter!: string;
   @Input() sortActionDescription: string = '';
   @Input({ required: true }) headerText!: string;
+  isFilterHovered = false;
 
   openFilter(
     event: Event,
