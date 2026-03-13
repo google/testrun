@@ -14,6 +14,13 @@
       }
     ">
   </ng-container>
+  <svg
+    matSortHeaderIcon
+    matTooltip="Sort by {{ headerText }}"
+    viewBox="0 -960 960 960">
+    <path
+      d="M440-240v-368L296-464l-56-56 240-240 240 240-56 56-144-144v368h-80Z"></path>
+  </svg>
 </th>
 
 <ng-template
@@ -30,6 +37,7 @@
     [ngClass]="
       (filterOpened && activeFilter === name) || filtered ? 'active' : ''
     "
+    matTooltip="Filter by {{ headerText }}"
     attr.aria-label="filter by {{ name }}">
     <mat-icon fontSet="material-icons-outlined" class="filter-icon"
       >filter_list</mat-icon
