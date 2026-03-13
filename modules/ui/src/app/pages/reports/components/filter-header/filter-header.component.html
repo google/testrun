@@ -1,6 +1,8 @@
 <th
   mat-header-cell
   mat-sort-header
+  matTooltip="Sort by {{ headerText }}"
+  [matTooltipDisabled]="isFilterHovered"
   [sortActionDescription]="sortActionDescription">
   <span>{{ headerText }}</span>
   <ng-container
@@ -14,13 +16,6 @@
       }
     ">
   </ng-container>
-  <svg
-    matSortHeaderIcon
-    matTooltip="Sort by {{ headerText }}"
-    viewBox="0 -960 960 960">
-    <path
-      d="M440-240v-368L296-464l-56-56 240-240 240 240-56 56-144-144v368h-80Z"></path>
-  </svg>
 </th>
 
 <ng-template
@@ -33,6 +28,10 @@
     (click)="openFilter($event, name, title, filterOpened)"
     (keydown.enter)="openFilter($event, name, title, filterOpened)"
     (keydown.space)="openFilter($event, name, title, filterOpened)"
+    (focus)="isFilterHovered = true"
+    (mouseenter)="isFilterHovered = true"
+    (mouseleave)="isFilterHovered = false"
+    (blur)="isFilterHovered = false"
     class="filter-button filter-button-{{ name }}"
     [ngClass]="
       (filterOpened && activeFilter === name) || filtered ? 'active' : ''
