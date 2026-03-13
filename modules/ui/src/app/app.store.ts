@@ -261,26 +261,34 @@ export class AppStore extends ComponentStore<AppComponentState> {
 
   startTestrun = this.effect<boolean | undefined>(trigger$ => {
     return combineLatest([trigger$, this.testModules$]).pipe(
-      tap(([focusFirstElementOnPage, testModules]) => {
+      tap(([focusTip, testModules]) => {
         this.testRunDialogService
           .openInitiateDialog({ testModules })
           .pipe(takeUntil(this.destroy$))
           .subscribe(status => {
             if (status) {
               this.route.navigate([Routes.Testing]).then(() => {
-                if (focusFirstElementOnPage) {
-                  this.testRunDialogService.handleFocus();
-                } else {
-                  this.focusManagerService.focusFirstElementInContainer(
-                    window.document.querySelector('.side-add-button-container')
-                  );
-                }
+                this.setFocusAfterTestrun(focusTip);
               });
+            } else {
+              this.setFocusAfterTestrun(focusTip);
             }
           });
       })
     );
   });
+
+  private setFocusAfterTestrun(focusTip: boolean | undefined) {
+    if (focusTip) {
+      this.focusManagerService.focusFirstElementInContainer(
+        window.document.querySelector('.tip-action-container')
+      );
+    } else {
+      this.focusManagerService.focusFirstElementInContainer(
+        window.document.querySelector('.side-add-button-container')
+      );
+    }
+  }
 
   setFocusOnPage = this.effect<Document | Element | null | undefined>(
     trigger$ => {

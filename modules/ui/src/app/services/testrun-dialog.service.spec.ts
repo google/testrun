@@ -58,7 +58,7 @@ describe('TestrunDialogService', () => {
           device: device,
           testModules: MOCK_TEST_MODULES,
         },
-        autoFocus: 'dialog',
+        autoFocus: 'first-tabbable',
         hasBackdrop: true,
         disableClose: true,
         panelClass: 'initiate-test-run-dialog',
