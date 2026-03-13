@@ -29,7 +29,7 @@ export class TestrunDialogService {
     const dialogRef = this.dialog.open(TestrunInitiateFormComponent, {
       ariaLabel: 'Start new testrun',
       data,
-      autoFocus: 'dialog',
+      autoFocus: 'first-tabbable',
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'initiate-test-run-dialog',
