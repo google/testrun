@@ -43,7 +43,7 @@ sudo venv/bin/pip install pytest-cov > /dev/null 2>&1
 
 # Needs to be sudo because this invokes bin/testrun
 sudo venv/bin/python3 -m pytest -v \
-    --cov=. \
+    --cov=framework/python/src/api \
     --cov-report=term-missing \
     testing/api/test_api.py
 
