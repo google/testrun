@@ -39,8 +39,14 @@ sudo chown -R $USER local
 # Copy configuration to testrun
 sudo cp testing/api/sys_config/system.json local/system.json
 
+sudo venv/bin/pip install pytest-cov > /dev/null 2>&1
+
 # Needs to be sudo because this invokes bin/testrun 
-sudo venv/bin/python3 -m pytest -v testing/api/test_api.py
+sudo venv/bin/python3 -m pytest -v \
+    --cov=framework/python/src \
+    --cov-report=term-missing \
+    testing/api/test_api.py
+
 return_code=$?
 
 # Clean up network interfaces after use
