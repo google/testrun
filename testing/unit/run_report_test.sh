@@ -16,30 +16,35 @@
 
 # Must be run from the root directory of Testrun
 run_test(){
+    local REPORT_TEST_FILE=$1
 
-	local REPORT_TEST_FILE=$1
+    # Activate Python virtual environment
+    source venv/bin/activate
 
-	# Activate Python virtual environment
-	source venv/bin/activate
+    # Убедимся, что coverage установлен в venv
+    pip install coverage > /dev/null 2>&1
 
-	# Add the framework sources
-	PYTHONPATH="$PWD/framework/python/src:$PWD/framework/python/src/common"
+    # Add the framework sources
+    PYTHONPATH="$PWD/framework/python/src:$PWD/framework/python/src/common"
+    export PYTHONPATH
 
-	# Set the python path with all sources
-	export PYTHONPATH
-
-	# Temporarily disable 'set -e' to capture exit code
     set +e
 
-	# Run all host level unit tests from within the venv
-	python3 $REPORT_TEST_FILE
+    # Запускаем через coverage
+    # --source указывает, какой код мы хотим отслеживать
+    python3 -m coverage run --source="$PWD/framework/python/src" "$REPORT_TEST_FILE"
 
-	# Capture the exit code
     local exit_code=$?
 
-	deactivate
+    # Выводим отчет в консоль с номерами пропущенных строк
+    echo -e "\n--- Coverage Report ---"
+    python3 -m coverage report -m
 
-	# Return the captured exit code to the caller
+    # Очищаем данные после вывода (необязательно, но полезно)
+    python3 -m coverage erase
+
+    deactivate
+
     return $exit_code
 }
 
