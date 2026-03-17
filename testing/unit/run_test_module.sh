@@ -25,37 +25,64 @@ run_test() {
   shift
   local DIRS=("$@")
 
-  # Define the locations of the unit test files
-  local UNIT_TEST_DIR_SRC="$PWD/testing/unit/$MODULE_NAME"
+  # Используем абсолютный путь от текущей директории
+  local ROOT_DIR=$(pwd)
+  local UNIT_TEST_DIR_SRC="$ROOT_DIR/testing/unit/$MODULE_NAME"
   local UNIT_TEST_FILE_SRC="$UNIT_TEST_DIR_SRC/${MODULE_NAME}_module_test.py"
 
-  # Define the destination inside the container
-  local UNIT_TEST_DIR_DST="/testing/unit/$MODULE_NAME"
+  # Явно задаем путь к папке отчета
+  local COVERAGE_DIR_SRC="$UNIT_TEST_DIR_SRC/coverage_report"
+
+  # Создаем папку ПЕРЕД запуском докера
+  mkdir -p "$COVERAGE_DIR_SRC"
+
   local UNIT_TEST_FILE_DST="/testrun/python/src/module_test.py"
 
-  # Build the docker run command using an array
+  # Собираем команду
   DOCKER_CMD=(
     sudo docker run --rm --name "${MODULE_NAME}-unit-test"
     -e "DEVICE_TEST_PACK=$DEVICE_TEST_PACK"
+    -e "PYTHONPATH=/testrun/python/src:/testrun/python/src/common"
     -v "$UNIT_TEST_FILE_SRC:$UNIT_TEST_FILE_DST"
+    -v "$COVERAGE_DIR_SRC:/coverage_report"
+    --entrypoint "/bin/bash" # Явно указываем bash как точку входа
   )
 
-  # Add volume mounts for additional directories if provided
+  # Добавляем папки
   for DIR in "${DIRS[@]}"; do
-    DOCKER_CMD+=("-v" "$UNIT_TEST_DIR_SRC/$DIR:$UNIT_TEST_DIR_DST/$DIR")
+    if [ -d "$UNIT_TEST_DIR_SRC/$DIR" ]; then
+      DOCKER_CMD+=("-v" "$UNIT_TEST_DIR_SRC/$DIR:/testing/unit/$MODULE_NAME/$DIR")
+    fi
   done
 
-  # Add the container image and entry point
-  DOCKER_CMD+=("testrun/${MODULE_NAME}-test" "$UNIT_TEST_FILE_DST")
+  # Передаем саму команду как аргументы для bash
+  DOCKER_CMD+=(
+    "testrun/${MODULE_NAME}-test"
+    "-c" "pip install coverage && \
+          python3 -m coverage run --source=/testrun/python/src $UNIT_TEST_FILE_DST && \
+          python3 -m coverage report && \
+          python3 -m coverage html -d /coverage_report"
+  )
 
-  # Run the Docker command
   echo "Running test for ${MODULE_NAME}..."
   "${DOCKER_CMD[@]}"
 
-  # Capture the exit code
+  # После выполнения теста (если он прошел), генерируем отчет
+  if [ $? -eq 0 ]; then
+    echo "Generating HTML report..."
+    sudo docker run --rm \
+      -v "$COVERAGE_DIR_SRC:/coverage_report" \
+      --workdir /coverage_report \
+      "testrun/${MODULE_NAME}-test" \
+      python3 -m coverage html -d /coverage_report
+  fi
+
   local exit_code=$?
 
-  # Return the captured exit code to the caller
+  if [ $exit_code -eq 0 ]; then
+      echo "Coverage report generated in $COVERAGE_DIR_SRC/index.html"
+  fi
+
   return $exit_code
 }
 
