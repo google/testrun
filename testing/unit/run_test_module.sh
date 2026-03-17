@@ -64,16 +64,6 @@ run_test() {
   echo "Running tests and calculating coverage for ${MODULE_NAME}..."
   "${DOCKER_CMD[@]}"
 
-  # После выполнения теста (если он прошел), генерируем отчет
-  if [ $? -eq 0 ]; then
-    echo "Generating HTML report..."
-    sudo docker run --rm \
-      -v "$COVERAGE_DIR_SRC:/coverage_report" \
-      --workdir /coverage_report \
-      "testrun/${MODULE_NAME}-test" \
-      python3 -m coverage html -d /coverage_report
-  fi
-
   local exit_code=$?
 
   return $exit_code
