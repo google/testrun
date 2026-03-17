@@ -31,6 +31,7 @@ import {
   selectStatus,
   selectSystemConfig,
   selectSystemStatus,
+  selectTestModules,
 } from './store/selectors';
 import { Store } from '@ngrx/store';
 import { AppState } from './store/state';
@@ -42,11 +43,11 @@ import {
   filter,
   Observable,
   skip,
+  takeUntil,
 } from 'rxjs';
 import { Device, TestingType, TestModule } from './model/device';
 import {
   setDevices,
-  setIsOpenStartTestrun,
   fetchSystemStatus,
   fetchRiskProfiles,
   fetchReports,
@@ -67,6 +68,9 @@ import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { NotificationService } from './services/notification.service';
 import { Profile } from './model/profile';
 import { map } from 'rxjs/internal/operators/map';
+import { TestrunDialogService } from './services/testrun-dialog.service';
+import { Routes } from './model/routes';
+import { Router } from '@angular/router';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
 export const CALLOUT_STATE_KEY = 'CALLOUT_STATE';
@@ -84,6 +88,8 @@ export class AppStore extends ComponentStore<AppComponentState> {
   private testRunMqttService = inject(TestRunMqttService);
   private focusManagerService = inject(FocusManagerService);
   private notificationService = inject(NotificationService);
+  private readonly testRunDialogService = inject(TestrunDialogService);
+  private readonly route = inject(Router);
 
   private consentShown$ = this.select(state => state.consentShown);
   private calloutState$ = this.select(state => state.calloutState);
@@ -110,6 +116,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
     selectIsTestingComplete
   );
   riskProfiles$: Observable<Profile[]> = this.store.select(selectRiskProfiles);
+  testModules$ = this.store.select(selectTestModules);
 
   testrunButtonDisabled$ = combineLatest([
     this.hasDevices$,
@@ -252,20 +259,41 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   }
 
-  setIsOpenStartTestrun = this.effect(trigger$ => {
-    return trigger$.pipe(
-      tap(() => {
-        this.store.dispatch(
-          setIsOpenStartTestrun({ isOpenStartTestrun: true })
-        );
+  startTestrun = this.effect<boolean | undefined>(trigger$ => {
+    return combineLatest([trigger$, this.testModules$]).pipe(
+      tap(([focusTip, testModules]) => {
+        this.testRunDialogService
+          .openInitiateDialog({ testModules })
+          .pipe(takeUntil(this.destroy$))
+          .subscribe(status => {
+            if (status) {
+              this.route.navigate([Routes.Testing]).then(() => {
+                this.setFocusAfterTestrun(focusTip);
+              });
+            } else {
+              this.setFocusAfterTestrun(focusTip);
+            }
+          });
       })
     );
   });
 
+  private setFocusAfterTestrun(focusTip: boolean | undefined) {
+    if (focusTip) {
+      this.focusManagerService.focusFirstElementInContainer(
+        window.document.querySelector('.tip-action-container')
+      );
+    } else {
+      this.focusManagerService.focusFirstElementInContainer(
+        window.document.querySelector('.side-add-button-container')
+      );
+    }
+  }
+
   setFocusOnPage = this.effect<Document | Element | null | undefined>(
     trigger$ => {
       return trigger$.pipe(
-        delay(100),
+        delay(2000),
         tap(element => {
           this.focusManagerService.focusFirstElementInContainer(element);
         })

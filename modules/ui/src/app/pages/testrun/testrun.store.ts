@@ -22,7 +22,6 @@ import { Store } from '@ngrx/store';
 import {
   selectHasDevices,
   selectIsAllDevicesOutdated,
-  selectIsOpenStartTestrun,
   selectRiskProfiles,
   selectSystemStatus,
   selectTestModules,
@@ -30,7 +29,6 @@ import {
 import {
   fetchSystemStatus,
   fetchSystemStatusSuccess,
-  setIsOpenStartTestrun,
   setIsStopTestrun,
   setTestrunStatus,
 } from '../../store/actions';
@@ -61,7 +59,6 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
   private isAllDevicesOutdated$ = this.store.select(selectIsAllDevicesOutdated);
   private profiles$ = this.store.select(selectRiskProfiles);
   private systemStatus$ = this.store.select(selectSystemStatus);
-  isOpenStartTestrun$ = this.store.select(selectIsOpenStartTestrun);
   testModules$ = this.store.select(selectTestModules);
 
   viewModel$ = this.select({
@@ -133,14 +130,6 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     return trigger$.pipe(
       tap(() => {
         this.store.dispatch(setIsStopTestrun());
-      })
-    );
-  });
-
-  setIsOpenStartTestrun = this.effect<boolean>(trigger$ => {
-    return trigger$.pipe(
-      tap(isOpenStartTestrun => {
-        this.store.dispatch(setIsOpenStartTestrun({ isOpenStartTestrun }));
       })
     );
   });

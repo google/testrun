@@ -80,8 +80,7 @@ limitations under the License.
         <a
           class="logo-link"
           routerLink="{{ Routes.Testing }}"
-          aria-label="Testrun ui logo"
-          (keydown.enter)="onNavigationClick()">
+          aria-label="Testrun ui logo">
           <mat-icon svgIcon="testrun_logo_color"></mat-icon>
           <h1 class="main-heading">Testrun</h1>
         </a>
@@ -102,8 +101,7 @@ limitations under the License.
             aria-label="System settings"
             matTooltip="Settings"
             routerLink="{{ Routes.Settings }}"
-            routerLinkActive="app-sidebar-button-active"
-            (keydown.enter)="onNavigationClick()">
+            routerLinkActive="app-sidebar-button-active">
             <mat-icon>tune</mat-icon>
           </button>
           <app-wifi
@@ -166,8 +164,7 @@ limitations under the License.
     mat-button
     routerLink="{{ route }}"
     routerLinkActive="app-sidebar-button-active"
-    (keydown.space)="onNavigationClick()"
-    (keydown.enter)="onNavigationClick()">
+    ariaCurrentWhenActive="page">
     @if (svgIcon) {
       <mat-icon svgIcon="{{ svgIcon }}"></mat-icon>
     }
@@ -263,7 +260,7 @@ limitations under the License.
         [data]="HelpTips.step3"
         [target]="testingTipTarget"
         (onCLoseTip)="onCLoseTip($event)"
-        (onAction)="navigateToRuntime()">
+        (onAction)="startTestrun(true)">
       </app-help-tip>
     }
     @if (

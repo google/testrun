@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { CalloutType } from '../../../../model/callout-type';
 import { CalloutComponent } from '../../../../components/callout/callout.component';
 import { EmptyMessageComponent } from '../../../../components/empty-message/empty-message.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-certificates-table',
@@ -17,6 +18,7 @@ import { EmptyMessageComponent } from '../../../../components/empty-message/empt
     CommonModule,
     CalloutComponent,
     EmptyMessageComponent,
+    MatTooltipModule,
   ],
   templateUrl: './certificates-table.component.html',
   styleUrl: './certificates-table.component.scss',
