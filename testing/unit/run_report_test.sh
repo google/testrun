@@ -21,7 +21,6 @@ run_test(){
     # Activate Python virtual environment
     source venv/bin/activate
 
-    # Убедимся, что coverage установлен в venv
     pip install coverage > /dev/null 2>&1
 
     # Add the framework sources
@@ -30,17 +29,13 @@ run_test(){
 
     set +e
 
-    # Запускаем через coverage
-    # --source указывает, какой код мы хотим отслеживать
     python3 -m coverage run --source="$PWD/framework/python/src" "$REPORT_TEST_FILE"
 
     local exit_code=$?
 
-    # Выводим отчет в консоль с номерами пропущенных строк
     echo -e "\n--- Coverage Report ---"
     python3 -m coverage report -m
 
-    # Очищаем данные после вывода (необязательно, но полезно)
     python3 -m coverage erase
 
     deactivate
