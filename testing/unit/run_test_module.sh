@@ -53,12 +53,11 @@ run_test() {
     fi
   done
 
-  # Запуск: только тест и консольный отчет
   DOCKER_CMD+=(
     "testrun/${MODULE_NAME}-test"
     "-c" "pip install coverage > /dev/null 2>&1 && \
           python3 -m coverage run --source=/testrun/python/src $UNIT_TEST_FILE_DST > /dev/null 2>&1; \
-          python3 -m coverage report"
+          python3 -m coverage report -m"
   )
 
   echo "Running tests and calculating coverage for ${MODULE_NAME}..."
