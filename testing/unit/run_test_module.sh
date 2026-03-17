@@ -38,33 +38,30 @@ run_test() {
 
   local UNIT_TEST_FILE_DST="/testrun/python/src/module_test.py"
 
-  # Собираем команду
   DOCKER_CMD=(
     sudo docker run --rm --name "${MODULE_NAME}-unit-test"
     -e "DEVICE_TEST_PACK=$DEVICE_TEST_PACK"
     -e "PYTHONPATH=/testrun/python/src:/testrun/python/src/common"
     -v "$UNIT_TEST_FILE_SRC:$UNIT_TEST_FILE_DST"
-    -v "$COVERAGE_DIR_SRC:/coverage_report"
-    --entrypoint "/bin/bash" # Явно указываем bash как точку входа
+    --entrypoint "/bin/bash"
   )
 
-  # Добавляем папки
+  # Добавляем папки (captures, reports и т.д.)
   for DIR in "${DIRS[@]}"; do
     if [ -d "$UNIT_TEST_DIR_SRC/$DIR" ]; then
       DOCKER_CMD+=("-v" "$UNIT_TEST_DIR_SRC/$DIR:/testing/unit/$MODULE_NAME/$DIR")
     fi
   done
 
-  # Передаем саму команду как аргументы для bash
+  # Запуск: только тест и консольный отчет
   DOCKER_CMD+=(
     "testrun/${MODULE_NAME}-test"
-    "-c" "pip install coverage && \
-          python3 -m coverage run --source=/testrun/python/src $UNIT_TEST_FILE_DST && \
-          python3 -m coverage report && \
-          python3 -m coverage html -d /coverage_report"
+    "-c" "pip install coverage > /dev/null 2>&1 && \
+          python3 -m coverage run --source=/testrun/python/src $UNIT_TEST_FILE_DST > /dev/null 2>&1; \
+          python3 -m coverage report"
   )
 
-  echo "Running test for ${MODULE_NAME}..."
+  echo "Running tests and calculating coverage for ${MODULE_NAME}..."
   "${DOCKER_CMD[@]}"
 
   # После выполнения теста (если он прошел), генерируем отчет
@@ -78,10 +75,6 @@ run_test() {
   fi
 
   local exit_code=$?
-
-  if [ $exit_code -eq 0 ]; then
-      echo "Coverage report generated in $COVERAGE_DIR_SRC/index.html"
-  fi
 
   return $exit_code
 }
