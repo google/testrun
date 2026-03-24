@@ -697,14 +697,15 @@ class NetworkOrchestrator:
   def get_session(self):
     return self._session
 
-  def network_adapters_checker(self, mqtt_client: mqtt.MQTT, topic: str):
+  def network_adapters_checker(self, topic: str):
     """Checks for changes in network adapters
     and sends a message to the frontend
     """
     try:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
-        mqtt_client.send_message(topic, adapters)
+        with mqtt.MQTT() as client:
+          client.send_message(topic, adapters)
     except Exception:  # pylint: disable=W0703
       LOGGER.error(traceback.format_exc())
 
@@ -713,7 +714,7 @@ class NetworkOrchestrator:
     return self._ip_ctrl.check_interface_status(
         self._session.get_device_interface())
 
-  def internet_conn_checker(self, mqtt_client: mqtt.MQTT, topic: str):
+  def internet_conn_checker(self, topic: str):
     """Checks internet connection and sends a status to frontend"""
 
     # Default message
@@ -739,8 +740,9 @@ class NetworkOrchestrator:
         if internet_connection:
           message['connection'] = True
 
-      # Broadcast via MQTT client
-      mqtt_client.send_message(topic, message)
+      with mqtt.MQTT() as client:
+        # Broadcast via MQTT client
+        client.send_message(topic, message)
 
 
 class NetworkConfig:

@@ -32,6 +32,16 @@ class MQTT:
   def __init__(self) -> None:
     self._host = WEBSOCKETS_HOST
     self._client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2)
+    self._connect()
+
+  def __enter__(self):
+    self._connect()
+    return self
+
+  def __exit__(self, exc_type, exc_value, exc_traceback):
+    if exc_traceback:
+      LOGGER.error(exc_traceback)
+    self.disconnect()
 
   def _connect(self):
     """Establish connection to MQTT broker"""
@@ -54,7 +64,6 @@ class MQTT:
         topic (str): mqtt topic
         message (t.Union[str, dict]): message
     """
-    self._connect()
     if isinstance(message, dict):
       message = json.dumps(message)
     self._client.publish(topic, str(message))
