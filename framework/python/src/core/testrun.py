@@ -134,6 +134,8 @@ class Testrun:  # pylint: disable=too-few-public-methods
     # Init MQTT client
     self._mqtt_client = mqtt.MQTT()
 
+    logger.setup_mqtt('testrun', self._mqtt_client)
+
     if self._no_ui:
 
       # Check Testrun is able to start
