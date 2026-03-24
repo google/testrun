@@ -19,10 +19,10 @@ import json
 import os
 from fastapi.encoders import jsonable_encoder
 from common import util, logger, mqtt
+from common.mqtt_topics import MQTTTopic
 from common.risk_profile import RiskProfile
 from common.statuses import TestrunStatus, TestResult, TestrunResult
 from net_orc.ip_control import IPControl
-from common.mqtt_topics import MQTTTopic
 
 # Certificate dependencies
 from cryptography import x509
