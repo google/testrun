@@ -16,9 +16,15 @@
 import json
 import typing as t
 import paho.mqtt.client as mqtt_client
-from common import logger
+from enum import Enum
 
-LOGGER = logger.get_logger("mqtt")
+class MQTTTopic(str, Enum):
+  INFO = "info"
+  INTERNET_CONNECTION_TOPIC = "events/internet"
+  NETWORK_ADAPTERS_TOPIC = "events/adapter"
+  STATUS_TOPIC = "status"
+
+
 WEBSOCKETS_HOST = "localhost"
 WEBSOCKETS_PORT = 1883
 
@@ -29,9 +35,20 @@ class MQTTException(Exception):
 
 class MQTT:
   """ MQTT client class"""
-  def __init__(self) -> None:
+  def __init__(self, logger=None) -> None:
+    self._logger = logger
     self._host = WEBSOCKETS_HOST
     self._client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2)
+    self._connect()
+
+  def __enter__(self):
+    self._connect()
+    return self
+
+  def __exit__(self, exc_type, exc_value, exc_traceback):
+    if exc_traceback and self._logger is not None:
+      self._logger.error(exc_traceback)
+    self.disconnect()
 
   def _connect(self):
     """Establish connection to MQTT broker"""
@@ -39,12 +56,14 @@ class MQTT:
       try:
         self._client.connect(self._host, WEBSOCKETS_PORT, 60)
       except (ValueError, ConnectionRefusedError):
-        LOGGER.error("Cannot connect to MQTT broker")
+        if self._logger is not None:
+          self._logger.error("Cannot connect to MQTT broker")
 
   def disconnect(self):
     """Disconnect the local client from the MQTT broker"""
     if self._client.is_connected():
-      LOGGER.debug("Disconnecting from broker")
+      if self._logger is not None:
+        self._logger.debug("Disconnecting from MQTT broker")
       self._client.disconnect()
 
   def send_message(self, topic: str, message: t.Union[str, dict]) -> None:
@@ -54,7 +73,6 @@ class MQTT:
         topic (str): mqtt topic
         message (t.Union[str, dict]): message
     """
-    self._connect()
     if isinstance(message, dict):
       message = json.dumps(message)
     self._client.publish(topic, str(message))
