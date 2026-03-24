@@ -16,12 +16,12 @@
 import json
 import logging
 import os
-from common.mqtt import MQTT
 from common.mqtt_topics import MQTTTopic
 
 
 class TestrunLogger(logging.Logger):
   def ui_info(self, msg, *args, **kwargs):
+    from common.mqtt import MQTT
     with MQTT() as client:
       client.send_message(MQTTTopic.INFO, {'message': msg})
     self.info(msg, *args, **kwargs)
