@@ -39,7 +39,6 @@ describe('CanActivateGuard', () => {
     hasRiskProfiles: false,
     isStopTestrun: false,
     isOpenWaitSnackBar: false,
-    isOpenStartTestrun: false,
     systemStatus: null,
     deviceInProgress: null,
     status: null,

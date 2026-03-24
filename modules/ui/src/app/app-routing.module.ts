@@ -73,5 +73,6 @@ export const routes: Routes = [
     path: '',
     canActivate: [CanActivateGuard],
     component: DevicesComponent,
+    title: 'Testrun - Devices',
   },
 ];

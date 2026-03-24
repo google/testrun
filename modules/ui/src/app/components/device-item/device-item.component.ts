@@ -59,6 +59,6 @@ export class DeviceItemComponent {
   get label() {
     const deviceStatus =
       this.device.status === DeviceStatus.INVALID ? this.INVALID_DEVICE : '';
-    return `${this.device.test_pack} ${this.device.manufacturer} ${this.device.model} ${deviceStatus} ${this.device.mac_addr}`;
+    return `${this.device.test_pack} ${this.device.manufacturer} ${this.device.model} ${deviceStatus}`;
   }
 }

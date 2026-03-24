@@ -106,10 +106,11 @@ export class VersionComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(ConsentDialogComponent, {
       ariaLabel: 'Welcome to Testrun modal window',
       data: dialogData,
-      autoFocus: true,
+      autoFocus: 'first-heading',
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'consent-dialog',
+      ariaModal: true,
     });
 
     dialogRef

@@ -88,11 +88,6 @@ export const selectIsOpenWaitSnackBar = createSelector(
   (state: AppState) => state.isOpenWaitSnackBar
 );
 
-export const selectIsOpenStartTestrun = createSelector(
-  selectAppState,
-  (state: AppState) => state.isOpenStartTestrun
-);
-
 export const selectStatus = createSelector(
   selectAppState,
   (state: AppState) => state.status

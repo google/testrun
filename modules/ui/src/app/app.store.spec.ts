@@ -272,7 +272,7 @@ describe('AppStore', () => {
       it('should call focusFirstElementInContainer', fakeAsync(() => {
         appStore.setFocusOnPage(null);
 
-        tick(101);
+        tick(2001);
 
         expect(
           mockFocusManagerService.focusFirstElementInContainer

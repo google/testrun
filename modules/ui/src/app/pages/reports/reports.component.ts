@@ -40,13 +40,14 @@ import {
   OpenFilterEvent,
 } from './components/filter-header/filter-header.component';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatIconModule } from '@angular/material/icon';
+import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { FilterChipsComponent } from './components/filter-chips/filter-chips.component';
 import { DownloadReportZipComponent } from '../../components/download-report-zip/download-report-zip.component';
 import { DownloadReportPdfComponent } from '../../components/download-report-pdf/download-report-pdf.component';
 import { DeleteReportComponent } from './components/delete-report/delete-report.component';
 import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
 import { EmptyMessageComponent } from '../../components/empty-message/empty-message.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-history',
@@ -64,6 +65,9 @@ import { EmptyMessageComponent } from '../../components/empty-message/empty-mess
     DownloadReportPdfComponent,
     FilterHeaderComponent,
     EmptyMessageComponent,
+    MatSortModule,
+    MatIcon,
+    MatTooltipModule,
   ],
   providers: [ReportsStore, DatePipe],
 })

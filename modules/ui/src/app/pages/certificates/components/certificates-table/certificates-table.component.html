@@ -92,6 +92,7 @@ limitations under the License.
           [disabled]="data.uploading"
           class="certificate-item-delete"
           mat-icon-button
+          matTooltip="Delete {{ data.name }} certificate"
           attr.aria-label="Delete {{ data.name }} certificate"
           (click)="deleteButtonClicked.emit(data.name)">
           <mat-icon fontSet="material-symbols-outlined"> delete </mat-icon>

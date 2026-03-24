@@ -23,7 +23,6 @@ import {
   selectHasDevices,
   selectHasRiskProfiles,
   selectIsOpenAddDevice,
-  selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectReports,
   selectRiskProfiles,
@@ -50,7 +49,6 @@ describe('Selectors', () => {
     hasRiskProfiles: false,
     isStopTestrun: false,
     isOpenWaitSnackBar: false,
-    isOpenStartTestrun: false,
     systemStatus: null,
     deviceInProgress: null,
     status: null,
@@ -116,11 +114,6 @@ describe('Selectors', () => {
 
   it('should select isTestingComplete', () => {
     const result = selectIsTestingComplete.projector(initialState);
-    expect(result).toEqual(false);
-  });
-
-  it('should select isOpenStartTestrun', () => {
-    const result = selectIsOpenStartTestrun.projector(initialState);
     expect(result).toEqual(false);
   });
 
