@@ -26,7 +26,6 @@ import {
   setHasRiskProfiles,
   setIsAllDevicesOutdated,
   setIsOpenAddDevice,
-  setIsOpenStartTestrun,
   setIsOpenWaitSnackBar,
   setIsTestingComplete,
   setReports,
@@ -226,18 +225,6 @@ describe('Reducer', () => {
         ...initialState,
         ...{ isTestingComplete: true },
       };
-
-      expect(state).toEqual(newState);
-      expect(state).not.toBe(initialState);
-    });
-  });
-
-  describe('setIsOpenStartTestrun action', () => {
-    it('should update state', () => {
-      const initialState = initialAppState;
-      const action = setIsOpenStartTestrun({ isOpenStartTestrun: true });
-      const state = fromReducer.sharedReducer(initialState, action);
-      const newState = { ...initialState, ...{ isOpenStartTestrun: true } };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);

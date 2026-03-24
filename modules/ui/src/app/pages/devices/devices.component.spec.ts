@@ -31,13 +31,13 @@ import SpyObj = jasmine.SpyObj;
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { DevicesStore } from './devices.store';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { TestrunInitiateFormComponent } from '../testrun/components/testrun-initiate-form/testrun-initiate-form.component';
 import { Routes } from '../../model/routes';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Component, input, output } from '@angular/core';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../../mocks/testrun.mock';
 import { DeviceQualificationFromComponent } from './components/device-qualification-from/device-qualification-from.component';
+import { TestrunDialogService } from '../../services/testrun-dialog.service';
 
 describe('DevicesComponent', () => {
   let component: DevicesComponent;
@@ -48,6 +48,11 @@ describe('DevicesComponent', () => {
 
   const stateServiceMock: jasmine.SpyObj<FocusManagerService> =
     jasmine.createSpyObj('stateServiceMock', ['focusFirstElementInContainer']);
+  const testRunDialogServiceMock: jasmine.SpyObj<TestrunDialogService> =
+    jasmine.createSpyObj('testRunDialogServiceMock', [
+      'openInitiateDialog',
+      'handleFocus',
+    ]);
 
   beforeEach(async () => {
     // @ts-expect-error data layer should be defined
@@ -75,6 +80,7 @@ describe('DevicesComponent', () => {
       providers: [
         { provide: DevicesStore, useValue: mockDevicesStore },
         { provide: FocusManagerService, useValue: stateServiceMock },
+        { provide: TestrunDialogService, useValue: testRunDialogServiceMock },
       ],
     })
       .overrideComponent(DevicesComponent, {
@@ -234,37 +240,21 @@ describe('DevicesComponent', () => {
 
   describe('#openStartTestrun', () => {
     it('should open initiate test run modal', fakeAsync(() => {
-      const openSpy = spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of(MOCK_PROGRESS_DATA_IN_PROGRESS),
-      } as MatDialogRef<typeof TestrunInitiateFormComponent>);
+      testRunDialogServiceMock.openInitiateDialog.and.returnValue(
+        of(MOCK_PROGRESS_DATA_IN_PROGRESS)
+      );
 
       fixture.ngZone?.run(() => {
         component.openStartTestrun(device, [device], MOCK_TEST_MODULES);
 
-        expect(openSpy).toHaveBeenCalledWith(TestrunInitiateFormComponent, {
-          ariaLabel: 'Initiate testrun',
-          data: {
-            devices: [device],
-            device: device,
-            testModules: MOCK_TEST_MODULES,
-          },
-          autoFocus: 'dialog',
-          hasBackdrop: true,
-          disableClose: true,
-          panelClass: 'initiate-test-run-dialog',
-        });
+        expect(testRunDialogServiceMock.openInitiateDialog).toHaveBeenCalled();
 
         tick(100);
 
         expect(router.url).toBe(Routes.Testing);
-        expect(mockDevicesStore.setStatus).toHaveBeenCalledWith(
-          MOCK_PROGRESS_DATA_IN_PROGRESS
-        );
-        expect(
-          stateServiceMock.focusFirstElementInContainer
-        ).toHaveBeenCalled();
+        expect(testRunDialogServiceMock.handleFocus).toHaveBeenCalled();
 
-        openSpy.calls.reset();
+        testRunDialogServiceMock.openInitiateDialog.calls.reset();
       });
     }));
   });

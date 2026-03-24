@@ -1,5 +1,4 @@
-/*
-/!**
+/**
  * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *!/
+ */
 import {
   ComponentFixture,
   fakeAsync,
@@ -31,7 +30,6 @@ import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.
 import { ElementRef } from '@angular/core';
 import { FilterName, FilterTitle } from '../../model/filters';
 import SpyObj = jasmine.SpyObj;
-import { MatSort } from '@angular/material/sort';
 import { DATA_SOURCE_INITIAL_VALUE, ReportsStore } from './reports.store';
 import {
   DATA_SOURCE_FOR_EMPTY_FILTERS,
@@ -117,25 +115,11 @@ describe('ReportsComponent', () => {
     });
 
     describe('ngOnInit', () => {
-      it('should update sort', fakeAsync(() => {
-        const sort = new MatSort();
-        component.sort = sort;
-        component.ngOnInit();
-
-        expect(mockReportsStore.updateSort).toHaveBeenCalledWith(sort);
-      }));
-
       it('should get reports', fakeAsync(() => {
         component.ngOnInit();
 
         expect(mockReportsStore.getReports).toHaveBeenCalled();
       }));
-    });
-
-    it('#sortData should call update sort', () => {
-      component.sortData({ active: '', direction: 'desc' });
-
-      expect(mockReportsStore.updateSort).toHaveBeenCalled();
     });
 
     it('#sortData should call liveAnnouncer with sorted direction message', () => {
@@ -174,6 +158,7 @@ describe('ReportsComponent', () => {
       const event = {
         currentTarget: null,
         stopPropagation: () => undefined,
+        preventDefault: () => undefined,
       } as Event;
       const openSpy = spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(true),
@@ -208,6 +193,7 @@ describe('ReportsComponent', () => {
       const event = {
         currentTarget: null,
         stopPropagation: () => undefined,
+        preventDefault: () => undefined,
       } as Event;
 
       const mockFilterResults = ['compliant'];
@@ -341,7 +327,7 @@ describe('ReportsComponent', () => {
       });
 
       it('should have empty message', () => {
-        const empty = compiled.querySelector('.results-content-empty');
+        const empty = compiled.querySelector('.history-content-empty');
         expect(empty).toBeTruthy();
       });
     });
@@ -423,4 +409,3 @@ describe('ReportsComponent', () => {
     });
   });
 });
-*/

@@ -1,5 +1,5 @@
 Package: Testrun
-Version: 2.3.1-beta.6
+Version: 2.3.3
 Architecture: amd64
 Maintainer: Google <ssm-orcas@google.com>
 Homepage: https://github.com/google/testrun

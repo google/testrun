@@ -52,7 +52,6 @@ import {
   selectInterfaces,
   selectInternetConnection,
   selectIsAllDevicesOutdated,
-  selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectIsTestingComplete,
   selectReports,
@@ -114,7 +113,6 @@ describe('AppComponent', () => {
       'getSystemStatus',
       'systemStatus$',
       'isTestrunStarted$',
-      'setIsOpenStartTestrun',
       'fetchDevices',
       'getTestModules',
       'testrunInProgress',
@@ -176,7 +174,6 @@ describe('AppComponent', () => {
             { selector: selectSystemStatus, value: null },
             { selector: selectIsTestingComplete, value: false },
             { selector: selectRiskProfiles, value: [] },
-            { selector: selectIsOpenStartTestrun, value: false },
             { selector: selectIsOpenWaitSnackBar, value: false },
             { selector: selectReports, value: [] },
           ],
@@ -213,6 +210,7 @@ describe('AppComponent', () => {
     compiled = fixture.nativeElement as HTMLElement;
     spyOn(store, 'dispatch').and.callThrough();
     component.appStore.updateSettingMissedError(null);
+    mockLiveAnnouncer.announce.and.resolveTo();
   });
 
   it('should create the app', () => {
@@ -505,6 +503,7 @@ describe('AppComponent', () => {
 
       keyboardCases.forEach(testCase => {
         it(`should navigate to the testing on keydown ${testCase.name} "Start Testrun" link`, fakeAsync(() => {
+          const openTestrun = spyOn(component, 'startTestrun');
           const helpTipLinkEl = compiled.querySelector(
             '.tip-action-link'
           ) as HTMLAnchorElement;
@@ -512,7 +511,7 @@ describe('AppComponent', () => {
           helpTipLinkEl.dispatchEvent(testCase.event);
           flush();
 
-          expect(router.url).toBe(Routes.Testing);
+          expect(openTestrun).toHaveBeenCalled();
         }));
       });
 

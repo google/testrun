@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule } from '@angular/material/sort';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 export interface OpenFilterEvent {
   event: Event;
@@ -20,6 +21,7 @@ export interface OpenFilterEvent {
     CommonModule,
     MatTableModule,
     MatSortModule,
+    MatTooltipModule,
   ],
   templateUrl: './filter-header.component.html',
   styleUrl: './filter-header.component.scss',
@@ -34,6 +36,7 @@ export class FilterHeaderComponent {
   @Input({ required: true }) activeFilter!: string;
   @Input() sortActionDescription: string = '';
   @Input({ required: true }) headerText!: string;
+  isFilterHovered = false;
 
   openFilter(
     event: Event,

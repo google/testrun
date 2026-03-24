@@ -90,11 +90,6 @@ export const setTestrunStatus = createAction(
   props<{ systemStatus: TestrunStatus }>()
 );
 
-export const setIsOpenStartTestrun = createAction(
-  '[Shared] Set Is Open Start Testrun',
-  props<{ isOpenStartTestrun: boolean }>()
-);
-
 export const setDeviceInProgress = createAction(
   '[Shared] Set Device In Progress',
   props<{ device: Device | null }>()

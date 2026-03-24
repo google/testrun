@@ -38,7 +38,6 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { Component, Input } from '@angular/core';
 import { IResult, TestrunStatus } from '../../model/testrun-status';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { TestrunInitiateFormComponent } from './components/testrun-initiate-form/testrun-initiate-form.component';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { LoaderService } from '../../services/loader.service';
@@ -50,17 +49,13 @@ import {
   selectHasDevices,
   selectHasRiskProfiles,
   selectIsAllDevicesOutdated,
-  selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectRiskProfiles,
   selectSystemStatus,
   selectTestModules,
 } from '../../store/selectors';
 import { TestrunStore } from './testrun.store';
-import {
-  fetchSystemStatusSuccess,
-  setTestrunStatus,
-} from '../../store/actions';
+import { setTestrunStatus } from '../../store/actions';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from '../../services/notification.service';
 import { Profile } from '../../model/profile';
@@ -68,6 +63,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { DownloadOptionsComponent } from './components/download-options/download-options.component';
 import { TestrunTableComponent } from './components/testrun-table/testrun-table.component';
 import { TestrunStatusCardComponent } from './components/testrun-status-card/testrun-status-card.component';
+import { TestrunDialogService } from '../../services/testrun-dialog.service';
 
 describe('TestrunComponent', () => {
   let component: TestrunComponent;
@@ -97,6 +93,12 @@ describe('TestrunComponent', () => {
       'openSnackBar',
     ]);
 
+  const testRunDialogServiceMock: jasmine.SpyObj<TestrunDialogService> =
+    jasmine.createSpyObj('testRunDialogServiceMock', [
+      'openInitiateDialog',
+      'handleFocus',
+    ]);
+
   const stateServiceMock: jasmine.SpyObj<FocusManagerService> =
     jasmine.createSpyObj('stateServiceMock', ['focusFirstElementInContainer']);
 
@@ -112,6 +114,7 @@ describe('TestrunComponent', () => {
           { provide: FocusManagerService, useValue: stateServiceMock },
           { provide: LoaderService, useValue: loaderServiceMock },
           { provide: NotificationService, useValue: notificationServiceMock },
+          { provide: TestrunDialogService, useValue: testRunDialogServiceMock },
           {
             provide: MatDialogRef,
             useValue: {},
@@ -120,7 +123,6 @@ describe('TestrunComponent', () => {
             selectors: [
               { selector: selectHasDevices, value: false },
               { selector: selectIsAllDevicesOutdated, value: false },
-              { selector: selectIsOpenStartTestrun, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
               { selector: selectHasRiskProfiles, value: false },
               { selector: selectRiskProfiles, value: [] },
@@ -184,21 +186,6 @@ describe('TestrunComponent', () => {
       expect(component).toBeTruthy();
     });
 
-    describe('openTestRunModal on first flow', () => {
-      beforeEach(() => {
-        store.overrideSelector(selectIsOpenStartTestrun, true);
-        component.ngOnInit();
-      });
-
-      it('should open the modal if isOpenStartTestrun$ as true', () => {
-        const openDialogSpy = spyOn(component, 'openTestRunModal');
-
-        component.ngOnInit();
-
-        expect(openDialogSpy).toHaveBeenCalled();
-      });
-    });
-
     describe('#stopTestrun', () => {
       it('should update system status to Cancelling', () => {
         store.overrideSelector(
@@ -239,6 +226,7 @@ describe('TestrunComponent', () => {
           { provide: FocusManagerService, useValue: stateServiceMock },
           { provide: LoaderService, useValue: loaderServiceMock },
           { provide: NotificationService, useValue: notificationServiceMock },
+          { provide: TestrunDialogService, useValue: testRunDialogServiceMock },
           {
             provide: MatDialogRef,
             useValue: {},
@@ -248,7 +236,6 @@ describe('TestrunComponent', () => {
               { selector: selectDevices, value: [] },
               { selector: selectHasDevices, value: false },
               { selector: selectIsAllDevicesOutdated, value: false },
-              { selector: selectIsOpenStartTestrun, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
               { selector: selectHasRiskProfiles, value: false },
               { selector: selectRiskProfiles, value: [] },
@@ -368,35 +355,22 @@ describe('TestrunComponent', () => {
       });
 
       it('should open initiate test run modal when start button clicked', fakeAsync(() => {
-        const openSpy = spyOn(component.dialog, 'open').and.returnValue({
-          afterClosed: () => of(MOCK_PROGRESS_DATA_IN_PROGRESS),
-        } as MatDialogRef<typeof TestrunInitiateFormComponent>);
+        testRunDialogServiceMock.openInitiateDialog.and.returnValue(
+          of(MOCK_PROGRESS_DATA_IN_PROGRESS)
+        );
+
         const startBtn = compiled.querySelector(
           '.start-button'
         ) as HTMLButtonElement;
         startBtn.click();
 
-        expect(openSpy).toHaveBeenCalledWith(TestrunInitiateFormComponent, {
-          ariaLabel: 'Initiate testrun',
-          autoFocus: true,
-          hasBackdrop: true,
-          disableClose: true,
-          panelClass: 'initiate-test-run-dialog',
-          data: {
-            testModules: [],
-          },
-        });
-        expect(store.dispatch).toHaveBeenCalledWith(
-          fetchSystemStatusSuccess({
-            systemStatus: MOCK_PROGRESS_DATA_IN_PROGRESS,
-          })
-        );
-        tick(1000);
-        expect(
-          stateServiceMock.focusFirstElementInContainer
-        ).toHaveBeenCalled();
+        expect(testRunDialogServiceMock.openInitiateDialog).toHaveBeenCalled();
 
-        openSpy.calls.reset();
+        tick(1000);
+
+        expect(testRunDialogServiceMock.handleFocus).toHaveBeenCalled();
+
+        testRunDialogServiceMock.openInitiateDialog.calls.reset();
       }));
     });
 

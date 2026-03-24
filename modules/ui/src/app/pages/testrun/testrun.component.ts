@@ -17,7 +17,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnDestroy,
-  OnInit,
   inject,
 } from '@angular/core';
 import {
@@ -27,7 +26,6 @@ import {
 } from '../../model/testrun-status';
 import { Subject, takeUntil, timer } from 'rxjs';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { TestrunInitiateFormComponent } from './components/testrun-initiate-form/testrun-initiate-form.component';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { LoaderService } from '../../services/loader.service';
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from '../../services/loaderConfig';
@@ -35,7 +33,6 @@ import { FocusManagerService } from '../../services/focus-manager.service';
 import { TestrunStore } from './testrun.store';
 import { TestRunService } from '../../services/test-run.service';
 import { TestModule } from '../../model/device';
-import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -49,6 +46,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TestrunTableComponent } from './components/testrun-table/testrun-table.component';
 import { TestrunStatusCardComponent } from './components/testrun-status-card/testrun-status-card.component';
 import { DownloadOptionsComponent } from './components/download-options/download-options.component';
+import { TestrunDialogService } from '../../services/testrun-dialog.service';
 
 @Component({
   selector: 'app-progress',
@@ -77,7 +75,8 @@ import { DownloadOptionsComponent } from './components/download-options/download
     TestrunStore,
   ],
 })
-export class TestrunComponent implements OnInit, OnDestroy {
+export class TestrunComponent implements OnDestroy {
+  private readonly testRunDialogService = inject(TestrunDialogService);
   private readonly testRunService = inject(TestRunService);
   dialog = inject(MatDialog);
   private readonly focusManagerService = inject(FocusManagerService);
@@ -86,19 +85,6 @@ export class TestrunComponent implements OnInit, OnDestroy {
   public readonly StatusOfTestrun = StatusOfTestrun;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   viewModel$ = this.testrunStore.viewModel$;
-
-  ngOnInit(): void {
-    combineLatest([
-      this.testrunStore.isOpenStartTestrun$,
-      this.testrunStore.testModules$,
-    ])
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(([isOpenStartTestrun, testModules]) => {
-        if (isOpenStartTestrun) {
-          this.openTestRunModal(testModules);
-        }
-      });
-  }
 
   isTestrunInProgress(status?: string) {
     return this.testRunService.testrunInProgress(status);
@@ -161,32 +147,11 @@ export class TestrunComponent implements OnInit, OnDestroy {
   }
 
   openTestRunModal(testModules: TestModule[]): void {
-    const dialogRef = this.dialog.open(TestrunInitiateFormComponent, {
-      ariaLabel: 'Initiate testrun',
-      autoFocus: true,
-      hasBackdrop: true,
-      disableClose: true,
-      panelClass: 'initiate-test-run-dialog',
-      data: {
-        testModules,
-      },
-    });
-
-    dialogRef
-      ?.afterClosed()
+    this.testRunDialogService
+      .openInitiateDialog({ testModules })
       .pipe(takeUntil(this.destroy$))
-      .subscribe((status: TestrunStatus) => {
-        if (status) {
-          // @ts-expect-error data layer is not null
-          window.dataLayer.push({
-            event: 'successful_testrun_initiation',
-          });
-          this.testrunStore.setStatus(status);
-        }
-        this.testrunStore.setIsOpenStartTestrun(false);
-        timer(1000).subscribe(() => {
-          this.focusManagerService.focusFirstElementInContainer();
-        });
+      .subscribe(() => {
+        this.testRunDialogService.handleFocus(1000);
       });
   }
 
