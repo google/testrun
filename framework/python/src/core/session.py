@@ -22,6 +22,7 @@ from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
 from common.statuses import TestrunStatus, TestResult, TestrunResult
 from net_orc.ip_control import IPControl
+from common.mqtt_topics import MQTTTopic
 
 # Certificate dependencies
 from cryptography import x509
@@ -42,7 +43,6 @@ TEST_CONFIG_KEY = 'test_modules'
 ALLOW_DISCONNECT_KEY='allow_disconnect'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
-STATUS_TOPIC = 'status'
 
 MAKE_CONTROL_DIR =  'make/DEBIAN/control'
 
@@ -66,7 +66,7 @@ def session_tracker(method):
 
     if self.get_status() != TestrunStatus.IDLE and not self.pause_message:
       self.get_mqtt_client().send_message(
-                                        STATUS_TOPIC,
+                                        MQTTTopic.STATUS_TOPIC,
                                         jsonable_encoder(self.to_json())
                                         )
       if self.get_status() in STATUSES_COMPLETE:

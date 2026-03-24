@@ -16,6 +16,19 @@
 import json
 import logging
 import os
+from common.mqtt_handler import MQTTHandler
+
+class TestrunLogger(logging.Logger):
+  def __init__(self, name, level=logging.NOTSET):
+    super().__init__(name, level)
+
+  def ui_info(self, msg, *args, **kwargs):
+    if 'extra' not in kwargs:
+      kwargs['extra'] = {}
+    kwargs['extra']['to_ui'] = True
+    self.info(msg, *args, **kwargs)
+
+logging.setLoggerClass(TestrunLogger)
 
 LOGGERS = {}
 _LOG_FORMAT = '%(asctime)s %(name)-8s %(levelname)-7s %(message)s'
@@ -51,6 +64,14 @@ def add_stream_handler(log):
   handler = logging.StreamHandler()
   handler.setFormatter(log_format)
   log.addHandler(handler)
+
+def setup_mqtt(name, mqtt_client):
+  if name in LOGGERS:
+    log = LOGGERS[name]
+    if not any(isinstance(h, MQTTHandler) for h in log.handlers):
+      handler = MQTTHandler(mqtt_client)
+      handler.setFormatter(log_format)
+      log.addHandler(handler)
 
 def get_logger(name, log_file=None, log_dir=None):
   if name not in LOGGERS:

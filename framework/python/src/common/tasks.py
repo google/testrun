@@ -21,13 +21,12 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 
 from common import logger
+from common.mqtt_topics import MQTTTopic
 
 # Check adapters period seconds
 # Check adapters period seconds
 CHECK_NETWORK_ADAPTERS_PERIOD = 5
 CHECK_INTERNET_PERIOD = 2
-INTERNET_CONNECTION_TOPIC = 'events/internet'
-NETWORK_ADAPTERS_TOPIC = 'events/adapter'
 
 LOGGER = logger.get_logger('tasks')
 
@@ -49,7 +48,7 @@ class PeriodicTasks:
         func=self._testrun.get_net_orc().network_adapters_checker,
         kwargs={
                 'mqtt_client': self._mqtt_client,
-                'topic': NETWORK_ADAPTERS_TOPIC
+                'topic': MQTTTopic.NETWORK_ADAPTERS_TOPIC
                 },
         trigger='interval',
         seconds=CHECK_NETWORK_ADAPTERS_PERIOD,
@@ -60,7 +59,7 @@ class PeriodicTasks:
           func=self._testrun.get_net_orc().internet_conn_checker,
           kwargs={
                   'mqtt_client': self._mqtt_client,
-                  'topic': INTERNET_CONNECTION_TOPIC
+                  'topic': MQTTTopic.INTERNET_CONNECTION_TOPIC
                   },
           trigger='interval',
           seconds=CHECK_INTERNET_PERIOD,
