@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from enum import Enum
+from enum import StrEnum
 
-class MQTTTopic(Enum):
+class MQTTTopic(StrEnum):
   INFO = "info"
   INTERNET_CONNECTION_TOPIC = 'events/internet'
   NETWORK_ADAPTERS_TOPIC = 'events/adapter'

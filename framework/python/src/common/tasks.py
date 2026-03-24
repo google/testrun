@@ -47,7 +47,6 @@ class PeriodicTasks:
     self.adapters_checker_job = self._scheduler.add_job(
         func=self._testrun.get_net_orc().network_adapters_checker,
         kwargs={
-                'mqtt_client': self._mqtt_client,
                 'topic': MQTTTopic.NETWORK_ADAPTERS_TOPIC
                 },
         trigger='interval',
@@ -58,7 +57,6 @@ class PeriodicTasks:
       self.internet_shecker = self._scheduler.add_job(
           func=self._testrun.get_net_orc().internet_conn_checker,
           kwargs={
-                  'mqtt_client': self._mqtt_client,
                   'topic': MQTTTopic.INTERNET_CONNECTION_TOPIC
                   },
           trigger='interval',

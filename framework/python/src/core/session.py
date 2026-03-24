@@ -65,10 +65,11 @@ def session_tracker(method):
     result = method(self, *args, **kwargs)
 
     if self.get_status() != TestrunStatus.IDLE and not self.pause_message:
-      self.get_mqtt_client().send_message(
-                                        MQTTTopic.STATUS_TOPIC,
-                                        jsonable_encoder(self.to_json())
-                                        )
+      with mqtt.MQTT() as client:
+        client.send_message(
+            MQTTTopic.STATUS_TOPIC,
+            jsonable_encoder(self.to_json())
+            )
       if self.get_status() in STATUSES_COMPLETE:
         self.pause_message = True
 
@@ -167,9 +168,6 @@ class TestrunSession():
     # TODO: Check if timezone is fetched successfully
     self._timezone = tz[0]
     LOGGER.debug(f'System timezone is {self._timezone}')
-
-    # MQTT client
-    self._mqtt_client = mqtt.MQTT()
 
   def start(self):
     self.reset()
@@ -1060,9 +1058,6 @@ question {question.get('question')}''')
       LOGGER.debug(f'Network adapters change detected: {adapters}')
       self._ifaces = ifaces_new
     return adapters
-
-  def get_mqtt_client(self):
-    return self._mqtt_client
 
   def get_ifaces(self):
     return self._ifaces
