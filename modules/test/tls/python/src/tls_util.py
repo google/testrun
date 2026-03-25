@@ -719,7 +719,7 @@ class TLSUtil():
                           cipher check failure ignored.''')
               protocol_name = allowed_protocol_client_ips[dst_ip]
               packet['protocol_details'] = (
-                  f'\nAllowing {protocol_name} traffic to {packet['dst_ip']}')
+                  f'\nAllowing {protocol_name} traffic to {dst_ip}')
               client_hello_results['valid'].append(packet)
     else:
       # No cipher check for TLS 1.0, 1.1
