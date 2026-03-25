@@ -24,7 +24,7 @@ import sys
 import time
 import docker.errors
 
-from common import logger, util
+from common import logger, util, mqtt
 from common.device import Device
 from common.testreport import TestReport
 from common.statuses import TestrunStatus
@@ -130,6 +130,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     # Start websockets server
     self.start_ws()
+
+    # Init MQTT client
+    self._mqtt_client = mqtt.MQTT()
 
     if self._no_ui:
 
@@ -444,6 +447,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
   def _stop_tests(self):
     self._test_orc.stop()
+
+  def get_mqtt_client(self):
+    return self._mqtt_client
 
   def get_device(self, mac_addr):
     """Returns a loaded device object from the device mac address."""
