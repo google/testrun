@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Enums for mqtt topics"""
-from enum import Enum
+from enum import StrEnum
 
-class MQTTTopic(str, Enum):
+class MQTTTopic(StrEnum):
   INFO = "info"
   INTERNET_CONNECTION_TOPIC = "events/internet"
   NETWORK_ADAPTERS_TOPIC = "events/adapter"

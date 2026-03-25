@@ -16,13 +16,12 @@
 import json
 import logging
 import os
+from common import mqtt
 from common.mqtt_topics import MQTTTopic
-
 
 class TestrunLogger(logging.Logger):
   def ui_info(self, msg, *args, **kwargs):
-    from common import mqtt # pylint: disable=import-outside-toplevel
-    with mqtt.MQTT() as client:
+    with mqtt.MQTT(self) as client:
       client.send_message(MQTTTopic.INFO, {'message': msg})
     self.info(msg, *args, **kwargs)
 
