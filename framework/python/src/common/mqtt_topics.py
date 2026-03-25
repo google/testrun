@@ -14,7 +14,7 @@
 """Enums for mqtt topics"""
 from enum import Enum
 
-class MQTTTopic(Enum):
+class MQTTTopic(str, Enum):
   INFO = "info"
   INTERNET_CONNECTION_TOPIC = "events/internet"
   NETWORK_ADAPTERS_TOPIC = "events/adapter"
