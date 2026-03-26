@@ -467,8 +467,12 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     if device is not None:
       if mac_addr != device.mac_addr:
-        LOGGER.info(f'Found device with mac addr: {mac_addr} but was ignored')
-        LOGGER.info(f'Expected device mac address is {device.mac_addr}')
+        msg = f'Found device with mac addr: {mac_addr} but was ignored'
+        self._mqtt_client.send_message(mqtt.MQTTTopic.INFO, {'message': msg})
+        LOGGER.info(msg)
+        msg = f'Expected device mac address is {device.mac_addr}'
+        self._mqtt_client.send_message(mqtt.MQTTTopic.INFO, {'message': msg})
+        LOGGER.info(msg)
         # Ignore discovered device because it is not the target device
         return
     else:
