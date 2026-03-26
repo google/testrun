@@ -17,6 +17,13 @@ import json
 import typing as t
 import paho.mqtt.client as mqtt_client
 from common import logger
+from enum import Enum
+
+class MQTTTopic(str, Enum):
+  INFO = "info"
+  INTERNET_CONNECTION_TOPIC = "events/internet"
+  NETWORK_ADAPTERS_TOPIC = "events/adapter"
+  STATUS_TOPIC = "status"
 
 LOGGER = logger.get_logger("mqtt")
 WEBSOCKETS_HOST = "localhost"
@@ -47,7 +54,7 @@ class MQTT:
       LOGGER.debug("Disconnecting from broker")
       self._client.disconnect()
 
-  def send_message(self, topic: str, message: t.Union[str, dict]) -> None:
+  def send_message(self, topic: MQTTTopic, message: t.Union[str, dict]) -> None:
     """Send message to specific topic
 
     Args:
@@ -57,4 +64,4 @@ class MQTT:
     self._connect()
     if isinstance(message, dict):
       message = json.dumps(message)
-    self._client.publish(topic, str(message))
+    self._client.publish(topic.value, str(message))
