@@ -19,7 +19,7 @@ import os
 from common import mqtt
 
 class TestrunLogger(logging.Logger):
-  def ui_info(self, msg, *args, **kwargs):
+  def info_ui(self, msg, *args, **kwargs):
     with mqtt.MQTT(self) as client:
       client.send_message(mqtt.MQTTTopic.INFO, {'message': msg})
     self.info(msg, *args, **kwargs)
