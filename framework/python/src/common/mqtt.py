@@ -16,10 +16,9 @@
 import json
 import typing as t
 import paho.mqtt.client as mqtt_client
-
-"""Enums for mqtt topics"""
 from enum import Enum
 
+"""Enums for mqtt topics"""
 class MQTTTopic(str, Enum):
   INFO = "info"
   INTERNET_CONNECTION_TOPIC = "events/internet"
