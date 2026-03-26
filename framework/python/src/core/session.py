@@ -19,7 +19,6 @@ import json
 import os
 from fastapi.encoders import jsonable_encoder
 from common import util, logger, mqtt
-from common.mqtt_topics import MQTTTopic
 from common.risk_profile import RiskProfile
 from common.statuses import TestrunStatus, TestResult, TestrunResult
 from net_orc.ip_control import IPControl
@@ -65,9 +64,9 @@ def session_tracker(method):
     result = method(self, *args, **kwargs)
 
     if self.get_status() != TestrunStatus.IDLE and not self.pause_message:
-      with mqtt.MQTT() as client:
+      with mqtt.MQTT(LOGGER) as client:
         client.send_message(
-            MQTTTopic.STATUS_TOPIC,
+            mqtt.MQTTTopic.STATUS_TOPIC,
             jsonable_encoder(self.to_json())
             )
       if self.get_status() in STATUSES_COMPLETE:

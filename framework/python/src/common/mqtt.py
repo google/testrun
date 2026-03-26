@@ -17,6 +17,16 @@ import json
 import typing as t
 import paho.mqtt.client as mqtt_client
 
+"""Enums for mqtt topics"""
+from enum import Enum
+
+class MQTTTopic(str, Enum):
+  INFO = "info"
+  INTERNET_CONNECTION_TOPIC = "events/internet"
+  NETWORK_ADAPTERS_TOPIC = "events/adapter"
+  STATUS_TOPIC = "status"
+
+
 WEBSOCKETS_HOST = "localhost"
 WEBSOCKETS_PORT = 1883
 

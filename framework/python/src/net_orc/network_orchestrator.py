@@ -704,7 +704,7 @@ class NetworkOrchestrator:
     try:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
-        with mqtt.MQTT() as client:
+        with mqtt.MQTT(LOGGER) as client:
           client.send_message(topic, adapters)
     except Exception:  # pylint: disable=W0703
       LOGGER.error(traceback.format_exc())
@@ -740,7 +740,7 @@ class NetworkOrchestrator:
         if internet_connection:
           message['connection'] = True
 
-      with mqtt.MQTT() as client:
+      with mqtt.MQTT(LOGGER) as client:
         # Broadcast via MQTT client
         client.send_message(topic, message)
 
