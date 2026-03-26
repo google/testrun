@@ -71,6 +71,7 @@ import { map } from 'rxjs/internal/operators/map';
 import { TestrunDialogService } from './services/testrun-dialog.service';
 import { Routes } from './model/routes';
 import { Router } from '@angular/router';
+import { Info } from './model/topic';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
 export const CALLOUT_STATE_KEY = 'CALLOUT_STATE';
@@ -247,6 +248,18 @@ export class AppStore extends ComponentStore<AppComponentState> {
               this.notifyAboutTheAdapters(adapters.adapters_added);
             }
             this.store.dispatch(updateAdapters({ adapters }));
+          })
+        );
+      })
+    );
+  });
+
+  getInfo = this.effect(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap(() => {
+        return this.testRunMqttService.getInfo().pipe(
+          tap((info: Info) => {
+            this.notificationService.notify(info.message);
           })
         );
       })

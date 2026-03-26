@@ -77,6 +77,7 @@ import { TestingCompleteComponent } from './components/testing-complete/testing-
 import { VersionComponent } from './components/version/version.component';
 import { MOCK_MODULES } from './mocks/device.mock';
 import { HelpTips } from './model/tip-config';
+import { MOCK_INFO } from './mocks/topic.mock';
 
 const windowMock = {
   location: {
@@ -124,7 +125,7 @@ describe('AppComponent', () => {
       'focusFirstElementInContainer',
     ]);
     mockLiveAnnouncer = jasmine.createSpyObj('mockLiveAnnouncer', ['announce']);
-    mockMqttService = jasmine.createSpyObj(['getNetworkAdapters']);
+    mockMqttService = jasmine.createSpyObj(['getNetworkAdapters', 'getInfo']);
 
     TestBed.configureTestingModule({
       imports: [
@@ -203,6 +204,7 @@ describe('AppComponent', () => {
     mockService.fetchDevices.and.returnValue(of([]));
     mockService.getTestModules.and.returnValue(of([...MOCK_MODULES]));
     mockMqttService.getNetworkAdapters.and.returnValue(of(MOCK_ADAPTERS));
+    mockMqttService.getInfo.and.returnValue(of(MOCK_INFO));
     store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(AppComponent);
     component = fixture.componentInstance;

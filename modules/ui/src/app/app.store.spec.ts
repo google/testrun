@@ -56,6 +56,7 @@ import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { MOCK_ADAPTERS } from './mocks/settings.mock';
 import { TestingType } from './model/device';
 import { ResultOfTestrun, StatusOfTestrun } from './model/testrun-status';
+import { MOCK_INFO } from './mocks/topic.mock';
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -109,7 +110,7 @@ describe('AppStore', () => {
     mockFocusManagerService = jasmine.createSpyObj([
       'focusFirstElementInContainer',
     ]);
-    mockMqttService = jasmine.createSpyObj(['getNetworkAdapters']);
+    mockMqttService = jasmine.createSpyObj(['getNetworkAdapters', 'getInfo']);
 
     TestBed.configureTestingModule({
       providers: [
@@ -338,6 +339,20 @@ describe('AppStore', () => {
         expect(mockNotificationService.notify).toHaveBeenCalledWith(
           'New network adapter(s) mockNewInternetKey has been detected. You can switch to using it in the System settings menu'
         );
+      });
+    });
+
+    describe('getInfo', () => {
+      const info = MOCK_INFO;
+
+      beforeEach(() => {
+        mockMqttService.getInfo.and.returnValue(of(info));
+      });
+
+      it('should notify about new info', () => {
+        appStore.getInfo();
+
+        expect(mockNotificationService.notify).toHaveBeenCalledWith('message');
       });
     });
 

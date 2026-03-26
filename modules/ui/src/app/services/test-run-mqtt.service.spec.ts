@@ -6,7 +6,7 @@ import SpyObj = jasmine.SpyObj;
 import { of } from 'rxjs';
 import { MOCK_ADAPTERS } from '../mocks/settings.mock';
 import { Topic } from '../model/topic';
-import { MOCK_INTERNET } from '../mocks/topic.mock';
+import { MOCK_INFO, MOCK_INTERNET } from '../mocks/topic.mock';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/testrun.mock';
 import { TestRunService } from './test-run.service';
 
@@ -92,6 +92,26 @@ describe('TestRunMqttService', () => {
     it('should return object of type', done => {
       service.getStatus().subscribe(res => {
         expect(res).toEqual(MOCK_PROGRESS_DATA_IN_PROGRESS);
+        done();
+      });
+    });
+  });
+
+  describe('getInfo', () => {
+    beforeEach(() => {
+      mockService.observe.and.returnValue(of(getResponse(MOCK_INFO)));
+    });
+
+    it('should subscribe the topic', done => {
+      service.getInfo().subscribe(() => {
+        expect(mockService.observe).toHaveBeenCalledWith(Topic.Info);
+        done();
+      });
+    });
+
+    it('should return object of type', done => {
+      service.getInfo().subscribe(res => {
+        expect(res).toEqual(MOCK_INFO);
         done();
       });
     });
