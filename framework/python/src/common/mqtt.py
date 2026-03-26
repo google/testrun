@@ -18,7 +18,6 @@ import typing as t
 import paho.mqtt.client as mqtt_client
 from enum import Enum
 
-"""Enums for mqtt topics"""
 class MQTTTopic(str, Enum):
   INFO = "info"
   INTERNET_CONNECTION_TOPIC = "events/internet"
