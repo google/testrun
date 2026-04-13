@@ -165,6 +165,7 @@ class TestReport():
     report_json['tests'] = {'total': self._total_tests,
                             'results': test_results}
     report_json['report'] = self._report_url
+    report_json['export'] = self._export_url
     return report_json
 
   def from_json(self, json_file):

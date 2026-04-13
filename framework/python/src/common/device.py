@@ -78,6 +78,7 @@ class Device():
       device_json['firmware'] = self.firmware
 
     device_json['test_modules'] = self.test_modules
+    device_json['reports'] = [report.to_json() for report in self.reports] if self.reports else []
     return device_json
 
   def to_config_json(self):
@@ -94,6 +95,7 @@ class Device():
     device_json['additional_info'] = self.additional_info
     device_json['created_at'] = self.created_at.isoformat()
     device_json['modified_at'] = self.modified_at.isoformat()
+    device_json['reports'] = [report.to_json() for report in self.reports] if self.reports else []
 
     return device_json
 
