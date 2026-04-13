@@ -1,6 +1,6 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "cloud-image/ubuntu-24.04"
-  config.vm.box_version = "20251126.0.0"
+  config.vm.box_version = "20260307.0.0"
   config.vm.hostname = "ubuntu-vm"
   if ENV['DEVICE'] == 'COMPLIANT'
     config.vm.network "private_network",
