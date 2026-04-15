@@ -270,8 +270,6 @@ class Testrun:  # pylint: disable=too-few-public-methods
                         device_folder=device_folder,
                         reports=device_reports
                         )
-        if not device.get_reports():
-          self._copy_existing_reports(device)
 
         # Load in the additional fields
         if DEVICE_TYPE_KEY in device_config_json:
@@ -292,6 +290,8 @@ class Testrun:  # pylint: disable=too-few-public-methods
               'Device is outdated and requires further configuration')
           device.status = 'Invalid'
 
+        if not device.get_reports():
+          self._copy_existing_reports(device)
 
         # self._load_test_reports(device)
 
