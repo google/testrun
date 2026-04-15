@@ -5,6 +5,7 @@ error
 pylint.out
 __pycache__/
 build/
+local/reports/
 
 # Ignore generated files from unit tests
 testing/unit_test/temp/

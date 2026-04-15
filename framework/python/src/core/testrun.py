@@ -51,8 +51,12 @@ DEVICE_TYPE_KEY = 'type'
 DEVICE_TECHNOLOGY_KEY = 'technology'
 DEVICE_TEST_PACK_KEY = 'test_pack'
 DEVICE_ADDITIONAL_INFO_KEY = 'additional_info'
+DEVICE_REPORT_NAME_FORMAT = '{mac_addr}_{timestamp}'
 
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
+
+OLD_REPORTS_FOLDER = 'local/devices/{device_folder}/reports'
+REPORTS_FOLDER = 'local/reports'
 
 
 class Testrun:  # pylint: disable=too-few-public-methods
@@ -171,6 +175,45 @@ class Testrun:  # pylint: disable=too-few-public-methods
     # self._load_devices(device_dir=RESOURCE_DEVICES_DIR)
     return self.get_session().get_device_repository()
 
+
+  def _copy_existing_reports(self, device: Device):
+    old_reports = self._load_test_reports(device)
+    device.clear_reports()
+    if old_reports:
+      for report in old_reports:
+        timestamp = report.get_started().strftime('%Y-%m-%dT%H:%M:%S')
+        report_path = os.path.join(self.get_reports_folder(device), timestamp)
+        if os.path.exists(report_path) and os.path.isdir(report_path):
+          new_report_folder_name = DEVICE_REPORT_NAME_FORMAT.format(
+            mac_addr=device.mac_addr.replace(':', ''),
+            timestamp=timestamp
+          )
+          new_report_path = os.path.join(
+            self.get_common_reports_folder(), new_report_folder_name
+            )
+          try:
+            shutil.copytree(
+              report_path,
+              os.path.join(self.get_common_reports_folder(), new_report_path)
+            )
+          except (FileExistsError, shutil.Error) as e:
+            LOGGER.error(f'Error occurred while copying report: {e}')
+          report.set_report_url(f'report/{new_report_folder_name}')
+          report.set_export_url(f'export/{new_report_folder_name}')
+          device.add_report(report)
+      self.save_device(device)
+      try:
+        shutil.rmtree(
+          OLD_REPORTS_FOLDER.format(device_folder=device.device_folder)
+        )
+      except FileNotFoundError:
+        LOGGER.error(
+          f'Old reports folder not found for device {device.model}'
+        )
+    else:
+      LOGGER.info('No existing reports to copy')
+
+
   def _load_devices(self, device_dir):
     LOGGER.debug('Loading devices from ' + device_dir)
 
@@ -203,7 +246,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
         device_model = device_config_json.get(DEVICE_MODEL)
         mac_addr = device_config_json.get(DEVICE_MAC_ADDR)
         test_modules = device_config_json.get(DEVICE_TEST_MODULES)
-
+        reports = device_config_json.get('reports', [])
         # Load max device reports
         max_device_reports = None
         if 'max_device_reports' in device_config_json:
@@ -211,13 +254,24 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
         folder_url = os.path.join(device_dir, device_folder)
 
+        device_reports = []
+        if reports:
+          for report in reports:
+            test_report = TestReport()
+            test_report.from_json(report)
+            device_reports.append(test_report)
+
         device = Device(folder_url=folder_url,
                         manufacturer=device_manufacturer,
                         model=device_model,
                         mac_addr=mac_addr,
                         test_modules=test_modules,
                         max_device_reports=max_device_reports,
-                        device_folder=device_folder)
+                        device_folder=device_folder,
+                        reports=device_reports
+                        )
+        if not device.get_reports():
+          self._copy_existing_reports(device)
 
         # Load in the additional fields
         if DEVICE_TYPE_KEY in device_config_json:
@@ -238,7 +292,8 @@ class Testrun:  # pylint: disable=too-few-public-methods
               'Device is outdated and requires further configuration')
           device.status = 'Invalid'
 
-        self._load_test_reports(device)
+
+        # self._load_test_reports(device)
 
         # Add device to device repository
         self.get_session().add_device(device)
@@ -252,7 +307,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     # Remove the existing reports in memory
     device.clear_reports()
-
+    reports = []
     # Locate reports folder
     reports_folder = self.get_reports_folder(device)
 
@@ -288,11 +343,17 @@ class Testrun:  # pylint: disable=too-few-public-methods
         test_report.from_json(report_json)
         test_report.set_mac_addr(device.mac_addr)
         device.add_report(test_report)
+        reports.append(test_report)
+    return reports
 
   def get_reports_folder(self, device):
     """Return the reports folder path for the device"""
     return os.path.join(self._root_dir, LOCAL_DEVICES_DIR, device.device_folder,
                         'reports')
+
+  def get_common_reports_folder(self):
+    """Return the common reports folder path for all devices"""
+    return os.path.join(self._root_dir, REPORTS_FOLDER)
 
   def delete_report(self, device: Device, timestamp):
     LOGGER.debug(f'Deleting test report for device {device.model} ' +

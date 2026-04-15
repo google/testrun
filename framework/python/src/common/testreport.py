@@ -117,6 +117,9 @@ class TestReport():
   def get_export_url(self):
     return self._export_url
 
+  def set_export_url(self, url):
+    self._export_url = url
+
   def set_mac_addr(self, mac_addr):
     self._mac_addr = mac_addr
 
