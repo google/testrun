@@ -72,12 +72,12 @@ class Device():
   def clear_reports(self):
     self.reports = []
 
-  def remove_report(self, timestamp: datetime):
-    for report in self.reports:
-      if report.get_started().strftime('%Y-%m-%dT%H:%M:%S') == timestamp:
-        self.reports.remove(report)
-        report.delete_folder()
-        return
+  def remove_report(self, report: TestReport):
+    if report in self.reports:
+      self.reports.remove(report)
+      report.delete_folder()
+      self.export_config_json()
+      return
 
   def to_dict(self):
     """Returns the device as a python dictionary. This is used for the

@@ -355,21 +355,12 @@ class Testrun:  # pylint: disable=too-few-public-methods
     """Return the common reports folder path for all devices"""
     return os.path.join(self._root_dir, REPORTS_FOLDER)
 
-  def delete_report(self, device: Device, timestamp):
+  def delete_report(self, device: Device, report: TestReport) -> bool:
     LOGGER.debug(f'Deleting test report for device {device.model} ' +
-                 f'at {timestamp}')
+                 f'at {report.get_folder_name()}')
 
-    # Locate reports folder
-    reports_folder = self.get_reports_folder(device)
-
-    for report_folder in os.listdir(reports_folder):
-      if report_folder == timestamp:
-        shutil.rmtree(os.path.join(reports_folder, report_folder))
-        device.remove_report(timestamp)
-        LOGGER.debug('Successfully deleted the report')
-        return True
-
-    return False
+    device.remove_report(report)
+    return True
 
   def create_device(self, device: Device):
 
