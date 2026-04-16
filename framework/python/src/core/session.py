@@ -21,6 +21,7 @@ from fastapi.encoders import jsonable_encoder
 from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
 from common.statuses import TestrunStatus, TestResult, TestrunResult
+from common.device import Device
 from net_orc.ip_control import IPControl
 
 # Certificate dependencies
@@ -381,6 +382,12 @@ class TestrunSession():
   def get_device_by_make_and_model(self, make, model):
     for device in self._device_repository:
       if device.manufacturer == make and device.model == model:
+        return device
+
+  def get_device_by_mac_addr(self, mac_addr_simmplified: str) -> Device | None:
+    for device in self._device_repository:
+      if (device.mac_addr is not None
+          and device.mac_addr.replace(':', '') == mac_addr_simmplified):
         return device
 
   def get_device_repository(self):

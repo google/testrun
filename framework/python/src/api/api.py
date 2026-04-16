@@ -43,6 +43,7 @@ DEVICE_TECH_KEY = "technology"
 DEVICE_ADDITIONAL_INFO_KEY = "additional_info"
 
 DEVICES_PATH = "local/devices"
+REPORTS_PATH = "local/reports"
 PROFILES_PATH = "local/risk_profiles"
 
 RESOURCES_PATH = "resources"
@@ -99,9 +100,9 @@ class Api:
     self._router.add_api_route("/report",
                                self.delete_report,
                                methods=["DELETE"])
-    self._router.add_api_route("/report/{device_name}/{timestamp}",
+    self._router.add_api_route("/report/{report_name}",
                                self.get_report)
-    self._router.add_api_route("/export/{device_name}/{timestamp}",
+    self._router.add_api_route("/export/{report_name}",
                                self.get_results,
                                methods=["POST"])
 
@@ -702,8 +703,10 @@ class Api:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid JSON received")
 
-  async def get_report(self, response: Response, device_name, timestamp):
-    device = self._session.get_device_by_name(device_name)
+  async def get_report(self, response: Response, report_name):
+    """Serve report pdf file for a given report name"""
+    mac = report_name.split("_")[0]
+    device = self._session.get_device_by_mac_addr(mac)
 
     # If the device not found
     if device is None:
@@ -711,23 +714,19 @@ class Api:
       response.status_code = 404
       return self._generate_msg(False, "Device not found")
 
+    report = device.get_report_by_folder_name(report_name)
+    LOGGER.debug(f"Looking for report with name {report_name}")
+    if not report:
+      LOGGER.info("Report could not be found, returning 404")
+      response.status_code = 404
+      return self._generate_msg(False, "Report could not be found")
+
+
     # Regenerate the pdf if the device profile has been updated
-    self._get_testrun().get_test_orc().regenerate_pdf(device, timestamp)
-
-    # 1.3 file path
-    file_path = os.path.join(
-      DEVICES_PATH,
-      device_name,
-      "reports",
-      timestamp,"test",
-          device.mac_addr.replace(":",""),
-          "report.pdf")
-    if not os.path.isfile(file_path):
-      # pre 1.3 file path
-      file_path = os.path.join(DEVICES_PATH, device_name, "reports", timestamp,
-                             "report.pdf")
-
-    LOGGER.debug(f"Received get report request for {device_name} / {timestamp}")
+    test_orc = self._get_testrun().get_test_orc()
+    test_path = test_orc.regenerate_pdf(device, report)
+    file_path = os.path.join(test_path, "report.pdf")
+    LOGGER.debug(f"Received get report request for {device.model}")
     if os.path.isfile(file_path):
       return FileResponse(file_path)
     else:
@@ -735,10 +734,13 @@ class Api:
       response.status_code = 404
       return self._generate_msg(False, "Report could not be found")
 
-  async def get_results(self, request: Request, response: Response, device_name,
-                        timestamp):
-    LOGGER.debug("Received get results " +
-                 f"request for {device_name} / {timestamp}")
+  async def get_results(
+      self,
+      request: Request,
+      response: Response,
+      report_name: str
+    ):
+    LOGGER.debug(f"Received get results request for {report_name}")
 
     profile = None
 
@@ -761,32 +763,21 @@ class Api:
       pass
 
     # Check if device exists
-    device = self.get_session().get_device_by_name(device_name)
+    mac = report_name.split("_")[0]
+    device = self._session.get_device_by_mac_addr(mac)
     if device is None:
       response.status_code = status.HTTP_404_NOT_FOUND
       return self._generate_msg(False,
                                 "A device with that name could not be found")
-
-    # Check if report exists (1.3 file path)
-    report_file_path = os.path.join(
-      DEVICES_PATH,
-      device_name,
-      "reports",
-      timestamp,"test",
-          device.mac_addr.replace(":",""))
-
-    if not os.path.isdir(report_file_path):
-      # pre 1.3 file path
-      report_file_path = os.path.join(DEVICES_PATH, device_name, "reports",
-                                                    timestamp)
-
-    if not os.path.isdir(report_file_path):
+    report = device.get_report_by_folder_name(report_name)
+    LOGGER.debug(f"Looking for report with name {report_name}")
+    if not report:
       LOGGER.info("Report could not be found, returning 404")
       response.status_code = 404
       return self._generate_msg(False, "Report could not be found")
 
     zip_file_path = self._get_testrun().get_test_orc().zip_results(
-        device, timestamp, profile)
+        device, report, profile)
 
     if zip_file_path is None:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR

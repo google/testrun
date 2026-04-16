@@ -198,8 +198,8 @@ class Testrun:  # pylint: disable=too-few-public-methods
             )
           except (FileExistsError, shutil.Error) as e:
             LOGGER.error(f'Error occurred while copying report: {e}')
-          report.set_report_url(f'report/{new_report_folder_name}')
-          report.set_export_url(f'export/{new_report_folder_name}')
+          report.set_report_url(new_report_folder_name)
+          report.set_export_url(new_report_folder_name)
           device.add_report(report)
       self.save_device(device)
       try:
