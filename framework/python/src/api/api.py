@@ -441,17 +441,22 @@ class Api:
       LOGGER.debug(e)
       return json_response
 
-  async def get_reports(self, request: Request):
+  async def get_reports(self):
     LOGGER.debug("Received reports list request")
     # Resolve the server IP from the request so we
     # can fix the report URL
     reports = self._session.get_all_reports()
     for report in reports:
-      # report URL is currently hard coded as localhost so we can
-      # replace that to fix the IP dynamically from the requester
-      report["report"] = report["report"].replace(
-        "localhost", request.client.host)
-      report["export"] = report["report"].replace("report", "export")
+      del report["mac_addr"]
+      del report["tests"]
+      del report["folder_name"]
+      report["device"] = {
+        "manufacturer": report["device"]["manufacturer"],
+        "model": report["device"]["model"],
+        "mac_addr": report["device"]["mac_addr"],
+        "firmware": report["device"]["firmware"]
+      }
+      report["delete"] = report["report"]
     return reports
 
   async def delete_report(self, response: Response, report_name: str):
