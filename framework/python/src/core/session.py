@@ -524,8 +524,9 @@ class TestrunSession():
 
     for device in self.get_device_repository():
       device_reports = device.get_reports()
-      for device_report in device_reports:
-        reports.append(device_report.to_json())
+      reports.extend(
+        [device_report.to_json() for device_report in device_reports]
+      )
     return sorted(reports, key=lambda report: report['started'], reverse=True)
 
   def add_total_tests(self, no_tests):
