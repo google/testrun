@@ -52,6 +52,17 @@ class Device():
   def add_report(self, report):
     self.reports.append(report)
 
+  def get_report_by_folder_name(self, folder_name: str) -> TestReport | None:
+    for report in self.reports:
+      report_folder_name = report.get_folder_name()
+      if report_folder_name == folder_name:
+        return report
+      if report_folder_name is None or report_folder_name == '':
+        if report.get_report_url().split('/')[-1] == folder_name:
+          report.set_report_url(folder_name)
+          return report
+    return None
+
   def get_reports(self):
     return self.reports
 
@@ -109,7 +120,7 @@ class Device():
       report.to_json() for report in self.reports] if self.reports else []
 
     return device_json
-  
+
   def export_config_json(self):
     """Exports the device config as a json file to the specified path."""
     # Locate parent directory

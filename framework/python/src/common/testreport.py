@@ -87,6 +87,11 @@ class TestReport():
   def update_device_profile(self, additional_info):
     self._device['device_profile'] = additional_info
 
+  def update_device_info(self, device):
+    self._device['manufacturer'] = device.manufacturer
+    self._device['model'] = device.model
+    self._device['device_profile'] = device.additional_info
+
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
 
@@ -127,10 +132,10 @@ class TestReport():
 
   def set_export_url(self, folder_name: str):
     self._export_url = f'/export/{folder_name}'
-  
+
   def get_folder_name(self) -> str:
     return self._folder_name
-  
+
   def delete_folder(self):
     # Delete report from disk
     if self._folder_name:
@@ -272,6 +277,12 @@ class TestReport():
     # Convert HTML to PDF in memory using weasyprint
     pdf_bytes = BytesIO()
     HTML(string=report_html).write_pdf(pdf_bytes)
+    return pdf_bytes
+
+  def to_pdf_from_html(self, html_content):
+    # Convert HTML to PDF in memory using weasyprint
+    pdf_bytes = BytesIO()
+    HTML(string=html_content).write_pdf(pdf_bytes)
     return pdf_bytes
 
   def to_html(self):

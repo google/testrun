@@ -20,17 +20,17 @@ import re
 import time
 import shutil
 import docker
-from datetime import datetime
-from common import logger, util
+from common import logger, util, risk_profile
 from common.testreport import TestReport
 from common.statuses import TestrunStatus, TestrunResult, TestResult
+from common.device import Device
 from core.testrun import REPORTS_FOLDER, DEVICE_REPORT_NAME_FORMAT
 from core.docker.test_docker_module import TestModule
-from common.device import Device
 from test_orc.test_case import TestCase
 from test_orc.test_pack import TestPack
 import threading
 from typing import List
+from bs4 import BeautifulSoup
 
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
@@ -47,7 +47,7 @@ TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
 
 SAVED_DEVICE_REPORTS = "report/{device_folder}/"
-LOCAL_DEVICE_REPORTS = "local/devices/{device_folder}/reports"
+LOCAL_DEVICE_REPORTS = "local/reports"
 DEVICE_ROOT_CERTS = "local/root_certs"
 
 LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
@@ -314,7 +314,7 @@ class TestOrchestrator:
 
     # Define the directory
     report_folder_name = DEVICE_REPORT_NAME_FORMAT.format(
-        mac_addr=device.mac_addr.replace(':', ''),
+        mac_addr=device.mac_addr.replace(":", ""),
         timestamp=self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S")
     )
     report_dir = os.path.join(self._root_path, REPORTS_FOLDER)
@@ -332,24 +332,26 @@ class TestOrchestrator:
                 os.path.join(report_dir, "testrun.log"))
 
     return report_folder_name
-  
-  def zip_results(self, device, timestamp: str, profile):
+
+  def zip_results(
+      self, device: Device,
+      report: TestReport,
+      profile: risk_profile.RiskProfile) -> str:
 
     try:
       LOGGER.debug("Archiving test results")
 
       src_path = os.path.join(
-          LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
-          timestamp)
+          LOCAL_DEVICE_REPORTS, report.get_folder_name())
 
       # Regenerate the report if the device profile has been updated
-      self._regenerate_report_files(device, timestamp)
+      self._regenerate_report_files(device, report)
 
       # Define temp directory to store files before zipping
       results_dir = os.path.join(f"/tmp/testrun/{time.time()}")
 
       # Define where to save the zip file
-      zip_location = os.path.join("/tmp/testrun", timestamp)
+      zip_location = os.path.join("/tmp/testrun", report.get_folder_name())
 
       # Delete zip_temp if it already exists
       if os.path.exists(results_dir):
@@ -389,83 +391,113 @@ class TestOrchestrator:
       LOGGER.debug(error)
       return None
 
-  def regenerate_pdf(self, device, timestamp):
+  def regenerate_pdf(self, device: Device, report: TestReport) -> str:
     """Regenerate the pdf report"""
-    self._regenerate_report_files(device, timestamp)
+    return self._regenerate_report_files(device, report)
 
-  def _regenerate_report_files(self, device, timestamp):
+  def _regenerate_report_files(self, device: Device, report: TestReport) -> str:
     '''Regenerate the report if the device profile has been updated'''
-
+    # Report files path
+    report_dir = os.path.join(self._root_path, REPORTS_FOLDER)
+    report_dir = os.path.join(report_dir, report.get_folder_name())
+    test_path = os.path.join(
+      report_dir,
+      f'test/{device.mac_addr.replace(":", "")}'
+    )
     try:
-
-      # Report files path
-      report_path = os.path.join(
-          LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
-          timestamp, "test", device.mac_addr.replace(":", ""))
-
-      # Parse string timestamp
-      date_timestamp: datetime.datetime = datetime.strptime(
-          timestamp, "%Y-%m-%dT%H:%M:%S")
-
-      # Find the report
-      test_report = None
-      for report in device.get_reports():
-        if report.get_started() == date_timestamp:
-          test_report = report
-
-      # This should not happen as the timestamp is checked in api.py first
-      if test_report is None:
-        return None
-
       # Copy the original report for comparison
-      test_report_copy = copy.deepcopy(test_report)
-
+      report_copy = copy.deepcopy(report)
       # Update the report with 'additional_info' field
-      test_report.update_device_profile(device.additional_info)
-
+      report.update_device_info(device)
+      device.export_config_json()
       # Overwrite report only if additional_info has been changed
-      if test_report.to_json() != test_report_copy.to_json():
+      if report.to_json() != report_copy.to_json():
         LOGGER.debug("Device profile has been updated, regenerating the report")
 
-        # Store the jinja templates
-        reload_templates = []
-
-        # Load the jinja templates
-        if os.path.isdir(report_path):
-          for dir_path, _, filenames in os.walk(report_path):
-            for filename in filenames:
-              try:
-                if filename.endswith(".j2.html"):
-                  with open(os.path.join(dir_path, filename), "r",
-                            encoding="utf-8") as f:
-                    reload_templates.append(f.read())
-              except Exception as e:
-                LOGGER.debug(f"Could not read the file: {e}")
-
-        # Add the jinja templates to the report
-        test_report.add_module_templates(reload_templates)
-
         # Rewrite the json report
-        with open(os.path.join(report_path, "report.json"),
+        with open(os.path.join(test_path, "report.json"),
                   "w",
                   encoding="utf-8") as f:
-          json.dump(test_report.to_json(), f, indent=2)
+          json.dump(report.to_json(), f, indent=2)
 
+        with open(os.path.join(test_path, "report.html"),
+                  "r",
+                  encoding="utf-8") as f:
+          html = f.read()
+        html = self._update_html_report(report, html)
+        LOGGER.debug(f"{test_path}")
         # Rewrite the html report
-        with open(os.path.join(report_path, "report.html"),
+        with open(os.path.join(test_path, "report.html"),
                   "w",
                   encoding="utf-8") as f:
-          f.write(test_report.to_html())
+          f.write(html)
 
         # Rewrite the pdf report
-        with open(os.path.join(report_path, "report.pdf"), "wb") as f:
-          f.write(test_report.to_pdf().getvalue())
+        with open(os.path.join(test_path, "report.pdf"), "wb") as f:
+          f.write(report.to_pdf_from_html(html).getvalue())
 
         LOGGER.debug("Report has been regenerated")
 
     except Exception as error:
       LOGGER.error("Failed to regenerate the report")
       LOGGER.debug(error)
+    return test_path
+
+  def _update_html_report(self, report: TestReport, html: str):
+    """Update the HTML report with the new device information."""
+    report_json = report.to_json()
+    manufacturer = report_json["device"].get("manufacturer", "Unknown")
+    model = report_json["device"].get("model", "Unknown")
+    title = f"{manufacturer} {model}"
+    bs = BeautifulSoup(html, "html.parser")
+    div_profile = bs.find("div", class_="device-profile-content")
+    if div_profile is not None:
+      for item in report_json["device"]["device_profile"]:
+        question = item["question"]
+        answer = item["answer"]
+        # Find the question div with exact text match for 'q'
+        question_div = div_profile.find(
+          "div",
+          class_="device-profile-question",
+          string=question
+        )
+        if question_div:
+          # Find the next sibling answer div
+          answer_div = question_div.find_next_sibling(
+            "div",
+            class_="device-profile-answer"
+          )
+          if answer_div:
+            # Update the answer text with 'a'
+            answer_div.string = answer
+    h3 = bs.find("h3", class_="header-info-device")
+    if h3:
+      h3.string = title
+    # Update manufacturer and model in summary section by finding labels
+    all_labels = bs.find_all("div", class_="summary-item-label")
+    for label_div in all_labels:
+      h4 = label_div.find("h4")
+      if h4 and h4.string:
+        # Find the next summary-item-value sibling
+        value_div = label_div.find_next_sibling(
+          "div",
+          class_="summary-item-value"
+        )
+        if value_div:
+          if "Manufacturer" in h4.string:
+            value_div.string = manufacturer
+            LOGGER.debug(f"Updated manufacturer to '{value_div.string}'")
+          elif "Model" in h4.string:
+            value_div.string = model
+            LOGGER.debug(f"Updated model to '{value_div.string}'")
+    all_header_info_divs = bs.find_all("div", class_="header-info")
+    for header_info_div in all_header_info_divs:
+      header_span = header_info_div.find_next_sibling("span")
+      if header_span:
+        header_span.string = title
+        LOGGER.debug(f"Updated sibling span to '{header_span.string}'")
+
+    return str(bs)
 
   def test_in_progress(self):
     return self._test_in_progress
