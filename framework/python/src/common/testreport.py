@@ -14,6 +14,7 @@
 """Store previous Testrun information."""
 
 from datetime import datetime
+import shutil
 from weasyprint import HTML
 from io import BytesIO
 from common import util, logger
@@ -38,6 +39,11 @@ TEST_REPORT_TEMPLATE = 'report_template.html'
 ICON = 'icon.png'
 RESULTS_SPACE_FIRST_PAGE = 440
 RESULTS_SPACE = 800
+
+_REPORTS_FOLDER = 'local/reports'
+_CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+_ROOT_DIR = os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.dirname(_CURRENT_DIR))))
 
 
 LOGGER = logger.get_logger('REPORT')
@@ -76,6 +82,7 @@ class TestReport():
     self._report_url = ''
     self._export_url = ''
     self._cur_page = 0
+    self._folder_name = ''
 
   def update_device_profile(self, additional_info):
     self._device['device_profile'] = additional_info
@@ -108,8 +115,9 @@ class TestReport():
   def add_test(self, test):
     self._results.append(test)
 
-  def set_report_url(self, url):
-    self._report_url = url
+  def set_report_url(self, folder_name: str):
+    self._folder_name = folder_name
+    self._report_url = f'/report/{folder_name}'
 
   def get_report_url(self):
     return self._report_url
@@ -117,8 +125,23 @@ class TestReport():
   def get_export_url(self):
     return self._export_url
 
-  def set_export_url(self, url):
-    self._export_url = url
+  def set_export_url(self, folder_name: str):
+    self._export_url = f'/export/{folder_name}'
+  
+  def get_folder_name(self) -> str:
+    return self._folder_name
+  
+  def delete_folder(self):
+    # Delete report from disk
+    if self._folder_name:
+      report_path = os.path.join(_ROOT_DIR, _REPORTS_FOLDER, self._folder_name)
+      if os.path.exists(report_path):
+        try:
+          shutil.rmtree(report_path)
+        except FileNotFoundError:
+          LOGGER.error(
+            f'Report folder not found for deletion: {report_path}'
+          )
 
   def set_mac_addr(self, mac_addr):
     self._mac_addr = mac_addr
@@ -169,6 +192,7 @@ class TestReport():
                             'results': test_results}
     report_json['report'] = self._report_url
     report_json['export'] = self._export_url
+    report_json['folder_name'] = self._folder_name
     return report_json
 
   def from_json(self, json_file):
@@ -213,6 +237,8 @@ class TestReport():
       self._report_url = json_file['report']
     if 'export' in json_file:
       self._export_url = json_file['export']
+    if 'folder_name' in json_file:
+      self._folder_name = json_file['folder_name']
 
     self._total_tests = json_file['tests']['total']
 

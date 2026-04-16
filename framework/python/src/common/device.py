@@ -14,10 +14,15 @@
 
 """Track device object information."""
 
+import json
+import os
 from typing import List, Dict
 from dataclasses import dataclass, field
 from common.testreport import TestReport
 from datetime import datetime
+
+_LOCAL_DEVICES_DIR = 'local/devices'
+_DEVICE_CONFIG_FILE = 'device_config.json'
 
 @dataclass
 class Device():
@@ -50,6 +55,9 @@ class Device():
   def get_reports(self):
     return self.reports
 
+  def sort_reports(self):
+    self.reports.sort(key=lambda r: r.get_started() or datetime.min)
+
   def clear_reports(self):
     self.reports = []
 
@@ -57,6 +65,7 @@ class Device():
     for report in self.reports:
       if report.get_started().strftime('%Y-%m-%dT%H:%M:%S') == timestamp:
         self.reports.remove(report)
+        report.delete_folder()
         return
 
   def to_dict(self):
@@ -100,6 +109,18 @@ class Device():
       report.to_json() for report in self.reports] if self.reports else []
 
     return device_json
+  
+  def export_config_json(self):
+    """Exports the device config as a json file to the specified path."""
+    # Locate parent directory
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    root_dir = os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.dirname(current_dir))))
+    config_file_path = os.path.join(root_dir, _LOCAL_DEVICES_DIR,
+                                    self.device_folder, _DEVICE_CONFIG_FILE)
+
+    with open(config_file_path, 'w+', encoding='utf-8') as config_file:
+      config_file.writelines(json.dumps(self.to_config_json(), indent=4))
 
   def __post_init__(self):
     # Store initial values after creation
