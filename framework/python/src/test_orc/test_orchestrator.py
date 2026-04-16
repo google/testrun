@@ -24,7 +24,9 @@ from datetime import datetime
 from common import logger, util
 from common.testreport import TestReport
 from common.statuses import TestrunStatus, TestrunResult, TestResult
+from core.testrun import REPORTS_FOLDER, DEVICE_REPORT_NAME_FORMAT
 from core.docker.test_docker_module import TestModule
+from common.device import Device
 from test_orc.test_case import TestCase
 from test_orc.test_pack import TestPack
 import threading
@@ -181,12 +183,9 @@ class TestOrchestrator:
     report.from_json(generated_report_json)
     report.add_module_reports(self.get_session().get_module_reports())
     report.add_module_templates(self.get_session().get_module_templates())
-    device.add_report(report)
 
     self._write_reports(report)
     self._test_in_progress = False
-    self.get_session().set_report_url(report.get_report_url())
-    self.get_session().set_export_url(report.get_export_url())
 
     # Set testing description
     test_pack: TestPack = self.get_test_pack(device.test_pack)
@@ -199,19 +198,26 @@ class TestOrchestrator:
     elif report.get_result() == TestrunResult.NON_COMPLIANT:
       message = test_pack.get_message("non_compliant_description")
 
+    # Move testing output from runtime to local device folder
+    report_folder_name = self._copy_report_to_common_folder(device)
+    report.set_report_url(report_folder_name)
+    report.set_export_url(report_folder_name)
+
+    self.get_session().set_report_url(report.get_report_url())
+    self.get_session().set_export_url(report.get_export_url())
+    device.add_report(report)
+
     self.get_session().set_description(message)
 
     # Set result and status at the end
     self.get_session().set_result(report.get_result())
     self.get_session().set_status(report.get_status())
 
-    # Move testing output from runtime to local device folder
-    self._timestamp_results(device)
-
     LOGGER.debug("Cleaning old test results...")
     self._cleanup_old_test_results(device)
 
-    LOGGER.debug("Old test results cleaned")
+    LOGGER.debug("Saving device config...")
+    device.export_config_json()
 
   def _write_reports(self, test_report):
 
@@ -265,12 +271,6 @@ class TestOrchestrator:
     report["status"] = status
 
     report["tests"] = self.get_session().get_report_tests()
-    report["report"] = (
-        self._api_url + "/" + SAVED_DEVICE_REPORTS.replace(
-            "{device_folder}",
-            device.device_folder) +
-        self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S"))
-    report["export"] = report["report"].replace("report", "export")
 
     return report
 
@@ -294,7 +294,6 @@ class TestOrchestrator:
       except Exception as e:
         LOGGER.error(f"Error {module_template_path}: {e}")
 
-
   def _cleanup_old_test_results(self, device):
 
     if device.max_device_reports is not None:
@@ -303,78 +302,37 @@ class TestOrchestrator:
       max_device_reports = self.get_session().get_max_device_reports()
 
     if max_device_reports > 0:
-      completed_results_dir = os.path.join(
-          self._root_path,
-          LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder))
+      device.sort_reports()
+      while len(device.get_reports()) > max_device_reports:
+        report = device.get_reports().pop(0)
+        report.delete_folder()
 
-      completed_tests = os.listdir(completed_results_dir)
-      cur_test_count = len(completed_tests)
-      if cur_test_count > max_device_reports:
-        LOGGER.debug("Current device has more than max results allowed: " +
-                     str(cur_test_count) + ">" + str(max_device_reports))
-
-        # Find and delete the oldest test
-        oldest_test = self._find_oldest_test(completed_results_dir)
-        if oldest_test is not None:
-          LOGGER.debug("Oldest test found, removing: " + str(oldest_test[1]))
-          shutil.rmtree(oldest_test[1], ignore_errors=True)
-
-          # Remove oldest test from session
-          oldest_timestamp = oldest_test[0]
-          self.get_session().get_target_device().remove_report(oldest_timestamp)
-
-          # Confirm the delete was succesful
-          new_test_count = len(os.listdir(completed_results_dir))
-          if (new_test_count != cur_test_count
-              and new_test_count > max_device_reports):
-            # Continue cleaning up until we're under the max
-            self._cleanup_old_test_results(device)
-
-  def _find_oldest_test(self, completed_tests_dir):
-    oldest_timestamp = None
-    oldest_directory = None
-    for completed_test in os.listdir(completed_tests_dir):
-      try:
-        timestamp = datetime.strptime(str(completed_test), "%Y-%m-%dT%H:%M:%S")
-
-      # Occurs when time does not match format
-      except ValueError as e:
-        LOGGER.error(e)
-        continue
-
-      if oldest_timestamp is None or timestamp < oldest_timestamp:
-        oldest_timestamp = timestamp
-        oldest_directory = completed_test
-
-    if oldest_directory:
-      return oldest_timestamp, os.path.join(completed_tests_dir,
-                                            oldest_directory)
-    else:
-      return None
-
-  def _timestamp_results(self, device):
+  def _copy_report_to_common_folder(self, device: Device) -> str:
 
     # Define the current device results directory
     cur_results_dir = os.path.join(self._root_path, RUNTIME_DIR)
 
     # Define the directory
-    completed_results_dir = os.path.join(
-        self._root_path,
-        LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
-        self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S"))
+    report_folder_name = DEVICE_REPORT_NAME_FORMAT.format(
+        mac_addr=device.mac_addr.replace(':', ''),
+        timestamp=self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S")
+    )
+    report_dir = os.path.join(self._root_path, REPORTS_FOLDER)
+    report_dir = os.path.join(report_dir, report_folder_name)
+    LOGGER.info(f"Copying test results from {cur_results_dir} to {report_dir}")
 
     # Copy the results to the timestamp directory
     # leave current copy in place for quick reference to
     # most recent test
-    shutil.copytree(cur_results_dir, completed_results_dir, dirs_exist_ok=True)
-    util.run_command(f"chown -R {self._host_user} '{completed_results_dir}'")
+    shutil.copytree(cur_results_dir, report_dir, dirs_exist_ok=True)
+    util.run_command(f"chown -R {self._host_user} '{report_dir}'")
 
     # Copy Testrun log to testing directory
     shutil.copy(os.path.join(self._root_path, "testrun.log"),
-                os.path.join(completed_results_dir, "testrun.log"))
+                os.path.join(report_dir, "testrun.log"))
 
-    return completed_results_dir
-
+    return report_folder_name
+  
   def zip_results(self, device, timestamp: str, profile):
 
     try:
