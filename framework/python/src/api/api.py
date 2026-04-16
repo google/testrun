@@ -16,7 +16,6 @@ from fastapi import (FastAPI, APIRouter, Response, Request, status, UploadFile)
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
-from datetime import datetime
 import json
 from json import JSONDecodeError
 import os
@@ -97,7 +96,7 @@ class Api:
 
     # Report endpoints
     self._router.add_api_route("/reports", self.get_reports)
-    self._router.add_api_route("/report",
+    self._router.add_api_route("/report/{report_name}",
                                self.delete_report,
                                methods=["DELETE"])
     self._router.add_api_route("/report/{report_name}",
@@ -455,53 +454,25 @@ class Api:
       report["export"] = report["report"].replace("report", "export")
     return reports
 
-  async def delete_report(self, request: Request, response: Response):
+  async def delete_report(self, response: Response, report_name: str):
 
-    body_raw = (await request.body()).decode("UTF-8")
+    mac = report_name.split("_")[0]
+    device = self._session.get_device_by_mac_addr(mac)
 
-    if len(body_raw) == 0:
-      response.status_code = 400
-      return self._generate_msg(False, "Invalid request received, missing body")
-
-    try:
-      body_json = json.loads(body_raw)
-    except JSONDecodeError as e:
-      LOGGER.error("An error occurred whilst decoding JSON")
-      LOGGER.debug(e)
-      response.status_code = status.HTTP_400_BAD_REQUEST
-      return self._generate_msg(False, "Invalid request received")
-
-    if "mac_addr" not in body_json or "timestamp" not in body_json:
-      response.status_code = 400
-      return self._generate_msg(False, "Missing mac address or timestamp")
-
-    mac_addr = body_json.get("mac_addr").lower()
-    timestamp = body_json.get("timestamp")
-
-    try:
-      parsed_timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
-      timestamp_formatted = parsed_timestamp.strftime("%Y-%m-%dT%H:%M:%S")
-
-    except ValueError:
-      response.status_code = 400
-      return self._generate_msg(False, "Incorrect timestamp format")
-
-    # Get device from MAC address
-    device = self._session.get_device(mac_addr)
-
+    # If the device not found
     if device is None:
+      LOGGER.info("Device not found, returning 404")
       response.status_code = 404
-      return self._generate_msg(False, "Could not find device")
+      return self._generate_msg(False, "Device not found")
 
-    # Assign the reports folder path from testrun
-    reports_folder = self._testrun.get_reports_folder(device)
-
-    # Check if reports folder exists
-    if not os.path.exists(reports_folder):
+    report = device.get_report_by_folder_name(report_name)
+    LOGGER.debug(f"Looking for report with name {report_name}")
+    if not report:
+      LOGGER.info("Report could not be found, returning 404")
       response.status_code = 404
-      return self._generate_msg(False, "Report not found")
+      return self._generate_msg(False, "Report could not be found")
 
-    if self._testrun.delete_report(device, timestamp_formatted):
+    if self._testrun.delete_report(device, report):
       return self._generate_msg(True, "Deleted report")
 
     response.status_code = 500
