@@ -405,6 +405,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
     device_folder = os.path.join(self._root_dir, LOCAL_DEVICES_DIR,
                                  device.device_folder)
 
+    # Remove device reports
+    device.remove_reports()
+
     # Delete the device directory
     shutil.rmtree(device_folder)
 
