@@ -449,12 +449,12 @@ class Api:
     for report in reports:
       del report["mac_addr"]
       del report["tests"]
-      del report["folder_name"]
       report["device"] = {
         "manufacturer": report["device"]["manufacturer"],
         "model": report["device"]["model"],
         "mac_addr": report["device"]["mac_addr"],
-        "firmware": report["device"]["firmware"]
+        "firmware": report["device"]["firmware"],
+        "test_pack": report["device"]["test_pack"],
       }
       report["delete"] = report["report"]
     return reports
