@@ -77,7 +77,11 @@ class Device():
       self.reports.remove(report)
       report.delete_folder()
       self.export_config_json()
-      return
+
+  def remove_reports(self):
+    for report in self.reports:
+      report.delete_folder()
+    self.clear_reports()
 
   def to_dict(self):
     """Returns the device as a python dictionary. This is used for the
