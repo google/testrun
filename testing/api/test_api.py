@@ -1207,6 +1207,18 @@ def test_export_report_device_not_found(empty_devices_dir, create_report_folder,
   # Send the post request
   r = requests.post(f"{API}/export/{invalid_report_name}", timeout=5)
 
+  # Check if is 404 (not found)
+  assert r.status_code == 404
+
+  # Parse the json response
+  response = r.json()
+
+  # Check if "error" in response
+  assert "error" in response
+
+  # Check if the correct error message is returned
+  assert "Device not found" in response["error"]
+
 @pytest.mark.parametrize("add_devices", [
   ["device_1"]
 ],indirect=True)
