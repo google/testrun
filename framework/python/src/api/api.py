@@ -447,7 +447,6 @@ class Api:
     # can fix the report URL
     reports = self._session.get_all_reports()
     for report in reports:
-      del report["mac_addr"]
       del report["tests"]
       report["device"] = {
         "manufacturer": report["device"]["manufacturer"],
