@@ -961,14 +961,13 @@ def test_delete_report(empty_devices_dir, add_devices, # pylint: disable=W0613
   # Assign the device name
   device_name = f'{device["manufacturer"]} {device["model"]}'
 
-  # Payload
-  delete_data = {
-    "mac_addr": mac_addr,
-    "timestamp": get_timestamp()
-  }
+  # Construct report_name from mac_addr and timestamp
+  mac_no_colons = mac_addr.replace(":", "")
+  timestamp = get_timestamp(formatted=True)
+  report_name = f"{mac_no_colons}_{timestamp}"
 
   # Send a DELETE request to remove the report
-  r = requests.delete(f"{API}/report", data=json.dumps(delete_data), timeout=5)
+  r = requests.delete(f"{API}/report/{report_name}", timeout=5)
 
   # Check if status code is 200 (OK)
   assert r.status_code == 200
@@ -990,22 +989,13 @@ def test_delete_report(empty_devices_dir, add_devices, # pylint: disable=W0613
 ],indirect=True)
 def test_delete_report_no_payload(empty_devices_dir, add_devices, # pylint: disable=W0613
                                   create_report_folder, testrun): # pylint: disable=W0613
-  """ Test delete report bad request when the payload is missing (400) """
+  """ Test delete report with empty report name (404) """
 
-  # Send a DELETE request to remove the report without the payload
-  r = requests.delete(f"{API}/report", timeout=5)
+  # Send a DELETE request with empty report name
+  r = requests.delete(f"{API}/report/", timeout=5)
 
-  # Check if status code is 400 (bad request)
-  assert r.status_code == 400
-
-  # Parse the json response
-  response = r.json()
-
-  # Check if "error" in response
-  assert "error" in response
-
-  # Check if the correct error message returned
-  assert "Invalid request received, missing body" in response["error"]
+  # Check if status code is 404 (not found)
+  assert r.status_code == 404
 
 @pytest.mark.parametrize("add_devices", [
   ["device_1"]
@@ -1014,11 +1004,8 @@ def test_delete_report_invalid_payload(empty_devices_dir, add_devices, # pylint:
                                        create_report_folder, testrun): # pylint: disable=W0613
   """ Test delete report bad request missing mac addr or timestamp (400) """
 
-  # Empty payload
-  delete_data = {}
-
-  # Send a DELETE request to remove the report
-  r = requests.delete(f"{API}/report", data=json.dumps(delete_data), timeout=5)
+  # Send a DELETE request with invalid report name
+  r = requests.delete(f"{API}/report/invalid_report_name", timeout=5)
 
   # Check if status code is 400 (bad request)
   assert r.status_code == 400
@@ -1045,17 +1032,12 @@ def test_delete_report_invalid_timestamp(empty_devices_dir, add_devices, # pylin
   # Assign the device mac address
   mac_addr = device["mac_addr"]
 
-  # Assign the incorrect timestamp format
-  invalid_timestamp = "2024-01-01 invalid"
-
-  # Payload
-  delete_data = {
-    "mac_addr": mac_addr,
-    "timestamp": invalid_timestamp
-  }
+  # Construct report_name with invalid timestamp format
+  mac_no_colons = mac_addr.replace(":", "")
+  invalid_report_name = f"{mac_no_colons}_2024-01-01_invalid"
 
   # Send a DELETE request to remove the report
-  r = requests.delete(f"{API}/report", data=json.dumps(delete_data), timeout=5)
+  r = requests.delete(f"{API}/report/{invalid_report_name}", timeout=5)
 
   # Check if status code is 400 (bad request)
   assert r.status_code == 400
@@ -1072,14 +1054,13 @@ def test_delete_report_invalid_timestamp(empty_devices_dir, add_devices, # pylin
 def test_delete_report_no_device(empty_devices_dir, testrun): # pylint: disable=W0613
   """ Test delete report when device does not exist (404) """
 
-  # Payload to be deleted for a non existing device
-  delete_data = {
-      "mac_addr": "00:1e:42:35:73:c4",
-      "timestamp": get_timestamp()
-  }
+  # Construct report_name for non-existing device
+  mac_no_colons = "001e423573c4"
+  timestamp = get_timestamp(formatted=True)
+  report_name = f"{mac_no_colons}_{timestamp}"
 
   # Send the delete request to the endpoint
-  r = requests.delete(f"{API}/report", data=json.dumps(delete_data), timeout=5)
+  r = requests.delete(f"{API}/report/{report_name}", timeout=5)
 
   # Check if status is 404 (not found)
   assert r.status_code == 404
@@ -1105,16 +1086,13 @@ def test_delete_report_no_report(empty_devices_dir, add_devices, testrun): # pyl
   # Assign the device mac address
   mac_addr = device["mac_addr"]
 
-  # Prepare the payload for the DELETE request
-  delete_data = {
-      "mac_addr": mac_addr,
-      "timestamp": get_timestamp()
-  }
+  # Construct report_name for non-existent report
+  mac_no_colons = mac_addr.replace(":", "")
+  # Use different timestamp than what exists
+  invalid_report_name = f"{mac_no_colons}_2020-01-01T00:00:00"
 
   # Send the delete request to delete the report
-  r = requests.delete(f"{API}/report",
-                      data=json.dumps(delete_data),
-                      timeout=5)
+  r = requests.delete(f"{API}/report/{invalid_report_name}", timeout=5)
 
   # Check if status code is 404 (not found)
   assert r.status_code == 404
@@ -1138,14 +1116,16 @@ def test_get_report_success(empty_devices_dir, add_devices, # pylint: disable=W0
   # Load the device using load_json utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
-  # Assign the device name
-  device_name = f'{device["manufacturer"]} {device["model"]}'
+  # Assign the device mac address
+  mac_addr = device["mac_addr"]
 
-  # Assign the timestamp and change the format
+  # Construct report_name
+  mac_no_colons = mac_addr.replace(":", "")
   timestamp = get_timestamp(formatted=True)
+  report_name = f"{mac_no_colons}_{timestamp}"
 
   # Send the get request
-  r = requests.get(f"{API}/report/{device_name}/{timestamp}", timeout=5)
+  r = requests.get(f"{API}/report/{report_name}", timeout=5)
 
   # Check if status code is 200 (ok)
   assert r.status_code == 200
@@ -1162,20 +1142,27 @@ def test_get_report_not_found(empty_devices_dir, add_devices, testrun): # pylint
   # Load the device using load_json utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
-  # Assign the device name
-  device_name = f'{device["manufacturer"]} {device["model"]}'
+  # Assign the device mac address
+  mac_addr = device["mac_addr"]
 
-  # Assign the timestamp
-  timestamp = get_timestamp()
+  # Construct report_name with non-existent timestamp
+  mac_no_colons = mac_addr.replace(":", "")
+  invalid_report_name = f"{mac_no_colons}_2020-01-01T00:00:00"
 
   # Send the get request
-  r = requests.get(f"{API}/report/{device_name}/{timestamp}", timeout=5)
+  r = requests.get(f"{API}/report/{invalid_report_name}", timeout=5)
 
   # Check if status code is 404 (not found)
   assert r.status_code == 404
 
   # Parse the response json
   response = r.json()
+
+  # Check if "error" in response
+  assert "error" in response
+
+  # Check if the correct error message is returned
+  assert "Report could not be found" in response["error"]
 
   # Check if "error" in response
   assert "error" in response
@@ -1211,26 +1198,14 @@ def test_export_report_device_not_found(empty_devices_dir, create_report_folder,
                                                                        testrun): # pylint: disable=W0613
   """Test for export the report result when the device could not be found"""
 
-  # Assign the non-existing device name
-  device_name = "non existing device"
-
+  # Assign the non-existing device mac (no colons)
+  mac_no_colons = "001e423573c4"
   # Assign the timestamp
-  timestamp = get_timestamp()
+  timestamp = get_timestamp(formatted=True)
+  invalid_report_name = f"{mac_no_colons}_{timestamp}"
 
   # Send the post request
-  r = requests.post(f"{API}/export/{device_name}/{timestamp}", timeout=5)
-
-  # Check if is 404 (not found)
-  assert r.status_code == 404
-
-  # Parse the json response
-  response = r.json()
-
-  # Check if "error" in response
-  assert "error" in response
-
-  # Check if the correct error message returned
-  assert "A device with that name could not be found" in response["error"]
+  r = requests.post(f"{API}/export/{invalid_report_name}", timeout=5)
 
 @pytest.mark.parametrize("add_devices", [
   ["device_1"]
@@ -1242,17 +1217,19 @@ def test_export_report_profile_not_found(empty_devices_dir, add_devices, # pylin
   # Load the device using load_json utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
-  # Assign the device name
-  device_name = f'{device["manufacturer"]} {device["model"]}'
+  # Assign the device mac address
+  mac_addr = device["mac_addr"]
 
-  # Assign the timestamp
-  timestamp = get_timestamp()
+  # Construct report_name
+  mac_no_colons = mac_addr.replace(":", "")
+  timestamp = get_timestamp(formatted=True)
+  report_name = f"{mac_no_colons}_{timestamp}"
 
   # Add a non existing profile into the payload
   payload = {"profile": "non_existent_profile"}
 
   # Send the post request
-  r = requests.post(f"{API}/export/{device_name}/{timestamp}",
+  r = requests.post(f"{API}/export/{report_name}",
                     json=payload,
                     timeout=5)
 
@@ -1312,14 +1289,16 @@ def test_export_report_with_profile(empty_devices_dir, add_devices, # pylint: di
   # Load the device using load_json utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
-  # Assign the device name
-  device_name = f'{device["manufacturer"]} {device["model"]}'
+  # Assign the device mac address
+  mac_addr = device["mac_addr"]
 
-  # Assign the timestamp and change the format
+  # Construct report_name
+  mac_no_colons = mac_addr.replace(":", "")
   timestamp = get_timestamp(formatted=True)
+  report_name = f"{mac_no_colons}_{timestamp}"
 
   # Send the post request
-  r = requests.post(f"{API}/export/{device_name}/{timestamp}",
+  r = requests.post(f"{API}/export/{report_name}",
                     json=profile,
                     timeout=5)
 
@@ -1339,14 +1318,16 @@ def test_export_results_with_no_profile(empty_devices_dir, add_devices, # pylint
   # Load the device using load_json utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
-  # Assign the device name
-  device_name = f'{device["manufacturer"]} {device["model"]}'
+  # Assign the device mac address
+  mac_addr = device["mac_addr"]
 
-  # Assign the timestamp and change the format
+  # Construct report_name
+  mac_no_colons = mac_addr.replace(":", "")
   timestamp = get_timestamp(formatted=True)
+  report_name = f"{mac_no_colons}_{timestamp}"
 
   # Send the post request
-  r = requests.post(f"{API}/export/{device_name}/{timestamp}", timeout=5)
+  r = requests.post(f"{API}/export/{report_name}", timeout=5)
 
   # Check if status code is 200 (OK)
   assert r.status_code == 200
