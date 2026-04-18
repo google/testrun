@@ -38,12 +38,11 @@ sudo chown -R $USER local
 
 # Copy configuration to testrun
 sudo cp testing/api/sys_config/system.json local/system.json
+sudo cp testing/api/local/reports local/ -r
 
 # Needs to be sudo because this invokes bin/testrun 
 sudo venv/bin/python3 -m pytest -v testing/api/test_api.py
 return_code=$?
-
-cp testing/api/local/reports local/ -r
 
 # Clean up network interfaces after use
 sudo docker network rm endev0
