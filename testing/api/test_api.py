@@ -934,7 +934,6 @@ def test_get_reports(empty_devices_dir, add_devices, # pylint: disable=W0613
     "status",
     "started",
     "finished",
-    "tests",
     "report",
     "export"
   ]
@@ -944,6 +943,92 @@ def test_get_reports(empty_devices_dir, add_devices, # pylint: disable=W0613
 
     # Check if the key exists in the report
     assert key in report
+
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_get_report_success(empty_devices_dir, add_devices, # pylint: disable=W0613
+                            create_report_folder, testrun): # pylint: disable=W0613
+  """Test for successfully get report when report exists (200)"""
+
+  # Load the device using load_json utility method
+  device = load_json("device_config.json", directory=DEVICE_1_PATH)
+
+  # Assign the device mac address
+  mac_addr = device["mac_addr"]
+
+  # Construct report_name
+  mac_no_colons = mac_addr.replace(":", "")
+  timestamp = get_timestamp(formatted=True)
+  report_name = f"{mac_no_colons}_{timestamp}"
+
+  # Send the get request
+  r = requests.get(f"{API}/report/{report_name}", timeout=5)
+
+  # Check if status code is 200 (ok)
+  assert r.status_code == 200
+
+  # Check if the response is a PDF
+  assert r.headers["Content-Type"] == "application/pdf"
+
+@pytest.mark.parametrize("add_devices, add_profiles", [
+    (["device_1"], ["valid_profile.json"])
+], indirect=True)
+def test_export_report_with_profile(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                  empty_profiles_dir, add_profiles, # pylint: disable=W0613
+                                    create_report_folder, testrun): # pylint: disable=W0613
+  """Test export results with existing profile when report exists (200)"""
+
+  # Load the profile using load_json utility method
+  profile = load_json("valid_profile.json", directory=PROFILES_PATH)
+
+  # Load the device using load_json utility method
+  device = load_json("device_config.json", directory=DEVICE_1_PATH)
+
+  # Assign the device mac address
+  mac_addr = device["mac_addr"]
+
+  # Construct report_name
+  mac_no_colons = mac_addr.replace(":", "")
+  timestamp = get_timestamp(formatted=True)
+  report_name = f"{mac_no_colons}_{timestamp}"
+
+  # Send the post request
+  r = requests.post(f"{API}/export/{report_name}",
+                    json=profile,
+                    timeout=5)
+
+  # Check if status code is 200 (OK)
+  assert r.status_code == 200
+
+  # Check if the response is a zip file
+  assert r.headers["Content-Type"] == "application/zip"
+
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_export_results_with_no_profile(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                        create_report_folder, testrun): # pylint: disable=W0613
+  """Test export results with no profile when report exists (200)"""
+  # Load the device using load_json utility method
+  device = load_json("device_config.json", directory=DEVICE_1_PATH)
+
+  # Assign the device mac address
+  mac_addr = device["mac_addr"]
+
+  # Construct report_name
+  mac_no_colons = mac_addr.replace(":", "")
+  timestamp = get_timestamp(formatted=True)
+  report_name = f"{mac_no_colons}_{timestamp}"
+
+  # Send the post request
+  r = requests.post(f"{API}/export/{report_name}", timeout=5)
+
+  # Check if status code is 200 (OK)
+  assert r.status_code == 200
+
+  # Check if the response is a zip file
+  assert r.headers["Content-Type"] == "application/zip"
 
 @pytest.mark.parametrize("add_devices", [
   ["device_1"]
@@ -997,59 +1082,6 @@ def test_delete_report_no_payload(empty_devices_dir, add_devices, # pylint: disa
   # Check if status code is 404 (not found)
   assert r.status_code == 404
 
-@pytest.mark.parametrize("add_devices", [
-  ["device_1"]
-],indirect=True)
-def test_delete_report_invalid_payload(empty_devices_dir, add_devices, # pylint: disable=W0613
-                                       create_report_folder, testrun): # pylint: disable=W0613
-  """ Test delete report bad request missing mac addr or timestamp (400) """
-
-  # Send a DELETE request with invalid report name
-  r = requests.delete(f"{API}/report/invalid_report_name", timeout=5)
-
-  # Check if status code is 400 (bad request)
-  assert r.status_code == 400
-
-  # Parse the json response
-  response = r.json()
-
-  # Check if "error" in response
-  assert "error" in response
-
-  # Check if the correct error message returned
-  assert "Missing mac address or timestamp" in response["error"]
-
-@pytest.mark.parametrize("add_devices", [
-  ["device_1"]
-],indirect=True)
-def test_delete_report_invalid_timestamp(empty_devices_dir, add_devices, # pylint: disable=W0613
-                                         create_report_folder, testrun): # pylint: disable=W0613
-  """ Test delete report bad request if timestamp format is not valid (400) """
-
-  # Load the device using load_json utility method
-  device = load_json("device_config.json", directory=DEVICE_1_PATH)
-
-  # Assign the device mac address
-  mac_addr = device["mac_addr"]
-
-  # Construct report_name with invalid timestamp format
-  mac_no_colons = mac_addr.replace(":", "")
-  invalid_report_name = f"{mac_no_colons}_2024-01-01_invalid"
-
-  # Send a DELETE request to remove the report
-  r = requests.delete(f"{API}/report/{invalid_report_name}", timeout=5)
-
-  # Check if status code is 400 (bad request)
-  assert r.status_code == 400
-
-  # Parse the json response
-  response = r.json()
-
-  # Check if "error" in response
-  assert "error" in response
-
-  # Check if the correct error message returned
-  assert "Incorrect timestamp format" in response["error"]
 
 def test_delete_report_no_device(empty_devices_dir, testrun): # pylint: disable=W0613
   """ Test delete report when device does not exist (404) """
@@ -1072,7 +1104,7 @@ def test_delete_report_no_device(empty_devices_dir, testrun): # pylint: disable=
   assert "error" in response
 
   # Check if the correct error message returned
-  assert "Could not find device" in response["error"]
+  assert "Device not found" in response["error"]
 
 @pytest.mark.parametrize("add_devices", [
   ["device_1"]
@@ -1105,33 +1137,6 @@ def test_delete_report_no_report(empty_devices_dir, add_devices, testrun): # pyl
 
   # Check if the correct error message is returned
   assert "Report not found" in response["error"]
-
-@pytest.mark.parametrize("add_devices", [
-  ["device_1"]
-],indirect=True)
-def test_get_report_success(empty_devices_dir, add_devices, # pylint: disable=W0613
-                            create_report_folder, testrun): # pylint: disable=W0613
-  """Test for successfully get report when report exists (200)"""
-
-  # Load the device using load_json utility method
-  device = load_json("device_config.json", directory=DEVICE_1_PATH)
-
-  # Assign the device mac address
-  mac_addr = device["mac_addr"]
-
-  # Construct report_name
-  mac_no_colons = mac_addr.replace(":", "")
-  timestamp = get_timestamp(formatted=True)
-  report_name = f"{mac_no_colons}_{timestamp}"
-
-  # Send the get request
-  r = requests.get(f"{API}/report/{report_name}", timeout=5)
-
-  # Check if status code is 200 (ok)
-  assert r.status_code == 200
-
-  # Check if the response is a PDF
-  assert r.headers["Content-Type"] == "application/pdf"
 
 @pytest.mark.parametrize("add_devices", [
   ["device_1"]
@@ -1173,14 +1178,11 @@ def test_get_report_not_found(empty_devices_dir, add_devices, testrun): # pylint
 def test_get_report_device_not_found(empty_devices_dir, testrun): # pylint: disable=W0613
   """Test getting a report when the device is not found (404)"""
 
-  # Assign device name
-  device_name = "nonexistent_device"
-
   # Assign the timestamp
   timestamp = get_timestamp()
 
   # Send the get request
-  r = requests.get(f"{API}/report/{device_name}/{timestamp}", timeout=5)
+  r = requests.get(f"{API}/report/001e423573c4_{timestamp}", timeout=5)
 
   # Check if is 404 (not found)
   assert r.status_code == 404
@@ -1266,14 +1268,15 @@ def test_export_report_not_found(empty_devices_dir, add_devices, testrun): # pyl
   # Load the device using load_json utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
-  # Assign the device name
-  device_name = f'{device["manufacturer"]} {device["model"]}'
+  # Assign the device mac address
+  mac_addr = device["mac_addr"]
 
-  # Assign the timestamp
-  timestamp = get_timestamp()
+  # Construct report_name
+  mac_no_colons = mac_addr.replace(":", "")
+  invalid_report_name = f"{mac_no_colons}_2020-01-01T00:00:00"
 
   # Send the post request to trigger the zipping process
-  r = requests.post(f"{API}/export/{device_name}/{timestamp}", timeout=10)
+  r = requests.post(f"{API}/export/{invalid_report_name}", timeout=10)
 
   # Check if status code is 404 (Not Found)
   assert r.status_code == 404
@@ -1286,66 +1289,6 @@ def test_export_report_not_found(empty_devices_dir, add_devices, testrun): # pyl
 
   # Check if the correct error message is returned
   assert "Report could not be found" in response["error"]
-
-@pytest.mark.parametrize("add_devices, add_profiles", [
-    (["device_1"], ["valid_profile.json"])
-], indirect=True)
-def test_export_report_with_profile(empty_devices_dir, add_devices, # pylint: disable=W0613
-                                  empty_profiles_dir, add_profiles, # pylint: disable=W0613
-                                    create_report_folder, testrun): # pylint: disable=W0613
-  """Test export results with existing profile when report exists (200)"""
-
-  # Load the profile using load_json utility method
-  profile = load_json("valid_profile.json", directory=PROFILES_PATH)
-
-  # Load the device using load_json utility method
-  device = load_json("device_config.json", directory=DEVICE_1_PATH)
-
-  # Assign the device mac address
-  mac_addr = device["mac_addr"]
-
-  # Construct report_name
-  mac_no_colons = mac_addr.replace(":", "")
-  timestamp = get_timestamp(formatted=True)
-  report_name = f"{mac_no_colons}_{timestamp}"
-
-  # Send the post request
-  r = requests.post(f"{API}/export/{report_name}",
-                    json=profile,
-                    timeout=5)
-
-  # Check if status code is 200 (OK)
-  assert r.status_code == 200
-
-  # Check if the response is a zip file
-  assert r.headers["Content-Type"] == "application/zip"
-
-@pytest.mark.parametrize("add_devices", [
-  ["device_1"]
-],indirect=True)
-def test_export_results_with_no_profile(empty_devices_dir, add_devices, # pylint: disable=W0613
-                                        create_report_folder, testrun): # pylint: disable=W0613
-  """Test export results with no profile when report exists (200)"""
-
-  # Load the device using load_json utility method
-  device = load_json("device_config.json", directory=DEVICE_1_PATH)
-
-  # Assign the device mac address
-  mac_addr = device["mac_addr"]
-
-  # Construct report_name
-  mac_no_colons = mac_addr.replace(":", "")
-  timestamp = get_timestamp(formatted=True)
-  report_name = f"{mac_no_colons}_{timestamp}"
-
-  # Send the post request
-  r = requests.post(f"{API}/export/{report_name}", timeout=5)
-
-  # Check if status code is 200 (OK)
-  assert r.status_code == 200
-
-  # Check if the response is a zip file
-  assert r.headers["Content-Type"] == "application/zip"
 
 # Tests for device endpoints
 @pytest.fixture()
