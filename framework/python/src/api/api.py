@@ -474,7 +474,7 @@ class Api:
     if not report:
       LOGGER.info("Report could not be found, returning 404")
       response.status_code = 404
-      return self._generate_msg(False, "Report could not be found")
+      return self._generate_msg(False, "Report not found")
 
     if self._testrun.delete_report(device, report):
       return self._generate_msg(True, "Deleted report")
@@ -743,7 +743,7 @@ class Api:
     if device is None:
       response.status_code = status.HTTP_404_NOT_FOUND
       return self._generate_msg(False,
-                                "A device with that name could not be found")
+                                "Device not found")
     report = device.get_report_by_folder_name(report_name)
     LOGGER.debug(f"Looking for report with name {report_name}")
     if not report:
