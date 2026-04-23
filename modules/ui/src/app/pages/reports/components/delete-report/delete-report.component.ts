@@ -32,7 +32,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-delete-report',
-
   imports: [MatButtonModule, MatTooltipModule],
   templateUrl: './delete-report.component.html',
   styleUrls: ['./delete-report.component.scss'],

@@ -161,7 +161,7 @@ describe('ReportsStore', () => {
   });
 
   describe('effects', () => {
-    describe('getHistory', () => {
+    describe('getReports', () => {
       it('should update store', done => {
         store.overrideSelector(selectReports, [...HISTORY]);
         store.refreshState();
@@ -171,7 +171,7 @@ describe('ReportsStore', () => {
           done();
         });
 
-        reportsStore.getHistory();
+        reportsStore.getReports();
       });
     });
 
@@ -181,11 +181,7 @@ describe('ReportsStore', () => {
         store.overrideSelector(selectReports, [...HISTORY]);
         store.refreshState();
 
-        reportsStore.deleteReport({
-          mac_addr: '01:02:03:04:05:07',
-          deviceMacAddr: '01:02:03:04:05:07',
-          started: '2023-07-23T10:11:00.123Z',
-        });
+        reportsStore.deleteReport('report/1234');
 
         expect(store.dispatch).toHaveBeenCalledWith(
           setReports({ reports: HISTORY_AFTER_REMOVE })
@@ -198,11 +194,7 @@ describe('ReportsStore', () => {
         store.overrideSelector(selectReports, [...HISTORY_AFTER_REMOVE]);
         store.refreshState();
 
-        reportsStore.deleteReport({
-          mac_addr: null,
-          deviceMacAddr: '01:02:03:04:05:08',
-          started: '2023-06-23T10:11:00.123Z',
-        });
+        reportsStore.deleteReport('report/12345');
 
         expect(store.dispatch).toHaveBeenCalledWith(
           setReports({ reports: [HISTORY_AFTER_REMOVE[0]] })

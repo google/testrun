@@ -18,7 +18,7 @@ import { createAction, props } from '@ngrx/store';
 import { Adapters, InterfacesValidation, SystemConfig } from '../model/setting';
 import { SystemInterfaces } from '../model/setting';
 import { Device, TestModule } from '../model/device';
-import { TestrunStatus } from '../model/testrun-status';
+import { TestReportsList, TestrunStatus } from '../model/testrun-status';
 import { Profile } from '../model/profile';
 
 export const fetchInterfacesSuccess = createAction(
@@ -125,7 +125,7 @@ export const fetchReports = createAction('[Shared] Fetch reports');
 
 export const setReports = createAction(
   '[Shared] Set Reports',
-  props<{ reports: TestrunStatus[] }>()
+  props<{ reports: TestReportsList }>()
 );
 
 export const setTestModules = createAction(

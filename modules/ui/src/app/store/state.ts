@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { TestrunStatus } from '../model/testrun-status';
+import { TestReportsList, TestrunStatus } from '../model/testrun-status';
 import { Device, TestModule } from '../model/device';
 import { Adapters, SystemConfig, SystemInterfaces } from '../model/setting';
 import { Profile } from '../model/profile';
@@ -42,7 +42,7 @@ export interface AppState {
   isStopTestrun: boolean;
   isOpenWaitSnackBar: boolean;
   deviceInProgress: Device | null;
-  reports: TestrunStatus[];
+  reports: TestReportsList;
   testModules: TestModule[];
   adapters: Adapters;
   internetConnection: boolean | null;

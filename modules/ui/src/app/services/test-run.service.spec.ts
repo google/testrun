@@ -26,6 +26,7 @@ import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/testrun.mock';
 import {
   StatusOfTestResult,
   StatusOfTestrun,
+  TestReportsList,
   TestrunStatus,
 } from '../model/testrun-status';
 import { device, DEVICES_FORM, MOCK_MODULES } from '../mocks/device.mock';
@@ -223,26 +224,26 @@ describe('TestRunService', () => {
     });
   });
 
-  describe('getHistory', () => {
+  describe('getReports', () => {
     it('should return reports', () => {
-      let result: TestrunStatus[] | null = null;
+      let result: TestReportsList | null = null;
 
       const reports = [
         {
           status: 'Complete',
           device: device,
-          report: 'https://api.testrun.io/report.pdf',
+          report: 'report/123',
           started: '2023-06-22T10:11:00.123Z',
           finished: '2023-06-22T10:17:00.123Z',
         },
-      ] as TestrunStatus[];
+      ] as TestReportsList;
 
-      service.getHistory().subscribe(res => {
+      service.getReports().subscribe(res => {
         expect(res).toEqual(result);
       });
 
       result = reports;
-      service.getHistory();
+      service.getReports();
       const req = httpTestingController.expectOne(
         'http://localhost:8000/reports'
       );
@@ -461,36 +462,24 @@ describe('TestRunService', () => {
   it('deleteReport should have necessary request data', () => {
     const apiUrl = 'http://localhost:8000/report';
 
-    service.deleteReport(device.mac_addr, '').subscribe(res => {
+    service.deleteReport('report').subscribe(res => {
       expect(res).toEqual(true);
     });
 
     const req = httpTestingController.expectOne(apiUrl);
     expect(req.request.method).toBe('DELETE');
-    expect(req.request.body).toEqual(
-      JSON.stringify({
-        mac_addr: device.mac_addr,
-        timestamp: '',
-      })
-    );
     req.flush({});
   });
 
   it('deleteReport should return false when error happens', () => {
     const apiUrl = 'http://localhost:8000/report';
 
-    service.deleteReport(device.mac_addr, '').subscribe(res => {
+    service.deleteReport('report').subscribe(res => {
       expect(res).toEqual(false);
     });
 
     const req = httpTestingController.expectOne(apiUrl);
     expect(req.request.method).toBe('DELETE');
-    expect(req.request.body).toEqual(
-      JSON.stringify({
-        mac_addr: device.mac_addr,
-        timestamp: '',
-      })
-    );
     req.error(new ErrorEvent(''));
   });
 
@@ -702,6 +691,13 @@ describe('TestRunService', () => {
       );
       expect(req.request.method).toBe('GET');
       req.flush(result);
+    });
+  });
+
+  describe('getReportLink', () => {
+    it('should return link', () => {
+      const link = service.getReportLink('url');
+      expect(link.includes('url')).toBeTrue();
     });
   });
 });
