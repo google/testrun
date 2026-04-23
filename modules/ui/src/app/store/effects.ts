@@ -35,7 +35,7 @@ import { selectIsOpenWaitSnackBar, selectSystemStatus } from './selectors';
 import {
   IDLE_STATUS,
   StatusOfTestrun,
-  TestrunStatus,
+  TestReportsList,
 } from '../model/testrun-status';
 import {
   fetchSystemStatusSuccess,
@@ -253,8 +253,8 @@ export class AppEffects {
     return this.actions$.pipe(
       ofType(AppActions.fetchReports),
       switchMap(() =>
-        this.testrunService.getHistory().pipe(
-          map((reports: TestrunStatus[] | null) => {
+        this.testrunService.getReports().pipe(
+          map((reports: TestReportsList | null) => {
             if (reports !== null) {
               return AppActions.setReports({ reports });
             }

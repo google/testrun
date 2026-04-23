@@ -131,7 +131,7 @@ export const MOCK_PROGRESS_DATA_COMPLIANT: TestrunStatus =
     StatusOfTestrun.Complete,
     '2023-06-22T09:20:00.123Z',
     TEST_DATA,
-    'https://api.testrun.io/report.pdf',
+    'report/123',
     ResultOfTestrun.Compliant
   );
 
@@ -140,7 +140,7 @@ export const MOCK_PROGRESS_DATA_NON_COMPLIANT: TestrunStatus =
     StatusOfTestrun.Complete,
     '2023-06-22T09:20:00.123Z',
     TEST_DATA_RESULT,
-    'https://api.testrun.io/report.pdf',
+    'report/123',
     ResultOfTestrun.NonCompliant
   );
 
@@ -148,7 +148,7 @@ export const MOCK_PROGRESS_DATA_PROCEED: TestrunStatus = PROGRESS_DATA_RESPONSE(
   StatusOfTestrun.Proceed,
   '2023-06-22T09:20:00.123Z',
   TEST_DATA_RESULT,
-  'https://api.testrun.io/report.pdf',
+  'report/123',
   ResultOfTestrun.Compliant
 );
 

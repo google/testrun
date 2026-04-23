@@ -76,7 +76,7 @@ describe('Effects', () => {
       'testrunInProgress',
       'stopTestrun',
       'fetchProfiles',
-      'getHistory',
+      'getReports',
     ]);
     testRunServiceMock.getSystemInterfaces.and.returnValue(of({}));
     testRunServiceMock.getSystemConfig.and.returnValue(of({ network: {} }));
@@ -85,7 +85,7 @@ describe('Effects', () => {
       of(MOCK_PROGRESS_DATA_IN_PROGRESS)
     );
     testRunServiceMock.fetchProfiles.and.returnValue(of([]));
-    testRunServiceMock.getHistory.and.returnValue(of([]));
+    testRunServiceMock.getReports.and.returnValue(of([]));
     mockMqttService.getInternetConnection.and.returnValue(
       of({ connection: false })
     );
@@ -358,7 +358,7 @@ describe('Effects', () => {
 
   describe('onFetchReports$', () => {
     it(' should call setReports on success', done => {
-      testRunServiceMock.getHistory.and.returnValue(of([]));
+      testRunServiceMock.getReports.and.returnValue(of([]));
       actions$ = of(actions.fetchReports());
 
       effects.onFetchReports$.subscribe(action => {
@@ -372,7 +372,7 @@ describe('Effects', () => {
     });
 
     it('should call setReports with empty array if null is returned', done => {
-      testRunServiceMock.getHistory.and.returnValue(of(null));
+      testRunServiceMock.getReports.and.returnValue(of(null));
       actions$ = of(actions.fetchReports());
 
       effects.onFetchReports$.subscribe(action => {
@@ -386,7 +386,7 @@ describe('Effects', () => {
     });
 
     it('should call setReports with empty array if error happens', done => {
-      testRunServiceMock.getHistory.and.returnValue(
+      testRunServiceMock.getReports.and.returnValue(
         throwError(
           new HttpErrorResponse({ error: { error: 'error' }, status: 500 })
         )
