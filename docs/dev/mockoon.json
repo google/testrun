@@ -1,5 +1,5 @@
 {
-  "uuid": "1b2ab06a-28fe-4bb6-9714-4347bff629bd",
+  "uuid": "072bc7cc-6ddd-4f89-81fe-712dea0769d0",
   "lastMigration": 32,
   "name": "Testrun",
   "endpointPrefix": "",
@@ -9,14 +9,14 @@
   "folders": [],
   "routes": [
     {
-      "uuid": "609cbb2f-b064-4d94-9d47-705f902af57d",
+      "uuid": "8b168b92-0dc3-449d-8c93-993720dbea8f",
       "type": "http",
       "documentation": "Fetch a list of available interfaces",
       "method": "get",
       "endpoint": "system/interfaces",
       "responses": [
         {
-          "uuid": "7a736bd6-7087-4227-91d7-b9efb5d46bc1",
+          "uuid": "ca64d68d-465b-4748-96f5-c90f7a5ca124",
           "body": "{\n  \"enx00e04c020fa8\": \"00:e0:4c:02:0f:a8\",\n  \"enx207bd26205e9\": \"20:7b:d2:62:05:e9\"\n}",
           "latency": 0,
           "statusCode": 200,
@@ -38,14 +38,14 @@
       "responseMode": null
     },
     {
-      "uuid": "32ddc969-bf37-4bd6-a926-329ffa351583",
+      "uuid": "79cc2f4c-5492-460b-9551-255f854d6b54",
       "type": "http",
       "documentation": "Set the system configuration",
       "method": "post",
       "endpoint": "system/config",
       "responses": [
         {
-          "uuid": "2513112c-7b46-4093-9954-585f9d2b5807",
+          "uuid": "f01a8ce4-1219-488c-a47d-3c1097f3832d",
           "body": "{\n  \"success\": \"Successfully updated the configuration\"\n}",
           "latency": 0,
           "statusCode": 200,
@@ -79,7 +79,7 @@
           "callbacks": []
         },
         {
-          "uuid": "46a870dd-a506-4bc3-a8ea-fb823d9ad700",
+          "uuid": "8a4779ba-427b-454f-9ce7-3dd910303d70",
           "body": "{\n  \"error\": \"Invalid configuration received\"\n}",
           "latency": 0,
           "statusCode": 400,
@@ -116,15 +116,15 @@
       "responseMode": null
     },
     {
-      "uuid": "24a155d7-8d30-458e-bc03-2240ecc95a30",
+      "uuid": "609b3249-009d-4ea7-baef-cdfe7b80a57e",
       "type": "http",
       "documentation": "Fetch a list of available devices",
       "method": "get",
       "endpoint": "devices",
       "responses": [
         {
-          "uuid": "eef8575a-b420-4b56-b879-303b3c58d7d9",
-          "body": "[\n  {\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"manufacturer\": \"Teltonika\",\n    \"model\": \"TRB 140\",\n    \"test_modules\": {\n      \"dns\": {\n        \"enabled\": false\n      },\n      \"connection\": {\n        \"enabled\": true\n      },\n      \"ntp\": {\n        \"enabled\": false\n      },\n      \"baseline\": {\n        \"enabled\": false\n      },\n      \"nmap\": {\n        \"enabled\": false\n      }\n    }\n  },\n  {\n    \"mac_addr\": \"aa:bb:cc:dd:ee:ff\",\n    \"manufacturer\": \"Manufacturer X\",\n    \"model\": \"Device X\",\n    \"test_modules\": {\n      \"dns\": {\n        \"enabled\": true\n      },\n      \"connection\": {\n        \"enabled\": true\n      },\n      \"ntp\": {\n        \"enabled\": true\n      },\n      \"baseline\": {\n        \"enabled\": false\n      },\n      \"services\": {\n        \"enabled\": true\n      }\n    }\n  }\n]",
+          "uuid": "36b6b73e-be11-4254-a5f0-0c4df5fc5130",
+          "body": "{{data 'cntg'}}",
           "latency": 0,
           "statusCode": 200,
           "label": "",
@@ -145,14 +145,14 @@
       "responseMode": null
     },
     {
-      "uuid": "98e836d3-8af1-4321-9cdc-7feba8b40d8e",
+      "uuid": "1a44f012-cea9-4123-a762-7ed1e77d4c95",
       "type": "http",
       "documentation": "Create a device",
       "method": "post",
       "endpoint": "device",
       "responses": [
         {
-          "uuid": "bee3a25e-ffd7-4a38-a894-26217efb106f",
+          "uuid": "ad2ccb78-1e8f-4868-806a-1653db3767b5",
           "body": "{\n  \"manufacturer\": \"Delta\",\n  \"model\": \"O3-DIN-SRC\",\n  \"mac_addr\": \"00:1e:42:35:73:c2\",\n  \"test_modules\": {\n    \"dns\": {\n      \"enabled\": false\n    },\n    \"services\": {\n      \"enabled\": true\n    },\n    \"dhcp\": {\n      \"enabled\": false\n    }\n  }\n}",
           "latency": 0,
           "statusCode": 201,
@@ -179,7 +179,7 @@
           "callbacks": []
         },
         {
-          "uuid": "77c157b9-0175-4c84-b660-cf96e712e450",
+          "uuid": "f4e2906a-9911-4cce-8a65-fd591fc53e21",
           "body": "{\n  \"error\": \"A device with that MAC address already exists\"\n}",
           "latency": 0,
           "statusCode": 409,
@@ -198,7 +198,7 @@
           "callbacks": []
         },
         {
-          "uuid": "8f021e4c-4d30-4bdd-8e03-04bb136a9970",
+          "uuid": "f1f0e79e-035f-4db5-b7a1-3b7295469f75",
           "body": "{\n  \"error\": \"Invalid request received\"\n}",
           "latency": 0,
           "statusCode": 400,
@@ -217,7 +217,7 @@
           "callbacks": []
         },
         {
-          "uuid": "7d454ec4-61a2-4ede-a5bc-d7634d0d007b",
+          "uuid": "dc913e2d-c587-41af-8f54-b101f9d6c4f5",
           "body": "{\n  \"error\": \"Invalid JSON received\"\n}",
           "latency": 0,
           "statusCode": 400,
@@ -239,15 +239,15 @@
       "responseMode": null
     },
     {
-      "uuid": "dcead7f8-71da-43ef-974b-ceddf8f262cc",
+      "uuid": "c076e158-34c5-4e9f-b8cb-25158f14b436",
       "type": "http",
       "documentation": "Start a new Testrun",
       "method": "post",
       "endpoint": "system/start",
       "responses": [
         {
-          "uuid": "1fed2343-e85b-4026-b96c-e024aa4535f5",
-          "body": "{\n  \"status\": \"Waiting for Device\",\n  \"device\": {\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"manufacturer\": \"Delta\",\n    \"model\": \"O3-DIN-SRC\",\n    \"firmware\": \"1.2.2\"\n  },\n  \"started\": \"2023-07-18T11:14:42.917670\",\n  \"finished\": null, \n  \"report\": null,\n  \"tests\": {\n    \"total\": 0,\n    \"results\": []\n  }\n}",
+          "uuid": "3e86a167-aab3-445e-b9ba-38a858d8d18a",
+          "body": "{\n  \"status\": \"Waiting for Device\",\n  \"device\": {{data 'cntg' '0'}},\n  \"started\": \"2023-07-18T11:14:42.917670\",\n  \"finished\": null, \n  \"report\": null,\n  \"tests\": {\n    \"total\": 0,\n    \"results\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Testrun started successfully",
@@ -273,8 +273,8 @@
           "callbacks": []
         },
         {
-          "uuid": "5ec818f2-562f-4bfa-bf1e-e8055b927bac",
-          "body": "{\n  \"status\": \"Monitoring\",\n  \"device\": {\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"manufacturer\": \"Delta\",\n    \"model\": \"O3-DIN-SRC\",\n    \"firmware\": \"1.2.2\"\n  },\n  \"started\": \"2023-07-18T11:14:42.917670\",\n  \"finished\": null, \n  \"report\": null,\n  \"tests\": {\n    \"total\": 0,\n    \"results\": []\n  }\n}",
+          "uuid": "bc993435-2824-476c-8b6c-ac8d795c1427",
+          "body": "{\n  \"status\": \"Monitoring\",\n  \"device\": {{data 'cntg' '0'}},\n  \"started\": \"2023-07-18T11:14:42.917670\",\n  \"finished\": null, \n  \"report\": null,\n  \"tests\": {\n    \"total\": 0,\n    \"results\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Testrun monitoring device",
@@ -300,7 +300,7 @@
           "callbacks": []
         },
         {
-          "uuid": "ee6e5e58-4fbb-46b3-8c78-2309ec01dfc0",
+          "uuid": "7b4264d1-e728-428c-a85e-9721cf5747cf",
           "body": "{\n  \"error\": \"A testrun is already in progress\"\n}",
           "latency": 0,
           "statusCode": 409,
@@ -319,7 +319,7 @@
           "callbacks": []
         },
         {
-          "uuid": "b34bc849-66c6-4409-84f0-5418edba7de4",
+          "uuid": "18c9804d-4c43-4ca1-9060-067d38124fae",
           "body": "{\n  \"error\": \"No device specified\"\n}",
           "latency": 0,
           "statusCode": 400,
@@ -346,7 +346,7 @@
           "callbacks": []
         },
         {
-          "uuid": "f5b7e6ed-1c33-4c63-bbc3-63d251b29fbf",
+          "uuid": "a88df973-0701-4c8b-bbcf-994e17120b65",
           "body": "{\n  \"error\": \"Device not found\"\n}",
           "latency": 0,
           "statusCode": 404,
@@ -365,7 +365,7 @@
           "callbacks": []
         },
         {
-          "uuid": "874df7e9-1f62-4fdf-9ec8-100df7d0291f",
+          "uuid": "71597e4d-6cf5-4857-af58-c0a62a3b2ca5",
           "body": "{\n  \"error\": \"Configured interfaces are not ready for use. Ensure both interfaces are connected.\"\n}",
           "latency": 0,
           "statusCode": 500,
@@ -387,15 +387,15 @@
       "responseMode": null
     },
     {
-      "uuid": "9a9482ee-09d6-4ab7-9fb0-bbfed791bd9d",
+      "uuid": "ae0e8e83-f36d-40a8-8549-cbeed297dda0",
       "type": "http",
       "documentation": "Get the current status of Testrun",
       "method": "get",
       "endpoint": "system/status",
       "responses": [
         {
-          "uuid": "a6d2fa8a-2c0e-4915-b119-703776d5982b",
-          "body": "{\n  \"status\": \"In Progress\",\n  \"device\": {\n    \"manufacturer\": \"Delta\",\n    \"model\": \"03-DIN-CPU\",\n    \"mac_addr\": \"01:02:03:04:05:06\",\n    \"firmware\": \"1.2.2\"\n  },\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": null,\n  \"report\": null,\n  \"tests\": {\n    \"total\": 26,\n    \"results\": [\n      {\n        \"name\": \"dns.network.hostname_resolution\",\n        \"description\": \"The device should resolve hostnames\",,\n        \"required_result\": \"Required\"\n        \"result\": \"Compliant\"\n      },\n      {\n        \"name\": \"dns.network.from_dhcp\",\n        \"description\": \"The device should use the DNS server provided by the DHCP server\",\n        \"result\": \"Feature Not Present\",\n        \"required_result\": \"Roadmap\"\n        \"recommendations\": [\n          \"An example of a step to resolve\",\n          \"Disable any running NTP server\"\n        ]\n      } \n    ]\n  }\n}",
+          "uuid": "97be8d47-c495-4882-a1c9-a53e3e8c287b",
+          "body": "{\n  \"status\": \"In Progress\",\n  \"device\": {{data 'cntg' '0'}},\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": null,\n  \"report\": null,\n  \"tests\": {\n    \"total\": 26,\n    \"results\": [\n      {\n        \"name\": \"dns.network.hostname_resolution\",\n        \"description\": \"The device should resolve hostnames\",,\n        \"required_result\": \"Required\"\n        \"result\": \"Compliant\"\n      },\n      {\n        \"name\": \"dns.network.from_dhcp\",\n        \"description\": \"The device should use the DNS server provided by the DHCP server\",\n        \"result\": \"Feature Not Present\",\n        \"required_result\": \"Roadmap\"\n        \"recommendations\": [\n          \"An example of a step to resolve\",\n          \"Disable any running NTP server\"\n        ]\n      } \n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Testrun In Progress",
@@ -413,8 +413,8 @@
           "callbacks": []
         },
         {
-          "uuid": "9a9adf23-be2b-4bb3-bb89-bd3d5ae731a8",
-          "body": "{\n  \"status\": \"Monitoring\",\n  \"device\": {\n    \"manufacturer\": \"Delta\",\n    \"model\": \"03-DIN-CPU\",\n    \"mac_addr\": \"01:02:03:04:05:06\",\n    \"firmware\": \"1.2.2\"\n  },\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": null,\n  \"report\": null,\n  \"tests\": {\n    \"total\": 0,\n    \"results\": []\n  }\n}",
+          "uuid": "a145244b-6630-4853-ae3d-01e9a34d3f32",
+          "body": "{\n  \"status\": \"Monitoring\",\n  \"device\": {{data 'cntg' '0'}},\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": null,\n  \"report\": null,\n  \"tests\": {\n    \"total\": 0,\n    \"results\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Testrun Monitoring",
@@ -432,7 +432,7 @@
           "callbacks": []
         },
         {
-          "uuid": "6b2055fc-3e9a-43cd-8157-92168b1a0df3",
+          "uuid": "88c9195d-0661-474c-853a-dc9da1186276",
           "body": "{\n  \"status\": \"Idle\",\n  \"device\": null,\n  \"started\": null,\n  \"finished\": null,\n  \"report\": null,\n  \"tests\": {\n    \"total\": 0,\n    \"results\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -446,13 +446,13 @@
           "rulesOperator": "OR",
           "disableTemplating": false,
           "fallbackTo404": false,
-          "default": true,
+          "default": false,
           "crudKey": "id",
           "callbacks": []
         },
         {
-          "uuid": "6e8b9ee4-9905-480d-974a-ebe0a3778a31",
-          "body": "{\n  \"status\": \"Cancelled\",\n  \"device\": {\n    \"manufacturer\": \"Delta\",\n    \"model\": \"03-DIN-CPU\",\n    \"mac_addr\": \"01:02:03:04:05:06\",\n    \"firmware\": \"1.2.2\"\n  },\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": \"2023-06-22T09:24:00.123Z\",\n  \"report\": null,\n  \"tests\": {\n    \"total\": 22,\n    \"results\": [\n      {\n        \"name\": \"dns.network.hostname_resolution\",\n        \"description\": \"The device should resolve hostnames\",\n        \"result\": \"Compliant\",\n        \"required_result\": \"Required\"\n      },\n      {\n        \"name\": \"dns.network.from_dhcp\",\n        \"description\": \"The device should use the DNS server provided by the DHCP server\",\n        \"result\": \"Feature Not Present\",\n        \"required_result\": \"Roadmap\"\n      }\n    ]\n  }\n}",
+          "uuid": "d8d39b65-81b1-4617-bbf5-b0b22a64f049",
+          "body": "{\n  \"status\": \"Cancelled\",\n  \"device\": {{data 'cntg' '0'}},\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": \"2023-06-22T09:24:00.123Z\",\n  \"report\": null,\n  \"tests\": {\n    \"total\": 22,\n    \"results\": [\n      {\n        \"name\": \"dns.network.hostname_resolution\",\n        \"description\": \"The device should resolve hostnames\",\n        \"result\": \"Compliant\",\n        \"required_result\": \"Required\"\n      },\n      {\n        \"name\": \"dns.network.from_dhcp\",\n        \"description\": \"The device should use the DNS server provided by the DHCP server\",\n        \"result\": \"Feature Not Present\",\n        \"required_result\": \"Roadmap\"\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Testrun Cancelled",
@@ -470,8 +470,8 @@
           "callbacks": []
         },
         {
-          "uuid": "551c1bca-85e5-4d19-8800-902ddb76c88f",
-          "body": "{\n  \"status\": \"Waiting for Device\",\n  \"device\": {\n    \"manufacturer\": \"Delta\",\n    \"model\": \"03-DIN-CPU\",\n    \"mac_addr\": \"01:02:03:04:05:06\",\n    \"firmware\": \"1.2.2\"\n  },\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": null,\n  \"report\": null,\n  \"tests\": {\n    \"total\": 0,\n    \"results\": []\n  }\n}",
+          "uuid": "d7fce65c-caf1-4c27-99b2-7e057fb6b5fc",
+          "body": "{\n  \"status\": \"Waiting for Device\",\n  \"device\": {{data 'cntg' '0'}},\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": null,\n  \"report\": null,\n  \"tests\": {\n    \"total\": 0,\n    \"results\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Testrun Waiting for Device",
@@ -489,8 +489,8 @@
           "callbacks": []
         },
         {
-          "uuid": "1a1346d2-d309-43c3-8993-2416c704ef06",
-          "body": "{\n  \"status\": \"Non-Compliant\",\n  \"device\": {\n    \"manufacturer\": \"Delta\",\n    \"model\": \"03-DIN-CPU\",\n    \"mac_addr\": \"01:02:03:04:05:06\",\n    \"firmware\": \"1.2.2\"\n  },\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": \"2023-06-22T09:26:00.123Z\",\n  \"report\": \"report/f0d4e2f2f541_2026-02-02T17:24:52\",\n  \"export\": \"export/f0d4e2f2f541_2026-02-02T17:24:52\",\n  \"tests\": {\n    \"total\": 26,\n    \"results\": [\n      {\n        \"name\": \"dns.network.hostname_resolution\",\n        \"description\": \"The device should resolve hostnames\",\n        \"result\": \"Non-Compliant\",\n        \"required_result\": \"Compliant\"\n        \"recommendations\": [\n          \"An example of a step to resolve\",\n          \"Disable any running NTP server\"\n        ]\n      },\n      {\n        \"name\": \"dns.network.from_dhcp\",\n        \"description\": \"The device should use the DNS server provided by the DHCP server\",\n        \"result\": \"Compliant\",\n        \"required_result\": \"Roadmap\"\n      },\n      {\n        \"name\": \"security.services.ftp\",\n        \"description\": \"FTP server should not be available\",\n        \"result\": \"Compliant\",\n        \"required_result\": \"Required\"\n      }\n    ]\n  }\n}",
+          "uuid": "0422d383-e901-4d38-966b-f3b4653bb5c9",
+          "body": "{\n  \"status\": \"Non-Compliant\",\n  \"device\": {{data 'cntg' '0'}},\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": \"2023-06-22T09:26:00.123Z\",\n  \"report\": \"report/f0d4e2f2f541_2026-02-02T17:24:52\",\n  \"export\": \"export/f0d4e2f2f541_2026-02-02T17:24:52\",\n  \"tests\": {\n    \"total\": 26,\n    \"results\": [\n      {\n        \"name\": \"dns.network.hostname_resolution\",\n        \"description\": \"The device should resolve hostnames\",\n        \"result\": \"Non-Compliant\",\n        \"required_result\": \"Compliant\"\n        \"recommendations\": [\n          \"An example of a step to resolve\",\n          \"Disable any running NTP server\"\n        ]\n      },\n      {\n        \"name\": \"dns.network.from_dhcp\",\n        \"description\": \"The device should use the DNS server provided by the DHCP server\",\n        \"result\": \"Compliant\",\n        \"required_result\": \"Roadmap\"\n      },\n      {\n        \"name\": \"security.services.ftp\",\n        \"description\": \"FTP server should not be available\",\n        \"result\": \"Compliant\",\n        \"required_result\": \"Required\"\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Test Run Non-Compliant",
@@ -508,8 +508,8 @@
           "callbacks": []
         },
         {
-          "uuid": "afe4b3e4-8401-46ea-8850-2dcb919fb7d3",
-          "body": "{\n  \"status\": \"Compliant\",\n  \"device\": {\n    \"manufacturer\": \"Delta\",\n    \"model\": \"03-DIN-CPU\",\n    \"mac_addr\": \"01:02:03:04:05:06\",\n    \"firmware\": \"1.2.2\"\n  },\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": \"2023-06-22T09:26:00.123Z\",\n  \"report\": \"report/f0d4e2f2f541_2026-02-02T17:24:52\",\n  \"export\": \"export/f0d4e2f2f541_2026-02-02T17:24:52\",\n  \"tests\": {\n    \"total\": 3,\n    \"results\": [\n      {\n        \"name\": \"dns.network.hostname_resolution\",\n        \"description\": \"The device should resolve hostnames\",\n        \"result\": \"Compliant\",\n        \"required_result\": \"Required\"\n      },\n      {\n        \"name\": \"dns.network.from_dhcp\",\n        \"description\": \"The device should use the DNS server provided by the DHCP server\",\n        \"result\": \"Feature Not Present\",\n        \"required_result\": \"Roadmap\"\n      },\n      {\n        \"name\": \"security.services.ftp\",\n        \"description\": \"FTP server should not be available\",\n        \"result\": \"Compliant\",\n        \"required_result\": \"Required\"\n      }\n    ]\n  }\n}",
+          "uuid": "46e4d42e-823b-440f-9c59-d344c0f51019",
+          "body": "{\n  \"status\": \"Compliant\",\n  \"device\": {{data 'cntg' '0'}},\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": \"2023-06-22T09:26:00.123Z\",\n  \"report\": \"report/f0d4e2f2f541_2026-02-02T17:24:52\",\n  \"export\": \"export/f0d4e2f2f541_2026-02-02T17:24:52\",\n  \"tests\": {\n    \"total\": 3,\n    \"results\": [\n      {\n        \"name\": \"dns.network.hostname_resolution\",\n        \"description\": \"The device should resolve hostnames\",\n        \"result\": \"Compliant\",\n        \"required_result\": \"Required\"\n      },\n      {\n        \"name\": \"dns.network.from_dhcp\",\n        \"description\": \"The device should use the DNS server provided by the DHCP server\",\n        \"result\": \"Feature Not Present\",\n        \"required_result\": \"Roadmap\"\n      },\n      {\n        \"name\": \"security.services.ftp\",\n        \"description\": \"FTP server should not be available\",\n        \"result\": \"Compliant\",\n        \"required_result\": \"Required\"\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Testrun Compliant",
@@ -522,13 +522,13 @@
           "rulesOperator": "OR",
           "disableTemplating": false,
           "fallbackTo404": false,
-          "default": false,
+          "default": true,
           "crudKey": "id",
           "callbacks": []
         },
         {
-          "uuid": "16da9b0b-68ac-41bb-b698-8e196ebabd4c",
-          "body": "{\n  \"status\": \"Error\",\n  \"device\": {\n    \"manufacturer\": \"Delta\",\n    \"model\": \"03-DIN-CPU\",\n    \"mac_addr\": \"01:02:03:04:05:06\",\n    \"firmware\": \"1.2.2\"\n  },\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": \"2023-06-22T09:26:00.123Z\",\n  \"report\": \"https://api.testrun.io/report.pdf\",\n  \"tests\": {\n    \"total\": 3,\n    \"results\": [\n      {\n        \"name\": \"dns.network.hostname_resolution\",\n        \"description\": \"The device should resolve hostnames\",\n        \"result\": \"Error\",\n        \"required_result\": \"Required\"\n      },\n      {\n        \"name\": \"dns.network.from_dhcp\",\n        \"description\": \"The device should use the DNS server provided by the DHCP server\",\n        \"result\": \"Feature Not Present\",\n        \"required_result\": \"Roadmap\"\n      },\n      {\n        \"name\": \"security.services.ftp\",\n        \"description\": \"FTP server should not be available\",\n        \"result\": \"Compliant\",\n        \"required_result\": \"Required\"\n      }\n    ]\n  }\n}",
+          "uuid": "50e347dc-a97a-4275-b168-48a860474e1f",
+          "body": "{\n  \"status\": \"Error\",\n  \"device\": {{data 'cntg' '0'}},\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": \"2023-06-22T09:26:00.123Z\",\n  \"report\": \"https://api.testrun.io/report.pdf\",\n  \"tests\": {\n    \"total\": 3,\n    \"results\": [\n      {\n        \"name\": \"dns.network.hostname_resolution\",\n        \"description\": \"The device should resolve hostnames\",\n        \"result\": \"Error\",\n        \"required_result\": \"Required\"\n      },\n      {\n        \"name\": \"dns.network.from_dhcp\",\n        \"description\": \"The device should use the DNS server provided by the DHCP server\",\n        \"result\": \"Feature Not Present\",\n        \"required_result\": \"Roadmap\"\n      },\n      {\n        \"name\": \"security.services.ftp\",\n        \"description\": \"FTP server should not be available\",\n        \"result\": \"Compliant\",\n        \"required_result\": \"Required\"\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Testrun Error",
@@ -549,14 +549,14 @@
       "responseMode": null
     },
     {
-      "uuid": "217a5e1b-fda6-4930-9f05-1372bc11590c",
+      "uuid": "bfed4a83-af83-41b0-aafd-fb6d4e5cf29e",
       "type": "http",
       "documentation": "Stop the current Testrun",
       "method": "post",
       "endpoint": "system/stop",
       "responses": [
         {
-          "uuid": "84004877-fe78-4817-a542-be1aa23088ec",
+          "uuid": "0c8dedd9-baee-46dc-b318-ae176ce529ed",
           "body": "{\n  \"success\": \"Testrun cancelled successfully\"\n}",
           "latency": 0,
           "statusCode": 200,
@@ -575,7 +575,7 @@
           "callbacks": []
         },
         {
-          "uuid": "04561650-fffe-4880-8c69-b94e8b96ba38",
+          "uuid": "aadfb76d-3519-42aa-b3a6-74cf5eaa782f",
           "body": "{\n  \"error\": \"Testrun is not currently running\"\n}",
           "latency": 0,
           "statusCode": 404,
@@ -597,15 +597,15 @@
       "responseMode": null
     },
     {
-      "uuid": "a8ba2fcb-8e05-42f4-9d5f-cea63aa8ead7",
+      "uuid": "0c12098c-67b6-4170-8011-eb75602f53ca",
       "type": "http",
       "documentation": "Fetch a list of previous Testruns",
       "method": "get",
       "endpoint": "reports",
       "responses": [
         {
-          "uuid": "6adc954a-55c9-40ed-8f49-cf38f659d883",
-          "body": "[\n  {\n    \"testrun\": {\n      \"version\": \"2.2.2\"\n    },\n    \"device\": {\n      \"manufacturer\": \"vagrant\",\n      \"model\": \"vm-compliant\",\n      \"mac_addr\": \"f0:d4:e2:f2:f5:41\",\n      \"firmware\": \"123\",\n      \"test_pack\": \"Device Qualification\"\n    },\n    \"status\": \"Complete\",\n    \"result\": \"Non-Compliant\",\n    \"started\": \"2026-02-02 17:24:52\",\n    \"finished\": \"2026-02-02 17:34:58\",\n    \"report\": \"report/f0d4e2f2f541_2026-02-02T17:24:52\",\n    \"export\": \"export/f0d4e2f2f541_2026-02-02T17:24:52\",\n    \"folder_name\": \"f0d4e2f2f541_2026-02-02T17:24:52\",\n    \"delete\": \"report/f0d4e2f2f541_2026-02-02T17:24:52\"\n  }\n]",
+          "uuid": "3cd002ad-a8fa-4a35-860b-b2902a8c6c4e",
+          "body": "[\n  {\n    \"testrun\": {\n      \"version\": \"2.2.2\"\n    },\n    \"device\": {{data 'cntg' '0'}},\n    \"status\": \"Non-Compliant\",\n    \"started\": \"2026-02-02 17:24:52\",\n    \"finished\": \"2026-02-02 17:34:58\",\n    \"report\": \"report/f0d4e2f2f541_2026-02-02T17:24:52\",\n    \"export\": \"export/f0d4e2f2f541_2026-02-02T17:24:52\",\n    \"folder_name\": \"f0d4e2f2f541_2026-02-02T17:24:52\",\n    \"delete\": \"report/f0d4e2f2f541_2026-02-02T17:24:52\"\n  }\n]",
           "latency": 0,
           "statusCode": 200,
           "label": "",
@@ -626,14 +626,14 @@
       "responseMode": null
     },
     {
-      "uuid": "a218761a-6ac6-466b-932e-9d58b6ec3a2e",
+      "uuid": "44518023-72d8-4e63-8076-72c69cf611f2",
       "type": "http",
       "documentation": "Delete a device",
       "method": "delete",
       "endpoint": "device",
       "responses": [
         {
-          "uuid": "5afbef24-a245-4ca2-b41d-6d867120f179",
+          "uuid": "4934cbb0-c491-410a-b704-f09e1115c512",
           "body": "{\n  \"success\": \"Successfully deleted the device\"\n}",
           "latency": 0,
           "statusCode": 200,
@@ -660,7 +660,7 @@
           "callbacks": []
         },
         {
-          "uuid": "7618b710-3528-467f-8271-b6ee12f69a88",
+          "uuid": "7f37b548-c2e9-4124-9691-6c4fc32509c2",
           "body": "{\n  \"error\": \"Device not found\"\n}",
           "latency": 0,
           "statusCode": 404,
@@ -679,7 +679,7 @@
           "callbacks": []
         },
         {
-          "uuid": "491a490a-f9e3-457e-887f-f508d088c6c8",
+          "uuid": "fca3c172-663e-4270-8927-3a97d4d7ab0a",
           "body": "{\n  \"error\": \"Invalid request received\"\n}",
           "latency": 0,
           "statusCode": 400,
@@ -706,7 +706,7 @@
           "callbacks": []
         },
         {
-          "uuid": "85843fbf-2b63-41ab-9836-51bdc0a31b8e",
+          "uuid": "7fc11993-dd7f-49a9-bcdb-e2e52f6f0fac",
           "body": "{\n  \"error\": \"Cannot delete this device whilst it is being tested\"\n}",
           "latency": 0,
           "statusCode": 403,
@@ -728,14 +728,14 @@
       "responseMode": null
     },
     {
-      "uuid": "fd6fc843-4a77-4532-ba38-f81cdf345dc2",
+      "uuid": "82ae3943-e8ef-4d44-85e8-a4942480360b",
       "type": "http",
       "documentation": "Get the current system configuration",
       "method": "get",
       "endpoint": "system/config",
       "responses": [
         {
-          "uuid": "b78733cb-15e5-48ba-8ac1-34eb04dbaa28",
+          "uuid": "c20b8bb3-ff44-4dd6-a8d0-d8dafc10f9ac",
           "body": "{\n  \"network\": {\n    \"device_intf\": \"enx207bd2620617\",\n    \"internet_intf\": \"enx207bd26205e9\"\n  },\n  \"log_level\": \"INFO\",\n  \"startup_timeout\": 60,\n  \"monitor_period\": 60\n}",
           "latency": 0,
           "statusCode": 200,
@@ -772,14 +772,14 @@
       "responseMode": null
     },
     {
-      "uuid": "12928dee-d2c8-4730-a1be-26ad796811dd",
+      "uuid": "d8e0f822-3a79-4ae0-b77d-504956a1d298",
       "type": "http",
       "documentation": "Obtain the current Testrun version",
       "method": "get",
       "endpoint": "system/version",
       "responses": [
         {
-          "uuid": "f3afbdaf-e78c-4248-822a-853ea70ff621",
+          "uuid": "da0b61cf-4de5-4762-847b-1ed4b5f892e5",
           "body": "{\n  \"installed_version\": \"1.0\",\n  \"update_available\": true,\n  \"latest_version\": \"1.1\",\n  \"latest_version_url\": \"https://github.com/google/testrun/releases/tag/v1.1\"\n}",
           "latency": 0,
           "statusCode": 200,
@@ -798,7 +798,7 @@
           "callbacks": []
         },
         {
-          "uuid": "e37c0fbc-13c6-4c91-bbee-8eea148dd8d5",
+          "uuid": "7b0ccddb-6c2c-40c5-a470-f78d24dcae1d",
           "body": "{\n  \"installed_version\": \"1.1\",\n  \"installed_release_date\": \"20 Oct 2023\",\n  \"update_available\": false,\n  \"latest_version\": \"1.1\",\n  \"latest_version_url\": \"https://github.com/google/testrun/releases/tag/v1.1\"\n}",
           "latency": 0,
           "statusCode": 200,
@@ -820,14 +820,14 @@
       "responseMode": null
     },
     {
-      "uuid": "ac0ea995-ea90-4c6a-8767-3104e149de68",
+      "uuid": "7842b815-fbbf-469b-b641-cb0efb1196c9",
       "type": "http",
       "documentation": "Delete a Testrun report",
       "method": "delete",
       "endpoint": "report/{folder_name}",
       "responses": [
         {
-          "uuid": "35b1585b-13d0-4702-9733-9e2f7fc08ab9",
+          "uuid": "d49f9655-756b-4bed-b4fd-9fbef7467f56",
           "body": "{\n  \"success\": \"Successfully deleted that report\"\n}",
           "latency": 0,
           "statusCode": 200,
@@ -846,7 +846,7 @@
           "callbacks": []
         },
         {
-          "uuid": "ac611b0e-8171-4981-a7e8-93af0a065f8a",
+          "uuid": "4c0275a9-cb8c-4ad4-965e-fcc9e33a5b31",
           "body": "{\n  \"error\": \"Invalid request received\"\n}",
           "latency": 0,
           "statusCode": 400,
@@ -865,7 +865,7 @@
           "callbacks": []
         },
         {
-          "uuid": "7589fcf9-43c8-4ab8-8abf-a64ea115b038",
+          "uuid": "8eb2d7ba-d233-4b15-be60-7b4bf9d63ba6",
           "body": "{\n  \"error\": \"That Testrun report could not be found\"\n}",
           "latency": 0,
           "statusCode": 404,
@@ -884,7 +884,7 @@
           "callbacks": []
         },
         {
-          "uuid": "220e4ba9-6463-4dc3-b714-f77643706b7d",
+          "uuid": "78ee93e0-0c1b-4fde-8bed-1c4b680fe0f8",
           "body": "{\n  \"error\": \"An error occurred whilst deleting the report\"\n}",
           "latency": 0,
           "statusCode": 500,
@@ -906,14 +906,14 @@
       "responseMode": null
     },
     {
-      "uuid": "f1d72c42-6f48-488d-a394-4d31b9a1da5e",
+      "uuid": "e53851e7-192d-4987-9595-53a65a3995f4",
       "type": "http",
       "documentation": "Get a Testrun PDF report",
       "method": "get",
       "endpoint": "report/{folder_name}",
       "responses": [
         {
-          "uuid": "09092f2d-907b-452c-b47b-b2f3b9b47189",
+          "uuid": "28c769fe-a6a6-405d-8af3-6e463015189a",
           "body": "",
           "latency": 0,
           "statusCode": 200,
@@ -932,7 +932,7 @@
           "callbacks": []
         },
         {
-          "uuid": "ee16a180-9d32-4784-9574-701cf56ff370",
+          "uuid": "8c47b37f-441f-455c-80c7-c4688892e76c",
           "body": "{\n  \"error\": \"Invalid request received\"\n}",
           "latency": 0,
           "statusCode": 400,
@@ -951,7 +951,7 @@
           "callbacks": []
         },
         {
-          "uuid": "e0464663-9ef1-49d4-941c-926aa06b0907",
+          "uuid": "af2fa70f-3d65-4850-a63d-b408ddf16c0c",
           "body": "{\n  \"error\": \"That Testrun report could not be found\"\n}",
           "latency": 0,
           "statusCode": 404,
@@ -970,7 +970,7 @@
           "callbacks": []
         },
         {
-          "uuid": "a7fbb2c8-81dc-4a40-80d6-482119314086",
+          "uuid": "a3d26a96-f60b-4f7a-8c15-b9ad87aaafca",
           "body": "{\n  \"error\": \"An error occurred whilst getting the report\"\n}",
           "latency": 0,
           "statusCode": 500,
@@ -992,14 +992,14 @@
       "responseMode": null
     },
     {
-      "uuid": "239b1309-52da-4dc8-b914-35c1be6d2ff9",
+      "uuid": "6e496def-1180-46ce-86b7-39f658be695c",
       "type": "http",
       "documentation": "Save a device configuration",
       "method": "post",
       "endpoint": "device/edit",
       "responses": [
         {
-          "uuid": "71e21fad-c93c-4efa-9929-c1496c44ecba",
+          "uuid": "73da08d1-5965-4a75-9538-b097318ae508",
           "body": "{\n  \"manufacturer\": \"Delta\",\n  \"model\": \"O3-DIN-CPU\",\n  \"mac_addr\": \"00:1e:42:35:73:c4\",\n  \"test_modules\": {\n    \"dns\": {\n      \"enabled\": false\n    },\n    \"nmap\": {\n      \"enabled\": true\n    },\n    \"dhcp\": {\n      \"enabled\": false\n    }\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1026,7 +1026,7 @@
           "callbacks": []
         },
         {
-          "uuid": "4ec87c14-fff3-4273-ae07-70ea45670174",
+          "uuid": "1ad4c9af-e6e0-4f10-afcc-6d1aeefcb835",
           "body": "{\n  \"error\": \"Invalid request received\"\n}",
           "latency": 0,
           "statusCode": 400,
@@ -1045,7 +1045,7 @@
           "callbacks": []
         },
         {
-          "uuid": "329afa70-8f92-4b15-9280-be1336e5e32a",
+          "uuid": "15b846c3-2857-4a89-b8b0-577c3f99fccf",
           "body": "{\n  \"error\": \"A device with that MAC address could not be found\"\n}",
           "latency": 0,
           "statusCode": 404,
@@ -1064,7 +1064,7 @@
           "callbacks": []
         },
         {
-          "uuid": "1456f02a-ec93-47d5-8dfe-7467e325ba6e",
+          "uuid": "48233ff2-1200-46ac-b976-16b88e572087",
           "body": "{\n  \"error\": \"A device with that MAC address already exists\"\n}",
           "latency": 0,
           "statusCode": 409,
@@ -1086,14 +1086,14 @@
       "responseMode": null
     },
     {
-      "uuid": "34d39075-6c44-41c9-9221-a9ed7ae27d3e",
+      "uuid": "d8706013-25b4-46ff-9318-348dcc72594f",
       "type": "http",
       "documentation": "Get a Testrun results archive",
       "method": "get",
       "endpoint": "export/{device_name}/{timestamp}",
       "responses": [
         {
-          "uuid": "73d2266f-2bdd-4128-ba82-bb62a454c335",
+          "uuid": "a569ff8a-4e6f-4b48-bb93-5966b4c09371",
           "body": "",
           "latency": 0,
           "statusCode": 200,
@@ -1112,7 +1112,7 @@
           "callbacks": []
         },
         {
-          "uuid": "63865c53-a848-47cf-804d-a6ca606249f5",
+          "uuid": "a35f16d9-a3b4-4ce7-a05b-7e15f8e21dd7",
           "body": "{\n  \"error\": \"Invalid request received\"\n}",
           "latency": 0,
           "statusCode": 400,
@@ -1131,7 +1131,7 @@
           "callbacks": []
         },
         {
-          "uuid": "52b96932-a1c4-4e7d-b29e-af08922bbcea",
+          "uuid": "bffe2c8c-a03e-48d3-9ca0-f8738ecedb40",
           "body": "{\n  \"error\": \"Test results could not be found\"\n}",
           "latency": 0,
           "statusCode": 404,
@@ -1150,7 +1150,7 @@
           "callbacks": []
         },
         {
-          "uuid": "3bcb2d6d-3290-43bb-8392-7bfffda4feae",
+          "uuid": "68c8d06e-cd44-4c48-9c55-b3f0a3d68cd7",
           "body": "{\n  \"error\": \"An error occurred whilst getting the test attempt\"\n}",
           "latency": 0,
           "statusCode": 500,
@@ -1172,14 +1172,14 @@
       "responseMode": null
     },
     {
-      "uuid": "0aed9026-18f5-4055-9670-83007ea18aaa",
+      "uuid": "0a705fd3-927b-4a79-8edb-4a25b518cc6d",
       "type": "http",
       "documentation": "Shutdown Testrun",
       "method": "post",
       "endpoint": "system/shutdown",
       "responses": [
         {
-          "uuid": "3fc98bfb-f662-4ef4-8fa1-da522ea18993",
+          "uuid": "1fc53142-4a78-47fe-848a-47ab5a94b8fc",
           "body": "null",
           "latency": 0,
           "statusCode": 200,
@@ -1198,7 +1198,7 @@
           "callbacks": []
         },
         {
-          "uuid": "6ac393e4-9fbd-466a-804c-cdce26b0bc01",
+          "uuid": "f9f66585-b876-42ef-87aa-6b0147fefdfa",
           "body": "{\n  \"error\": \"Unable to shutdown. A test is currently in progress.\"\n}",
           "latency": 0,
           "statusCode": 400,
@@ -1220,14 +1220,14 @@
       "responseMode": null
     },
     {
-      "uuid": "6d6b9fa9-c961-4007-89f3-9ea9cccc05e7",
+      "uuid": "734dc9f2-a79c-4bf2-887f-6bc7362ac9e6",
       "type": "http",
       "documentation": "List root CA certificates",
       "method": "get",
       "endpoint": "system/config/certs",
       "responses": [
         {
-          "uuid": "581b126d-fadd-4461-bece-97b5b1fd97fd",
+          "uuid": "52791dfd-d212-4c04-ba7c-87d864f0ad68",
           "body": "[\n  {\n    \"name\": \"iot.bms.google.com\",\n    \"organisation\": \"Google, Inc.\",\n    \"expires\": \"2024-09-01T09:00:12Z\",\n    \"status\": \"Valid\",\n    \"type\": \"root\"\n  },\n  {\n    \"name\": \"sensor.bms.google.com\",\n    \"organisation\": \"Google, Inc.\",\n    \"expires\": \"2022-09-01T09:00:12Z\",\n    \"status\": \"Expired\",\n    \"type\": \"intermediate\"\n  }\n]",
           "latency": 0,
           "statusCode": 200,
@@ -1246,7 +1246,7 @@
           "callbacks": []
         },
         {
-          "uuid": "b9fa58e6-95c8-45ea-b6fb-a16287a6e65b",
+          "uuid": "1964000a-403b-4262-a855-85aeef65810f",
           "body": "[]",
           "latency": 0,
           "statusCode": 200,
@@ -1268,14 +1268,14 @@
       "responseMode": null
     },
     {
-      "uuid": "fb33213d-4448-431c-8733-1ce292644af6",
+      "uuid": "ec44cca5-28c8-44d5-8574-64d2bc48b9da",
       "type": "http",
       "documentation": "",
       "method": "delete",
       "endpoint": "system/config/certs",
       "responses": [
         {
-          "uuid": "63d0656a-2dc4-4a8e-bf53-8de209485c7f",
+          "uuid": "113f4446-acde-4586-a7be-2466403ba5ff",
           "body": "{\n  \"success\": \"Successfully deleted that certificate\"\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1294,7 +1294,7 @@
           "callbacks": []
         },
         {
-          "uuid": "906f342a-0981-43a7-a0a2-7fd862cc0ac9",
+          "uuid": "ba8e6dce-5d9d-4c7d-8b20-ba61f7113492",
           "body": "{\n  \"error\": \"A certificate with that name could not be found\"\n}",
           "latency": 0,
           "statusCode": 404,
@@ -1316,14 +1316,14 @@
       "responseMode": null
     },
     {
-      "uuid": "0e927c03-7a2f-41cb-8404-bd94e9213fd3",
+      "uuid": "90ff5073-912c-4b10-9e3e-f95c2dc72ae9",
       "type": "http",
       "documentation": "Upload root CA certificate",
       "method": "post",
       "endpoint": "system/config/certs",
       "responses": [
         {
-          "uuid": "37e4a9bf-7b8b-42df-a62e-adb27faf7c1b",
+          "uuid": "b84a7a80-d96d-47fd-8fe2-690d06959cfc",
           "body": "{\n  \"success\": \"Successfully uploaded that certificate to the store\"\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1342,7 +1342,7 @@
           "callbacks": []
         },
         {
-          "uuid": "5d5640b8-2b53-4101-8e31-e056cd3771dc",
+          "uuid": "d7ee89a9-c195-4171-9761-ff89c1334d91",
           "body": "{\n  \"error\": \"Failed to upload certificate. Is it in the correct format?\"\n}",
           "latency": 0,
           "statusCode": 400,
@@ -1361,7 +1361,7 @@
           "callbacks": []
         },
         {
-          "uuid": "2a46c346-843c-4c85-8d4c-a55bc6387b34",
+          "uuid": "abbc829b-5156-4afb-a23a-909d7121bfc7",
           "body": "{\n  \"error\": \"That certificate has already been uploaded\"\n}",
           "latency": 0,
           "statusCode": 409,
@@ -1383,15 +1383,15 @@
       "responseMode": null
     },
     {
-      "uuid": "64b9226c-ae14-4559-883f-470212f63c57",
+      "uuid": "b92a0062-4bcb-47d2-9e88-dd41838a0df4",
       "type": "http",
       "documentation": "List the test modules available",
       "method": "get",
       "endpoint": "system/modules",
       "responses": [
         {
-          "uuid": "88e55282-3b57-476c-9716-b28c5ad795f0",
-          "body": "[\n  \"Connection\",\n  \"Services\",\n  \"NTP\",\n  \"DNS\"\n  \"Protocol\",\n  \"TLS\"\n]",
+          "uuid": "ea26feef-3c22-4a5d-91bf-14b5a7de82d7",
+          "body": "[\n  \"Connection\",\n  \"Services\",\n  \"NTP\",\n  \"DNS\",\n  \"Protocol\",\n  \"TLS\"\n]",
           "latency": 0,
           "statusCode": 200,
           "label": "",
@@ -1412,14 +1412,14 @@
       "responseMode": null
     },
     {
-      "uuid": "90a6beb3-a4c0-491f-9beb-b36c29e0dee5",
+      "uuid": "26e4127c-b2e1-4605-861c-9169e16ba7f3",
       "type": "http",
       "documentation": "Fetch a list of the profiles saved by the user",
       "method": "get",
       "endpoint": "profiles",
       "responses": [
         {
-          "uuid": "26526b9e-8288-473d-826c-275511c789ec",
+          "uuid": "9ccccde5-226d-4cb9-bbce-d8bbeedee636",
           "body": "[\n  {\n    \"name\": \"Primary profile\",\n    \"status\": \"Valid\",\n    \"created\": \"2024-05-23 12:38:26\",\n    \"version\": \"v1.3\",\n    \"questions\": [\n      [\n        {\n          \"question\": \"What type of device is this?\",\n          \"type\": \"select\",\n          \"options\": [\n            \"IoT Sensor\",\n            \"IoT Controller\",\n            \"Smart Device\",\n            \"Something else\"\n          ],\n          \"answer\": \"IoT Sensor\",\n          \"validation\": {\n            \"required\": true\n          }\n        },\n        {\n          \"question\": \"How will this device be used at Google?\",\n          \"type\": \"text-long\",\n          \"answer\": \"Installed in a building\",\n          \"validation\": {\n            \"max\": \"128\",\n            \"required\": true\n          }\n        },\n        {\n          \"question\": \"What is the email of the device owner(s)?\",\n          \"type\": \"email-multiple\",\n          \"answer\": \"boddey@google.com, cmeredith@google.com\",\n          \"validation\": {\n            \"required\": true,\n            \"max\": \"128\"\n          }\n        },\n        {\n          \"question\": \"Is this device going to be managed by Google or a third party?\",\n          \"type\": \"select\",\n          \"options\": [\n            \"Google\",\n            \"Third Party\"\n          ],\n          \"answer\": \"Google\",\n          \"validation\": {\n            \"required\": true\n          }\n        },\n        {\n          \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n          \"type\": \"select\",\n          \"options\": [\n            \"Yes\",\n            \"No\",\n            \"N/A\"\n          ],\n          \"default\": \"N/A\",\n          \"answer\": \"Yes\",\n          \"validation\": {\n            \"required\": true\n          }\n        },\n        {\n          \"question\": \"Are any of the following statements true about your device?\",\n          \"description\": \"This tells us about the data your device will collect\",\n          \"type\": \"select-multiple\",\n          \"answer\": [\n            0,\n            2\n          ],\n          \"options\": [\n            \"The device collects any Personal Identifiable Information (PII) or Personal Health Information (PHI)\",\n            \"The device collects intellectual property and trade secrets, sensitive business data, critical infrastructure data, identity assets\",\n            \"The device stream confidential business data in real-time (seconds)?\"\n          ]\n        },\n        {\n          \"question\": \"Which of the following statements are true about this device?\",\n          \"description\": \"This tells us about the types of data that are transmitted from this device and how the transmission is performed from a technical standpoint.\",\n          \"type\": \"select-multiple\",\n          \"answer\": [\n            0,\n            1,\n            5\n          ],\n          \"options\": [\n            \"PII/PHI, confidential business data, or crown jewel data is transmitted to a destination outside Alphabet's ownership\",\n            \"Data transmission occurs across less-trusted networks (e.g. the internet).\",\n            \"A failure in data transmission would likely have a substantial negative impact (https://www.rra.rocks/docs/standard_levels#levels-definitions)\",\n            \"A confidentiality breach during transmission would have a substantial negative impact\",\n            \"The device encrypts data during transmission\",\n            \"The device network protocol is well-established and currently used by Google\"\n          ]\n        },\n        {\n          \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n          \"type\": \"select\",\n          \"answer\": \"Yes\",\n          \"options\": [\n            \"Yes\",\n            \"No\",\n            \"I don't know\"\n          ],\n          \"validation\": {\n            \"required\": true\n          }\n        },\n        {\n          \"question\": \"Click the statements that best describe the characteristics of this device.\",\n          \"description\": \"This tells us about how this device is managed remotely.\",\n          \"type\": \"select-multiple\",\n          \"answer\": [\n            0,\n            1,\n            2\n          ],\n          \"options\": [\n            \"PII/PHI, or confidential business data is accessible from the device without authentication\",\n            \"Unrecoverable actions (e.g. disk wipe) can be performed remotely\",\n            \"Authentication is required for remote access\",\n            \"The management interface is accessible from the public internet\",\n            \"Static credentials are used for administration\"\n          ]\n        },\n        {\n          \"question\": \"Are any of the following statements true about this device?\",\n          \"description\": \"This informs us about what other systems and processes this device is a part of.\",\n          \"type\": \"select-multiple\",\n          \"answer\": [\n            2,\n            3\n          ],\n          \"options\": [\n            \"The device monitors an environment for active risks to human life.\",\n            \"The device is used to convey people, or critical property.\",\n            \"The device controls robotics in human-accessible spaces.\",\n            \"The device controls physical access systems.\",\n            \"The device is involved in processes required by regulations, or compliance. (ex. privacy, security, safety regulations)\",\n            \"The device's failure would cause faults in other high-criticality processes.\"\n          ]\n        }\n      ]\n    ]\n  }\n]",
           "latency": 0,
           "statusCode": 200,
@@ -1438,7 +1438,7 @@
           "callbacks": []
         },
         {
-          "uuid": "6234def9-6b47-4ed8-a416-d160b25a99c8",
+          "uuid": "23bb625a-5248-4dcd-b0d4-45fa979fd759",
           "body": "[]",
           "latency": 0,
           "statusCode": 200,
@@ -1460,14 +1460,14 @@
       "responseMode": null
     },
     {
-      "uuid": "86267532-5d37-4c12-9dfd-81d16c6164f1",
+      "uuid": "0af44810-6469-4280-99d6-38cbba7eb19e",
       "type": "http",
       "documentation": "Delete a profile",
       "method": "delete",
       "endpoint": "profiles",
       "responses": [
         {
-          "uuid": "0c66bb41-e28b-40fe-866d-1a0c140489ec",
+          "uuid": "33de9ffa-cb29-4cdc-94a6-2e8dde162d49",
           "body": "{\n  \"success\": \"Successfully deleted the risk profile\"\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1486,7 +1486,7 @@
           "callbacks": []
         },
         {
-          "uuid": "b9c4540e-d5cf-4ee3-a450-68c16552355a",
+          "uuid": "8e101b51-d72f-46ee-9baa-8962bc1997a7",
           "body": "{\n  \"error\": \"A profile with that name could not be found\"\n}",
           "latency": 0,
           "statusCode": 404,
@@ -1508,14 +1508,14 @@
       "responseMode": null
     },
     {
-      "uuid": "45635915-a144-46a9-b59a-f4b9d2fc8ebe",
+      "uuid": "c32027e2-519b-4d54-93fe-83e2c63ad407",
       "type": "http",
       "documentation": "Create or update a risk profile",
       "method": "post",
       "endpoint": "profiles",
       "responses": [
         {
-          "uuid": "5c6e3b25-a4cc-48e8-b04f-bc7f9bcf0719",
+          "uuid": "e303f193-eb36-4a73-a985-9e05d7be88f2",
           "body": "{\n  \"success\": \"Successfully created a risk profile\"\n}",
           "latency": 0,
           "statusCode": 201,
@@ -1534,7 +1534,7 @@
           "callbacks": []
         },
         {
-          "uuid": "f65866fa-3f7c-4cd0-b731-a2cbbfbdea10",
+          "uuid": "d4841817-7680-466d-aec6-339bc8b20d91",
           "body": "{\n  \"error\": \"Invalid request received\"\n}",
           "latency": 0,
           "statusCode": 400,
@@ -1553,7 +1553,7 @@
           "callbacks": []
         },
         {
-          "uuid": "db611e13-2076-4af0-855d-fc2d7447e395",
+          "uuid": "a7b3eb1f-ddaf-4d30-a08e-02804c6cd302",
           "body": "{\n  \"error\": \"A profile with that name already exists.\"\n}",
           "latency": 0,
           "statusCode": 404,
@@ -1575,14 +1575,14 @@
       "responseMode": null
     },
     {
-      "uuid": "26f0f76f-e787-4ebe-a3f8-ea3a6004bc15",
+      "uuid": "2ff43b68-07b3-4c59-96b4-ac7379ea6e6e",
       "type": "http",
       "documentation": "Fetch the current format of the profiles questionnaire",
       "method": "get",
       "endpoint": "profiles/format",
       "responses": [
         {
-          "uuid": "a044a39d-e40d-48b1-83f4-762adcc1c444",
+          "uuid": "62c5fff9-327d-42a1-8d7d-a52ab57d04d4",
           "body": "[\n  {\n    \"question\": \"What type of device is this?\",\n    \"type\": \"select\",\n    \"options\": [\n      \"IoT Sensor\",\n      \"IoT Controller\",\n      \"Smart Device\",\n      \"Something else\"\n    ],\n    \"validation\": {\n      \"required\": true\n    }\n  },\n  {\n    \"question\": \"How will this device be used at Google?\",\n    \"type\": \"text-long\",\n    \"validation\": {\n      \"max\": \"128\",\n      \"required\": true\n    }\n  },\n  {\n    \"question\": \"What is the email of the device owner(s)?\",\n    \"type\": \"email-multiple\",\n    \"validation\": {\n      \"required\": true,\n      \"max\": \"128\"\n    }\n  },\n  {\n    \"question\": \"Is this device going to be managed by Google or a third party?\",\n    \"type\": \"select\",\n    \"options\": [\n      \"Google\",\n      \"Third Party\"\n    ],\n    \"validation\": {\n      \"required\": true\n    }\n  },\n  {\n    \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n    \"type\": \"select\",\n    \"options\": [\n      \"Yes\",\n      \"No\",\n      \"N/A\"\n    ],\n    \"default\": \"N/A\",\n    \"validation\": {\n      \"required\": true\n    }\n  },\n  {\n    \"question\": \"Are any of the following statements true about your device?\",\n    \"description\": \"This tells us about the data your device will collect\",\n    \"type\": \"select-multiple\",\n    \"options\": [\n      \"The device collects any Personal Identifiable Information (PII) or Personal Health Information (PHI)\",\n      \"The device collects intellectual property and trade secrets, sensitive business data, critical infrastructure data, identity assets\",\n      \"The device stream confidential business data in real-time (seconds)?\"\n    ]\n  },\n  {\n    \"question\": \"Which of the following statements are true about this device?\",\n    \"description\": \"This tells us about the types of data that are transmitted from this device and how the transmission is performed from a technical standpoint.\",\n    \"type\": \"select-multiple\",\n    \"options\": [\n      \"PII/PHI, confidential business data, or crown jewel data is transmitted to a destination outside Alphabet's ownership\",\n      \"Data transmission occurs across less-trusted networks (e.g. the internet).\",\n      \"A failure in data transmission would likely have a substantial negative impact (https://www.rra.rocks/docs/standard_levels#levels-definitions)\",\n      \"A confidentiality breach during transmission would have a substantial negative impact\",\n      \"The device encrypts data during transmission\",\n      \"The device network protocol is well-established and currently used by Google\"\n    ]\n  },\n  {\n    \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n    \"type\": \"select\",\n    \"options\": [\n      \"Yes\",\n      \"No\",\n      \"I don't know\"\n    ],\n    \"validation\": {\n      \"required\": true\n    }\n  },\n  {\n    \"question\": \"Click the statements that best describe the characteristics of this device.\",\n    \"description\": \"This tells us about how this device is managed remotely.\",\n    \"type\": \"select-multiple\",\n    \"options\": [\n      \"PII/PHI, or confidential business data is accessible from the device without authentication\",\n      \"Unrecoverable actions (e.g. disk wipe) can be performed remotely\",\n      \"Authentication is required for remote access\",\n      \"The management interface is accessible from the public internet\",\n      \"Static credentials are used for administration\"\n    ]\n  },\n  {\n    \"question\": \"Are any of the following statements true about this device?\",\n    \"description\": \"This informs us about what other systems and processes this device is a part of.\",\n    \"type\": \"select-multiple\",\n    \"options\": [\n      \"The device monitors an environment for active risks to human life.\",\n      \"The device is used to convey people, or critical property.\",\n      \"The device controls robotics in human-accessible spaces.\",\n      \"The device controls physical access systems.\",\n      \"The device is involved in processes required by regulations, or compliance. (ex. privacy, security, safety regulations)\",\n      \"The device's failure would cause faults in other high-criticality processes.\"\n    ]\n  }\n]",
           "latency": 0,
           "statusCode": 200,
@@ -1607,99 +1607,99 @@
   "rootChildren": [
     {
       "type": "route",
-      "uuid": "609cbb2f-b064-4d94-9d47-705f902af57d"
+      "uuid": "8b168b92-0dc3-449d-8c93-993720dbea8f"
     },
     {
       "type": "route",
-      "uuid": "fd6fc843-4a77-4532-ba38-f81cdf345dc2"
+      "uuid": "82ae3943-e8ef-4d44-85e8-a4942480360b"
     },
     {
       "type": "route",
-      "uuid": "32ddc969-bf37-4bd6-a926-329ffa351583"
+      "uuid": "79cc2f4c-5492-460b-9551-255f854d6b54"
     },
     {
       "type": "route",
-      "uuid": "24a155d7-8d30-458e-bc03-2240ecc95a30"
+      "uuid": "609b3249-009d-4ea7-baef-cdfe7b80a57e"
     },
     {
       "type": "route",
-      "uuid": "98e836d3-8af1-4321-9cdc-7feba8b40d8e"
+      "uuid": "1a44f012-cea9-4123-a762-7ed1e77d4c95"
     },
     {
       "type": "route",
-      "uuid": "239b1309-52da-4dc8-b914-35c1be6d2ff9"
+      "uuid": "6e496def-1180-46ce-86b7-39f658be695c"
     },
     {
       "type": "route",
-      "uuid": "a218761a-6ac6-466b-932e-9d58b6ec3a2e"
+      "uuid": "44518023-72d8-4e63-8076-72c69cf611f2"
     },
     {
       "type": "route",
-      "uuid": "dcead7f8-71da-43ef-974b-ceddf8f262cc"
+      "uuid": "c076e158-34c5-4e9f-b8cb-25158f14b436"
     },
     {
       "type": "route",
-      "uuid": "9a9482ee-09d6-4ab7-9fb0-bbfed791bd9d"
+      "uuid": "ae0e8e83-f36d-40a8-8549-cbeed297dda0"
     },
     {
       "type": "route",
-      "uuid": "217a5e1b-fda6-4930-9f05-1372bc11590c"
+      "uuid": "bfed4a83-af83-41b0-aafd-fb6d4e5cf29e"
     },
     {
       "type": "route",
-      "uuid": "0aed9026-18f5-4055-9670-83007ea18aaa"
+      "uuid": "0a705fd3-927b-4a79-8edb-4a25b518cc6d"
     },
     {
       "type": "route",
-      "uuid": "a8ba2fcb-8e05-42f4-9d5f-cea63aa8ead7"
+      "uuid": "0c12098c-67b6-4170-8011-eb75602f53ca"
     },
     {
       "type": "route",
-      "uuid": "ac0ea995-ea90-4c6a-8767-3104e149de68"
+      "uuid": "7842b815-fbbf-469b-b641-cb0efb1196c9"
     },
     {
       "type": "route",
-      "uuid": "12928dee-d2c8-4730-a1be-26ad796811dd"
+      "uuid": "d8e0f822-3a79-4ae0-b77d-504956a1d298"
     },
     {
       "type": "route",
-      "uuid": "f1d72c42-6f48-488d-a394-4d31b9a1da5e"
+      "uuid": "e53851e7-192d-4987-9595-53a65a3995f4"
     },
     {
       "type": "route",
-      "uuid": "34d39075-6c44-41c9-9221-a9ed7ae27d3e"
+      "uuid": "d8706013-25b4-46ff-9318-348dcc72594f"
     },
     {
       "type": "route",
-      "uuid": "0e927c03-7a2f-41cb-8404-bd94e9213fd3"
+      "uuid": "90ff5073-912c-4b10-9e3e-f95c2dc72ae9"
     },
     {
       "type": "route",
-      "uuid": "6d6b9fa9-c961-4007-89f3-9ea9cccc05e7"
+      "uuid": "734dc9f2-a79c-4bf2-887f-6bc7362ac9e6"
     },
     {
       "type": "route",
-      "uuid": "fb33213d-4448-431c-8733-1ce292644af6"
+      "uuid": "ec44cca5-28c8-44d5-8574-64d2bc48b9da"
     },
     {
       "type": "route",
-      "uuid": "64b9226c-ae14-4559-883f-470212f63c57"
+      "uuid": "b92a0062-4bcb-47d2-9e88-dd41838a0df4"
     },
     {
       "type": "route",
-      "uuid": "90a6beb3-a4c0-491f-9beb-b36c29e0dee5"
+      "uuid": "26e4127c-b2e1-4605-861c-9169e16ba7f3"
     },
     {
       "type": "route",
-      "uuid": "86267532-5d37-4c12-9dfd-81d16c6164f1"
+      "uuid": "0af44810-6469-4280-99d6-38cbba7eb19e"
     },
     {
       "type": "route",
-      "uuid": "45635915-a144-46a9-b59a-f4b9d2fc8ebe"
+      "uuid": "c32027e2-519b-4d54-93fe-83e2c63ad407"
     },
     {
       "type": "route",
-      "uuid": "26f0f76f-e787-4ebe-a3f8-ea3a6004bc15"
+      "uuid": "2ff43b68-07b3-4c59-96b4-ac7379ea6e6e"
     }
   ],
   "proxyMode": false,
@@ -1737,6 +1737,14 @@
       "value": ""
     }
   ],
-  "data": [],
+  "data": [
+    {
+      "uuid": "c07d3113-3d08-4d16-92dd-f944da123cfd",
+      "id": "cntg",
+      "name": "device_list",
+      "documentation": "",
+      "value": "[\n  {\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"status\": \"Valid\",\n    \"manufacturer\": \"Teltonika\",\n    \"model\": \"TRB 140\",\n    \"type\": \"IoT Gateway\",\n    \"technology\": \"Hardware - Air quality\",\n    \"test_pack\": \"Pilot Assessment\",\n    \"firmware\": \"3.14 omega\",\n    \"additional_info\": [\n      {\n        \"question\": \"What type of device is this?\",\n        \"answer\": \"IoT Gateway\"\n      },\n      {\n        \"question\": \"Please select the technology this device falls into\",\n        \"answer\": \"Building Automation\"\n      },\n      {\n        \"question\": \"Does your device process any sensitive information?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can all non-essential services be disabled on your device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Is there a second IP port on the device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can the second IP port on your device be disabled?\",\n        \"answer\": \"No\"\n      }\n    ],\n    \"test_modules\": {\n      \"dns\": {\n        \"enabled\": false\n      },\n      \"connection\": {\n        \"enabled\": true\n      },\n      \"ntp\": {\n        \"enabled\": false\n      },\n      \"nmap\": {\n        \"enabled\": false\n      }\n    }\n  },\n  {\n    \"mac_addr\": \"aa:bb:cc:dd:ee:ff\",\n    \"status\": \"Invalid\",\n    \"manufacturer\": \"Manufacturer X\",\n    \"model\": \"Device X\",\n    \"type\": \"IoT Gateway\",\n    \"technology\": \"Building Automation\",\n    \"test_pack\": \"Device Qualification\",\n    \"additional_info\": [\n      {\n        \"question\": \"What type of device is this?\",\n        \"answer\": \"IoT Gateway\"\n      },\n      {\n        \"question\": \"Please select the technology this device falls into\",\n        \"answer\": \"Building Automation\"\n      },\n      {\n        \"question\": \"Does your device process any sensitive information?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can all non-essential services be disabled on your device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Is there a second IP port on the device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can the second IP port on your device be disabled?\",\n        \"answer\": \"No\"\n      }\n    ],\n    \"test_modules\": {\n      \"connection\": {\"enabled\": true},\n      \"dns\" : {\"enabled\": true},\n      \"ntp\": {\"enabled\": true},\n      \"protocol\": {\"enabled\": false},\n      \"services\": {\"enabled\": true},\n      \"tls\": {\"enabled\": false}\n    }\n  },\n    {\n    \"mac_addr\": \"aa:bb:cc:dd:ee:fa\",\n    \"status\": \"Valid\",\n    \"manufacturer\": \"Manufacturer Y\",\n    \"model\": \"Device y\",\n    \"type\": \"IoT Gateway\",\n    \"technology\": \"Building Automation\",\n    \"test_pack\": \"Device Qualification\",\n    \"additional_info\": [\n      {\n        \"question\": \"What type of device is this?\",\n        \"answer\": \"IoT Gateway\"\n      },\n      {\n        \"question\": \"Please select the technology this device falls into\",\n        \"answer\": \"Building Automation\"\n      },\n      {\n        \"question\": \"Does your device process any sensitive information?\",\n        \"answer\": \"Yes\"\n      },\n      {\n        \"question\": \"Can all non-essential services be disabled on your device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Is there a second IP port on the device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can the second IP port on your device be disabled?\",\n        \"answer\": \"Yes\"\n      }\n    ],\n    \"test_modules\": {\n      \"connection\": {\"enabled\": false},\n      \"dns\" : {\"enabled\": true},\n      \"ntp\": {\"enabled\": false},\n      \"protocol\": {\"enabled\": false},\n      \"services\": {\"enabled\": false},\n      \"tls\": {\"enabled\": false}\n    }\n  }\n]"
+    }
+  ],
   "callbacks": []
 }
