@@ -61,7 +61,9 @@ sudo cp -r testing/device_configs/* local/devices
 
 # Extract tester information from the JSON file
 TESTERS=$(jq -r 'keys[]' $MATRIX)
+suite_start=$SECONDS
 for tester in $TESTERS; do
+  tester_start=$SECONDS
 
   # Log file paths
   testrun_log=$TEST_DIR/${tester}_testrun.log
@@ -125,15 +127,25 @@ for tester in $TESTERS; do
           sleep 10
           sudo kill -9 $TPID
       fi
-  
+
       if [[ ! -d /proc/$TPID ]]; then
           break
       fi
-    
+
       sleep 1
     done
 
-  sudo docker logs $tester | cat 
+  tester_elapsed=$((SECONDS - tester_start))
+  if [[ -z $(fgrep "All tests complete" $testrun_log) ]]; then
+    echo "::error::DIAGNOSTIC: tester=$tester timed out after ${tester_elapsed}s without 'All tests complete'"
+    echo "::group::Last 200 lines of $testrun_log for $tester"
+    tail -200 $testrun_log
+    echo "::endgroup::"
+  else
+    echo "DIAGNOSTIC: tester=$tester completed in ${tester_elapsed}s"
+  fi
+
+  sudo docker logs $tester | cat
   sudo docker kill $tester && sudo docker rm $tester
   echo Stopping container $tester
 
@@ -143,7 +155,10 @@ for tester in $TESTERS; do
 
 done
 
-# Needs to be sudo because this invokes bin/testrun 
+suite_elapsed=$((SECONDS - suite_start))
+echo "DIAGNOSTIC: full tester suite finished in ${suite_elapsed}s"
+
+# Needs to be sudo because this invokes bin/testrun
 sudo venv/bin/python3 -m pytest -v testing/tests/test_tests.py
 
 exit $?
