@@ -55,7 +55,6 @@ for mod_name in MOCKED_MODULES:
 
 # pylint: disable=wrong-import-position
 from common.device import Device  # noqa: E402
-from net_orc.network_event import NetworkEvent  # noqa: E402
 # pylint: enable=wrong-import-position
 
 
