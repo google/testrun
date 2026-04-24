@@ -47,3 +47,5 @@ ISSUE.md
 
 #AI guide
 CLAUDE.md
+.claude/
+github_actions_errors.md

@@ -21,4 +21,3 @@ class NetworkEvent(Enum):
   DEVICE_DISCOVERED = 1
   DEVICE_STABLE = 2
   DHCP_LEASE_ACK = 3
-  ARP_IP_DETECTED = 4

@@ -14,9 +14,8 @@
 
 """Intercepts network traffic between network services and the device
 under test."""
-import ipaddress
 import threading
-from scapy.all import AsyncSniffer, DHCP, ARP, get_if_hwaddr
+from scapy.all import AsyncSniffer, DHCP, get_if_hwaddr
 from scapy.error import Scapy_Exception
 from net_orc.network_event import NetworkEvent
 from common import logger
@@ -89,19 +88,6 @@ class Listener:
     if DHCP in packet and self._get_dhcp_type(packet) == DHCP_ACK:
       self.call_callback(NetworkEvent.DHCP_LEASE_ACK, packet)
 
-    # ARP-based IP detection for static IP devices
-    if ARP in packet:
-      arp_src_mac = packet[ARP].hwsrc
-      arp_src_ip = packet[ARP].psrc
-      # Ignore ARP from our own containers and the device interface,
-      # and reject anything that is not a valid non-zero IPv4 address.
-      if (not arp_src_mac.startswith(CONTAINER_MAC_PREFIX)
-          and arp_src_mac != self._device_intf_mac
-          and arp_src_ip != '0.0.0.0'
-          and self._is_valid_ipv4(arp_src_ip)):
-        self.call_callback(NetworkEvent.ARP_IP_DETECTED,
-                           arp_src_mac, arp_src_ip)
-
     # New device discovered callback
     if not packet.src is None and packet.src not in self._discovered_devices:
       # Ignore packets originating from our containers
@@ -113,11 +99,3 @@ class Listener:
 
   def _get_dhcp_type(self, packet):
     return packet[DHCP].options[0][1]
-
-  def _is_valid_ipv4(self, addr):
-    """Return True if addr is a valid IPv4 address string."""
-    try:
-      ipaddress.IPv4Address(addr)
-      return True
-    except ValueError:
-      return False

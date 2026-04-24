@@ -17,7 +17,6 @@
 These tests verify:
 1. Device config loading with and without ip_addr
 2. Device config export (round-trip) preserves ip_addr
-3. Network event enum includes ARP_IP_DETECTED
 """
 
 import ipaddress
@@ -122,30 +121,13 @@ class TestDeviceStaticIP:
     assert d['mac_addr'] == 'aa:bb:cc:dd:ee:ff'
 
   def test_ip_addr_settable_at_runtime(self):
-    """ip_addr should be settable after construction (DHCP/ARP flow)."""
+    """ip_addr should be settable after construction (DHCP flow)."""
     device = Device(mac_addr='aa:bb:cc:dd:ee:ff',
                     manufacturer='Test',
                     model='TestModel')
     assert device.ip_addr is None
     device.ip_addr = '10.10.10.200'
     assert device.ip_addr == '10.10.10.200'
-
-
-# ---- Network Event Tests ----
-
-class TestNetworkEvent:
-  """Tests for network event enum."""
-
-  def test_arp_ip_detected_event_exists(self):
-    """ARP_IP_DETECTED event should exist in the enum."""
-    assert hasattr(NetworkEvent, 'ARP_IP_DETECTED')
-    assert NetworkEvent.ARP_IP_DETECTED.value == 4
-
-  def test_existing_events_unchanged(self):
-    """Original events should not be affected."""
-    assert NetworkEvent.DEVICE_DISCOVERED.value == 1
-    assert NetworkEvent.DEVICE_STABLE.value == 2
-    assert NetworkEvent.DHCP_LEASE_ACK.value == 3
 
 
 # ---- Device Config Loading Tests ----
@@ -235,10 +217,7 @@ class TestDeviceConfigLoading:
 
 class TestStaticIPValidation:
   """Tests mirroring the ipaddress.IPv4Address validation used by the
-  config loader (testrun.py) and the ARP listener (listener.py).
-
-  These verify the validation predicate itself — the same predicate
-  is applied in both code paths."""
+  config loader (testrun.py)."""
 
   def test_valid_ipv4_accepted(self):
     """A well-formed IPv4 address should validate."""

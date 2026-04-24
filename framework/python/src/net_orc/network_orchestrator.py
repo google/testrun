@@ -332,21 +332,6 @@ class NetworkOrchestrator:
     # TODO: Check if device is None
     device.ip_addr = packet[BOOTP].yiaddr
 
-  def _arp_ip_detected(self, mac_addr, ip_addr):
-    """Handle ARP-based IP detection for static IP devices."""
-    device = self._session.get_device(mac_addr=mac_addr)
-
-    # Ignore devices that are not registered
-    if device is None:
-      return
-
-    # Don't override an already-known IP
-    if device.ip_addr is not None:
-      return
-
-    LOGGER.info(f'Detected IP {ip_addr} for device {mac_addr} via ARP')
-    device.ip_addr = ip_addr
-
   def _start_device_monitor(self, device):
     """Start a timer until the steady state has been reached and
         callback the steady state method for this device."""
@@ -488,8 +473,6 @@ class NetworkOrchestrator:
                                           [NetworkEvent.DEVICE_DISCOVERED])
     self.get_listener().register_callback(self._dhcp_lease_ack,
                                           [NetworkEvent.DHCP_LEASE_ACK])
-    self.get_listener().register_callback(self._arp_ip_detected,
-                                          [NetworkEvent.ARP_IP_DETECTED])
 
   def load_network_modules(self):
     """Load network modules from module_config.json."""
