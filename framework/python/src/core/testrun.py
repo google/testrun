@@ -16,6 +16,7 @@ This file provides the integration between all of the
 Testrun components, such as net_orc, test_orc and test_ui.
 """
 import docker
+import ipaddress
 import json
 import os
 import shutil
@@ -51,6 +52,7 @@ DEVICE_TYPE_KEY = 'type'
 DEVICE_TECHNOLOGY_KEY = 'technology'
 DEVICE_TEST_PACK_KEY = 'test_pack'
 DEVICE_ADDITIONAL_INFO_KEY = 'additional_info'
+DEVICE_IP_ADDR_KEY = 'ip_addr'
 
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
@@ -211,13 +213,25 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
         folder_url = os.path.join(device_dir, device_folder)
 
+        # Load optional static IP address
+        static_ip = device_config_json.get(DEVICE_IP_ADDR_KEY)
+        if static_ip is not None:
+          try:
+            ipaddress.IPv4Address(static_ip)
+          except ValueError:
+            LOGGER.error(
+                f'Invalid ip_addr "{static_ip}" in config for {mac_addr}; '
+                'ignoring')
+            static_ip = None
+
         device = Device(folder_url=folder_url,
                         manufacturer=device_manufacturer,
                         model=device_model,
                         mac_addr=mac_addr,
                         test_modules=test_modules,
                         max_device_reports=max_device_reports,
-                        device_folder=device_folder)
+                        device_folder=device_folder,
+                        ip_addr=static_ip)
 
         # Load in the additional fields
         if DEVICE_TYPE_KEY in device_config_json:

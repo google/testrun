@@ -193,51 +193,84 @@ class NetworkOrchestrator:
     self._get_port_stats(pre_monitor=True)
     self._monitor_in_progress = True
 
-    LOGGER.debug(
-        f'Discovered device {mac_addr}. Waiting for device to obtain IP')
-
     if device is None:
       LOGGER.debug(f'Device with MAC address {mac_addr} does not exist' +
                    ' in device repository')
       # Ignore device if not registered
       return
 
-    # Cleanup any old test files
-    test_dir = os.path.join(RUNTIME_DIR, TEST_DIR)
-    device_tests = os.listdir(test_dir)
-    for device_test in device_tests:
-      device_test_path = os.path.join(RUNTIME_DIR, TEST_DIR, device_test)
-      if os.path.isdir(device_test_path):
-        shutil.rmtree(device_test_path, ignore_errors=True)
+    # Check if device already has a static IP configured
+    if device.ip_addr is not None:
+      LOGGER.info(
+          f'Device {mac_addr} has pre-configured static IP: {device.ip_addr}. '
+          'Skipping DHCP wait.')
+    else:
+      LOGGER.debug(
+          f'Discovered device {mac_addr}. Waiting for device to obtain IP')
 
+      # Cleanup any old test files
+      test_dir = os.path.join(RUNTIME_DIR, TEST_DIR)
+      device_tests = os.listdir(test_dir)
+      for device_test in device_tests:
+        device_test_path = os.path.join(RUNTIME_DIR, TEST_DIR, device_test)
+        if os.path.isdir(device_test_path):
+          shutil.rmtree(device_test_path, ignore_errors=True)
+
+      device_runtime_dir = os.path.join(RUNTIME_DIR, TEST_DIR,
+                                        mac_addr.replace(':', ''))
+      os.makedirs(device_runtime_dir, exist_ok=True)
+
+      util.run_command(f'chown -R {util.get_host_user()} {device_runtime_dir}')
+
+      packet_capture = sniff(iface=self._session.get_device_interface(),
+                             timeout=self._session.get_startup_timeout(),
+                             stop_filter=self._device_has_ip)
+      wrpcap(os.path.join(device_runtime_dir, 'startup.pcap'), packet_capture)
+
+      # Copy the device config file to the runtime directory
+      runtime_device_conf = os.path.join(device_runtime_dir,
+                                         'device_config.json')
+      with open(runtime_device_conf, 'w', encoding='utf-8') as f:
+        json.dump(self._session.get_target_device().to_config_json(),
+                  f, indent=2)
+
+      self._get_conn_stats()
+
+      if device.ip_addr is None:
+        LOGGER.info(
+            f'Timed out whilst waiting for {mac_addr} to obtain an IP address')
+        self._session.set_status(TestrunStatus.CANCELLED)
+        return
+
+    # At this point device.ip_addr is set (either from config or DHCP/ARP)
+
+    # Setup runtime directory for static IP devices (may not have been done)
     device_runtime_dir = os.path.join(RUNTIME_DIR, TEST_DIR,
                                       mac_addr.replace(':', ''))
-    os.makedirs(device_runtime_dir, exist_ok=True)
+    if not os.path.exists(device_runtime_dir):
+      # Cleanup any old test files
+      test_dir = os.path.join(RUNTIME_DIR, TEST_DIR)
+      if os.path.exists(test_dir):
+        device_tests = os.listdir(test_dir)
+        for device_test in device_tests:
+          device_test_path = os.path.join(RUNTIME_DIR, TEST_DIR, device_test)
+          if os.path.isdir(device_test_path):
+            shutil.rmtree(device_test_path, ignore_errors=True)
+      os.makedirs(device_runtime_dir, exist_ok=True)
+      util.run_command(f'chown -R {util.get_host_user()} {device_runtime_dir}')
 
-    util.run_command(f'chown -R {util.get_host_user()} {device_runtime_dir}')
+      # Copy the device config file to the runtime directory
+      runtime_device_conf = os.path.join(device_runtime_dir,
+                                         'device_config.json')
+      with open(runtime_device_conf, 'w', encoding='utf-8') as f:
+        json.dump(self._session.get_target_device().to_config_json(),
+                  f, indent=2)
 
-    packet_capture = sniff(iface=self._session.get_device_interface(),
-                           timeout=self._session.get_startup_timeout(),
-                           stop_filter=self._device_has_ip)
-    wrpcap(os.path.join(device_runtime_dir, 'startup.pcap'), packet_capture)
+      self._get_conn_stats()
 
-    # Copy the device config file to the runtime directory
-    runtime_device_conf = os.path.join(device_runtime_dir, 'device_config.json')
-    with open(runtime_device_conf, 'w', encoding='utf-8') as f:
-      json.dump(self._session.get_target_device().to_config_json(), f, indent=2)
-
-    self._get_conn_stats()
-
-    if device.ip_addr is None:
-      LOGGER.info(
-          f'Timed out whilst waiting for {mac_addr} to obtain an IP address')
-      self._session.set_status(TestrunStatus.CANCELLED)
-      return
     LOGGER.info(
-        f'Device with mac addr {device.mac_addr} has obtained IP address '
+        f'Device with mac addr {device.mac_addr} has IP address '
         f'{device.ip_addr}')
-    #self._ovs.add_arp_inspection_filter(ip_address=device.ip_addr,
-    #  mac_address=device.mac_addr)
 
     # Don't monitor devices when in network only mode
     if 'net_only' not in self._session.get_runtime_params():
@@ -292,8 +325,27 @@ class NetworkOrchestrator:
     if device is None:
       return
 
+    # Don't override a pre-configured static IP
+    if device.ip_addr is not None:
+      return
+
     # TODO: Check if device is None
     device.ip_addr = packet[BOOTP].yiaddr
+
+  def _arp_ip_detected(self, mac_addr, ip_addr):
+    """Handle ARP-based IP detection for static IP devices."""
+    device = self._session.get_device(mac_addr=mac_addr)
+
+    # Ignore devices that are not registered
+    if device is None:
+      return
+
+    # Don't override an already-known IP
+    if device.ip_addr is not None:
+      return
+
+    LOGGER.info(f'Detected IP {ip_addr} for device {mac_addr} via ARP')
+    device.ip_addr = ip_addr
 
   def _start_device_monitor(self, device):
     """Start a timer until the steady state has been reached and
@@ -436,6 +488,8 @@ class NetworkOrchestrator:
                                           [NetworkEvent.DEVICE_DISCOVERED])
     self.get_listener().register_callback(self._dhcp_lease_ack,
                                           [NetworkEvent.DHCP_LEASE_ACK])
+    self.get_listener().register_callback(self._arp_ip_detected,
+                                          [NetworkEvent.ARP_IP_DETECTED])
 
   def load_network_modules(self):
     """Load network modules from module_config.json."""

@@ -38,3 +38,12 @@ test_vm/*.csr
 test_vm/*.pem
 test_vm/*.key
 test_vm/*.crt
+
+# Contributor Reference
+CONTRIBUTOR_REFERENCE.md
+
+#Issues
+ISSUE.md
+
+#AI guide
+CLAUDE.md
