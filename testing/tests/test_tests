@@ -137,12 +137,9 @@ for tester in $TESTERS; do
 
   tester_elapsed=$((SECONDS - tester_start))
   if [[ -z $(fgrep "All tests complete" $testrun_log) ]]; then
-    echo "::error::DIAGNOSTIC: tester=$tester timed out after ${tester_elapsed}s without 'All tests complete'"
-    echo "::group::Last 200 lines of $testrun_log for $tester"
-    tail -200 $testrun_log
-    echo "::endgroup::"
+    echo "::error::tester=$tester timed out after ${tester_elapsed}s without 'All tests complete'"
   else
-    echo "DIAGNOSTIC: tester=$tester completed in ${tester_elapsed}s"
+    echo "tester=$tester completed in ${tester_elapsed}s"
   fi
 
   sudo docker logs $tester | cat
@@ -156,7 +153,7 @@ for tester in $TESTERS; do
 done
 
 suite_elapsed=$((SECONDS - suite_start))
-echo "DIAGNOSTIC: full tester suite finished in ${suite_elapsed}s"
+echo "full tester suite finished in ${suite_elapsed}s"
 
 # Needs to be sudo because this invokes bin/testrun
 sudo venv/bin/python3 -m pytest -v testing/tests/test_tests.py
