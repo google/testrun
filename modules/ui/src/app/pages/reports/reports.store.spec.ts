@@ -181,7 +181,7 @@ describe('ReportsStore', () => {
         store.overrideSelector(selectReports, [...HISTORY]);
         store.refreshState();
 
-        reportsStore.deleteReport('report/1234');
+        reportsStore.deleteReport('/report/1234');
 
         expect(store.dispatch).toHaveBeenCalledWith(
           setReports({ reports: HISTORY_AFTER_REMOVE })
@@ -194,7 +194,7 @@ describe('ReportsStore', () => {
         store.overrideSelector(selectReports, [...HISTORY_AFTER_REMOVE]);
         store.refreshState();
 
-        reportsStore.deleteReport('report/12345');
+        reportsStore.deleteReport('/report/12345');
 
         expect(store.dispatch).toHaveBeenCalledWith(
           setReports({ reports: [HISTORY_AFTER_REMOVE[0]] })

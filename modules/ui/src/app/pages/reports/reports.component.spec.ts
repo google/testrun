@@ -296,7 +296,7 @@ describe('ReportsComponent', () => {
     it('#removeDevice should call delete report', () => {
       const data = HISTORY[0];
       component.removeReport(data);
-      expect(mockReportsStore.deleteReport).toHaveBeenCalledWith('report/123');
+      expect(mockReportsStore.deleteReport).toHaveBeenCalledWith('/report/123');
     });
   });
 

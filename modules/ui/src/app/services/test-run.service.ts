@@ -244,11 +244,11 @@ export class TestRunService {
   }
 
   getReportLink(url: string): string {
-    return `${API_URL}/${url}`;
+    return `${url}`;
   }
 
   deleteReport(url: string): Observable<boolean> {
-    return this.http.delete<boolean>(`${API_URL}/${url}`).pipe(
+    return this.http.delete<boolean>(`${url}`).pipe(
       catchError(() => of(false)),
       map(res => !!res)
     );

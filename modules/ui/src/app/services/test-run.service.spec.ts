@@ -232,7 +232,7 @@ describe('TestRunService', () => {
         {
           status: 'Complete',
           device: device,
-          report: 'report/123',
+          report: '/report/123',
           started: '2023-06-22T10:11:00.123Z',
           finished: '2023-06-22T10:17:00.123Z',
         },
@@ -462,7 +462,7 @@ describe('TestRunService', () => {
   it('deleteReport should have necessary request data', () => {
     const apiUrl = 'http://localhost:8000/report';
 
-    service.deleteReport('report').subscribe(res => {
+    service.deleteReport('http://localhost:8000/report').subscribe(res => {
       expect(res).toEqual(true);
     });
 
@@ -474,7 +474,7 @@ describe('TestRunService', () => {
   it('deleteReport should return false when error happens', () => {
     const apiUrl = 'http://localhost:8000/report';
 
-    service.deleteReport('report').subscribe(res => {
+    service.deleteReport('http://localhost:8000/report').subscribe(res => {
       expect(res).toEqual(false);
     });
 
