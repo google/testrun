@@ -545,7 +545,8 @@ class TLSUtil():
       LOGGER.info('Certificate validated: ' + str(cert_valid))
       return cert_valid, details
     else:
-      final_msg = error_reason or f"No TLS {tls_version} server functionality found"
+      final_msg = error_reason \
+                  or f'No TLS {tls_version} server functionality found'
       LOGGER.info(final_msg)
       return None, [final_msg]
 
