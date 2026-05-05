@@ -148,22 +148,27 @@ class TLSUtil():
           cert_pem = ssl.DER_cert_to_PEM_cert(secure_sock.getpeercert(True))
 
     except ConnectionRefusedError:
-      LOGGER.info(f'Connection to {host}:{port} was refused.')
-      return None
+      error_msg = f'Connection to {host}:{port} was refused.'
+      LOGGER.info(error_msg)
+      return None, error_msg
     except socket.gaierror:
-      LOGGER.info(f'Failed to resolve the hostname {host}.')
-      return None
+      error_msg = f'Failed to resolve the hostname {host}.'
+      LOGGER.info(error_msg)
+      return None, error_msg
     except ssl.SSLError as e:
-      LOGGER.info(f'SSL error occurred: {e}')
-      return None
+      error_msg = f'SSL error occurred: {e}'
+      LOGGER.info(error_msg)
+      return None, error_msg
     except socket.timeout:
-      LOGGER.info('Socket timeout error')
-      return None
+      error_msg = 'Socket timeout error'
+      LOGGER.info(error_msg)
+      return None, error_msg
     except OSError as e:
-      LOGGER.error(e)
-      return None
+      error_msg = e
+      LOGGER.info(error_msg)
+      return None, error_msg
 
-    return cert_pem
+    return cert_pem, None
 
   def get_public_key(self, public_cert):
     # Extract and return the public key from the certificate
@@ -336,7 +341,7 @@ class TLSUtil():
     # within the valid CA root certs stored on the server
     LOGGER.info(
         'Checking for valid signature from authorized Certificate Authorities')
-    public_cert = self.get_public_certificate(host=host,
+    public_cert, _ = self.get_public_certificate(host=host,
                                               port=port,
                                               validate_cert=True,
                                               tls_version='1.2')
@@ -505,7 +510,7 @@ class TLSUtil():
                           tls_version: str,
                           port: int=443
                           ) -> tuple[bool| None, list| str]:
-    cert_pem = self.get_public_certificate(host=host,
+    cert_pem, error_reason = self.get_public_certificate(host=host,
                                            port=port,
                                            validate_cert=False,
                                            tls_version=tls_version)
@@ -540,8 +545,9 @@ class TLSUtil():
       LOGGER.info('Certificate validated: ' + str(cert_valid))
       return cert_valid, details
     else:
-      LOGGER.info('Failed to resolve public certificate')
-      return None, ['Failed to resolve public certificate']
+      final_msg = error_reason or f"No TLS {tls_version} server functionality found"
+      LOGGER.info(final_msg)
+      return None, [final_msg]
 
   def write_cert_to_file(self, cert_name, cert):
     try:
