@@ -35,7 +35,6 @@ type DialogData = {
 
 @Component({
   selector: 'app-consent-dialog',
-
   imports: [
     MatDialogModule,
     MatButtonModule,
