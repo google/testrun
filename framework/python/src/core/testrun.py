@@ -285,15 +285,32 @@ class Testrun:  # pylint: disable=too-few-public-methods
           device.additional_info = device_config_json.get(
               DEVICE_ADDITIONAL_INFO_KEY)
 
-        if None in [device.type, device.technology, device.test_pack]:
-          LOGGER.warning(
-              'Device is outdated and requires further configuration')
+        with open('device_format.json', 'r') as f:
+          format_data = json.load(f)
+
+        required_questions = [
+            item['question'] for item in format_data
+            if item.get('validation', {}).get('required') is True
+        ]
+
+        current_answers = device.additional_info if device.additional_info else []
+        answered_questions = [entry.get('question') for entry in current_answers]
+
+        missing_answers = [q for q in required_questions if q not in answered_questions]
+
+        if (None in [device.type, device.technology, device.test_pack] or
+            len(missing_answers) > 0):
+          if (missing_answers):
+            LOGGER.warning(
+                f'Device is missing required additional info: {missing_answers}'
+            )
+          else:
+            LOGGER.warning(
+                'Device is outdated and requires further configuration')
           device.status = 'Invalid'
 
         if not device.get_reports():
           self._copy_existing_reports(device)
-
-        # self._load_test_reports(device)
 
         # Add device to device repository
         self.get_session().add_device(device)
