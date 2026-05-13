@@ -405,7 +405,7 @@
   },
   {
     "id": 7,
-    "question": "Does the device UI web dashboard have a mechanism to enforce the change of default passwords, SSH, Hardcoded Accounts Credentials and factory-default API keys upon first use?"
+    "question": "Does the device UI web dashboard have a mechanism to enforce the change of default passwords, SSH, Hardcoded Accounts Credentials and factory-default API keys upon first use?",
     "validation": { "required": true },
     "type": "select",
     "options": [
@@ -456,5 +456,4 @@
       }
     ]
   }
-
 ]
