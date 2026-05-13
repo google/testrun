@@ -955,6 +955,43 @@ class TLSUtil():
           connection detected to {ip}\n'''
     return tls_client_valid, tls_client_details
 
+  def detect_tls_client_versions(self,
+                                 client_mac: str,
+                                 capture_files: list[str],
+                                 version_list: list[str] | None = None
+                                 ) -> dict:
+    """Detect all TLS client versions from packet captures."""
+    if version_list is None:
+      version_list = ['1.0', '1.1', '1.2', '1.3']
+
+    version_results = {}
+    for tls_version in version_list:
+      tls_packets = self.get_tls_packets(capture_files, client_mac,
+                                         tls_version)
+      tls_present = False
+      details = []
+      unique_packets = self._get_unique_packets(tls_packets)
+      for packet in unique_packets:
+        dst_ip = packet['dst_ip']
+        details.append(f'TLS {tls_version} packet detected to IP: {dst_ip}')
+      if tls_packets:
+        tls_present = True
+      version_results[tls_version] = {
+        'present': tls_present,
+        'details': details
+      }
+    return version_results
+
+  def _get_unique_packets(self, packets: list[dict]) -> list[dict]:
+    unique_packets = []
+    seen_dst_ips = set()
+    for packet in packets:
+      dst_ip = packet['dst_ip']
+      if dst_ip not in seen_dst_ips:
+        unique_packets.append(packet)
+        seen_dst_ips.add(dst_ip)
+    return unique_packets
+
   def is_ecdh_and_ecdsa(self, ciphers):
     ecdh = False
     ecdsa = False
