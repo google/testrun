@@ -175,7 +175,6 @@ class Testrun:  # pylint: disable=too-few-public-methods
     # self._load_devices(device_dir=RESOURCE_DEVICES_DIR)
     return self.get_session().get_device_repository()
 
-
   def _copy_existing_reports(self, device: Device):
     old_reports = self._load_test_reports(device)
     device.clear_reports()
@@ -204,15 +203,14 @@ class Testrun:  # pylint: disable=too-few-public-methods
       self.save_device(device)
       try:
         shutil.rmtree(
-          OLD_REPORTS_FOLDER.format(device_folder=device.device_folder)
+            OLD_REPORTS_FOLDER.format(device_folder=device.device_folder)
         )
       except FileNotFoundError:
         LOGGER.error(
-          f'Old reports folder not found for device {device.model}'
+            f'Old reports folder not found for device {device.model}'
         )
     else:
       LOGGER.info('No existing reports to copy')
-
 
   def _load_devices(self, device_dir):
     LOGGER.debug('Loading devices from ' + device_dir)
@@ -285,7 +283,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
           device.additional_info = device_config_json.get(
               DEVICE_ADDITIONAL_INFO_KEY)
 
-        with open('device_format.json', 'r') as f:
+        with open('device_format.json', 'r', encoding='utf-8') as f:
           format_data = json.load(f)
 
         required_questions = [
@@ -293,10 +291,13 @@ class Testrun:  # pylint: disable=too-few-public-methods
             if item.get('validation', {}).get('required') is True
         ]
 
-        current_answers = device.additional_info if device.additional_info else []
-        answered_questions = [entry.get('question') for entry in current_answers]
+        current_answers = \
+          device.additional_info if device.additional_info else []
+        answered_questions = \
+          [entry.get('question') for entry in current_answers]
 
-        missing_answers = [q for q in required_questions if q not in answered_questions]
+        missing_answers = [q for q in required_questions if
+                           q not in answered_questions]
 
         if (None in [device.type, device.technology, device.test_pack] or
             len(missing_answers) > 0):
