@@ -472,12 +472,16 @@ def test_start_testrun_success(empty_devices_dir, add_devices, testrun): # pylin
   # Assign device modules
   test_modules = device["test_modules"]
 
+  # Assign additional info
+  additional_info = device["additional_info"]
+
   # Payload with device details
   payload = {
     "device": {
       "mac_addr": mac_addr,
       "firmware": "test",
-      "test_modules": test_modules
+      "test_modules": test_modules,
+      "additional_info": additional_info
     }
   }
 

@@ -52,7 +52,7 @@ DEVICE_TECHNOLOGY_KEY = 'technology'
 DEVICE_TEST_PACK_KEY = 'test_pack'
 DEVICE_ADDITIONAL_INFO_KEY = 'additional_info'
 DEVICE_REPORT_NAME_FORMAT = '{mac_addr}_{timestamp}'
-DEVICE_QUESTIONS_FILE_NAME = "device_profile.json"
+DEVICE_QUESTIONS_FILE_NAME = 'device_profile.json'
 
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
