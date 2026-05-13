@@ -284,7 +284,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
           device.additional_info = device_config_json.get(
               DEVICE_ADDITIONAL_INFO_KEY)
 
-        format_file_path = os.path.join(self._testrun.get_root_dir(),
+        format_file_path = os.path.join(self.get_root_dir(),
                                         RESOURCE_DEVICES_DIR,
                                         DEVICE_QUESTIONS_FILE_NAME)
         with open(format_file_path, 'r', encoding='utf-8') as f:
