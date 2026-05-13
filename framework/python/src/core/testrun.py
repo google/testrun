@@ -301,7 +301,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
         if (None in [device.type, device.technology, device.test_pack] or
             len(missing_answers) > 0):
-          if (missing_answers):
+          if missing_answers:
             LOGGER.warning(
                 f'Device is missing required additional info: {missing_answers}'
             )
