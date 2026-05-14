@@ -270,8 +270,6 @@
               fi
               sleep 1
           done
-          # TLS 1.0
-          openssl s_client -connect tls-v1-0.badssl.com:1010 -tls1 -bind "$IP"
           # TLS 1.2
           openssl s_client -connect tls-v1-2.badssl.com:1012 -tls1_2 -bind "$IP"
           # TLS 1.3
