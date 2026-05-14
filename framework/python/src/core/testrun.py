@@ -52,6 +52,7 @@ DEVICE_TECHNOLOGY_KEY = 'technology'
 DEVICE_TEST_PACK_KEY = 'test_pack'
 DEVICE_ADDITIONAL_INFO_KEY = 'additional_info'
 DEVICE_REPORT_NAME_FORMAT = '{mac_addr}_{timestamp}'
+DEVICE_QUESTIONS_FILE_NAME = 'device_profile.json'
 
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
@@ -175,7 +176,6 @@ class Testrun:  # pylint: disable=too-few-public-methods
     # self._load_devices(device_dir=RESOURCE_DEVICES_DIR)
     return self.get_session().get_device_repository()
 
-
   def _copy_existing_reports(self, device: Device):
     old_reports = self._load_test_reports(device)
     device.clear_reports()
@@ -204,15 +204,14 @@ class Testrun:  # pylint: disable=too-few-public-methods
       self.save_device(device)
       try:
         shutil.rmtree(
-          OLD_REPORTS_FOLDER.format(device_folder=device.device_folder)
+            OLD_REPORTS_FOLDER.format(device_folder=device.device_folder)
         )
       except FileNotFoundError:
         LOGGER.error(
-          f'Old reports folder not found for device {device.model}'
+            f'Old reports folder not found for device {device.model}'
         )
     else:
       LOGGER.info('No existing reports to copy')
-
 
   def _load_devices(self, device_dir):
     LOGGER.debug('Loading devices from ' + device_dir)
@@ -285,15 +284,41 @@ class Testrun:  # pylint: disable=too-few-public-methods
           device.additional_info = device_config_json.get(
               DEVICE_ADDITIONAL_INFO_KEY)
 
-        if None in [device.type, device.technology, device.test_pack]:
-          LOGGER.warning(
-              'Device is outdated and requires further configuration')
+        format_file_path = os.path.join(self.get_root_dir(),
+                                        RESOURCE_DEVICES_DIR,
+                                        DEVICE_QUESTIONS_FILE_NAME)
+        with open(format_file_path, 'r', encoding='utf-8') as f:
+          format_data = json.load(f)
+
+        required_questions = [
+            item['question'] for item in format_data
+            if item.get('validation', {}).get('required') is True
+        ]
+
+        current_answers = \
+          device.additional_info if device.additional_info else []
+        answered_questions = \
+          [entry.get('question') for entry in current_answers]
+
+        missing_answers = [q for q in required_questions if
+                           q not in answered_questions]
+
+        if (None in [device.type, device.technology, device.test_pack] or
+            len(missing_answers) > 0):
+          if missing_answers:
+            LOGGER.warning(
+                f'Device : {device}'
+            )
+            LOGGER.warning(
+                f'Device is missing required additional info: {missing_answers}'
+            )
+          else:
+            LOGGER.warning(
+                'Device is outdated and requires further configuration')
           device.status = 'Invalid'
 
         if not device.get_reports():
           self._copy_existing_reports(device)
-
-        # self._load_test_reports(device)
 
         # Add device to device repository
         self.get_session().add_device(device)
