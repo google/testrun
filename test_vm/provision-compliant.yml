@@ -270,11 +270,10 @@
               fi
               sleep 1
           done
-          # TLS 1.2
-          openssl s_client -connect tls-v1-2.badssl.com:1012 -tls1_2 -bind "$IP"
-          # TLS 1.3
-          openssl s_client -connect tls13.badssl.com:443 -tls1_3 -bind "$IP"
-
+          # TLS 1.2 (using OpenSSL 3.1.4)
+          timeout 3 openssl s_client -connect tls-v1-2.badssl.com:1012 -tls1_2 -bind "$IP" -quiet </dev/null 2>/dev/null || true
+          # TLS 1.3 (using OpenSSL 3.1.4)
+          timeout 3 openssl s_client -connect google.com:443 -tls1_3 -bind "$IP" -quiet </dev/null 2>/dev/null || true
     - name: Create systemd service for TLS emulation
       ansible.builtin.copy:
         dest: /etc/systemd/system/tls-emulate.service
