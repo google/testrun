@@ -607,9 +607,9 @@ class TLSModuleTest(unittest.TestCase):
 
     # Run the client test
     test_results = TLS_UTIL.validate_tls_client(client_mac='e4:5f:01:5f:92:9c',
-                                                tls_version='1.2',
+                                                tls_version='1.3',
                                                 capture_files=[capture_file])
-    print(str(test_results))
+    print('results', str(test_results))
     self.assertTrue(test_results[0])
 
   def outbound_connections_test(self):
