@@ -26,7 +26,7 @@ if [[ $TLS_VERSION == '1.0' ]]; then
 elif [[ $TLS_VERSION == '1.1' ]]; then
   TSHARK_FILTER="$TSHARK_FILTER and ssl.handshake.version==0x0302"
 elif [[ $TLS_VERSION == '1.2' || -z $TLS_VERSION ]]; then
-  TSHARK_FILTER="$TSHARK_FILTER and ssl.handshake.version==0x0303"
+  TSHARK_FILTER="$TSHARK_FILTER and ssl.handshake.version==0x0303 and !tls.handshake.extensions.supported_version==0x0304"
 elif [[ $TLS_VERSION == '1.3' ]]; then
   TSHARK_FILTER="$TSHARK_FILTER and (ssl.handshake.version==0x0304 or tls.handshake.extensions.supported_version==0x0304)"
 else
