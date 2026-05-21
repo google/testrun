@@ -13,9 +13,9 @@ termcolor==2.4.0
 urllib3==2.6.3
 
 # User defined packages
-cryptography==46.0.5
+cryptography==46.0.6
 pyOpenSSL==25.3.0
 lxml==5.1.0 # Requirement of pyshark but if upgraded automatically above 5.1 will cause a
-requests==2.32.5
+requests==2.33.0
 python-nmap==0.7.1
-requests==2.32.5
+
