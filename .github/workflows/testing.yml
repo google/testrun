@@ -147,7 +147,10 @@ jobs:
         cache-dependency-path: './modules/ui/package-lock.json'
 
     - name: Install Chromium Browser
-      run: sudo apt install chromium-browser
+      run: |
+        sudo add-apt-repository ppa:xtradeb/apps -y
+        sudo apt-get update
+        sudo apt-get install -y chromium
 
     - name: Install dependencies
       run: npm ci
