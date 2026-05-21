@@ -1,5 +1,5 @@
 # Requirements for the core module
-requests==2.32.5
+requests==2.33.0
 
 # Requirements for the net_orc module
 docker==7.1.0
@@ -28,7 +28,7 @@ responses==0.25.3
 markdown==3.5.2
 
 # Requirements for the session
-cryptography==46.0.5
+cryptography==46.0.6
 pytz==2024.1
 
 # Requirements for the risk profile
@@ -43,3 +43,4 @@ APScheduler==3.10.4
 # Requirements for reports generation
 Jinja2==3.1.6
 beautifulsoup4==4.12.3
+html5lib==1.1
