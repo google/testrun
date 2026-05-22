@@ -147,7 +147,10 @@ jobs:
         cache-dependency-path: './modules/ui/package-lock.json'
 
     - name: Install Chromium Browser
-      run: sudo apt install chromium-browser
+      run: |
+        sudo add-apt-repository ppa:xtradeb/apps -y
+        sudo apt-get update
+        sudo apt-get install -y chromium
 
     - name: Install dependencies
       run: npm ci
@@ -155,7 +158,9 @@ jobs:
 
     - name: Run tests
       run: |
-        export CHROME_BIN=/usr/bin/chromium-browser
+        sudo sysctl -w kernel.unprivileged_userns_clone=1
+        export CHROMIUM_FLAGS="--no-sandbox --disable-setuid-sandbox"
+        export CHROME_BIN=/usr/bin/chromium
         CI=true npm run test-ci
       env:
         CI: true
