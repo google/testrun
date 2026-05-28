@@ -419,8 +419,6 @@ class Testrun:  # pylint: disable=too-few-public-methods
     with open(config_file_path, 'w+', encoding='utf-8') as config_file:
       config_file.writelines(json.dumps(device.to_config_json(), indent=4))
 
-    # Reload device reports
-    self._load_test_reports(device)
 
     return device.to_config_json()
 
