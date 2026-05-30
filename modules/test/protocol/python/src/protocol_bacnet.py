@@ -14,6 +14,7 @@
 """Module to run all the BACnet related methods for testing"""
 
 import BAC0
+from bacpypes3.pdu import Address
 from dataclasses import dataclass
 import logging
 import json
@@ -64,12 +65,13 @@ class BACnet():
     self.device_hw_addr = device_hw_addr
     self._bin_dir = bin_dir
 
-  async def discover(self, local_ip):
+  async def discover(self, local_ip, device_ip):
     LOGGER.info('Performing BACnet discovery...')
-    self.bacnet = BAC0.lite(local_ip)
+    self.devices = []
+    self.bacnet = BAC0.connect(local_ip)
     LOGGER.info('Local BACnet object: ' + str(self.bacnet))
     try:
-      await self.bacnet._discover(global_broadcast=True) # pylint: disable=protected-access
+      await self.bacnet._discover(global_broadcast=True, timeout=10) # pylint: disable=protected-access
     except Exception as e: # pylint: disable=W0718
       LOGGER.error(e)
     LOGGER.info('BACnet discovery complete')
@@ -77,16 +79,47 @@ class BACnet():
       bac0_log = f.read()
     LOGGER.info('BAC0 Log:\n' + bac0_log)
     # Extract discovered devices as a BACnetDevice.
-    self.devices = []
+    LOGGER.info('discoveredDevices: ' + str(self.bacnet.discoveredDevices))
     if self.bacnet.discoveredDevices is not None:
       for device_info in self.bacnet.discoveredDevices.values():
-        self.devices.append(
-          BACnetDevice(
+        device = BACnetDevice(
               device_id=str(device_info['object_instance'][1]),
               ip=str(device_info['address'])
             )
-          )
+        LOGGER.info(f'Discovered BACnet device: {device}')
+        self.devices.append(device)
     LOGGER.info('BACnet devices found: ' + str(len(self.devices)))
+    self.bacnet.discoveredDevices = {}
+    try:
+      await self.bacnet._discover(timeout=10) # pylint: disable=protected-access
+    except Exception as e: # pylint: disable=W0718
+      LOGGER.error(e)
+    LOGGER.info('BACnet discovery complete')
+    with open(BAC0_LOG, 'r', encoding='utf-8') as f:
+      bac0_log = f.read()
+    LOGGER.info('BAC0 Log:\n' + bac0_log)
+    LOGGER.info('discoveredDevices: ' + str(self.bacnet.discoveredDevices))
+    if self.bacnet.discoveredDevices is not None:
+      for device_info in self.bacnet.discoveredDevices.values():
+        device = BACnetDevice(
+              device_id=str(device_info['object_instance'][1]),
+              ip=str(device_info['address'])
+            )
+        LOGGER.info(f'Discovered BACnet device: {device}')
+    res = await self.bacnet.this_application.app.who_is(
+        low_limit=0,
+        high_limit=4194303,
+        address=Address(f'{device_ip}:47808'),
+        timeout=10,
+    )
+    LOGGER.info(f'WhoIs result: {res}')
+    for iam in res:
+      instance = iam.iAmDeviceIdentifier[1]
+      obj_type = iam.iAmDeviceIdentifier[0]
+      address = str(iam.pduSource)
+      vendor_id = getattr(iam, 'vendorID', None)
+      LOGGER.info(f'''Device type: {obj_type}, instance: {instance},
+                   address: {address}, vendor_id: {vendor_id}''')
 
   # Check if the device being tested is in the discovered devices list
   # discover needs to be called before this method is invoked
