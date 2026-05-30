@@ -45,6 +45,7 @@ export const INSTALLED_VERSION = 'INSTALLED_VERSION';
 declare const gtag: Function;
 @Component({
   selector: 'app-version',
+
   imports: [CommonModule, MatButtonModule, MatDialogModule],
   templateUrl: './version.component.html',
   styleUrls: ['./version.component.scss'],

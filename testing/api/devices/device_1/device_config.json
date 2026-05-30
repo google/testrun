@@ -15,7 +15,7 @@
       "answer": "Hardware - Access Control"
     },
     {
-      "question": "Does your device process any sensitive information? ",
+      "question": "Does your device process any sensitive information?",
       "answer": "Yes"
     },
     {
@@ -29,22 +29,6 @@
     {
       "question": "Can the second IP port on your device be disabled?",
       "answer": "Yes"
-    },
-    {
-      "question": "Does the device UI web dashboard have a mechanism to enforce the change of default passwords, SSH, Hardcoded Accounts Credentials and factory-default API keys upon first use?",
-      "answer": "Yes, but can be bypassed"
-    },
-    {
-      "question": "Does the device support encrypted management protocols (e.g., HTTPS, SSHv2, TLS 1.2, or TLS 1.3)?",
-      "answer": "Yes, only encrypted protocols"
-    },
-    {
-      "question": "How are firmware updates delivered and verified on the device?",
-      "answer": "Automatic updates with cryptographic signature verification"
-    },
-    {
-      "question": "Does the device include physical tamper-resistant features?",
-      "answer": "No physical tamper protection"
     }
   ],
   "test_modules": {
@@ -68,135 +52,119 @@
     }
   },
   "reports": [{
-    "testrun": {
-      "version": "2.1"
-    },
-    "mac_addr": null,
-    "device": {
-      "mac_addr": "00:1e:42:35:73:c4",
-      "manufacturer": "Teltonika",
-      "model": "TRB140",
-      "firmware": "1",
-      "test_modules": {
-        "protocol": {
-          "enabled": false
-        },
-        "services": {
-          "enabled": false
-        },
-        "connection": {
-          "enabled": false
-        },
-        "tls": {
-          "enabled": true
-        },
-        "ntp": {
-          "enabled": false
-        },
-        "dns": {
-          "enabled": false
-        }
+  "testrun": {
+    "version": "2.1"
+  },
+  "mac_addr": null,
+  "device": {
+    "mac_addr": "00:1e:42:35:73:c4",
+    "manufacturer": "Teltonika",
+    "model": "TRB140",
+    "firmware": "1",
+    "test_modules": {
+      "protocol": {
+        "enabled": false
       },
-      "test_pack": "Device Qualification",
-      "device_profile": [
-        {
-          "question": "What type of device is this?",
-          "answer": "Building Automation Gateway"
-        },
-        {
-          "question": "Please select the technology this device falls into",
-          "answer": "Hardware - Access Control"
-        },
-        {
-          "question": "Does your device process any sensitive information? ",
-          "answer": "No"
-        },
-        {
-          "question": "Can all non-essential services be disabled on your device?",
-          "answer": "Yes"
-        },
-        {
-          "question": "Is there a second IP port on the device?",
-          "answer": "Yes"
-        },
-        {
-          "question": "Can the second IP port on your device be disabled?",
-          "answer": "No"
-        },
-        {
-          "question": "Does the device UI web dashboard have a mechanism to enforce the change of default passwords, SSH, Hardcoded Accounts Credentials and factory-default API keys upon first use?",
-          "answer": "Yes, but can be bypassed"
-        },
-        {
-          "question": "Does the device support encrypted management protocols (e.g., HTTPS, SSHv2, TLS 1.2, or TLS 1.3)?",
-          "answer": "Yes, only encrypted protocols"
-        },
-        {
-          "question": "How are firmware updates delivered and verified on the device?",
-          "answer": "Automatic updates with cryptographic signature verification"
-        },
-        {
-          "question": "Does the device include physical tamper-resistant features?",
-          "answer": "No physical tamper protection"
-        }
-      ]
+      "services": {
+        "enabled": false
+      },
+      "connection": {
+        "enabled": false
+      },
+      "tls": {
+        "enabled": true
+      },
+      "ntp": {
+        "enabled": false
+      },
+      "dns": {
+        "enabled": false
+      }
     },
-    "status": "Non-Compliant",
-    "started": "2024-12-10 16:06:42",
-    "finished": "2024-12-10 16:08:12",
-    "tests": {
-      "total": 5,
-      "results": [
-        {
-          "name": "security.tls.v1_0_client",
-          "description": "No outbound connections were found",
-          "expected_behavior": "The packet indicates a TLS connection with at least TLS 1.0 and support",
-          "required_result": "Informational",
-          "result": "Feature Not Detected"
-        },
-        {
-          "name": "security.tls.v1_2_server",
-          "description": "TLS 1.2 certificate is invalid",
-          "expected_behavior": "TLS 1.2 certificate is issued to the web browser client when accessed",
-          "required_result": "Required if Applicable",
-          "result": "Non-Compliant",
-          "recommendations": [
-            "Enable TLS 1.2 support in the web server configuration",
-            "Disable TLS 1.0 and 1.1",
-            "Sign the certificate used by the web server"
-          ]
-        },
-        {
-          "name": "security.tls.v1_2_client",
-          "description": "An error occurred whilst running this test",
-          "expected_behavior": "The packet indicates a TLS connection with at least TLS 1.2 and support for ECDH and ECDSA ciphers",
-          "required_result": "Required if Applicable",
-          "result": "Error"
-        },
-        {
-          "name": "security.tls.v1_3_server",
-          "description": "TLS 1.3 certificate is invalid",
-          "expected_behavior": "TLS 1.3 certificate is issued to the web browser client when accessed",
-          "required_result": "Informational",
-          "result": "Informational",
-          "optional_recommendations": [
-            "Enable TLS 1.3 support in the web server configuration",
-            "Disable TLS 1.0 and 1.1",
-            "Sign the certificate used by the web server"
-          ]
-        },
-        {
-          "name": "security.tls.v1_3_client",
-          "description": "An error occurred whilst running this test",
-          "expected_behavior": "The packet indicates a TLS connection with at least TLS 1.3",
-          "required_result": "Informational",
-          "result": "Error"
-        }
-      ]
-    },
-    "report": "/report/001e42289e4a_2024-12-10T16:06:42",
-    "export": "/export/001e42289e4a_2024-12-10T16:06:42",
-    "folder_name": "001e42289e4a_2024-12-10T16:06:42"
-  }
-  ]
+    "test_pack": "Device Qualification",
+    "device_profile": [
+      {
+        "question": "What type of device is this?",
+        "answer": "Building Automation Gateway"
+      },
+      {
+        "question": "Please select the technology this device falls into",
+        "answer": "Hardware - Access Control"
+      },
+      {
+        "question": "Does your device process any sensitive information? ",
+        "answer": "No"
+      },
+      {
+        "question": "Can all non-essential services be disabled on your device?",
+        "answer": "Yes"
+      },
+      {
+        "question": "Is there a second IP port on the device?",
+        "answer": "Yes"
+      },
+      {
+        "question": "Can the second IP port on your device be disabled?",
+        "answer": "No"
+      }
+    ]
+  },
+  "status": "Non-Compliant",
+  "started": "2024-12-10 16:06:42",
+  "finished": "2024-12-10 16:08:12",
+  "tests": {
+    "total": 5,
+    "results": [
+      {
+        "name": "security.tls.v1_0_client",
+        "description": "No outbound connections were found",
+        "expected_behavior": "The packet indicates a TLS connection with at least TLS 1.0 and support",
+        "required_result": "Informational",
+        "result": "Feature Not Detected"
+      },
+      {
+        "name": "security.tls.v1_2_server",
+        "description": "TLS 1.2 certificate is invalid",
+        "expected_behavior": "TLS 1.2 certificate is issued to the web browser client when accessed",
+        "required_result": "Required if Applicable",
+        "result": "Non-Compliant",
+        "recommendations": [
+          "Enable TLS 1.2 support in the web server configuration",
+          "Disable TLS 1.0 and 1.1",
+          "Sign the certificate used by the web server"
+        ]
+      },
+      {
+        "name": "security.tls.v1_2_client",
+        "description": "An error occurred whilst running this test",
+        "expected_behavior": "The packet indicates a TLS connection with at least TLS 1.2 and support for ECDH and ECDSA ciphers",
+        "required_result": "Required if Applicable",
+        "result": "Error"
+      },
+      {
+        "name": "security.tls.v1_3_server",
+        "description": "TLS 1.3 certificate is invalid",
+        "expected_behavior": "TLS 1.3 certificate is issued to the web browser client when accessed",
+        "required_result": "Informational",
+        "result": "Informational",
+        "optional_recommendations": [
+          "Enable TLS 1.3 support in the web server configuration",
+          "Disable TLS 1.0 and 1.1",
+          "Sign the certificate used by the web server"
+        ]
+      },
+      {
+        "name": "security.tls.v1_3_client",
+        "description": "An error occurred whilst running this test",
+        "expected_behavior": "The packet indicates a TLS connection with at least TLS 1.3",
+        "required_result": "Informational",
+        "result": "Error"
+      }
+    ]
+  },
+  "report": "/report/001e42289e4a_2024-12-10T16:06:42",
+  "export": "/export/001e42289e4a_2024-12-10T16:06:42",
+  "folder_name": "001e42289e4a_2024-12-10T16:06:42"
+}
+]
 }
