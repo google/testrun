@@ -49,9 +49,13 @@ class ProtocolModule(TestModule):
       local_address += '/24'
       try:
         loop = asyncio.get_running_loop()
-        loop.run_until_complete(self._bacnet.discover(local_address, self._device_ipv4_addr))
+        loop.run_until_complete(
+          self._bacnet.discover(local_address, self._device_ipv4_addr)
+        )
       except RuntimeError:
-        asyncio.run(self._bacnet.discover(local_address, self._device_ipv4_addr))
+        asyncio.run(self._bacnet.discover(
+          local_address, self._device_ipv4_addr)
+        )
       result = self._bacnet.validate_device()
       if result[0]:
         self._supports_bacnet = True
