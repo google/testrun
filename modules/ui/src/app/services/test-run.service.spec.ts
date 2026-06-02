@@ -462,7 +462,7 @@ describe('TestRunService', () => {
   it('deleteReport should have necessary request data', () => {
     const apiUrl = 'http://localhost:8000/report';
 
-    service.deleteReport('http://localhost:8000/report').subscribe(res => {
+    service.deleteReport('/report').subscribe(res => {
       expect(res).toEqual(true);
     });
 
@@ -474,7 +474,7 @@ describe('TestRunService', () => {
   it('deleteReport should return false when error happens', () => {
     const apiUrl = 'http://localhost:8000/report';
 
-    service.deleteReport('http://localhost:8000/report').subscribe(res => {
+    service.deleteReport('/report').subscribe(res => {
       expect(res).toEqual(false);
     });
 
