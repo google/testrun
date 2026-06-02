@@ -240,12 +240,12 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
       return false;
     }
 
-    for (const question of profile1.questions) {
+    for (const question of profile2.questions) {
       const answer1 = question.answer;
-      const answer2 = profile2.questions?.find(
+      const answer2 = profile1.questions?.find(
         question2 => question2.question === question.question
       )?.answer;
-      if (answer1 !== undefined && answer2 !== undefined) {
+      if (!this.isEmptyAnswer(answer1) && !this.isEmptyAnswer(answer2)) {
         if (typeof question.answer === 'string') {
           if (answer1 !== answer2) {
             return false;
@@ -262,11 +262,17 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
           )
             return false;
         }
-      } else {
-        return !!answer1 == !!answer2;
+      } else if (this.isEmptyAnswer(answer2) && !this.isEmptyAnswer(answer1)) {
+        return false;
       }
     }
     return true;
+  }
+
+  private isEmptyAnswer(answer: unknown): boolean {
+    if (answer === undefined || answer === null || answer === '') return true;
+    if (Array.isArray(answer) && answer.length === 0) return true;
+    return false;
   }
 
   private get fieldsHasError(): boolean {
