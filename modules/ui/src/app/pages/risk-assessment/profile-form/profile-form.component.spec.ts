@@ -19,6 +19,7 @@ import { ProfileFormComponent } from './profile-form.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   COPY_PROFILE_MOCK,
+  EXPIRED_PROFILE_MOCK,
   NEW_PROFILE_MOCK,
   NEW_PROFILE_MOCK_DRAFT,
   OUTDATED_DRAFT_PROFILE_MOCK,
@@ -35,6 +36,7 @@ import { of } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
 import { SimpleDialogComponent } from '../../../components/simple-dialog/simple-dialog.component';
 import SpyObj = jasmine.SpyObj;
+import { By } from '@angular/platform-browser';
 
 describe('ProfileFormComponent', () => {
   let component: ProfileFormComponent;
@@ -288,6 +290,21 @@ describe('ProfileFormComponent', () => {
           4: '',
           name: 'Outdated profile',
         });
+      });
+    });
+
+    describe('with expired profile', () => {
+      beforeEach(() => {
+        component.selectedProfile = EXPIRED_PROFILE_MOCK;
+        fixture.detectChanges();
+      });
+
+      it('should have a form with "outdated" clsss', () => {
+        const form = fixture.debugElement.query(
+          By.css('.profile-form-outdated')
+        );
+
+        expect(form).toBeTruthy();
       });
     });
 
