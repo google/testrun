@@ -396,19 +396,19 @@ class TestOrchestrator:
     return self._regenerate_report_files(device, report)
 
   def _regenerate_report_files(self, device: Device, report: TestReport) -> str:
-    '''Regenerate the report if the device profile has been updated'''
+    """Regenerate the report if the device profile has been updated"""
     # Report files path
     report_dir = os.path.join(self._root_path, REPORTS_FOLDER)
     report_dir = os.path.join(report_dir, report.get_folder_name())
     test_folder_name = report.get_folder_name().split("_")[0]
     test_path = os.path.join(
       report_dir,
-      f'test/{test_folder_name}'
+      f"test/{test_folder_name}"
     )
     try:
       # Copy the original report for comparison
       report_copy = copy.deepcopy(report)
-      # Update the report with 'additional_info' field
+      # Update the report with additional_info field
       report.update_device_info(device)
       device.export_config_json()
       # Overwrite report only if additional_info has been changed
@@ -487,17 +487,13 @@ class TestOrchestrator:
         if value_div:
           if "Manufacturer" in h4.string:
             value_div.string = manufacturer
-            LOGGER.debug(f"Updated manufacturer to '{value_div.string}'")
           elif "Model" in h4.string:
             value_div.string = model
-            LOGGER.debug(f"Updated model to '{value_div.string}'")
     all_header_info_divs = bs.find_all("div", class_="header-info")
     for header_info_div in all_header_info_divs:
       header_span = header_info_div.find_next_sibling("span")
       if header_span:
         header_span.string = title
-        LOGGER.debug(f"Updated sibling span to '{header_span.string}'")
-
     return str(bs)
 
   def test_in_progress(self):
