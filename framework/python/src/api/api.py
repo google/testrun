@@ -460,21 +460,13 @@ class Api:
 
   async def delete_report(self, response: Response, report_name: str):
 
-    mac = report_name.split("_")[0]
-    device = self._session.get_device_by_mac_addr(mac)
-
-    # If the device not found
-    if device is None:
-      LOGGER.info("Device not found, returning 404")
-      response.status_code = 404
-      return self._generate_msg(False, "Device not found")
-
-    report = device.get_report_by_folder_name(report_name)
-    LOGGER.debug(f"Looking for report with name {report_name}")
-    if not report:
+    device_with_report = self._session.get_report(report_name)
+    if device_with_report.device is None or device_with_report.report is None:
       LOGGER.info("Report could not be found, returning 404")
       response.status_code = 404
-      return self._generate_msg(False, "Report not found")
+      return self._generate_msg(False, "Report not found from list")
+    device = device_with_report.device
+    report = device_with_report.report
 
     if self._testrun.delete_report(device, report):
       return self._generate_msg(True, "Deleted report")
@@ -680,22 +672,13 @@ class Api:
 
   async def get_report(self, response: Response, report_name):
     """Serve report pdf file for a given report name"""
-    mac = report_name.split("_")[0]
-    device = self._session.get_device_by_mac_addr(mac)
-
-    # If the device not found
-    if device is None:
-      LOGGER.info("Device not found, returning 404")
-      response.status_code = 404
-      return self._generate_msg(False, "Device not found")
-
-    report = device.get_report_by_folder_name(report_name)
-    LOGGER.debug(f"Looking for report with name {report_name}")
-    if not report:
+    device_with_report = self._session.get_report(report_name)
+    if device_with_report.device is None or device_with_report.report is None:
       LOGGER.info("Report could not be found, returning 404")
       response.status_code = 404
-      return self._generate_msg(False, "Report could not be found")
-
+      return self._generate_msg(False, "Report not found from list")
+    device = device_with_report.device
+    report = device_with_report.report
 
     # Regenerate the pdf if the device profile has been updated
     test_orc = self._get_testrun().get_test_orc()
@@ -738,18 +721,13 @@ class Api:
       pass
 
     # Check if device exists
-    mac = report_name.split("_")[0]
-    device = self._session.get_device_by_mac_addr(mac)
-    if device is None:
-      response.status_code = status.HTTP_404_NOT_FOUND
-      return self._generate_msg(False,
-                                "Device not found")
-    report = device.get_report_by_folder_name(report_name)
-    LOGGER.debug(f"Looking for report with name {report_name}")
-    if not report:
+    device_with_report = self._session.get_report(report_name)
+    if device_with_report.device is None or device_with_report.report is None:
       LOGGER.info("Report could not be found, returning 404")
       response.status_code = 404
-      return self._generate_msg(False, "Report could not be found")
+      return self._generate_msg(False, "Report not found from list")
+    device = device_with_report.device
+    report = device_with_report.report
 
     zip_file_path = self._get_testrun().get_test_orc().zip_results(
         device, report, profile)
