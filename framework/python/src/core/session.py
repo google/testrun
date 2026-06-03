@@ -21,7 +21,7 @@ from fastapi.encoders import jsonable_encoder
 from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
 from common.statuses import TestrunStatus, TestResult, TestrunResult
-from common.device import Device
+from common.device import Device, DeviceWithReport
 from net_orc.ip_control import IPControl
 
 # Certificate dependencies
@@ -392,6 +392,16 @@ class TestrunSession():
 
   def get_device_repository(self):
     return self._device_repository
+
+  def get_report(self, folder_name: str) -> DeviceWithReport:
+    device_with_report = DeviceWithReport()
+    for device in self._device_repository:
+      device_reports = device.get_reports()
+      for report in device_reports:
+        if report.get_folder_name() == folder_name:
+          device_with_report.device = device
+          device_with_report.report = report
+    return device_with_report
 
   def add_device(self, device):
     self._device_repository.append(device)
