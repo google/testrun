@@ -149,3 +149,9 @@ class Device():
       # Update the last_updated timestamp
       super().__setattr__('modified_at', datetime.now())
     super().__setattr__(name, value)
+
+
+@dataclass
+class DeviceWithReport():
+  device: Device | None = None
+  report: TestReport | None = None
