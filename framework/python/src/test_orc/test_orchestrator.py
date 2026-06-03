@@ -400,9 +400,10 @@ class TestOrchestrator:
     # Report files path
     report_dir = os.path.join(self._root_path, REPORTS_FOLDER)
     report_dir = os.path.join(report_dir, report.get_folder_name())
+    test_folder_name = report.get_folder_name().split("_")[0]
     test_path = os.path.join(
       report_dir,
-      f'test/{device.mac_addr.replace(":", "")}'
+      f'test/{test_folder_name}'
     )
     try:
       # Copy the original report for comparison
