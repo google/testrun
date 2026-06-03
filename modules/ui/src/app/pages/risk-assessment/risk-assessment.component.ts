@@ -138,9 +138,7 @@ export class RiskAssessmentComponent
   }
 
   async profileClicked(profile: Profile | null = null) {
-    if (profile === null || profile.status !== ProfileStatus.EXPIRED) {
-      await this.openForm(profile);
-    }
+    await this.openForm(profile);
   }
 
   async openForm(profile: Profile | null = null) {
@@ -288,10 +286,6 @@ export class RiskAssessmentComponent
       // unsaved copy of profile can't have any action
       if (profile.status === ProfileStatus.COPY) {
         return [];
-      }
-      // expired profiles can only be removed
-      if (profile.status === ProfileStatus.EXPIRED) {
-        return [{ action: ProfileAction.Delete, icon: 'delete' }];
       }
       return actions;
     };
