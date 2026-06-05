@@ -248,7 +248,7 @@ export class TestRunService {
   }
 
   deleteReport(url: string): Observable<boolean> {
-    return this.http.delete<boolean>(`${url}`).pipe(
+    return this.http.delete<boolean>(`${API_URL}${url}`).pipe(
       catchError(() => of(false)),
       map(res => !!res)
     );
