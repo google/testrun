@@ -824,7 +824,7 @@
       "type": "http",
       "documentation": "Delete a Testrun report",
       "method": "delete",
-      "endpoint": "report/{folder_name}",
+      "endpoint": "report/{report_name}",
       "responses": [
         {
           "uuid": "5654e8d1-9a50-4bd5-bd0d-1ea48edfe825",
