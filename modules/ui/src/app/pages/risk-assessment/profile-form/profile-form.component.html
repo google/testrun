@@ -13,7 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<form [formGroup]="profileForm" class="profile-form">
+<form
+  [formGroup]="profileForm"
+  class="profile-form"
+  [class.profile-form-outdated]="
+    selectedProfile?.status === ProfileStatus.EXPIRED
+  ">
   <div class="field-container">
     <label class="field-label name-field-label" for="name-field"
       >Profile name *</label

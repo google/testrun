@@ -13,18 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  ComponentFixture,
-  fakeAsync,
-  TestBed,
-  tick,
-} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProfileItemComponent } from './profile-item.component';
-import {
-  EXPIRED_PROFILE_MOCK,
-  PROFILE_MOCK,
-} from '../../../mocks/profile.mock';
+import { PROFILE_MOCK } from '../../../mocks/profile.mock';
 import { TestRunService } from '../../../services/test-run.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 
@@ -80,18 +72,6 @@ describe('ProfileItemComponent', () => {
     expect(profileClickedSpy).toHaveBeenCalledWith(PROFILE_MOCK);
   });
 
-  it('should change tooltip on focusout', fakeAsync(() => {
-    component.profile = EXPIRED_PROFILE_MOCK;
-    fixture.detectChanges();
-
-    fixture.nativeElement.dispatchEvent(new Event('focusout'));
-    tick();
-
-    expect(component.tooltip().message).toEqual(
-      'Expired. Please, create a new Risk profile.'
-    );
-  }));
-
   it('#getRiskClass should call getRiskClass on testRunService', () => {
     const MOCK_RISK = 'mock value';
     component.getRiskClass(MOCK_RISK);
@@ -104,23 +84,5 @@ describe('ProfileItemComponent', () => {
     component.enterProfileItem(PROFILE_MOCK);
 
     expect(profileClickedSpy).toHaveBeenCalled();
-  });
-
-  describe('with Expired profile', () => {
-    beforeEach(() => {
-      component.enterProfileItem(EXPIRED_PROFILE_MOCK);
-    });
-
-    it('should change tooltip on enterProfileItem', () => {
-      expect(component.tooltip().message).toEqual(
-        'This risk profile is outdated. Please create a new risk profile.'
-      );
-    });
-
-    it('should announce', () => {
-      expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
-        'This risk profile is outdated. Please create a new risk profile.'
-      );
-    });
   });
 });

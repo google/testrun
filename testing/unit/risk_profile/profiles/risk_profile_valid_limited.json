@@ -58,6 +58,48 @@
       "risk": "Limited"
     },
     {
+      "question": "What types of wireless connectivity does this device support or utilize? (Select all that apply)",
+      "answer": [
+        3
+      ],
+      "risk": "Limited"
+    },
+    {
+      "question": "Are physical debug interfaces (JTAG, UART, SWD) disabled or physically inaccessible?",
+      "answer": "Yes, disabled in hardware/firmware",
+      "risk": "Limited"
+    },
+    {
+      "question": "Does the device support integration with Google's SSO or MFA for administrative access?",
+      "answer": "Yes, supports Google’s SSO or MFA",
+      "risk": "Limited"
+    },
+    {
+      "question": "Is firmware cryptographically signed and verified during the boot process?",
+      "answer": "Yes, verified Secure Boot",
+      "risk": "Limited"
+    },
+    {
+      "question": "How frequently are security patches released and applied to this device?",
+      "answer": "Automatically within 30 days of release",
+      "risk": "Limited"
+    },
+    {
+      "question": "Does the device include audio or video recording capabilities?",
+      "answer": "No",
+      "risk": "Limited"
+    },
+    {
+      "question": "Does the device generate security audit logs (e.g., login attempts, config changes)?",
+      "answer": "Yes",
+      "risk": "Limited"
+    },
+    {
+      "question": "Does the device undergo regular third-party penetration testing?",
+      "answer": "Yes",
+      "risk": "Limited"
+    },
+    {
       "question": "Comments",
       "answer": ""
     }
