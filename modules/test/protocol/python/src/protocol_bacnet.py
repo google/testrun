@@ -89,37 +89,41 @@ class BACnet():
         LOGGER.info(f'Discovered BACnet device: {device}')
         self.devices.append(device)
     LOGGER.info('BACnet devices found: ' + str(len(self.devices)))
-    self.bacnet.discoveredDevices = {}
-    try:
-      await self.bacnet._discover(timeout=10) # pylint: disable=protected-access
-    except Exception as e: # pylint: disable=W0718
-      LOGGER.error(e)
-    LOGGER.info('BACnet discovery complete')
-    with open(BAC0_LOG, 'r', encoding='utf-8') as f:
-      bac0_log = f.read()
-    LOGGER.info('BAC0 Log:\n' + bac0_log)
-    LOGGER.info('discoveredDevices: ' + str(self.bacnet.discoveredDevices))
-    if self.bacnet.discoveredDevices is not None:
-      for device_info in self.bacnet.discoveredDevices.values():
+    if not self.devices:
+      try:
+        await self.bacnet._discover(timeout=10) # pylint: disable=protected-access
+      except Exception as e: # pylint: disable=W0718
+        LOGGER.error(e)
+      LOGGER.info('BACnet discovery complete')
+      with open(BAC0_LOG, 'r', encoding='utf-8') as f:
+        bac0_log = f.read()
+      LOGGER.info('BAC0 Log:\n' + bac0_log)
+      LOGGER.info('discoveredDevices: ' + str(self.bacnet.discoveredDevices))
+      if self.bacnet.discoveredDevices is not None:
+        for device_info in self.bacnet.discoveredDevices.values():
+          device = BACnetDevice(
+                device_id=str(device_info['object_instance'][1]),
+                ip=str(device_info['address'])
+              )
+          self.devices.append(device)
+          LOGGER.info(f'Discovered BACnet device: {device}')
+    if not self.devices:
+      res = await self.bacnet.this_application.app.who_is(
+          low_limit=0,
+          high_limit=4194303,
+          address=Address(f'{device_ip}:47808'),
+          timeout=10,
+      )
+      for iam in res:
+        instance = iam.iAmDeviceIdentifier[1]
+        address = str(iam.pduSource)
         device = BACnetDevice(
-              device_id=str(device_info['object_instance'][1]),
-              ip=str(device_info['address'])
-            )
-        LOGGER.info(f'Discovered BACnet device: {device}')
-    res = await self.bacnet.this_application.app.who_is(
-        low_limit=0,
-        high_limit=4194303,
-        address=Address(f'{device_ip}:47808'),
-        timeout=10,
-    )
-    LOGGER.info(f'WhoIs result: {res}')
-    for iam in res:
-      instance = iam.iAmDeviceIdentifier[1]
-      obj_type = iam.iAmDeviceIdentifier[0]
-      address = str(iam.pduSource)
-      vendor_id = getattr(iam, 'vendorID', None)
-      LOGGER.info(f'''Device type: {obj_type}, instance: {instance},
-                   address: {address}, vendor_id: {vendor_id}''')
+                device_id=str(instance),
+                ip=str(address)
+              )
+        self.devices.append(device)
+    if not self.devices:
+      self.devices = self._discover_from_packets(device_ip)
 
   # Check if the device being tested is in the discovered devices list
   # discover needs to be called before this method is invoked
@@ -211,3 +215,27 @@ class BACnet():
     command = f'{bin_file} {args}'
     response = util.run_command(command)
     return json.loads(response[0].strip())
+
+  def _discover_from_packets(self, device_ip: str) -> list[BACnetDevice]:
+    discovered = set()
+    capture_file = os.path.join(self._captures_dir, self._capture_file)
+    LOGGER.info(f'Discovering BACnet devices from packets in {capture_file}...')
+    bin_file = self._bin_dir + '/get_bacnet_i-am_packets.sh'
+    args = f'"{capture_file}" {device_ip}'
+    command = f'{bin_file} {args}'
+    response = util.run_command(command)
+    packets = json.loads(response[0].strip())
+    for packet in packets:
+      info = packet['_source']['layers']['_ws.col.info'][0]
+      if 'i-Am' in info:
+        discovered.add(
+          (
+            packet['_source']['layers']['bacapp.instance_number'][0],
+            packet['_source']['layers']['ip.src'][0]
+           )
+          )
+    LOGGER.info(f'Discovered BACnet devices from packets: {discovered}')
+    return [
+      BACnetDevice(device_id=device_id, ip=ip)
+      for device_id, ip in discovered
+      ]
