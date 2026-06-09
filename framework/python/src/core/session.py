@@ -535,7 +535,10 @@ class TestrunSession():
     for device in self.get_device_repository():
       device_reports = device.get_reports()
       reports.extend(
-        [device_report.to_json() for device_report in device_reports]
+        [
+          device_report.to_json_updated(device)
+          for device_report in device_reports
+        ]
       )
     return sorted(reports, key=lambda report: report['started'], reverse=True)
 
