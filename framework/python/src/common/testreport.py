@@ -269,6 +269,10 @@ class TestReport():
 
       self.add_test(test_case)
 
+  def to_json_updated(self, device):
+    self.update_device_info(device)
+    return self.to_json()
+
   # Create a pdf file in memory and return the bytes
   def to_pdf(self):
     # Resolve the data as html first
