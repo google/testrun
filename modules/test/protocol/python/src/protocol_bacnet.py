@@ -112,19 +112,35 @@ class BACnet():
       LOGGER.error('Error occurred when validating device', exc_info=True)
     return result, description
 
-
-  def validate_protocol_version(self, device: BACnetDevice) -> tuple[bool, str]:
+  async def validate_protocol_version(
+    self,
+    device: BACnetDevice
+  ) -> tuple[bool, str]:
     LOGGER.info(
       f'Resolving protocol version for BACnet device: {device.device_id}'
     )
     try:
-      version = self.bacnet.read(
-          f'{device.ip} device {device.device_id} protocolVersion')
-      revision = self.bacnet.read(
-          f'{device.ip} device {device.device_id} protocolRevision')
-      protocol_version = f'{version}.{revision}'
-      result = True
-      result_description = f'Device uses BACnet version {protocol_version}'
+      dut = await BAC0.device(
+        device.ip,
+        device.device_id,
+        self.bacnet
+      )
+      version = await dut.read_property(
+        ('device', device.device_id, 'protocolVersion')
+      )
+      revision = await dut.read_property(
+        ('device', device.device_id, 'protocolRevision')
+      )
+      if version is None or revision is None:
+        result = False
+        result_description = (
+            f'Failed to resolve protocol version: version={version}, '
+            f'revision={revision}')
+        LOGGER.error(result_description)
+      else:
+        protocol_version = f'{version}.{revision}'
+        result = True
+        result_description = f'Device uses BACnet version {protocol_version}'
     except (UnknownPropertyError, ReadPropertyException,
             NoResponseFromController, DeviceNotConnected) as e:
       result = False
