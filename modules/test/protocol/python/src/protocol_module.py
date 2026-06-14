@@ -27,10 +27,16 @@ class ProtocolModule(TestModule):
 
   def __init__(self, module):
     self._supports_bacnet = False
+    self._bacnet_loop = None
     super().__init__(module_name=module, log_name=LOG_NAME)
     global LOGGER
     LOGGER = self._get_logger()
     self._bacnet = BACnet(log=LOGGER, device_hw_addr=self._device_mac)
+
+  def _get_bacnet_loop(self):
+    if self._bacnet_loop is None:
+      self._bacnet_loop = asyncio.new_event_loop()
+    return self._bacnet_loop
 
   def _protocol_valid_bacnet(self):
     LOGGER.info('Running protocol.valid_bacnet')
@@ -47,15 +53,10 @@ class ProtocolModule(TestModule):
     local_address = self.get_local_ip(interface_name)
     if local_address:
       local_address += '/24'
-      try:
-        loop = asyncio.get_running_loop()
-        loop.run_until_complete(
-          self._bacnet.discover(local_address, self._device_ipv4_addr)
-        )
-      except RuntimeError:
-        asyncio.run(self._bacnet.discover(
-          local_address, self._device_ipv4_addr)
-        )
+      loop = self._get_bacnet_loop()
+      loop.run_until_complete(
+        self._bacnet.discover(local_address, self._device_ipv4_addr)
+      )
       result = self._bacnet.validate_device()
       if result[0]:
         self._supports_bacnet = True
@@ -82,8 +83,11 @@ class ProtocolModule(TestModule):
     if len(self._bacnet.devices) > 0:
       for device in self._bacnet.devices:
         LOGGER.debug(f'Checking BACnet version for device: {device}')
+        loop = self._get_bacnet_loop()
         result_status, result_description = \
-          self._bacnet.validate_protocol_version(device)
+          loop.run_until_complete(
+            self._bacnet.validate_protocol_version(device)
+          )
         break
 
     LOGGER.info(result_description)
