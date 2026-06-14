@@ -170,7 +170,11 @@ class Modbus():
     coils = None
     LOGGER.info(f'Reading coil registers: {address}:{count}')
     try:
-      response = self.client.read_coils(address=address, count=count, device_id=device_id)
+      response = self.client.read_coils(
+        address=address,
+        count=count,
+        device_id=device_id
+      )
       if response.isError():
         LOGGER.error(f'Failed to read coil registers: {address}:{count}')
         LOGGER.error('Read Response: ' + str(response))
