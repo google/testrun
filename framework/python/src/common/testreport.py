@@ -13,21 +13,22 @@
 # limitations under the License.
 """Store previous Testrun information."""
 
-from datetime import datetime
-import shutil
-from weasyprint import HTML
-from io import BytesIO
-from common import util, logger
-from common.statuses import TestrunStatus, TestrunResult
-from test_orc import test_pack
 import base64
-import os
-from test_orc.test_case import TestCase
-from jinja2 import Environment, FileSystemLoader, BaseLoader
-from collections import OrderedDict
-from bs4 import BeautifulSoup
+import copy
 import math
+import os
+import shutil
+from collections import OrderedDict
+from datetime import datetime
+from io import BytesIO
 
+from bs4 import BeautifulSoup
+from common import logger, util
+from common.statuses import TestrunResult, TestrunStatus
+from jinja2 import BaseLoader, Environment, FileSystemLoader
+from test_orc import test_pack
+from test_orc.test_case import TestCase
+from weasyprint import HTML
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 RESOURCES_DIR = 'resources/report'
@@ -159,7 +160,7 @@ class TestReport():
     }
 
     report_json['mac_addr'] = self._mac_addr
-    report_json['device'] = self._device
+    report_json['device'] = copy.deepcopy(self._device)
     report_json['status'] = self._status
     report_json['result'] = self._result
     report_json['started'] = self._started.strftime(DATE_TIME_FORMAT)
