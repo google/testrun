@@ -130,6 +130,7 @@ class BACnet():
   def validate_device(self):
     result = None
     description = ''
+
     try:
       if len(self.devices) > 0:
         result = True
@@ -157,17 +158,29 @@ class BACnet():
       f'Resolving protocol version for BACnet device: {device.device_id}'
     )
     try:
-      dut = await BAC0.device(
-        device.ip,
-        device.device_id,
-        self.bacnet
-      )
-      version = await dut.read_property(
-        ('device', device.device_id, 'protocolVersion')
-      )
-      revision = await dut.read_property(
-        ('device', device.device_id, 'protocolRevision')
-      )
+      
+      
+      try:
+        dut = await BAC0.device(
+          device.ip,
+          device.device_id,
+          self.bacnet
+        )
+        version = await dut.read_property(
+          ('device', device.device_id, 'protocolVersion')
+        )
+        revision = await dut.read_property(
+          ('device', device.device_id, 'protocolRevision')
+        )
+      except AttributeError:
+        cmd = f'{device.ip} device {device.device_id} protocolVersion protocolRevision'
+      
+        results = await self.bacnet.readMultiple(cmd)
+
+        LOGGER.info(f'BACnet readMultiple results: {results}')
+        if len(results) == 2:
+          version = results[0]
+          revision = results[1]
       if version is None or revision is None:
         result = False
         result_description = (
