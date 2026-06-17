@@ -161,21 +161,22 @@ class BACnet():
     )
     version = None
     revision = None
+    ip = device.ip
+    d_id = device.device_id
     try:
       dev_info = DeviceInfo()
-      dev_info.device_instance = device.device_id
-      dev_info.device_address = Address(device.ip)
+      dev_info.device_instance = d_id
+      dev_info.device_address = Address(ip)
       dev_info.max_apdu_length_accepted = 1476  # Стандарт для BACnet/IP
       dev_info.segmentation_supported = Segmentation.noSegmentation
       dev_info.vendor_id = 0
-      
-      await self.bacnet.this_application.app.device_info_cache.set_device_info(dev_info)
-      LOGGER.info(f"Manually injected device {device.device_id} ({device.ip}) into BAC0 cache.")
+      await self.bacnet.this_application.app.device_info_cache.set_device_info(
+        dev_info
+      )
+      LOGGER.info(f"Manually injected device {d_id} {ip} into BAC0 cache.")
     except Exception as cache_err:
       LOGGER.warning(f"Failed to pre-populate BAC0 cache: {cache_err}")
     try:
-      ip = device.ip
-      d_id = device.device_id
       cmd = f'{ip} device {d_id} protocolVersion protocolRevision'
       results = await self.bacnet.readMultiple(cmd)
       LOGGER.info(f'BACnet readMultiple results: {results}')
