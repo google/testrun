@@ -173,9 +173,9 @@ class BACnet():
       await self.bacnet.this_application.app.device_info_cache.set_device_info(
         dev_info
       )
-      LOGGER.info(f"Manually injected device {d_id} {ip} into BAC0 cache.")
+      LOGGER.info(f'Manually injected device {d_id} {ip} into BAC0 cache.')
     except Exception as cache_err:
-      LOGGER.warning(f"Failed to pre-populate BAC0 cache: {cache_err}")
+      LOGGER.warning(f'Failed to pre-populate BAC0 cache: {cache_err}'  )
     try:
       cmd = f'{ip} device {d_id} protocolVersion protocolRevision'
       results = await self.bacnet.readMultiple(cmd)
