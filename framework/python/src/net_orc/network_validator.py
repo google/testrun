@@ -259,9 +259,11 @@ class NetworkValidator:
     util.run_command('ovs-vsctl add-port ' + DEVICE_BRIDGE + ' ' + bridge_intf)
 
     # Get PID for running container
-    # TODO: Some error checking around missing PIDs might be required
     container_pid = util.run_command('docker inspect -f {{.State.Pid}} ' +
                                      device.container_name)[0]
+    if not container_pid or not container_pid.isdigit() or container_pid == '0':
+      LOGGER.error(f'Failed to get container PID for {device.container_name}')
+      return
 
     # Create symlink for container network namespace
     util.run_command('ln -sf /proc/' + container_pid +

@@ -26,16 +26,21 @@ _CONF_FILE_NAME = 'system.json'
 _LOG_DIR = '/runtime/network/'
 
 # Set log level
+log_level = _DEFAULT_LEVEL
 try:
   with open(os.path.join(_CONF_DIR, _CONF_FILE_NAME),
             encoding='UTF-8') as config_json_file:
     system_conf_json = json.load(config_json_file)
 
-  log_level_str = system_conf_json['log_level']
-  log_level = logging.getLevelName(log_level_str)
-except OSError:
-  # TODO: Print out warning that log level is incorrect or missing
-  log_level = _DEFAULT_LEVEL
+  if 'log_level' in system_conf_json:
+    log_level_str = system_conf_json['log_level']
+    log_level = logging.getLevelName(log_level_str)
+  else:
+    print(f'Warning: log_level not specified in {_CONF_FILE_NAME}. '
+          f'Using default: {logging.getLevelName(_DEFAULT_LEVEL)}')
+except (OSError, KeyError, ValueError) as e:
+  print(f'Warning: Could not load {_CONF_FILE_NAME} ({str(e)}). '
+        f'Using default log level: {logging.getLevelName(_DEFAULT_LEVEL)}')
 
 log_format = logging.Formatter(fmt=_LOG_FORMAT, datefmt=_DATE_FORMAT)
 
