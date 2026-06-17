@@ -513,21 +513,21 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     client = docker.from_env()
 
+    ui_port = self._session.get_ui_port()
     try:
       client.containers.run(image='testrun/ui',
                             auto_remove=True,
                             name='tr-ui',
                             hostname='testrun.io',
                             detach=True,
-                            ports={'80': 8080})
+                            ports={'80': ui_port})
     except docker.errors.ImageNotFound as ie:
       LOGGER.error('An error occurred whilst starting the UI. ' +
                    'Please investigate and try again.')
       LOGGER.error(ie)
       sys.exit(1)
 
-    # TODO: Make port configurable
-    LOGGER.info('User interface is ready on http://localhost:8080')
+    LOGGER.info(f'User interface is ready on http://localhost:{ui_port}')
 
   def _stop_ui(self):
     LOGGER.info('Stopping user interface')

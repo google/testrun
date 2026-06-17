@@ -211,10 +211,9 @@ class IPControl:
 
     if container_name is not None:
       # Get PID for running container
-      # TODO: Some error checking around missing PIDs might be required
       container_pid = util.run_command('docker inspect -f {{.State.Pid}} ' +
                                        container_name)[0]
-      if not container_pid.isdigit():
+      if not container_pid or not container_pid.isdigit() or container_pid == '0':
         LOGGER.error(f'Failed to resolve pid for {container_name}')
         return False
 

@@ -550,8 +550,7 @@ class Api:
       response.status_code = 200
       return self._generate_msg(True, "Successfully deleted the device")
 
-    # TODO: Find specific exception to catch
-    except Exception as e:  # pylint: disable=W0703
+    except (OSError, ValueError) as e:
       LOGGER.error(e)
       response.status_code = 500
       return self._generate_msg(
