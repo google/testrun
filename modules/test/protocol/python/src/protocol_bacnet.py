@@ -158,8 +158,6 @@ class BACnet():
       f'Resolving protocol version for BACnet device: {device.device_id}'
     )
     try:
-      
-      
       try:
         dut = await BAC0.device(
           device.ip,
@@ -173,8 +171,9 @@ class BACnet():
           ('device', device.device_id, 'protocolRevision')
         )
       except AttributeError:
-        cmd = f'{device.ip} device {device.device_id} protocolVersion protocolRevision'
-      
+        ip = device.ip
+        d_id = device.device_id
+        cmd = f'{ip} device {d_id} protocolVersion protocolRevision'
         results = await self.bacnet.readMultiple(cmd)
 
         LOGGER.info(f'BACnet readMultiple results: {results}')
