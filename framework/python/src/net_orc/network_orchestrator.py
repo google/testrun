@@ -292,7 +292,6 @@ class NetworkOrchestrator:
     if device is None:
       return
 
-    # TODO: Check if device is None
     device.ip_addr = packet[BOOTP].yiaddr
 
   def _start_device_monitor(self, device):
@@ -558,9 +557,11 @@ class NetworkOrchestrator:
     self._ovs.add_port(port=bridge_intf, bridge_name=DEVICE_BRIDGE)
 
     # Get PID for running container
-    # TODO: Some error checking around missing PIDs might be required
     container_pid = util.run_command('docker inspect -f {{.State.Pid}} ' +
                                      test_module.container_name)[0]
+    if not container_pid or not container_pid.isdigit() or container_pid == '0':
+      LOGGER.error(f'Failed to get container PID for {test_module.container_name}')
+      return
 
     # Create symlink for container network namespace
     util.run_command('ln -sf /proc/' + container_pid +

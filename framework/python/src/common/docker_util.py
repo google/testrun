@@ -14,7 +14,7 @@
 """Utility for common docker methods"""
 import docker
 
-def create_private_net(network_name):
+def create_private_net(network_name, subnet='100.100.0.0/16', iprange='100.100.100.0/24'):
   client = docker.from_env()
   try:
     network = client.networks.get(network_name)
@@ -22,9 +22,8 @@ def create_private_net(network_name):
   except docker.errors.NotFound:
     pass
 
-  # TODO: These should be made into variables
-  ipam_pool = docker.types.IPAMPool(subnet='100.100.0.0/16',
-                                    iprange='100.100.100.0/24')
+  ipam_pool = docker.types.IPAMPool(subnet=subnet,
+                                    iprange=iprange)
 
   ipam_config = docker.types.IPAMConfig(pool_configs=[ipam_pool])
 

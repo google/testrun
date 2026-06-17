@@ -40,6 +40,7 @@ MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 ORG_NAME_KEY = 'org_name'
 TEST_CONFIG_KEY = 'test_modules'
 ALLOW_DISCONNECT_KEY='allow_disconnect'
+UI_PORT_KEY = 'ui_port'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
 STATUS_TOPIC = 'status'
@@ -163,9 +164,11 @@ class TestrunSession():
     self.load_certs()
 
     # Fetch the timezone of the host system
-    tz = util.run_command('cat /etc/timezone')
-    # TODO: Check if timezone is fetched successfully
-    self._timezone = tz[0]
+    tz = util.run_command('cat /etc/timezone', supress_error=True)
+    if tz and tz[0].strip():
+      self._timezone = tz[0].strip()
+    else:
+      self._timezone = 'UTC'
     LOGGER.debug(f'System timezone is {self._timezone}')
 
     # MQTT client
@@ -210,6 +213,7 @@ class TestrunSession():
         'max_device_reports': 0,
         'api_url': 'http://localhost',
         'api_port': 8000,
+        'ui_port': 8080,
         'org_name': '',
         'single_intf': False,
     }
@@ -271,6 +275,9 @@ class TestrunSession():
         self._config[TEST_CONFIG_KEY] = config_file_json.get(
           TEST_CONFIG_KEY
         )
+
+      if UI_PORT_KEY in config_file_json:
+        self._config[UI_PORT_KEY] = config_file_json.get(UI_PORT_KEY)
 
   def _load_version(self):
     version_cmd = util.run_command(
@@ -355,6 +362,9 @@ class TestrunSession():
 
   def get_api_port(self):
     return self._config.get(API_PORT_KEY)
+
+  def get_ui_port(self):
+    return self._config.get(UI_PORT_KEY)
 
   def get_max_device_reports(self):
     return self._config.get(MAX_DEVICE_REPORTS_KEY)

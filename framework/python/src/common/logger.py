@@ -36,9 +36,12 @@ try:
   if 'log_level' in system_conf_json:
     log_level_str = system_conf_json['log_level']
     log_level = logging.getLevelName(log_level_str)
-except OSError:
-  # TODO: Print out warning that log level is incorrect or missing
-  log_level = _DEFAULT_LEVEL
+  else:
+    print(f'Warning: log_level not specified in {_CONF_FILE_NAME}. '
+          f'Using default: {logging.getLevelName(_DEFAULT_LEVEL)}')
+except (OSError, ValueError) as e:
+  print(f'Warning: Could not load {_CONF_FILE_NAME} ({str(e)}). '
+        f'Using default log level: {logging.getLevelName(_DEFAULT_LEVEL)}')
 
 log_format = logging.Formatter(fmt=_LOG_FORMAT, datefmt=_DATE_FORMAT)
 
