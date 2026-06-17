@@ -15,6 +15,8 @@
 
 import BAC0
 from bacpypes3.pdu import Address
+from bacpypes3.app import DeviceInfo
+from bacpypes3.basetypes import Segmentation
 from dataclasses import dataclass
 import logging
 import json
@@ -157,29 +159,29 @@ class BACnet():
     LOGGER.info(
       f'Resolving protocol version for BACnet device: {device.device_id}'
     )
+    version = None
+    revision = None
     try:
-      try:
-        dut = await BAC0.device(
-          device.ip,
-          device.device_id,
-          self.bacnet
-        )
-        version = await dut.read_property(
-          ('device', device.device_id, 'protocolVersion')
-        )
-        revision = await dut.read_property(
-          ('device', device.device_id, 'protocolRevision')
-        )
-      except AttributeError:
-        ip = device.ip
-        d_id = device.device_id
-        cmd = f'{ip} device {d_id} protocolVersion protocolRevision'
-        results = await self.bacnet.readMultiple(cmd)
-
-        LOGGER.info(f'BACnet readMultiple results: {results}')
-        if len(results) == 2:
-          version = results[0]
-          revision = results[1]
+      dev_info = DeviceInfo()
+      dev_info.device_instance = device.device_id
+      dev_info.device_address = Address(device.ip)
+      dev_info.max_apdu_length_accepted = 1476  # Стандарт для BACnet/IP
+      dev_info.segmentation_supported = Segmentation.noSegmentation
+      dev_info.vendor_id = 0
+      
+      await self.bacnet.this_application.app.device_info_cache.set_device_info(dev_info)
+      LOGGER.info(f"Manually injected device {device.device_id} ({device.ip}) into BAC0 cache.")
+    except Exception as cache_err:
+      LOGGER.warning(f"Failed to pre-populate BAC0 cache: {cache_err}")
+    try:
+      ip = device.ip
+      d_id = device.device_id
+      cmd = f'{ip} device {d_id} protocolVersion protocolRevision'
+      results = await self.bacnet.readMultiple(cmd)
+      LOGGER.info(f'BACnet readMultiple results: {results}')
+      if len(results) == 2:
+        version = results[0]
+        revision = results[1]
       if version is None or revision is None:
         result = False
         result_description = (
