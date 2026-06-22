@@ -164,12 +164,13 @@ class BACnet():
     ip = device.ip
     d_id = device.device_id
     try:
-      dev_info = DeviceInfo()
-      dev_info.device_instance = d_id
-      dev_info.device_address = Address(ip)
-      dev_info.max_apdu_length_accepted = 1476  # Стандарт для BACnet/IP
-      dev_info.segmentation_supported = Segmentation.noSegmentation
-      dev_info.vendor_id = 0
+      dev_info = DeviceInfo(
+        device_instance=int(d_id),
+        device_address=Address(ip),
+        max_apdu_length_accepted=1476,
+        segmentation_supported=Segmentation.noSegmentation,
+        vendor_identifier=0
+    )
       await self.bacnet.this_application.app.device_info_cache.set_device_info(
         dev_info
       )
