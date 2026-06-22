@@ -160,7 +160,7 @@ def test_get_host_user_via_getpass(
 
 # Tests for set_file_owner()
 
-@patch(f"{util.__name__}.run_command")
+@patch(f'{util.__name__}.run_command')
 def test_set_file_owner(mock_run_command: MagicMock):
   util.set_file_owner('/path/to/file', 'admin')
   mock_run_command.assert_called_once_with('chown -R admin /path/to/file')
