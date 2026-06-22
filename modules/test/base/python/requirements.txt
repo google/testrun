@@ -10,3 +10,7 @@ netifaces==0.11.0
 
 # Requirements for reports generation
 Jinja2==3.1.6
+
+# Requirements for timezone handling
+tzlocal==5.4.3
+
