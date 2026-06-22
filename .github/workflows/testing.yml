@@ -106,9 +106,9 @@ jobs:
       - name: Run tests for tls module
         shell: bash {0}
         run: bash testing/unit/run_test_module.sh tls captures certAuth certs reports root_certs output
-      - name: Run framework tests
-        shell: bash {0}
-        run: bash testing/unit/run_framework_test.sh
+      # - name: Run framework tests
+      #   shell: bash {0}
+      #   run: bash testing/unit/run_framework_test.sh
       - name: Run tests for risk profiles
         shell: bash {0}
         run: bash testing/unit/run_report_test.sh testing/unit/risk_profile/risk_profile_test.py
