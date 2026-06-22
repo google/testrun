@@ -21,6 +21,7 @@ import shlex
 import typing as t
 import netifaces
 from common import logger
+import tzlocal
 
 LOGGER = logger.get_logger('util')
 
@@ -153,3 +154,14 @@ def diff_dicts(d1: t.Dict[t.Any, t.Any], d2: t.Dict[t.Any, t.Any]) -> t.Dict:
     if items_added:
       diff['items_added'] = items_added
   return diff
+
+
+def get_system_timezone() -> str:
+  """Returns the local timezone of the system."""
+  try:
+    local_timezone = tzlocal.get_localzone()
+    return str(local_timezone)
+  except Exception as e:
+    LOGGER.error(f"Error getting local timezone: {e}")
+    return "UTC"
+
