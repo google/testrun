@@ -162,6 +162,5 @@ def get_system_timezone() -> str:
     local_timezone = tzlocal.get_localzone()
     return str(local_timezone)
   except Exception as e:
-    LOGGER.error(f"Error getting local timezone: {e}")
-    return "UTC"
-
+    LOGGER.error(f'Error getting local timezone: {e}')
+    return 'UTC'
