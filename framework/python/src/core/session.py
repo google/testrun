@@ -166,11 +166,11 @@ class TestrunSession():
 
     # Fetch the timezone of the host system
     try:
-      local_timezone = tzlocal.get_localzone()
-      return str(local_timezone)
+      self._timezone = str(tzlocal.get_localzone())
     except Exception as e:
       LOGGER.error(f'Error getting local timezone: {e}')
-      return 'UTC'
+      self._timezone = 'UTC'
+    LOGGER.debug(f'System timezone is {self._timezone}')
 
     # MQTT client
     self._mqtt_client = mqtt.MQTT()
