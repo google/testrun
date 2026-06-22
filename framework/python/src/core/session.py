@@ -29,6 +29,8 @@ from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.backends import default_backend
 
+import tzlocal
+
 NETWORK_KEY = 'network'
 DEVICE_INTF_KEY = 'device_intf'
 INTERNET_INTF_KEY = 'internet_intf'
@@ -163,10 +165,12 @@ class TestrunSession():
     self.load_certs()
 
     # Fetch the timezone of the host system
-    tz = util.run_command('cat /etc/timezone')
-    # TODO: Check if timezone is fetched successfully
-    self._timezone = tz[0]
-    LOGGER.debug(f'System timezone is {self._timezone}')
+    try:
+      local_timezone = tzlocal.get_localzone()
+      return str(local_timezone)
+    except Exception as e:
+      LOGGER.error(f'Error getting local timezone: {e}')
+      return 'UTC'
 
     # MQTT client
     self._mqtt_client = mqtt.MQTT()
