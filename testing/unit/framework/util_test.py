@@ -14,8 +14,6 @@
 
 """Util tests"""
 
-import os
-import sys
 from unittest.mock import patch, MagicMock
 import pytest
 from common import util
@@ -24,7 +22,7 @@ from common import util
 # Tests for run_command()
 
 @patch('subprocess.Popen')
-def test_run_command_success_with_output(mock_popen):
+def test_run_command_success_with_output(mock_popen: MagicMock):
   # Setup mock process
   mock_process = MagicMock()
   mock_process.communicate.return_value = (b'my_output\n', b'')
@@ -38,7 +36,7 @@ def test_run_command_success_with_output(mock_popen):
 
 
 @patch('subprocess.Popen')
-def test_run_command_success_no_output(mock_popen):
+def test_run_command_success_no_output(mock_popen: MagicMock):
   mock_process = MagicMock()
   mock_process.communicate.return_value = (b'', b'')
   mock_process.returncode = 0
@@ -50,7 +48,10 @@ def test_run_command_success_no_output(mock_popen):
 
 @patch('subprocess.Popen')
 @patch.object(util, 'LOGGER')
-def test_run_command_failure_with_logging(mock_logger, mock_popen):
+def test_run_command_failure_with_logging(
+  mock_logger: MagicMock,
+  mock_popen: MagicMock
+):
   mock_process = MagicMock()
   mock_process.communicate.return_value = (b'', b'Permission denied')
   mock_process.returncode = 1
@@ -64,7 +65,10 @@ def test_run_command_failure_with_logging(mock_logger, mock_popen):
 
 @patch('subprocess.Popen')
 @patch.object(util, 'LOGGER')
-def test_run_command_failure_suppress_error(mock_logger, mock_popen):
+def test_run_command_failure_suppress_error(
+  mock_logger: MagicMock,
+  mock_popen: MagicMock
+):
   mock_process = MagicMock()
   mock_process.communicate.return_value = (b'', b'Some error')
   mock_process.returncode = 1
@@ -79,7 +83,7 @@ def test_run_command_failure_suppress_error(mock_logger, mock_popen):
 # Tests for interface_exists()
 
 @patch('netifaces.interfaces')
-def test_interface_exists(mock_interfaces):
+def test_interface_exists(mock_interfaces: MagicMock):
   mock_interfaces.return_value = ['lo', 'eth0', 'wlan0']
   assert util.interface_exists('eth0') is True
   assert util.interface_exists('eth1') is False
@@ -108,7 +112,10 @@ def test_get_sudo_user_absent():
 
 @patch('os.getuid')
 @patch('pwd.getpwuid')
-def test_get_pwd_user_success(mock_getpwuid, mock_getuid):
+def test_get_pwd_user_success(
+  mock_getpwuid: MagicMock,
+  mock_getuid: MagicMock
+):
   mock_getuid.return_value = 1000
   mock_pw = MagicMock()
   mock_pw.pw_name = 'testuser'
@@ -121,14 +128,17 @@ def test_get_pwd_user_success(mock_getpwuid, mock_getuid):
 # Tests for get_host_user()
 
 @patch.object(util, 'get_sudo_user')
-def test_get_host_user_via_sudo(mock_get_sudo_user):
+def test_get_host_user_via_sudo(mock_get_sudo_user: MagicMock):
   mock_get_sudo_user.return_value = 'sudo_dev'
   assert util.get_host_user() == 'sudo_dev'
 
 
 @patch('util.get_sudo_user')
 @patch('os.getlogin')
-def test_get_host_user_via_getlogin(mock_getlogin, mock_get_sudo_user):
+def test_get_host_user_via_getlogin(
+  mock_getlogin: MagicMock,
+  mock_get_sudo_user: MagicMock
+):
   mock_get_sudo_user.return_value = None
   mock_getlogin.return_value = 'login_dev'
   assert util.get_host_user() == 'login_dev'
@@ -138,9 +148,9 @@ def test_get_host_user_via_getlogin(mock_getlogin, mock_get_sudo_user):
 @patch('os.getlogin')
 @patch('getpass.getuser')
 def test_get_host_user_via_getpass(
-   mock_getuser,
-   mock_getlogin,
-   mock_get_sudo_user
+   mock_getuser: MagicMock,
+   mock_getlogin: MagicMock,
+   mock_get_sudo_user: MagicMock
 ):
   mock_get_sudo_user.return_value = None
   mock_getlogin.side_effect = OSError('No tty')
@@ -150,8 +160,8 @@ def test_get_host_user_via_getpass(
 
 # Tests for set_file_owner()
 
-@patch(f"{util.__name__}.run_command") 
-def test_set_file_owner(mock_run_command):
+@patch(f"{util.__name__}.run_command")
+def test_set_file_owner(mock_run_command: MagicMock):
   util.set_file_owner('/path/to/file', 'admin')
   mock_run_command.assert_called_once_with('chown -R admin /path/to/file')
 
@@ -167,7 +177,10 @@ def test_set_file_owner(mock_run_command):
     ('protocol', 'Protocol'),
     ('unknown_mod', 'Unknown'),
 ])
-def test_get_module_display_name(search_name, expected_display):
+def test_get_module_display_name(
+  search_name: str,
+  expected_display: str
+):
   assert util.get_module_display_name(search_name) == expected_display
 
 
@@ -207,7 +220,9 @@ def test_diff_dicts_mixed():
 # Tests for get_system_timezone()
 
 @patch('tzlocal.get_localzone')
-def test_get_system_timezone_success(mock_get_localzone):
+def test_get_system_timezone_success(
+  mock_get_localzone: MagicMock
+):
   mock_zone = MagicMock()
   mock_zone.__str__.return_value = 'America/New_York'
   mock_get_localzone.return_value = mock_zone
@@ -215,6 +230,8 @@ def test_get_system_timezone_success(mock_get_localzone):
 
 
 @patch('tzlocal.get_localzone')
-def test_get_system_timezone_exception(mock_get_localzone):
+def test_get_system_timezone_exception(
+  mock_get_localzone: MagicMock
+):
   mock_get_localzone.side_effect = Exception('System error reading timezone')
   assert util.get_system_timezone() == 'UTC'
