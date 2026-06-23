@@ -147,6 +147,22 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     }
   }
 
+  get isSaveDisabled(): boolean | null {
+    if (!this.profileForm.valid) {
+      return true;
+    }
+
+    if (
+      this.profile &&
+      this.profile.status === ProfileStatus.DRAFT &&
+      this.profileHasNoChanges()
+    ) {
+      return false;
+    }
+
+    return this.profileHasNoChanges();
+  }
+
   get isDraftDisabled(): boolean | null {
     return (
       !this.nameControl.valid ||
