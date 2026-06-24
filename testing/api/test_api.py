@@ -1108,7 +1108,7 @@ def test_delete_report_no_device(empty_devices_dir, testrun): # pylint: disable=
   assert "error" in response
 
   # Check if the correct error message returned
-  assert "Device not found" in response["error"]
+  assert "Report not found" in response["error"]
 
 @pytest.mark.parametrize("add_devices", [
   ["device_1"]
@@ -1171,13 +1171,13 @@ def test_get_report_not_found(empty_devices_dir, add_devices, testrun): # pylint
   assert "error" in response
 
   # Check if the correct error message is returned
-  assert "Report could not be found" in response["error"]
+  assert "Report not found from list" in response["error"]
 
   # Check if "error" in response
   assert "error" in response
 
   # Check if the correct error message returned
-  assert "Report could not be found" in response["error"]
+  assert "Report not found from list" in response["error"]
 
 def test_get_report_device_not_found(empty_devices_dir, testrun): # pylint: disable=W0613
   """Test getting a report when the device is not found (404)"""
@@ -1198,7 +1198,7 @@ def test_get_report_device_not_found(empty_devices_dir, testrun): # pylint: disa
   assert "error" in response
 
   # Check if the correct error message is returned
-  assert "Device not found" in response["error"]
+  assert "Report not found from list" in response["error"]
 
 def test_export_report_device_not_found(empty_devices_dir, create_report_folder, # pylint: disable=W0613
                                                                        testrun): # pylint: disable=W0613
@@ -1223,7 +1223,7 @@ def test_export_report_device_not_found(empty_devices_dir, create_report_folder,
   assert "error" in response
 
   # Check if the correct error message is returned
-  assert "Device not found" in response["error"]
+  assert "Report not found from list" in response["error"]
 
 @pytest.mark.parametrize("add_devices", [
   ["device_1"]
@@ -1292,7 +1292,7 @@ def test_export_report_not_found(empty_devices_dir, add_devices, testrun): # pyl
   assert "error" in response
 
   # Check if the correct error message is returned
-  assert "Report could not be found" in response["error"]
+  assert "Report not found from list" in response["error"]
 
 # Tests for device endpoints
 @pytest.fixture()
