@@ -161,6 +161,11 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
         return this.testRunService.fetchProfilesFormat().pipe(
           tap((profileFormat: ProfileFormat[]) => {
             this.updateProfileFormat(profileFormat);
+          }),
+          catchError(err => {
+            console.error('Error while loading profiles', err);
+            this.updateProfileFormat([]);
+            return EMPTY;
           })
         );
       })
