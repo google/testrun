@@ -63,7 +63,7 @@ limitations under the License.
       mat-flat-button
       color="primary"
       class="save-profile-button"
-      [disabled]="profileHasNoChanges() || !profileForm.valid"
+      [disabled]="isSaveDisabled"
       (click)="onSaveClick(ProfileStatus.VALID)">
       Save
     </button>
