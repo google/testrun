@@ -25,6 +25,7 @@ import { FocusManagerService } from '../../services/focus-manager.service';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Component } from '@angular/core';
+import { device } from '../../mocks/device.mock';
 
 describe('DownloadZipModalComponent', () => {
   // @ts-expect-error data layer should be defined
@@ -67,6 +68,8 @@ describe('DownloadZipModalComponent', () => {
             profiles: [PROFILE_MOCK_2, PROFILE_MOCK],
             report: 'localhost:8080',
             export: 'localhost:8080',
+            device: device,
+            started: '2026-02-02 17:24:52',
           },
         },
         { provide: TestRunService, useValue: testRunServiceMock },
@@ -83,6 +86,8 @@ describe('DownloadZipModalComponent', () => {
           report: 'localhost:8080',
           export: 'localhost:8080',
           isPilot: true,
+          device: device,
+          started: '2026-02-02 17:24:52',
         },
       });
 
@@ -225,6 +230,8 @@ describe('DownloadZipModalComponent', () => {
           profiles: [],
           report: 'localhost:8080',
           export: 'localhost:8080',
+          device: device,
+          started: '2026-02-02 17:24:52',
         },
       });
 

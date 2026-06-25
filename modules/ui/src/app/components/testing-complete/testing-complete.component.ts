@@ -54,6 +54,8 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
         report: this.data?.report,
         export: this.data?.export,
         isPilot: this.data?.device.test_pack === TestingType.Pilot,
+        device: this.data?.device,
+        started: this.data?.started,
       },
       autoFocus: 'first-tabbable',
       ariaDescribedBy: 'testing-result-main-info',

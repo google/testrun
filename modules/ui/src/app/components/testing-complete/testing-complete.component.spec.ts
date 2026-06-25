@@ -17,6 +17,7 @@ import {
   DownloadZipModalComponent,
 } from '../download-zip-modal/download-zip-modal.component';
 import { FocusManagerService } from '../../services/focus-manager.service';
+import { DeviceStatus } from '../../model/device';
 
 describe('TestingCompleteComponent', () => {
   let component: TestingCompleteComponent;
@@ -68,6 +69,14 @@ describe('TestingCompleteComponent', () => {
           report: '/report/123',
           export: '',
           isPilot: false,
+          device: {
+            status: DeviceStatus.VALID,
+            manufacturer: 'Delta',
+            model: '03-DIN-CPU',
+            mac_addr: '01:02:03:04:05:06',
+            firmware: '1.2.2',
+          },
+          started: '2023-06-22T09:20:00.123Z',
         },
         autoFocus: 'first-tabbable',
         ariaDescribedBy: 'testing-result-main-info',
