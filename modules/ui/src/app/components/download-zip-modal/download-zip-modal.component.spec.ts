@@ -35,6 +35,7 @@ describe('DownloadZipModalComponent', () => {
   const testRunServiceMock = jasmine.createSpyObj('testRunServiceMock', [
     'getRiskClass',
     'downloadZip',
+    'getReportLink',
   ]);
   const focusServiceMock: jasmine.SpyObj<FocusManagerService> =
     jasmine.createSpyObj('focusServiceMock', ['focusFirstElementInContainer']);

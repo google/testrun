@@ -148,22 +148,27 @@ class TLSUtil():
           cert_pem = ssl.DER_cert_to_PEM_cert(secure_sock.getpeercert(True))
 
     except ConnectionRefusedError:
-      LOGGER.info(f'Connection to {host}:{port} was refused.')
-      return None
+      error_msg = f'Connection to {host}:{port} was refused.'
+      LOGGER.info(error_msg)
+      return None, error_msg
     except socket.gaierror:
-      LOGGER.info(f'Failed to resolve the hostname {host}.')
-      return None
+      error_msg = f'Failed to resolve the hostname {host}.'
+      LOGGER.info(error_msg)
+      return None, error_msg
     except ssl.SSLError as e:
-      LOGGER.info(f'SSL error occurred: {e}')
-      return None
+      error_msg = f'SSL error occurred: {e}'
+      LOGGER.info(error_msg)
+      return None, error_msg
     except socket.timeout:
-      LOGGER.info('Socket timeout error')
-      return None
+      error_msg = 'Socket timeout error'
+      LOGGER.info(error_msg)
+      return None, error_msg
     except OSError as e:
-      LOGGER.error(e)
-      return None
+      error_msg = e
+      LOGGER.info(error_msg)
+      return None, error_msg
 
-    return cert_pem
+    return cert_pem, None
 
   def get_public_key(self, public_cert):
     # Extract and return the public key from the certificate
@@ -336,7 +341,7 @@ class TLSUtil():
     # within the valid CA root certs stored on the server
     LOGGER.info(
         'Checking for valid signature from authorized Certificate Authorities')
-    public_cert = self.get_public_certificate(host=host,
+    public_cert, _ = self.get_public_certificate(host=host,
                                               port=port,
                                               validate_cert=True,
                                               tls_version='1.2')
@@ -505,7 +510,7 @@ class TLSUtil():
                           tls_version: str,
                           port: int=443
                           ) -> tuple[bool| None, list| str]:
-    cert_pem = self.get_public_certificate(host=host,
+    cert_pem, error_reason = self.get_public_certificate(host=host,
                                            port=port,
                                            validate_cert=False,
                                            tls_version=tls_version)
@@ -540,8 +545,10 @@ class TLSUtil():
       LOGGER.info('Certificate validated: ' + str(cert_valid))
       return cert_valid, details
     else:
-      LOGGER.info('Failed to resolve public certificate')
-      return None, ['Failed to resolve public certificate']
+      final_msg = error_reason \
+                  or f'No TLS {tls_version} server functionality found'
+      LOGGER.info(final_msg)
+      return None, [final_msg]
 
   def write_cert_to_file(self, cert_name, cert):
     try:
@@ -568,9 +575,9 @@ class TLSUtil():
       LOGGER.error(f'Failed to write certificate to file: {e}')
     return None
 
-  def get_ciphers(self, capture_file, dst_ip, dst_port):
+  def get_ciphers(self, capture_file, dst_ip):
     bin_file = self._bin_dir + '/get_ciphers.sh'
-    args = f'"{capture_file}" {dst_ip} {dst_port}'
+    args = f'"{capture_file}" {dst_ip}'
     command = f'{bin_file} {args}'
     response = util.run_command(command)
     ciphers = response[0].split('\n')
@@ -586,7 +593,11 @@ class TLSUtil():
       packets = response[0].strip()
       if len(packets) > 0:
         # Parse each packet and append key-value pairs to combined_results
-        result = self.parse_packets(json.loads(packets), capture_file)
+        result = self.parse_packets(
+          json.loads(packets),
+          capture_file,
+          tls_version
+          )
         combined_results.extend(result)
     return combined_results
 
@@ -645,11 +656,11 @@ class TLSUtil():
       packets = response[0].strip()
       parsed_json = json.loads(packets)
       # Parse each packet and append key-value pairs to combined_results
-      result = self.parse_packets(parsed_json, capture_file)
+      result = self.parse_packets(parsed_json, capture_file, tls_version)
       combined_results.extend(result)
     return combined_results
 
-  def parse_packets(self, packets, capture_file):
+  def parse_packets(self, packets, capture_file, tls_version):
     hello_packets = []
     for packet in packets:
       # Extract all the basic IP information about the packet
@@ -660,9 +671,11 @@ class TLSUtil():
           0] if 'tcp.dstport' in packet_layers else ''
 
       # Resolve the ciphers used in this packet and validate expected ones exist
-      ciphers = self.get_ciphers(capture_file, dst_ip, dst_port)
-      cipher_support = self.is_ecdh_and_ecdsa(ciphers)
-
+      ciphers = self.get_ciphers(capture_file, dst_ip)
+      if tls_version == '1.3':
+        cipher_support = self.has_tls13_cipher(ciphers)
+      else:
+        cipher_support = self.is_ecdh_and_ecdsa(ciphers)
       # Put result together
       hello_packet = {}
       hello_packet['dst_ip'] = dst_ip
@@ -673,43 +686,53 @@ class TLSUtil():
       hello_packets.append(hello_packet)
     return hello_packets
 
+  def _validate_packet_ciphers(self, packet: dict, tls_version: str) -> bool:
+    if tls_version == '1.2':
+      return (packet['cipher_support']['ecdh'] and
+        packet['cipher_support']['ecdsa'])
+    elif tls_version == '1.3':
+      return any(packet['cipher_support'].values())
+    else:
+      return False
+
   def process_hello_packets(self,
                             hello_packets,
                             allowed_protocol_client_ips,
                             tls_version='1.2'):
     # Validate the ciphers only for tls 1.2
     client_hello_results = {'valid': [], 'invalid': []}
-
-    if tls_version == '1.2':
+    if tls_version in ('1.2', '1.3'):
       for packet in hello_packets:
-        if packet['dst_ip'] not in str(client_hello_results['valid']):
-          LOGGER.info('Checking client ciphers: ' + str(packet))
-          if packet['cipher_support']['ecdh'] and packet['cipher_support'][
-              'ecdsa']:
+        dst_ip = packet['dst_ip']
+        if dst_ip not in str(client_hello_results['valid']):
+          LOGGER.info(f'Checking client ciphers TLS{tls_version}: {packet}')
+          if self._validate_packet_ciphers(packet, tls_version):
             LOGGER.info('Required ciphers detected')
             client_hello_results['valid'].append(packet)
             # If a previous hello packet to the same destination failed,
             # we can now remove it as it has passed on a different attempt
-            if packet['dst_ip'] in str(client_hello_results['invalid']):
+            if dst_ip in str(client_hello_results['invalid']):
               LOGGER.info(str(client_hello_results['invalid']))
               for invalid_packet in client_hello_results['invalid']:
-                if packet['dst_ip'] in str(invalid_packet):
+                if dst_ip in str(invalid_packet):
                   client_hello_results['invalid'].remove(invalid_packet)
           else:
             LOGGER.info('Required ciphers not detected')
-            if packet['dst_ip'] not in allowed_protocol_client_ips:
-              if packet['dst_ip'] not in str(client_hello_results['invalid']):
+            if dst_ip not in allowed_protocol_client_ips:
+              if dst_ip not in str(client_hello_results['invalid']):
                 client_hello_results['invalid'].append(packet)
             else:
-              LOGGER.info(
-                  'Allowing protocol connection, cipher check failure ignored.')
-              protocol_name = allowed_protocol_client_ips[packet['dst_ip']]
+              LOGGER.info('''Allowing protocol connection,
+                          cipher check failure ignored.''')
+              protocol_name = allowed_protocol_client_ips[dst_ip]
               packet['protocol_details'] = (
-                  f'\nAllowing {protocol_name} traffic to {packet["dst_ip"]}') # pylint: disable=W1405
+                  f'\nAllowing {protocol_name} traffic to {dst_ip}')
               client_hello_results['valid'].append(packet)
     else:
-      # No cipher check for TLS 1.0, 1.1 or TLS 1.3
-      client_hello_results['valid'] = hello_packets
+      # No cipher check for TLS 1.0, 1.1
+      if tls_version not in ('1.2', '1.3'):
+        client_hello_results['valid'] = hello_packets
+
     return client_hello_results
 
   # Check if the device has made any outbound connections that don't
@@ -932,6 +955,43 @@ class TLSUtil():
           connection detected to {ip}\n'''
     return tls_client_valid, tls_client_details
 
+  def detect_tls_client_versions(self,
+                                 client_mac: str,
+                                 capture_files: list[str],
+                                 version_list: list[str] | None = None
+                                 ) -> dict:
+    """Detect all TLS client versions from packet captures."""
+    if version_list is None:
+      version_list = ['1.0', '1.1', '1.2', '1.3']
+
+    version_results = {}
+    for tls_version in version_list:
+      tls_packets = self.get_tls_packets(capture_files, client_mac,
+                                         tls_version)
+      tls_present = False
+      details = []
+      unique_packets = self._get_unique_packets(tls_packets)
+      for packet in unique_packets:
+        dst_ip = packet['dst_ip']
+        details.append(f'TLS {tls_version} packet detected to IP: {dst_ip}')
+      if tls_packets:
+        tls_present = True
+      version_results[tls_version] = {
+        'present': tls_present,
+        'details': details
+      }
+    return version_results
+
+  def _get_unique_packets(self, packets: list[dict]) -> list[dict]:
+    unique_packets = []
+    seen_dst_ips = set()
+    for packet in packets:
+      dst_ip = packet['dst_ip']
+      if dst_ip not in seen_dst_ips:
+        unique_packets.append(packet)
+        seen_dst_ips.add(dst_ip)
+    return unique_packets
+
   def is_ecdh_and_ecdsa(self, ciphers):
     ecdh = False
     ecdsa = False
@@ -939,3 +999,26 @@ class TLSUtil():
       ecdh |= 'ECDH' in cipher
       ecdsa |= 'ECDSA' in cipher
     return {'ecdh': ecdh, 'ecdsa': ecdsa}
+
+
+  def has_tls13_cipher(self, ciphers: list[str]) -> dict[str, bool]:
+    """
+    Check if any of the ciphers in the list are TLS 1.3 ciphers.
+    """
+    tls_13_ciphers = {
+        'TLS_AES_128_GCM_SHA256',
+        'TLS_AES_256_GCM_SHA384',
+        'TLS_CHACHA20_POLY1305_SHA256'
+    }
+    valid_ciphers = {}
+    for cipher in ciphers:
+      name = cipher.split(' (')[0].strip()
+      if name in tls_13_ciphers:
+        valid_ciphers[name] = True
+        tls_13_ciphers.remove(name)
+        if len(tls_13_ciphers) == 0:
+          break
+    if len(tls_13_ciphers) > 0:
+      for cipher in tls_13_ciphers:
+        valid_ciphers[cipher] = False
+    return valid_ciphers

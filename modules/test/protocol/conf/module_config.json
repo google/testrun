@@ -16,12 +16,21 @@
       {
         "name": "protocol.valid_bacnet",
         "test_description": "Can valid BACnet traffic be seen",
-        "expected_behavior": "BACnet traffic can be seen on the network and packets are valid and not malformed"
+        "expected_behavior": "BACnet traffic can be seen on the network and packets are valid and not malformed",
+        "recommendations": [
+          "Inspect network traffic for malformed packets or checksum errors",
+          "Verify that the MTU settings are consistent across the network path"
+        ]
       },
       {
         "name": "protocol.bacnet.version",
         "test_description": "Obtain the version of BACnet client used",
-        "expected_behavior": "The BACnet client implements an up to date version of BACnet"
+        "expected_behavior": "The BACnet client implements an up to date version of BACnet",
+        "recommendations": [
+          "Update the device firmware",
+          "Inspect network traffic for malformed packets or checksum errors",
+          "Ensure the device supports the required ASHRAE 135 protocol revision"
+        ]
       },
       {
         "name": "protocol.valid_modbus",

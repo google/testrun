@@ -21,6 +21,7 @@ from fastapi.encoders import jsonable_encoder
 from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
 from common.statuses import TestrunStatus, TestResult, TestrunResult
+from common.device import Device, DeviceWithReport
 from net_orc.ip_control import IPControl
 
 # Certificate dependencies
@@ -42,7 +43,6 @@ TEST_CONFIG_KEY = 'test_modules'
 ALLOW_DISCONNECT_KEY='allow_disconnect'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
-STATUS_TOPIC = 'status'
 
 MAKE_CONTROL_DIR =  'make/DEBIAN/control'
 
@@ -66,7 +66,7 @@ def session_tracker(method):
 
     if self.get_status() != TestrunStatus.IDLE and not self.pause_message:
       self.get_mqtt_client().send_message(
-                                        STATUS_TOPIC,
+                                        mqtt.MQTTTopic.STATUS_TOPIC,
                                         jsonable_encoder(self.to_json())
                                         )
       if self.get_status() in STATUSES_COMPLETE:
@@ -384,8 +384,24 @@ class TestrunSession():
       if device.manufacturer == make and device.model == model:
         return device
 
+  def get_device_by_mac_addr(self, mac_addr_simmplified: str) -> Device | None:
+    for device in self._device_repository:
+      if (device.mac_addr is not None
+          and device.mac_addr.replace(':', '') == mac_addr_simmplified):
+        return device
+
   def get_device_repository(self):
     return self._device_repository
+
+  def get_report(self, folder_name: str) -> DeviceWithReport:
+    device_with_report = DeviceWithReport()
+    for device in self._device_repository:
+      device_reports = device.get_reports()
+      for report in device_reports:
+        if report.get_folder_name() == folder_name:
+          device_with_report.device = device
+          device_with_report.report = report
+    return device_with_report
 
   def add_device(self, device):
     self._device_repository.append(device)
@@ -518,8 +534,12 @@ class TestrunSession():
 
     for device in self.get_device_repository():
       device_reports = device.get_reports()
-      for device_report in device_reports:
-        reports.append(device_report.to_json())
+      reports.extend(
+        [
+          device_report.to_json_updated(device)
+          for device_report in device_reports
+        ]
+      )
     return sorted(reports, key=lambda report: report['started'], reverse=True)
 
   def add_total_tests(self, no_tests):
@@ -997,13 +1017,20 @@ question {question.get('question')}''')
           if now > cert.not_valid_after_utc:
             status = 'Expired'
 
+          # Determine if certificate is root or intermediate.
+          if cert.issuer == cert.subject:
+            cert_type = 'root'
+          else:
+            cert_type = 'intermediate'
+
           # Craft python dictionary with values
           cert_obj = {
               'name': common_name,
               'status': status,
               'organisation': issuer,
               'expires': cert.not_valid_after_utc,
-              'filename': cert_file
+              'filename': cert_file,
+              'type': cert_type,
           }
 
           # Add certificate to list

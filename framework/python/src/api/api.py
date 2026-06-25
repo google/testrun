@@ -16,7 +16,6 @@ from fastapi import (FastAPI, APIRouter, Response, Request, status, UploadFile)
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
-from datetime import datetime
 import json
 from json import JSONDecodeError
 import os
@@ -43,6 +42,7 @@ DEVICE_TECH_KEY = "technology"
 DEVICE_ADDITIONAL_INFO_KEY = "additional_info"
 
 DEVICES_PATH = "local/devices"
+REPORTS_PATH = "local/reports"
 PROFILES_PATH = "local/risk_profiles"
 
 RESOURCES_PATH = "resources"
@@ -96,12 +96,12 @@ class Api:
 
     # Report endpoints
     self._router.add_api_route("/reports", self.get_reports)
-    self._router.add_api_route("/report",
+    self._router.add_api_route("/report/{report_name}",
                                self.delete_report,
                                methods=["DELETE"])
-    self._router.add_api_route("/report/{device_name}/{timestamp}",
+    self._router.add_api_route("/report/{report_name}",
                                self.get_report)
-    self._router.add_api_route("/export/{device_name}/{timestamp}",
+    self._router.add_api_route("/export/{report_name}",
                                self.get_results,
                                methods=["POST"])
 
@@ -441,66 +441,34 @@ class Api:
       LOGGER.debug(e)
       return json_response
 
-  async def get_reports(self, request: Request):
+  async def get_reports(self):
     LOGGER.debug("Received reports list request")
     # Resolve the server IP from the request so we
     # can fix the report URL
     reports = self._session.get_all_reports()
     for report in reports:
-      # report URL is currently hard coded as localhost so we can
-      # replace that to fix the IP dynamically from the requester
-      report["report"] = report["report"].replace(
-        "localhost", request.client.host)
-      report["export"] = report["report"].replace("report", "export")
+      del report["tests"]
+      report["device"] = {
+        "manufacturer": report["device"]["manufacturer"],
+        "model": report["device"]["model"],
+        "mac_addr": report["device"]["mac_addr"],
+        "firmware": report["device"]["firmware"],
+        "test_pack": report["device"]["test_pack"],
+      }
+      report["delete"] = report["report"]
     return reports
 
-  async def delete_report(self, request: Request, response: Response):
+  async def delete_report(self, response: Response, report_name: str):
 
-    body_raw = (await request.body()).decode("UTF-8")
-
-    if len(body_raw) == 0:
-      response.status_code = 400
-      return self._generate_msg(False, "Invalid request received, missing body")
-
-    try:
-      body_json = json.loads(body_raw)
-    except JSONDecodeError as e:
-      LOGGER.error("An error occurred whilst decoding JSON")
-      LOGGER.debug(e)
-      response.status_code = status.HTTP_400_BAD_REQUEST
-      return self._generate_msg(False, "Invalid request received")
-
-    if "mac_addr" not in body_json or "timestamp" not in body_json:
-      response.status_code = 400
-      return self._generate_msg(False, "Missing mac address or timestamp")
-
-    mac_addr = body_json.get("mac_addr").lower()
-    timestamp = body_json.get("timestamp")
-
-    try:
-      parsed_timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
-      timestamp_formatted = parsed_timestamp.strftime("%Y-%m-%dT%H:%M:%S")
-
-    except ValueError:
-      response.status_code = 400
-      return self._generate_msg(False, "Incorrect timestamp format")
-
-    # Get device from MAC address
-    device = self._session.get_device(mac_addr)
-
-    if device is None:
+    device_with_report = self._session.get_report(report_name)
+    if device_with_report.device is None or device_with_report.report is None:
+      LOGGER.info("Report could not be found, returning 404")
       response.status_code = 404
-      return self._generate_msg(False, "Could not find device")
+      return self._generate_msg(False, "Report not found from list")
+    device = device_with_report.device
+    report = device_with_report.report
 
-    # Assign the reports folder path from testrun
-    reports_folder = self._testrun.get_reports_folder(device)
-
-    # Check if reports folder exists
-    if not os.path.exists(reports_folder):
-      response.status_code = 404
-      return self._generate_msg(False, "Report not found")
-
-    if self._testrun.delete_report(device, timestamp_formatted):
+    if self._testrun.delete_report(device, report):
       return self._generate_msg(True, "Deleted report")
 
     response.status_code = 500
@@ -702,32 +670,21 @@ class Api:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid JSON received")
 
-  async def get_report(self, response: Response, device_name, timestamp):
-    device = self._session.get_device_by_name(device_name)
-
-    # If the device not found
-    if device is None:
-      LOGGER.info("Device not found, returning 404")
+  async def get_report(self, response: Response, report_name):
+    """Serve report pdf file for a given report name"""
+    device_with_report = self._session.get_report(report_name)
+    if device_with_report.device is None or device_with_report.report is None:
+      LOGGER.info("Report could not be found, returning 404")
       response.status_code = 404
-      return self._generate_msg(False, "Device not found")
+      return self._generate_msg(False, "Report not found from list")
+    device = device_with_report.device
+    report = device_with_report.report
 
     # Regenerate the pdf if the device profile has been updated
-    self._get_testrun().get_test_orc().regenerate_pdf(device, timestamp)
-
-    # 1.3 file path
-    file_path = os.path.join(
-      DEVICES_PATH,
-      device_name,
-      "reports",
-      timestamp,"test",
-          device.mac_addr.replace(":",""),
-          "report.pdf")
-    if not os.path.isfile(file_path):
-      # pre 1.3 file path
-      file_path = os.path.join(DEVICES_PATH, device_name, "reports", timestamp,
-                             "report.pdf")
-
-    LOGGER.debug(f"Received get report request for {device_name} / {timestamp}")
+    test_orc = self._get_testrun().get_test_orc()
+    test_path = test_orc.regenerate_pdf(device, report)
+    file_path = os.path.join(test_path, "report.pdf")
+    LOGGER.debug(f"Received get report request for {device.model}")
     if os.path.isfile(file_path):
       return FileResponse(file_path)
     else:
@@ -735,10 +692,13 @@ class Api:
       response.status_code = 404
       return self._generate_msg(False, "Report could not be found")
 
-  async def get_results(self, request: Request, response: Response, device_name,
-                        timestamp):
-    LOGGER.debug("Received get results " +
-                 f"request for {device_name} / {timestamp}")
+  async def get_results(
+      self,
+      request: Request,
+      response: Response,
+      report_name: str
+    ):
+    LOGGER.debug(f"Received get results request for {report_name}")
 
     profile = None
 
@@ -761,32 +721,16 @@ class Api:
       pass
 
     # Check if device exists
-    device = self.get_session().get_device_by_name(device_name)
-    if device is None:
-      response.status_code = status.HTTP_404_NOT_FOUND
-      return self._generate_msg(False,
-                                "A device with that name could not be found")
-
-    # Check if report exists (1.3 file path)
-    report_file_path = os.path.join(
-      DEVICES_PATH,
-      device_name,
-      "reports",
-      timestamp,"test",
-          device.mac_addr.replace(":",""))
-
-    if not os.path.isdir(report_file_path):
-      # pre 1.3 file path
-      report_file_path = os.path.join(DEVICES_PATH, device_name, "reports",
-                                                    timestamp)
-
-    if not os.path.isdir(report_file_path):
+    device_with_report = self._session.get_report(report_name)
+    if device_with_report.device is None or device_with_report.report is None:
       LOGGER.info("Report could not be found, returning 404")
       response.status_code = 404
-      return self._generate_msg(False, "Report could not be found")
+      return self._generate_msg(False, "Report not found from list")
+    device = device_with_report.device
+    report = device_with_report.report
 
     zip_file_path = self._get_testrun().get_test_orc().zip_results(
-        device, timestamp, profile)
+        device, report, profile)
 
     if zip_file_path is None:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR

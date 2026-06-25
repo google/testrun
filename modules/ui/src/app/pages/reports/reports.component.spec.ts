@@ -77,7 +77,7 @@ describe('ReportsComponent', () => {
     });
   };
   beforeEach(() => {
-    mockService = jasmine.createSpyObj(['getResultClass']);
+    mockService = jasmine.createSpyObj(['getResultClass', 'getReportLink']);
     mockReportsStore = jasmine.createSpyObj('ReportsStore', [
       'deleteReport',
       'setSelectedRow',
@@ -89,8 +89,9 @@ describe('ReportsComponent', () => {
       'setActiveFiler',
       'setFilterOpened',
       'updateSort',
-      'getHistory',
       'getReports',
+      'getReports',
+      'fetchReports',
     ]);
     mockLiveAnnouncer = jasmine.createSpyObj(['announce']);
 
@@ -118,7 +119,7 @@ describe('ReportsComponent', () => {
       it('should get reports', fakeAsync(() => {
         component.ngOnInit();
 
-        expect(mockReportsStore.getReports).toHaveBeenCalled();
+        expect(mockReportsStore.fetchReports).toHaveBeenCalled();
       }));
     });
 
@@ -294,12 +295,8 @@ describe('ReportsComponent', () => {
 
     it('#removeDevice should call delete report', () => {
       const data = HISTORY[0];
-      component.removeDevice(data);
-      expect(mockReportsStore.deleteReport).toHaveBeenCalledWith({
-        mac_addr: data.mac_addr,
-        deviceMacAddr: data.device.mac_addr,
-        started: data.started,
-      });
+      component.removeReport(data);
+      expect(mockReportsStore.deleteReport).toHaveBeenCalledWith('/report/123');
     });
   });
 

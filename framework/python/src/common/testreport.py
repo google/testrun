@@ -13,20 +13,22 @@
 # limitations under the License.
 """Store previous Testrun information."""
 
-from datetime import datetime
-from weasyprint import HTML
-from io import BytesIO
-from common import util, logger
-from common.statuses import TestrunStatus, TestrunResult
-from test_orc import test_pack
 import base64
-import os
-from test_orc.test_case import TestCase
-from jinja2 import Environment, FileSystemLoader, BaseLoader
-from collections import OrderedDict
-from bs4 import BeautifulSoup
+import copy
 import math
+import os
+import shutil
+from collections import OrderedDict
+from datetime import datetime
+from io import BytesIO
 
+from bs4 import BeautifulSoup
+from common import logger, util
+from common.statuses import TestrunResult, TestrunStatus
+from jinja2 import BaseLoader, Environment, FileSystemLoader
+from test_orc import test_pack
+from test_orc.test_case import TestCase
+from weasyprint import HTML
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 RESOURCES_DIR = 'resources/report'
@@ -38,6 +40,11 @@ TEST_REPORT_TEMPLATE = 'report_template.html'
 ICON = 'icon.png'
 RESULTS_SPACE_FIRST_PAGE = 440
 RESULTS_SPACE = 800
+
+_REPORTS_FOLDER = 'local/reports'
+_CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+_ROOT_DIR = os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.dirname(_CURRENT_DIR))))
 
 
 LOGGER = logger.get_logger('REPORT')
@@ -76,9 +83,15 @@ class TestReport():
     self._report_url = ''
     self._export_url = ''
     self._cur_page = 0
+    self._folder_name = ''
 
   def update_device_profile(self, additional_info):
     self._device['device_profile'] = additional_info
+
+  def update_device_info(self, device):
+    self._device['manufacturer'] = device.manufacturer
+    self._device['model'] = device.model
+    self._device['device_profile'] = device.additional_info
 
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
@@ -108,14 +121,33 @@ class TestReport():
   def add_test(self, test):
     self._results.append(test)
 
-  def set_report_url(self, url):
-    self._report_url = url
+  def set_report_url(self, folder_name: str):
+    self._folder_name = folder_name
+    self._report_url = f'/report/{folder_name}'
 
   def get_report_url(self):
     return self._report_url
 
   def get_export_url(self):
     return self._export_url
+
+  def set_export_url(self, folder_name: str):
+    self._export_url = f'/export/{folder_name}'
+
+  def get_folder_name(self) -> str:
+    return self._folder_name
+
+  def delete_folder(self):
+    # Delete report from disk
+    if self._folder_name:
+      report_path = os.path.join(_ROOT_DIR, _REPORTS_FOLDER, self._folder_name)
+      if os.path.exists(report_path):
+        try:
+          shutil.rmtree(report_path)
+        except FileNotFoundError:
+          LOGGER.error(
+            f'Report folder not found for deletion: {report_path}'
+          )
 
   def set_mac_addr(self, mac_addr):
     self._mac_addr = mac_addr
@@ -128,7 +160,7 @@ class TestReport():
     }
 
     report_json['mac_addr'] = self._mac_addr
-    report_json['device'] = self._device
+    report_json['device'] = copy.deepcopy(self._device)
     report_json['status'] = self._status
     report_json['result'] = self._result
     report_json['started'] = self._started.strftime(DATE_TIME_FORMAT)
@@ -165,6 +197,8 @@ class TestReport():
     report_json['tests'] = {'total': self._total_tests,
                             'results': test_results}
     report_json['report'] = self._report_url
+    report_json['export'] = self._export_url
+    report_json['folder_name'] = self._folder_name
     return report_json
 
   def from_json(self, json_file):
@@ -209,6 +243,8 @@ class TestReport():
       self._report_url = json_file['report']
     if 'export' in json_file:
       self._export_url = json_file['export']
+    if 'folder_name' in json_file:
+      self._folder_name = json_file['folder_name']
 
     self._total_tests = json_file['tests']['total']
 
@@ -234,6 +270,13 @@ class TestReport():
 
       self.add_test(test_case)
 
+  def to_json_updated(self, device):
+    json_data = self.to_json()
+    json_data['device']['manufacturer'] = device.manufacturer
+    json_data['device']['model'] = device.model
+    json_data['device']['device_profile'] = device.additional_info
+    return json_data
+
   # Create a pdf file in memory and return the bytes
   def to_pdf(self):
     # Resolve the data as html first
@@ -242,6 +285,12 @@ class TestReport():
     # Convert HTML to PDF in memory using weasyprint
     pdf_bytes = BytesIO()
     HTML(string=report_html).write_pdf(pdf_bytes)
+    return pdf_bytes
+
+  def to_pdf_from_html(self, html_content):
+    # Convert HTML to PDF in memory using weasyprint
+    pdf_bytes = BytesIO()
+    HTML(string=html_content).write_pdf(pdf_bytes)
     return pdf_bytes
 
   def to_html(self):

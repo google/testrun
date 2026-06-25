@@ -24,8 +24,9 @@ import {
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { TestRunService } from '../../services/test-run.service';
 import {
+  HistoryTestrun,
   StatusResultClassName,
-  TestrunStatus,
+  TestrunReport,
 } from '../../model/testrun-status';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
@@ -85,7 +86,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   viewModel$ = this.store.viewModel$;
 
   ngOnInit() {
-    this.store.getReports();
+    this.store.fetchReports();
     const sort = this.sort();
     if (sort) {
       this.store.updateSort(sort);
@@ -183,7 +184,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.store.setSelectedRow(row);
   }
 
-  trackByStarted(index: number, item: TestrunStatus) {
+  trackByStarted(index: number, item: HistoryTestrun) {
     return item.started;
   }
 
@@ -207,12 +208,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
     }
   }
 
-  removeDevice(data: TestrunStatus) {
-    this.store.deleteReport({
-      mac_addr: data.mac_addr,
-      deviceMacAddr: data.device.mac_addr,
-      started: data.started,
-    });
+  removeReport(data: TestrunReport) {
+    this.store.deleteReport(data.delete);
     this.focusNextButton();
   }
 }

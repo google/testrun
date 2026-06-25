@@ -40,7 +40,14 @@ export const CertificatesStore = signalStore(
   withState({
     certificates: [] as Certificate[],
     selectedCertificate: '',
-    displayedColumns: ['name', 'organisation', 'expires', 'status', 'actions'],
+    displayedColumns: [
+      'name',
+      'organisation',
+      'expires',
+      'status',
+      'type',
+      'actions',
+    ],
     dataLoaded: false,
   }),
   withComputed(({ certificates }) => ({

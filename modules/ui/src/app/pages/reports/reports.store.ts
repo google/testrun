@@ -4,6 +4,8 @@ import { MatRow, MatTableDataSource } from '@angular/material/table';
 import {
   HistoryTestrun,
   StatusOfTestrun,
+  TestReportsList,
+  TestrunReport,
   TestrunStatus,
 } from '../../model/testrun-status';
 import { DateRange, Filters } from '../../model/filters';
@@ -64,7 +66,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     profiles: this.profiles$,
   });
 
-  setDataSource = this.updater((state, reports: TestrunStatus[]) => {
+  setDataSource = this.updater((state, reports: TestReportsList) => {
     const data = this.formateData(reports);
     const dataSource = new MatTableDataSource(data);
 
@@ -121,23 +123,17 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     };
   });
 
-  deleteReport = this.effect<{
-    mac_addr: string | null;
-    deviceMacAddr: string;
-    started: string | null;
-  }>(trigger$ => {
+  deleteReport = this.effect<string>(trigger$ => {
     return trigger$.pipe(
-      exhaustMap(({ mac_addr, deviceMacAddr, started }) => {
-        return this.testRunService
-          .deleteReport(mac_addr || deviceMacAddr, started || '')
-          .pipe(
-            withLatestFrom(this.history$),
-            tap(([remove, current]) => {
-              if (remove) {
-                this.removeReport(mac_addr, deviceMacAddr, started, current);
-              }
-            })
-          );
+      exhaustMap(url => {
+        return this.testRunService.deleteReport(url).pipe(
+          withLatestFrom(this.history$),
+          tap(([remove, current]) => {
+            if (remove) {
+              this.removeReport(url, current);
+            }
+          })
+        );
       })
     );
   });
@@ -208,7 +204,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     );
   });
 
-  getHistory = this.effect(() => {
+  getReports = this.effect(() => {
     return this.history$.pipe(
       withLatestFrom(this.filteredValues$),
       tap(([reports, filteredValues]) => {
@@ -218,7 +214,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     );
   });
 
-  getReports = this.effect(trigger$ => {
+  fetchReports = this.effect(trigger$ => {
     return trigger$.pipe(
       tap(() => {
         this.store.dispatch(fetchReports());
@@ -226,20 +222,10 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     );
   });
 
-  private removeReport(
-    mac_addr: string | null,
-    deviceMacAddr: string,
-    started: string | null,
-    current: TestrunStatus[]
-  ) {
+  private removeReport(url: string, current: TestReportsList) {
     const history = [...current];
-    const idx = history.findIndex(
-      report =>
-        report.mac_addr === mac_addr &&
-        report.device.mac_addr === deviceMacAddr &&
-        report.started === started
-    );
-    if (typeof idx === 'number') {
+    const idx = history.findIndex(report => report.delete === url);
+    if (idx > -1) {
       history.splice(idx, 1);
       this.store.dispatch(setReports({ reports: history }));
     }
@@ -255,7 +241,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     this.setIsFiltersEmpty(this.isFiltersEmpty(filteredValues));
   }
 
-  private formateData(data: TestrunStatus[]): HistoryTestrun[] {
+  private formateData(data: TestReportsList): HistoryTestrun[] {
     return data.map(item => {
       return {
         ...item,
@@ -268,7 +254,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     });
   }
 
-  private getTestResult(item: TestrunStatus): string {
+  private getTestResult(item: TestrunReport): string {
     let result = '';
     if (item.device.test_pack === TestingType.Qualification) {
       if (
