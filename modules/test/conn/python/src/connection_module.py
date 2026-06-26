@@ -17,7 +17,7 @@ import time
 import traceback
 import os
 from scapy.error import Scapy_Exception
-from scapy.all import rdpcap, DHCP, ARP, Ether, ICMP, IPv6, ICMPv6ND_NS
+from scapy.all import rdpcap, DHCP, ARP, Ether, ICMP, IPv6, ICMPv6ND_NS, STP
 from test_module import TestModule
 from dhcp1.client import Client as DHCPClient1
 from dhcp2.client import Client as DHCPClient2
@@ -179,6 +179,81 @@ class ConnectionModule(TestModule):
         return False, 'Device has sent disallowed DHCP message'
 
     return True, 'Device does not act as a DHCP server'
+
+  def _connection_stp_detection(self):
+    LOGGER.info('Running connection.stp_detection')
+
+    if not self._device_mac:
+      LOGGER.info('No MAC address found.')
+      return None, 'No MAC address found.'
+
+    # Human readable lookups for the STP version and BPDU type fields
+    stp_versions = {0: 'STP (802.1D)', 2: 'RSTP (802.1w)', 3: 'MSTP (802.1s)'}
+    bpdu_types = {
+        0x00: 'Configuration',
+        0x02: 'RST/MST',
+        0x80: 'Topology Change Notification'
+    }
+
+    # Read all the pcap files
+    packets = rdpcap(self.startup_capture_file) + rdpcap(
+        self.monitor_capture_file)
+    LOGGER.info('Inspecting: ' + str(len(packets)) + ' packets')
+
+    bpdus = []
+    for packet in packets:
+
+      # We are not interested in packets unless they carry a BPDU (STP) payload
+      if not STP in packet:
+        continue
+
+      # On a direct point-to-point link any BPDU originates from the device,
+      # which may emit them from a switch-port MAC distinct from its configured
+      # MAC. Only ignore BPDUs sourced by Testrun's own interface.
+      src_mac = packet.src
+      if src_mac.startswith(TR_CONTAINER_MAC_PREFIX):
+        continue
+
+      stp = packet[STP]
+      version = stp_versions.get(stp.version,
+                                 f'Unknown (version {stp.version})')
+      bpdu_type = bpdu_types.get(stp.bpdutype,
+                                 f'Unknown (type {hex(stp.bpdutype)})')
+      LOGGER.info(f'BPDU detected from {src_mac}: {version} {bpdu_type} BPDU, '
+                  f'root MAC {stp.rootmac}, bridge MAC {stp.bridgemac}')
+      bpdus.append({
+          'src_mac': src_mac,
+          'protocol': version,
+          'bpdu_type': bpdu_type,
+          'root_mac': stp.rootmac,
+          'root_priority': stp.rootid,
+          'bridge_mac': stp.bridgemac,
+          'bridge_priority': stp.bridgeid,
+      })
+
+    if not bpdus:
+      return ('Informational',
+              'No Spanning Tree Protocol (BPDU) traffic detected from device')
+
+    # Build a details summary of the BPDUs observed
+    versions_seen = sorted({b['protocol'] for b in bpdus})
+    src_macs = sorted({b['src_mac'] for b in bpdus})
+
+    first = bpdus[0]
+    details = '\n'.join([
+        f'{len(bpdus)} BPDU(s) detected on the device link.',
+        f'Source MAC(s): {", ".join(src_macs)}.',
+        'Protocols observed: ' + ', '.join(versions_seen) + '.',
+        (f"First BPDU: {first['protocol']} {first['bpdu_type']} BPDU "
+         f"from {first['src_mac']}, "
+         f"root MAC {first['root_mac']} (priority {first['root_priority']}), "
+         f"bridge MAC {first['bridge_mac']} "
+         f"(priority {first['bridge_priority']}).")
+    ])
+
+    return ('Informational',
+            'Spanning Tree Protocol (BPDU) traffic detected from device',
+            details)
 
   def _connection_private_address(self, config):
     LOGGER.info('Running connection.private_address')
