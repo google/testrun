@@ -17,8 +17,9 @@ import time
 import traceback
 import os
 from scapy.error import Scapy_Exception
-from scapy.all import rdpcap, DHCP, ARP, Ether, ICMP, IPv6, ICMPv6ND_NS
+from scapy.all import rdpcap, srp, get_if_addr, DHCP, ARP, Ether, ICMP, IPv6, ICMPv6ND_NS
 from test_module import TestModule
+from common.statuses import TestResult
 from dhcp1.client import Client as DHCPClient1
 from dhcp2.client import Client as DHCPClient2
 from host.client import Client as HostClient
@@ -34,6 +35,11 @@ MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 DHCP_CAPTURE_FILE = '/runtime/network/dhcp-1.pcap'
 SLAAC_PREFIX = 'fd10:77be:4186'
 TR_CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f:'
+
+# Fixed static IP address probed for during startup to detect devices that do
+# not implement DHCP. Must stay in sync with
+# framework/python/src/net_orc/arp_prober.py.STATIC_IP_ADDRESS.
+STATIC_IP_ADDRESS = '10.10.10.100'
 LOGGER = None
 
 # Should be at least twice as much as the max lease time
@@ -118,24 +124,21 @@ class ConnectionModule(TestModule):
       LOGGER.error('No device IP could be resolved')
       return 'Error', 'Could not resolve device IP address'
 
-    no_arp = True
-
-    # Read all the pcap files
+    # Read all the pcap files and collect ARP packets sent by the device
     packets = rdpcap(self.startup_capture_file) + rdpcap(
         self.monitor_capture_file)
-    for packet in packets:
+    device_arp = [packet[ARP] for packet in packets
+                  if ARP in packet and packet.src == self._device_mac]
 
-      # We are not interested in packets unless they are ARP packets
-      if not ARP in packet:
-        continue
+    # Some resource-constrained devices do not volunteer ARP traffic, so if
+    # none were captured, actively solicit a reply (retrying a few times)
+    if not device_arp:
+      device_arp = self._solicit_arp()
 
-      # We are only interested in packets from the device
-      if packet.src != self._device_mac:
-        continue
+    if not device_arp:
+      return None, 'No ARP packets from the device found'
 
-      # Get the ARP packet
-      arp_packet = packet[ARP]
-      no_arp = False
+    for arp_packet in device_arp:
 
       # Check MAC address matches IP address
       if (arp_packet.hwsrc == self._device_mac
@@ -146,10 +149,39 @@ class ConnectionModule(TestModule):
                     does not match {self._device_ipv4_addr}''')
         return False, 'Device is sending false ARP response'
 
-    if no_arp:
-      return None, 'No ARP packets from the device found'
-
     return True, 'Device uses ARP correctly'
+
+  def _solicit_arp(self, retries=3, timeout=3):
+    """Actively solicit an ARP reply from the device.
+
+    Some devices do not volunteer ARP traffic during the capture window,
+    leaving the passive inspection with nothing to assess. Send an ARP
+    request for the device IP, retrying a few times before giving up.
+
+    Returns a list of ARP packets received from the device (empty if none).
+    """
+    request = (Ether(dst='ff:ff:ff:ff:ff:ff')
+               / ARP(op=1, psrc=get_if_addr('veth0'),
+                     pdst=self._device_ipv4_addr))
+
+    for attempt in range(1, retries + 1):
+      LOGGER.info(f'Soliciting ARP from device {self._device_ipv4_addr} '
+                  f'(attempt {attempt}/{retries})')
+      try:
+        answered, _ = srp(request, iface='veth0', timeout=timeout,
+                          verbose=False)
+      except Exception as e:  # pylint: disable=W0718
+        LOGGER.error(f'ARP solicitation failed: {e}')
+        return []
+
+      replies = [received[ARP] for _, received in answered
+                 if ARP in received and received.src == self._device_mac]
+      if replies:
+        LOGGER.info('Received ARP reply from device')
+        return replies
+
+    LOGGER.info(f'No ARP reply received from device after {retries} attempts')
+    return []
 
   def _connection_switch_dhcp_snooping(self):
     LOGGER.info('Running connection.switch.dhcp_snooping')
@@ -182,14 +214,23 @@ class ConnectionModule(TestModule):
 
   def _connection_private_address(self, config):
     LOGGER.info('Running connection.private_address')
+    if self._is_static_ip_device():
+      return (TestResult.FEATURE_NOT_DETECTED,
+              'Device does not support DHCP so this test could not be run')
     return self._run_subnet_test(config)
 
   def _connection_shared_address(self, config):
     LOGGER.info('Running connection.shared_address')
+    if self._is_static_ip_device():
+      return (TestResult.FEATURE_NOT_DETECTED,
+              'Device does not support DHCP so this test could not be run')
     return self._run_subnet_test(config)
 
   def _connection_dhcp_address(self):
     LOGGER.info('Running connection.dhcp_address')
+    if self._is_static_ip_device():
+      return (TestResult.FEATURE_NOT_DETECTED,
+              'Device does not support DHCP so this test could not be run')
     lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
                                           timeout=self._lease_wait_time_sec)
     if lease is None:
@@ -232,6 +273,10 @@ class ConnectionModule(TestModule):
 
   def _connection_single_ip(self):
     LOGGER.info('Running connection.single_ip')
+
+    if self._is_static_ip_device():
+      return (TestResult.FEATURE_NOT_DETECTED,
+              'Device does not support DHCP so this test could not be run')
 
     result = None
     if self._device_mac is None:
@@ -291,6 +336,9 @@ class ConnectionModule(TestModule):
 
   def _connection_ipaddr_ip_change(self, config):
     LOGGER.info('Running connection.ipaddr.ip_change')
+    if self._is_static_ip_device():
+      return (TestResult.FEATURE_NOT_DETECTED,
+              'Device does not support DHCP so this test could not be run')
     # Resolve the configured lease wait time
     if (not 'lease_wait_time_sec' in config or
       not self._dhcp_util.setup_single_dhcp_server()):
@@ -336,6 +384,9 @@ class ConnectionModule(TestModule):
 
   def _connection_ipaddr_dhcp_failover(self, config):
     LOGGER.info('Running connection.ipaddr.dhcp_failover')
+    if self._is_static_ip_device():
+      return (TestResult.FEATURE_NOT_DETECTED,
+              'Device does not support DHCP so this test could not be run')
     # Resolve the configured lease wait time
     if 'lease_wait_time_sec' in config:
       self._lease_wait_time_sec = config['lease_wait_time_sec']
@@ -376,6 +427,9 @@ class ConnectionModule(TestModule):
 
   def _connection_dhcp_disconnect(self) -> tuple[str | bool, str]:
     LOGGER.info('Running connection.dhcp.disconnect')
+    if self._is_static_ip_device():
+      return (TestResult.FEATURE_NOT_DETECTED,
+              'Device does not support DHCP so this test could not be run')
     dev_iface = os.getenv('DEV_IFACE')
     rpc_error_msg = 'Unable to connect to gRPC server'
     try:
@@ -431,6 +485,9 @@ class ConnectionModule(TestModule):
 
   def _connection_dhcp_disconnect_ip_change(self):
     LOGGER.info('Running connection.dhcp.disconnect_ip_change')
+    if self._is_static_ip_device():
+      return (TestResult.FEATURE_NOT_DETECTED,
+              'Device does not support DHCP so this test could not be run')
     result = None
     description = ''
     reserved_lease = None
@@ -600,6 +657,32 @@ class ConnectionModule(TestModule):
   def _ping(self, host, ipv6=False):
     LOGGER.info('Pinging: ' + str(host))
     return self._dhcp_util.ping(host, ipv6=ipv6)
+
+  def _is_static_ip_device(self):
+    """Return True when the device is reachable at the mandated static IP
+    address but has not obtained a DHCP lease.
+
+    Devices that do not implement DHCP are detected during startup by the
+    network orchestrator's ARP probe and assigned the fixed static IP
+    address (STATIC_IP_ADDRESS). The DHCP-dependent tests cannot exercise
+    their behaviour against such a device, so this signal is used to
+    short-circuit those tests to a 'Feature Not Detected' result rather than
+    erroring on an absent lease.
+    """
+    # Lazily resolve the device IP, mirroring the other tests
+    if self._device_ipv4_addr is None:
+      self._device_ipv4_addr = self._get_device_ipv4()
+
+    # Not on the static IP -> treat as a normal (DHCP) device and run the
+    # test as usual.
+    if self._device_ipv4_addr != STATIC_IP_ADDRESS:
+      return False
+
+    # A device that also holds a DHCP lease is not a static-only device.
+    # timeout=0 performs a single lease query with no waiting.
+    lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
+                                          timeout=0)
+    return lease is None
 
   def restore_failover_dhcp_server(self, subnet):
     # Configure the subnet range

@@ -15,9 +15,10 @@
 """Intercepts network traffic between network services and the device
 under test."""
 import threading
-from scapy.all import AsyncSniffer, DHCP, get_if_hwaddr
+from scapy.all import AsyncSniffer, ARP, DHCP, get_if_hwaddr
 from scapy.error import Scapy_Exception
 from net_orc.network_event import NetworkEvent
+from net_orc.arp_prober import STATIC_IP_ADDRESS
 from common import logger
 
 LOGGER = logger.get_logger('listener')
@@ -26,6 +27,7 @@ DHCP_DISCOVER = 1
 DHCP_OFFER = 2
 DHCP_REQUEST = 3
 DHCP_ACK = 5
+ARP_REPLY = 2
 CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f'
 
 
@@ -87,6 +89,14 @@ class Listener:
     # DHCP ACK callback
     if DHCP in packet and self._get_dhcp_type(packet) == DHCP_ACK:
       self.call_callback(NetworkEvent.DHCP_LEASE_ACK, packet)
+
+    # ARP probe response callback (static IP device detection). Fires when a
+    # device replies to the ARP request claiming the mandated static IP address.
+    # The responder's hardware address is validated against the configured
+    # target device by the registered callback.
+    if (ARP in packet and packet[ARP].op == ARP_REPLY
+        and packet[ARP].psrc == STATIC_IP_ADDRESS):
+      self.call_callback(NetworkEvent.ARP_RESPONSE, packet[ARP].hwsrc)
 
     # New device discovered callback
     if not packet.src is None and packet.src not in self._discovered_devices:
