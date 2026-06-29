@@ -72,7 +72,8 @@ limitations under the License.
         </div>
         <app-version
           [consentShown]="vm.consentShown"
-          (consentShownEvent)="consentShown()"></app-version>
+          (consentShownEvent)="consentShown()"
+          (navigateToRouteEvent)="navigateToRoute($event)"></app-version>
       </div>
     </mat-drawer>
     <mat-drawer-content class="app-content" role="region">

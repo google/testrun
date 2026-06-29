@@ -27,6 +27,7 @@ import { CalloutType } from '../../../model/callout-type';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
 import { timer } from 'rxjs';
+import { Routes } from '../../../model/routes';
 
 type DialogData = {
   version: Version;
@@ -51,11 +52,13 @@ export class ConsentDialogComponent {
 
   public readonly CalloutType = CalloutType;
   optOut = this.data.optOut;
+  public readonly Routes = Routes;
 
-  confirm(optOut: boolean) {
+  confirm(optOut: boolean, route?: Routes) {
     // dialog should be closed with opposite value to grant or deny access to GA
     const dialogResult: ConsentDialogResult = {
       grant: !optOut,
+      route,
     };
     this.dialogRef.close(dialogResult);
     timer(100).subscribe(() => {
