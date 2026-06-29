@@ -126,7 +126,7 @@ export class VersionComponent implements OnInit, OnDestroy {
         });
 
         if (dialogResult.route) {
-          this.navigateToRouteEvent.emit();
+          this.navigateToRouteEvent.emit(dialogResult.route);
         }
       });
   }
