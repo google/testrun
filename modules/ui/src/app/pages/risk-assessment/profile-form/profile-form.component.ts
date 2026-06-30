@@ -237,8 +237,12 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     return true;
   }
 
-  private compareProfiles(profile1: Profile, profile2: Profile) {
-    if (profile1.name !== profile2.name || this.copyProfile) {
+  compareProfiles(
+    profile1: Profile,
+    profile2: Profile,
+    copyProfile = this.copyProfile
+  ) {
+    if (profile1.name !== profile2.name || copyProfile) {
       return false;
     }
     if (
