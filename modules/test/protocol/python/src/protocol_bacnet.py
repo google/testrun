@@ -14,18 +14,18 @@
 """Module to run all the BACnet related methods for testing"""
 
 import BAC0
+import socket
+import asyncio
 from bacpypes3.pdu import Address
-from bacpypes3.app import DeviceInfo
-from bacpypes3.basetypes import Segmentation
+from bacpypes3.apdu import IAmRequest
+from bacpypes3.primitivedata import ObjectIdentifier
+from bacpypes3.pdu import Address
 from dataclasses import dataclass
 import logging
 import json
 from common import util
 import os
-from BAC0.core.io.IOExceptions import (UnknownPropertyError,
-                                       ReadPropertyException,
-                                       NoResponseFromController,
-                                       DeviceNotConnected)
+
 
 LOGGER = None
 BAC0_LOG = '/root/.BAC0/BAC0.log'
@@ -151,55 +151,188 @@ class BACnet():
     except Exception: # pylint: disable=W0718
       LOGGER.error('Error occurred when validating device', exc_info=True)
     return result, description
+  
+  def clear_bacnet_caches(self):
+    LOGGER.info("Clearing BACnet device caches...")
+    
+    if hasattr(self, 'bacnet') and self.bacnet:
+      if hasattr(self.bacnet, 'devices') and isinstance(self.bacnet.devices, dict):
+        self.bacnet.devices.clear()
+        LOGGER.info("BAC0 device registry cleared.")
+
+      try:
+        if (hasattr(self.bacnet, 'this_application') 
+          and self.bacnet.this_application 
+          and hasattr(self.bacnet.this_application, 'app')):
+            
+          app = self.bacnet.this_application.app
+          if hasattr(app, 'device_info_cache') and app.device_info_cache:
+            cache = app.device_info_cache
+            if hasattr(cache, 'clear'):
+                cache.clear()
+            elif hasattr(cache, '_cache') and isinstance(cache._cache, dict):
+                cache._cache.clear()
+            elif hasattr(cache, 'cache') and isinstance(cache.cache, dict):
+                cache.cache.clear()
+            LOGGER.info('bacpypes3 DeviceInfoCache cleared.')
+      except Exception as e:
+          LOGGER.warning(f'Non-critical error while clearing bacpypes3 cache: {e}')
 
   async def validate_protocol_version(
     self,
     device: BACnetDevice
   ) -> tuple[bool, str]:
-    LOGGER.info(
-      f'Resolving protocol version for BACnet device: {device.device_id}'
-    )
+
     version = None
     revision = None
+    result = False
+    result_description = 'Unknown error'
     ip = device.ip
     d_id = device.device_id
-    try:
-      dev_info = DeviceInfo(
-        device_instance=int(d_id),
-        device_address=Address(ip),
-        max_apdu_length_accepted=1476,
-        segmentation_supported=Segmentation.noSegmentation,
-        vendor_identifier=0
+
+    LOGGER.info(
+      f'Resolving protocol version for BACnet device: {d_id}'
     )
-      await self.bacnet.this_application.app.device_info_cache.set_device_info(
-        dev_info
-      )
-      LOGGER.info(f'Manually injected device {d_id} {ip} into BAC0 cache.')
-    except Exception as cache_err:
-      LOGGER.warning(f'Failed to pre-populate BAC0 cache: {cache_err}'  )
+
+    self.clear_bacnet_caches()
     try:
-      cmd = f'{ip} device {d_id} protocolVersion protocolRevision'
+      LOGGER.info('Step 1: Attempting via BAC0 with IAmRequest injection...')
+
+      iam_packet = IAmRequest(
+          iAmDeviceIdentifier=ObjectIdentifier(('device', int(d_id))),
+          maxAPDULengthAccepted=1476,
+          segmentationSupported=3, 
+          vendorID=0
+      )
+      iam_packet.pduSource = Address(device.ip)
+
+      await self.bacnet.this_application.app.device_info_cache.set_device_info(iam_packet)
+
+      cmd = f'{device.ip} device {device.device_id} protocolVersion protocolRevision'
       results = await self.bacnet.readMultiple(cmd)
-      LOGGER.info(f'BACnet readMultiple results: {results}')
-      if len(results) == 2:
-        version = results[0]
-        revision = results[1]
-      if version is None or revision is None:
-        result = False
-        result_description = (
-            f'Failed to resolve protocol version: version={version}, '
-            f'revision={revision}')
-        LOGGER.error(result_description)
-      else:
-        protocol_version = f'{version}.{revision}'
+      LOGGER.info(f'BAC0 readMultiple raw results: {results}')
+
+      if isinstance(results, list) and len(results) == 2:
+        version, revision = results[0], results[1]
+      elif isinstance(results, dict):
+        version = results.get('protocolVersion')
+        revision = results.get('protocolRevision')
+
+      if version is not None and revision is not None:
         result = True
-        result_description = f'Device uses BACnet version {protocol_version}'
-    except (UnknownPropertyError, ReadPropertyException,
-            NoResponseFromController, DeviceNotConnected) as e:
-      result = False
-      result_description = f'Failed to resolve protocol version {e}'
-      LOGGER.error(result_description)
+        result_description = f'Successfully resolved: {version}.{revision}'
+        LOGGER.info(result_description)
+
+    except Exception as bac0_err:
+      LOGGER.warning(f'BAC0 attempt failed: {bac0_err}')
+
+    if hasattr(self, 'bacnet') and self.bacnet:
+      try:
+        LOGGER.info('Stopping BAC0 instance to free up UDP port 47808...')
+        if hasattr(self.bacnet, 'disconnect'):
+          self.bacnet.disconnect()
+        elif (hasattr(self.bacnet, 'this_application')
+          and self.bacnet.this_application):
+          self.bacnet.this_application.close()
+        LOGGER.info('BAC0 stopped. Waiting for OS to release the socket...')
+      except Exception as close_err:
+        LOGGER.warning(f'Non-critical error during BAC0 shutdown: {close_err}')
+
+    await asyncio.sleep(3)
+    
+    LOGGER.info('Step 2: Starting raw Python UDP socket fallback...')
+    try:
+      loop = asyncio.get_running_loop()
+      version, revision = await loop.run_in_executor(
+        None,
+        self._hex_socket_request,
+        ip,
+        int(d_id)
+      )
+
+      if version is not None and revision is not None:
+        result = True
+        result_description = f'Successfully resolved via Raw Hex Socket: {version}.{revision}'
+      else:
+        result = False
+        result_description = 'Both BAC0 and Raw Socket fallback failed to get version data'
+        LOGGER.error(result_description)
+    except Exception as e:
+      LOGGER.error(f'Raw packet error: {close_err}')
+
+
     return result, result_description
+  def _hex_socket_request(
+      self,
+      ip: str,
+      device_id: int
+    ) -> tuple[int | None, int | None]:
+    version = None
+    revision = None
+
+    obj_id_int = (8 << 22) | device_id
+    obj_bytes = obj_id_int.to_bytes(4, byteorder='big')
+
+    req_version = bytearray([
+        0x81, 0x0a, 0x00, 0x11,
+        0x01, 0x04, 
+        0x00, 0x05, 0x01,
+        0x0c, 
+        0x0c     
+    ])
+    req_version.extend(obj_bytes)
+    req_version.extend([0x19, 0x62])
+
+    req_revision = bytearray([
+        0x81, 0x0a, 0x00, 0x11,
+        0x01, 0x04,
+        0x00, 0x05, 0x02,
+        0x0c,
+        0x0c
+    ])
+    req_revision.extend(obj_bytes)
+    req_revision.extend([0x19, 0x8b])
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.settimeout(2.5)
+
+    try:
+      LOGGER.info(f"Sending raw hex ReadProperty(protocolVersion) to {ip}:47808")
+      sock.sendto(req_version, (ip, 47808))
+      data, _ = sock.recvfrom(1024)
+
+      idx = data.find(b'\x3e')
+      if idx != -1 and len(data) > idx + 2:
+        tag = data[idx+1]
+        if tag == 0x21:
+          version = data[idx+2]
+        elif tag == 0x22 and len(data) > idx + 3:
+          version = int.from_bytes(data[idx+2:idx+4], byteorder='big')
+      
+      LOGGER.info(f"RAW packet version {version}")
+
+      LOGGER.info(f"Sending raw hex ReadProperty(protocolRevision) to {ip}:47808")
+      sock.sendto(req_revision, (ip, 47808))
+      data, _ = sock.recvfrom(1024)
+      
+      idx = data.find(b'\x3e')
+      if idx != -1 and len(data) > idx + 2:
+        tag = data[idx+1]
+        if tag == 0x21:
+          revision = data[idx+2]
+        elif tag == 0x22 and len(data) > idx + 3:
+          revision = int.from_bytes(data[idx+2:idx+4], byteorder='big')
+      LOGGER.info(f"RAW packet revision {revision}")
+
+    except socket.timeout:
+      LOGGER.error("Raw socket timeout: Device did not respond to unicast request.")
+    except Exception as e:
+      LOGGER.error(f"Raw socket exception occurred: {e}")
+    finally:
+      sock.close()
+      
+    return version, revision
+
 
   # Validate that all traffic to/from BACnet device from
   # discovered object id matches the MAC address of the device
