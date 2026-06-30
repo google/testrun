@@ -295,46 +295,7 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
     );
   }
 
-  private deviceIsEmpty(device: Device) {
-    if (device.manufacturer && device.manufacturer !== '') {
-      return false;
-    }
-    if (device.model && device.model !== '') {
-      return false;
-    }
-    if (device.mac_addr && device.mac_addr !== '') {
-      return false;
-    }
-    if (device.type && device.type !== '') {
-      return false;
-    }
-    if (device.technology && device.technology !== '') {
-      return false;
-    }
-    if (device.test_pack !== TestingType.Qualification) {
-      return false;
-    }
-    const keys1 = Object.keys(device.test_modules!);
-
-    for (const key of keys1) {
-      const val1 = device.test_modules![key];
-      if (!val1.enabled) {
-        return false;
-      }
-    }
-    if (device.additional_info) {
-      for (const question of device.additional_info) {
-        if (question.answer && question.answer !== '') {
-          return false;
-        }
-      }
-    } else {
-      return false;
-    }
-    return true;
-  }
-
-  private compareDevices(device1: Device, device2: Device) {
+  compareDevices(device1: Device, device2: Device) {
     if (device1.manufacturer !== device2.manufacturer) {
       return false;
     }
@@ -391,6 +352,45 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
           this.isEmptyAnswer(answer2) &&
           !this.isEmptyAnswer(answer1)
         ) {
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
+    return true;
+  }
+
+  private deviceIsEmpty(device: Device) {
+    if (device.manufacturer && device.manufacturer !== '') {
+      return false;
+    }
+    if (device.model && device.model !== '') {
+      return false;
+    }
+    if (device.mac_addr && device.mac_addr !== '') {
+      return false;
+    }
+    if (device.type && device.type !== '') {
+      return false;
+    }
+    if (device.technology && device.technology !== '') {
+      return false;
+    }
+    if (device.test_pack !== TestingType.Qualification) {
+      return false;
+    }
+    const keys1 = Object.keys(device.test_modules!);
+
+    for (const key of keys1) {
+      const val1 = device.test_modules![key];
+      if (!val1.enabled) {
+        return false;
+      }
+    }
+    if (device.additional_info) {
+      for (const question of device.additional_info) {
+        if (question.answer && question.answer !== '') {
           return false;
         }
       }
