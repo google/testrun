@@ -363,13 +363,33 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
       }
     }
 
-    if (device1.additional_info) {
-      for (const question of device1.additional_info) {
-        if (
-          question.answer !==
-          device2.additional_info?.find(
-            question2 => question2.question === question.question
-          )?.answer
+    // the 2nd device has the newest version of risk assessment
+    if (device2.additional_info) {
+      for (const question of device2.additional_info) {
+        const answer2 = device1.additional_info?.find(
+          question1 => question1.question === question.question
+        )?.answer;
+        const answer1 = question.answer;
+        if (!this.isEmptyAnswer(answer1) && !this.isEmptyAnswer(answer2)) {
+          if (typeof question.answer === 'string') {
+            if (answer1 !== answer2) {
+              return false;
+            }
+          } else {
+            //the type of answer is array
+            if (answer1?.length !== answer2?.length) {
+              return false;
+            }
+            if (
+              (answer1 as number[]).some(
+                answer => !(answer2 as number[]).includes(answer)
+              )
+            )
+              return false;
+          }
+        } else if (
+          this.isEmptyAnswer(answer2) &&
+          !this.isEmptyAnswer(answer1)
         ) {
           return false;
         }
@@ -378,6 +398,12 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
       return false;
     }
     return true;
+  }
+
+  private isEmptyAnswer(answer: unknown): boolean {
+    if (answer === undefined || answer === null || answer === '') return true;
+    if (Array.isArray(answer) && answer.length === 0) return true;
+    return false;
   }
 
   private fillDeviceForm(format: QuestionFormat[], device: Device): void {
