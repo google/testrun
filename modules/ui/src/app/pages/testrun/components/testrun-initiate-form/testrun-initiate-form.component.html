@@ -71,7 +71,9 @@ limitations under the License.
       }
       @if (selectedDevice !== null) {
         <app-callout [type]="CalloutType.Info" role="note">
-          Top Tip: Your device must be powered off before starting Testrun
+          Top Tip: Your device must be powered off and DHCP must be enabled before starting the test. If your device
+          doesn't support DHCP then it should be configured with a static IP address of 10.10.10.100, a subnet mask of
+          255.255.255.0, and a default gateway IP address of 10.10.10.1.
         </app-callout>
       }
     </section>
