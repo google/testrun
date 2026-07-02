@@ -113,6 +113,8 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
       } else {
         this.profileForm.reset();
       }
+      this.profileForm.markAsPristine();
+      this.profileForm.markAsUntouched();
     } else if (this.profile != profile) {
       // prevent select profile before user confirmation
       this.store.updateSelectedProfile(this.profile);
