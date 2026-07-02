@@ -43,3 +43,6 @@ APScheduler==3.10.4
 # Requirements for reports generation
 Jinja2==3.1.6
 beautifulsoup4==4.12.3
+
+# linting
+pylint==3.2.6

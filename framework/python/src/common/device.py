@@ -95,6 +95,10 @@ class Device():
     device_json['created_at'] = self.created_at.isoformat()
     device_json['modified_at'] = self.modified_at.isoformat()
 
+    # Include static IP if configured
+    if self.ip_addr is not None:
+      device_json['ip_addr'] = self.ip_addr
+
     return device_json
 
   def __post_init__(self):
