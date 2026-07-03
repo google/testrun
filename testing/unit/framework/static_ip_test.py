@@ -55,6 +55,8 @@ for mod_name in MOCKED_MODULES:
 
 # pylint: disable=wrong-import-position
 from common.device import Device  # noqa: E402
+from common import testreport  # noqa: E402
+from common.statuses import TestrunResult  # noqa: E402
 # pylint: enable=wrong-import-position
 
 
@@ -127,6 +129,48 @@ class TestDeviceStaticIP:
     assert device.ip_addr is None
     device.ip_addr = '10.10.10.200'
     assert device.ip_addr == '10.10.10.200'
+
+
+class TestDeviceReports:
+  """Tests for persisted report metadata in device configs."""
+
+  def test_to_config_json_with_report_urls(self):
+    """Config JSON should preserve migrated report and export URLs."""
+    report_json = {
+        'testrun': {'version': '2.3.3'},
+        'mac_addr': 'aa:bb:cc:dd:ee:ff',
+        'device': {
+            'mac_addr': 'aa:bb:cc:dd:ee:ff',
+            'manufacturer': 'Test',
+            'model': 'TestModel',
+            'test_pack': 'Device Qualification',
+        },
+        'status': 'Complete',
+        'result': TestrunResult.COMPLIANT,
+        'started': '2026-07-03 15:19:40',
+        'finished': '2026-07-03 15:20:40',
+        'tests': {'total': 0, 'results': []},
+        'report': 'old-report-url',
+        'export': 'old-export-url',
+    }
+    report = testreport.TestReport()
+    report.from_json(report_json)
+    report.set_report_url('aabbccddeeff_2026-07-03T15:19:40')
+    report.set_export_url('aabbccddeeff_2026-07-03T15:19:40')
+
+    device = Device(mac_addr='aa:bb:cc:dd:ee:ff',
+                    manufacturer='Test',
+                    model='TestModel',
+                    reports=[report])
+
+    config = device.to_config_json()
+
+    assert config['reports'][0]['folder_name'] == (
+        'aabbccddeeff_2026-07-03T15:19:40')
+    assert config['reports'][0]['report'] == (
+        '/report/aabbccddeeff_2026-07-03T15:19:40')
+    assert config['reports'][0]['export'] == (
+        '/export/aabbccddeeff_2026-07-03T15:19:40')
 
 
 # ---- Device Config Loading Tests ----
