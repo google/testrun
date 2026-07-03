@@ -68,7 +68,7 @@ deactivate
 cmd/build
 
 # Create local folders
-mkdir -p local/{devices,root_certs,risk_profiles}
+mkdir -p local/{devices,root_certs,risk_profiles,reports}
 
 # Set file permissions on local
 # This does not work on GitHub actions

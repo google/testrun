@@ -12,30 +12,74 @@
     ssl_key: /etc/ssl/private/nginx-selfsigned.key
 
   tasks:
-    - name: Ensure openssl, dhclient, and nginx are installed
+    - name: Ensure openssl, dhclient, nginx and build dependencies are installed
       apt:
         name:
           - openssl
           - isc-dhcp-client
           - nginx
+          - perl
+          - pkg-config
+          - zlib1g-dev
+          - wget
+          - gcc
+          - make
         state: present
         update_cache: yes
+
+    - name: Download OpenSSL 1.1.1u source
+      get_url:
+        url: https://www.openssl.org/source/openssl-1.1.1u.tar.gz
+        dest: /tmp/openssl-1.1.1u.tar.gz
+        mode: '0644'
+        force: no
+
+    - name: Extract OpenSSL 1.1.1u source
+      unarchive:
+        src: /tmp/openssl-1.1.1u.tar.gz
+        dest: /tmp
+        remote_src: yes
+        creates: /tmp/openssl-1.1.1u
+
+    - name: Build and install OpenSSL 1.1.1
+      shell: |
+        ./config --prefix=/opt/openssl-1.1.1 no-shared
+        make -j"$(nproc)"
+        make install_sw
+      args:
+        chdir: /tmp/openssl-1.1.1u
+        creates: /opt/openssl-1.1.1/bin/openssl
 
     - name: Run dhclient on ens5 (in background)
       shell: nohup dhclient {{ iface }} &
       async: 0
       poll: 0
 
-  # NGINX
+    - name: Download OpenSSL 3.1.4 source
+      get_url:
+        url: https://www.openssl.org/source/openssl-3.1.4.tar.gz
+        dest: /tmp/openssl-3.1.4.tar.gz
+        mode: '0644'
+        force: no
 
-    - name: Ensure openssl, dhclient, and nginx are installed
-      apt:
-        name:
-          - openssl
-          - isc-dhcp-client
-          - nginx
-        state: present
-        update_cache: yes
+    - name: Extract OpenSSL 3.1.4 source
+      unarchive:
+        src: /tmp/openssl-3.1.4.tar.gz
+        dest: /tmp
+        remote_src: yes
+        creates: /tmp/openssl-3.1.4
+
+    - name: Build and install OpenSSL 3.1.4
+      shell: |
+        ./config --prefix=/opt/openssl-3.1.4 no-shared
+        make -j"$(nproc)"
+        make install_sw
+      args:
+        chdir: /tmp/openssl-3.1.4
+        creates: /opt/openssl-3.1.4/bin/openssl
+
+
+  # NGINX
 
     - name: Generate self-signed SSL certificate for nginx
       command: >
@@ -86,6 +130,14 @@
         state: restarted
         enabled: yes
 
+    - name: Create custom OpenSSL config for legacy protocol support
+      copy:
+        dest: /etc/ssl/openssl-legacy.cnf
+        content: |
+          .include /etc/ssl/openssl.cnf
+          [system_default_sect]
+          MinProtocol = TLSv1.0
+          MaxProtocol = TLSv1.3
 
     - name: Copy fail_tls_handshake.sh script
       copy:
@@ -114,9 +166,18 @@
             echo "No IP $ip_addr on $iface" >> $LOG
             exit 1
           fi
-          # TLS 1.2
+          export OPENSSL_CONF=/etc/ssl/openssl-legacy.cnf
+          OLD_OPENSSL=/opt/openssl-1.1.1/bin/openssl
+          NEW_OPENSSL=/opt/openssl-3.1.4/bin/openssl
+          echo "Running TLS 1.0 handshake..." >> $LOG
+          timeout 3 "$OLD_OPENSSL" s_client -connect tls-v1-0.badssl.com:1010 -tls1 -bind $ip_addr -quiet < /dev/null >> $LOG 2>&1 || true
+          echo "Running TLS 1.1 handshake..." >> $LOG
+          timeout 3 "$OLD_OPENSSL" s_client -connect tls-v1-1.badssl.com:1011 -tls1_1 -bind $ip_addr -quiet < /dev/null >> $LOG 2>&1 || true
           echo "Running TLS 1.2 handshake..." >> $LOG
-          openssl s_client -connect $host:$port -tls1_2 -cipher "CAMELLIA256-SHA256" -bind $ip_addr -ign_eof < /dev/null >> $LOG 2>&1
+          "$NEW_OPENSSL" s_client -connect $host:$port -tls1_2 -cipher "CAMELLIA256-SHA256" -bind $ip_addr -ign_eof < /dev/null >> $LOG 2>&1
+          echo "Running TLS 1.3 handshake..." >> $LOG
+          "$NEW_OPENSSL" s_client -connect tls-v1-2.badssl.com:1012 -tls1_3
+
 
     - name: Create systemd service for failing TLS handshake
       copy:

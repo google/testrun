@@ -15,6 +15,25 @@
  */
 import { Device } from './device';
 
+interface TestRun {
+  version: string;
+}
+
+export interface TestrunReport {
+  testrun: TestRun;
+  device: IDevice;
+  status: StatusOfTestrun;
+  result: ResultOfTestrun;
+  started: string;
+  finished: string;
+  report: string;
+  export: string;
+  folder_name: string;
+  delete: string;
+}
+
+export type TestReportsList = TestrunReport[];
+
 export interface TestrunStatus {
   mac_addr: string | null;
   status: StatusOfTestrun;
@@ -29,7 +48,7 @@ export interface TestrunStatus {
   tags: string[] | null;
 }
 
-export interface HistoryTestrun extends TestrunStatus {
+export interface HistoryTestrun extends TestrunReport {
   deviceFirmware: string;
   deviceInfo: string;
   testResult: string;
@@ -125,8 +144,3 @@ export const IDLE_STATUS = {
   },
   tags: [],
 } as TestrunStatus;
-
-export type TestrunStatusKey = keyof typeof StatusOfTestrun;
-export type TestrunStatusValue = (typeof StatusOfTestrun)[TestrunStatusKey];
-export type TestResultKey = keyof typeof StatusOfTestResult;
-export type TestResultValue = (typeof StatusOfTestResult)[TestResultKey];

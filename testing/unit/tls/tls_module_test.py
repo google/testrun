@@ -80,7 +80,7 @@ class TLSModuleTest(unittest.TestCase):
 
     self.assertEqual(result, 'Error')
     self.assertEqual(description, 'Could not resolve device IP address')
-    self.assertEqual(details, ['Could not resolve device IP address.'])
+    self.assertEqual(details, [])
 
   def security_tls_v1_2_server_no_scan_results_test(self):
     """Tests _security_tls_v1_2_server when scan finds no HTTP/HTTPS ports"""
@@ -607,9 +607,9 @@ class TLSModuleTest(unittest.TestCase):
 
     # Run the client test
     test_results = TLS_UTIL.validate_tls_client(client_mac='e4:5f:01:5f:92:9c',
-                                                tls_version='1.2',
+                                                tls_version='1.3',
                                                 capture_files=[capture_file])
-    print(str(test_results))
+    print('results', str(test_results))
     self.assertTrue(test_results[0])
 
   def outbound_connections_test(self):

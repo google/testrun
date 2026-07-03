@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Protocol test module"""
+import asyncio
 from test_module import TestModule
 import netifaces
 from protocol_bacnet import BACnet
@@ -26,18 +27,23 @@ class ProtocolModule(TestModule):
 
   def __init__(self, module):
     self._supports_bacnet = False
+    self._bacnet_loop = None
     super().__init__(module_name=module, log_name=LOG_NAME)
     global LOGGER
     LOGGER = self._get_logger()
     self._bacnet = BACnet(log=LOGGER, device_hw_addr=self._device_mac)
+
+  def _get_bacnet_loop(self):
+    if self._bacnet_loop is None:
+      self._bacnet_loop = asyncio.new_event_loop()
+    return self._bacnet_loop
 
   def _protocol_valid_bacnet(self):
     LOGGER.info('Running protocol.valid_bacnet')
     result = None
     interface_name = 'veth0'
     # If the ipv4 address wasn't resolved yet, try again
-    if self._device_ipv4_addr is None:
-      self._device_ipv4_addr = self._get_device_ipv4()
+    self._device_ipv4_addr = self._get_device_ipv4()
 
     if self._device_ipv4_addr is None:
       LOGGER.error('No device IP could be resolved')
@@ -46,7 +52,9 @@ class ProtocolModule(TestModule):
     # Resolve the appropriate IP for BACnet comms
     local_address = self.get_local_ip(interface_name)
     if local_address:
-      self._bacnet.discover(local_address + '/24')
+      local_address += '/24'
+      self._get_bacnet_loop().run_until_complete(
+          self._bacnet.discover(local_address))
       result = self._bacnet.validate_device()
       if result[0]:
         self._supports_bacnet = True
@@ -73,10 +81,11 @@ class ProtocolModule(TestModule):
     if len(self._bacnet.devices) > 0:
       for device in self._bacnet.devices:
         LOGGER.debug(f'Checking BACnet version for device: {device}')
-        device_addr = device[2]
-        device_id = device[3]
+        loop = self._get_bacnet_loop()
         result_status, result_description = \
-          self._bacnet.validate_protocol_version(device_addr,device_id)
+          loop.run_until_complete(
+            self._bacnet.validate_protocol_version(device)
+          )
         break
 
     LOGGER.info(result_description)

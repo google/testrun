@@ -5,4 +5,5 @@
 # User defined packages
 scapy==2.7.0
 pyshark==0.6
-dnspython==2.8.0
+aiohttp==3.13.5
+ntplib==0.4.0

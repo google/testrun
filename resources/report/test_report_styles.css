@@ -276,7 +276,7 @@
     .steps-to-resolve-test-name {
       display: inline-block;
       margin-left: 70px;
-      margin-right: 10px;
+      margin-right: -60px;
       margin-bottom: 20px;
       width: 250px;
       vertical-align: top;
@@ -284,6 +284,8 @@
 
     .steps-to-resolve-description {
       display: inline-block;
+      margin-left: 70px;
+      margin-bottom: 20px;
     }
 
     .steps-to-resolve.subtitle {

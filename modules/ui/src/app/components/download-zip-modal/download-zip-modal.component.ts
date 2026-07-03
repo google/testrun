@@ -185,6 +185,8 @@ export class DownloadZipModalComponent
   }
 
   private getZipLink(data: DialogData): string {
-    return data.export || data.report!.replace('report', 'export');
+    return this.testRunService.getReportLink(
+      data.export || data.report!.replace('report', 'export')
+    );
   }
 }

@@ -25,3 +25,4 @@ Within the ```python/src``` directory, the below tests are executed.
 | security.services.vnc | Check VNC is disabled on any port | Device cannot be accessed via VNC on any port | Required |
 | security.services.tftp | Check TFTP port 69 is disabled (UDP) | There is no TFTP service running on any port | Required |
 | ntp.network.ntp_server | Check NTP port 123 is disabled and the device is not acting as an NTP server | The devices does not respond to NTP requests | Required |
+| security.services.bacnet | Checks if a BACnet server is running on any port | Reports presence of BACnet server and the ports it is running on | Informational |

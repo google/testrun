@@ -24,6 +24,7 @@ import {
   StatusOfTestResult,
   StatusOfTestrun,
   StatusResultClassName,
+  TestReportsList,
   TestrunStatus,
 } from '../model/testrun-status';
 import { Version } from '../model/version';
@@ -151,6 +152,7 @@ export class TestRunService {
         catchError(() => of(false))
       );
   }
+
   deleteDevice(device: Device): Observable<boolean> {
     return this.http
       .delete<boolean>(`${API_URL}/device`, {
@@ -162,8 +164,8 @@ export class TestRunService {
       );
   }
 
-  getHistory(): Observable<TestrunStatus[] | null> {
-    return this.http.get<TestrunStatus[]>(`${API_URL}/reports`).pipe(
+  getReports(): Observable<TestReportsList | null> {
+    return this.http.get<TestReportsList>(`${API_URL}/reports`).pipe(
       map(result => {
         result.forEach(item => {
           item.report = this.changeReportURL(item.report);
@@ -241,15 +243,15 @@ export class TestRunService {
       });
   }
 
-  deleteReport(mac_addr: string, started: string): Observable<boolean> {
-    return this.http
-      .delete<boolean>(`${API_URL}/report`, {
-        body: JSON.stringify({ mac_addr, timestamp: started }),
-      })
-      .pipe(
-        catchError(() => of(false)),
-        map(res => !!res)
-      );
+  getReportLink(url: string): string {
+    return `${url}`;
+  }
+
+  deleteReport(url: string): Observable<boolean> {
+    return this.http.delete<boolean>(`${API_URL}${url}`).pipe(
+      catchError(() => of(false)),
+      map(res => !!res)
+    );
   }
 
   fetchProfiles(): Observable<Profile[]> {

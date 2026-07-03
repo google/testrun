@@ -454,7 +454,6 @@ class TLSModule(TestModule):
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       description = 'Could not resolve device IP address'
-      details.append('Could not resolve device IP address.')
       return 'Error', description, details
 
   def _security_tls_v1_3_server(self):
@@ -508,38 +507,38 @@ class TLSModule(TestModule):
 
   def _security_tls_v1_0_client(self):
     LOGGER.info('Running security.tls.v1_0_client')
-    tls_1_0_valid = self._validate_tls_client(self._device_mac, '1.0')
-    tls_1_1_valid = self._validate_tls_client(self._device_mac, '1.1')
-    tls_1_2_valid = self._validate_tls_client(self._device_mac, '1.2')
-    tls_1_3_valid = self._validate_tls_client(self._device_mac, '1.3')
-    states = [
-        tls_1_0_valid[0], tls_1_1_valid[0], tls_1_2_valid[0], tls_1_3_valid[0]
-    ]
-    if any(state is True for state in states):
-      # If any state is True, return True
-      result_state = True
-      result_message = 'TLS 1.0 or higher detected'
-    elif all(state == 'Feature Not Detected' for state in states):
-      # If all states are "Feature not Detected"
-      result_state = 'Feature Not Detected'
-      result_message = tls_1_0_valid[1]
-    elif all(state == 'Error' for state in states):
-      # If all states are "Error"
-      result_state = 'Error'
-      result_message = ''
-    else:
+    try:
+      tls_versions = self._tls_util.detect_tls_client_versions(
+          client_mac=self._device_mac,
+          capture_files=[
+              MONITOR_CAPTURE_FILE, STARTUP_CAPTURE_FILE, TLS_CAPTURE_FILE
+          ]
+          )
+      LOGGER.info(f'TLS client version detection results: {tls_versions}')
+    except Exception as e:
+      LOGGER.error(f'Error detecting TLS client versions: {e}')
+      return 'Error', f'Error detecting TLS client versions: {e}', []
+    result_state = 'Feature Not Detected'
+    result_message = 'No TLS client connections detected.'
+    result_details = []
+
+    if tls_versions['1.0']['present'] or tls_versions['1.1']['present']:
       result_state = False
-      result_message = 'TLS 1.0 or higher was not detected'
-    result_details = [
-                      *tls_1_0_valid[2],
-                      *tls_1_1_valid[2],
-                      *tls_1_2_valid[2],
-                      *tls_1_3_valid[2]
-                    ]
-    result_tags = list(
-        set(tls_1_0_valid[3] + tls_1_1_valid[3] + tls_1_2_valid[3] +
-            tls_1_3_valid[3]))
-    return result_state, result_message, result_details, result_tags
+      result_message = 'TLS 1.0 or TLS 1.1 detected.'
+      LOGGER.info(result_message)
+      result_details.extend(tls_versions['1.0']['details'])
+      result_details.extend(tls_versions['1.1']['details'])
+      for detail in result_details:
+        LOGGER.info(detail)
+    elif tls_versions['1.2']['present'] or tls_versions['1.3']['present']:
+      result_state = True
+      result_message = 'TLS 1.2 or higher detected.'
+      LOGGER.info(result_message)
+      result_details.extend(tls_versions['1.2']['details'])
+      result_details.extend(tls_versions['1.3']['details'])
+      for detail in result_details:
+        LOGGER.info(detail)
+    return result_state, result_message, result_details
 
   def _security_tls_v1_2_client(self):
     LOGGER.info('Running security.tls.v1_2_client')

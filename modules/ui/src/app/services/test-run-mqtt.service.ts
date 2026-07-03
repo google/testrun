@@ -4,7 +4,7 @@ import { catchError, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Adapters } from '../model/setting';
 import { TestrunStatus } from '../model/testrun-status';
-import { InternetConnection, Topic } from '../model/topic';
+import { Info, InternetConnection, Topic } from '../model/topic';
 import { TestRunService } from './test-run.service';
 
 @Injectable({
@@ -30,6 +30,10 @@ export class TestRunMqttService {
         return result;
       })
     );
+  }
+
+  getInfo(): Observable<Info> {
+    return this.topic<Info>(Topic.Info);
   }
 
   private topic<Type>(topicName: string): Observable<Type> {

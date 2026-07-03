@@ -136,9 +136,7 @@ describe('DownloadReportComponent', () => {
         ) as HTMLAnchorElement;
 
         expect(downloadReportLink).not.toBeNull();
-        expect(downloadReportLink.href).toEqual(
-          'https://api.testrun.io/report.pdf'
-        );
+        expect(downloadReportLink.href).toContain('/report/123');
         expect(downloadReportLink.download).toEqual(
           'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20'
         );

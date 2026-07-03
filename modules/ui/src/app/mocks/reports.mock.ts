@@ -1,10 +1,9 @@
-import { HistoryTestrun, TestrunStatus } from '../model/testrun-status';
+import { HistoryTestrun, TestReportsList } from '../model/testrun-status';
 import { MatTableDataSource } from '@angular/material/table';
 import { DeviceStatus, TestingType } from '../model/device';
 
 export const HISTORY = [
   {
-    mac_addr: '01:02:03:04:05:06',
     status: 'Complete',
     result: 'Compliant',
     device: {
@@ -15,16 +14,15 @@ export const HISTORY = [
       firmware: '1.2.2',
       test_pack: TestingType.Qualification,
     },
-    tags: [],
-    report: 'https://api.testrun.io/report.pdf',
-    export: 'https://api.testrun.io/export.pdf',
+    report: '/report/123',
+    export: '/export/123',
+    delete: '/report/123',
     started: '2023-06-23T10:11:00.123Z',
     finished: '2023-06-23T10:17:10.123Z',
   },
   {
     status: 'Complete',
     result: 'Compliant',
-    mac_addr: '01:02:03:04:05:07',
     device: {
       status: DeviceStatus.VALID,
       manufacturer: 'Delta',
@@ -33,14 +31,13 @@ export const HISTORY = [
       firmware: '1.2.3',
       test_pack: TestingType.Qualification,
     },
-    tags: [],
-    report: 'https://api.testrun.io/report.pdf',
-    export: 'https://api.testrun.io/export.pdf',
+    report: '/report/1234',
+    export: '/export/1234',
+    delete: '/report/1234',
     started: '2023-07-23T10:11:00.123Z',
     finished: '2023-07-23T10:17:10.123Z',
   },
   {
-    mac_addr: null,
     status: 'Complete',
     result: 'Compliant',
     device: {
@@ -51,17 +48,16 @@ export const HISTORY = [
       firmware: '1.2.2',
       test_pack: TestingType.Qualification,
     },
-    tags: [],
-    report: 'https://api.testrun.io/report.pdf',
-    export: 'https://api.testrun.io/export.pdf',
+    report: '/report/12345',
+    export: '/export/12345',
+    delete: '/report/12345',
     started: '2023-06-23T10:11:00.123Z',
     finished: '2023-06-23T10:17:10.123Z',
   },
-] as TestrunStatus[];
+] as TestReportsList;
 
 export const HISTORY_AFTER_REMOVE = [
   {
-    mac_addr: '01:02:03:04:05:06',
     status: 'Complete',
     result: 'Compliant',
     device: {
@@ -72,14 +68,13 @@ export const HISTORY_AFTER_REMOVE = [
       firmware: '1.2.2',
       test_pack: TestingType.Qualification,
     },
-    tags: [],
-    report: 'https://api.testrun.io/report.pdf',
-    export: 'https://api.testrun.io/export.pdf',
+    report: '/report/123',
+    export: '/export/123',
+    delete: '/report/123',
     started: '2023-06-23T10:11:00.123Z',
     finished: '2023-06-23T10:17:10.123Z',
   },
   {
-    mac_addr: null,
     status: 'Complete',
     result: 'Compliant',
     device: {
@@ -90,19 +85,18 @@ export const HISTORY_AFTER_REMOVE = [
       firmware: '1.2.2',
       test_pack: TestingType.Qualification,
     },
-    tags: [],
-    report: 'https://api.testrun.io/report.pdf',
-    export: 'https://api.testrun.io/export.pdf',
+    report: '/report/12345',
+    export: '/export/12345',
+    delete: '/report/12345',
     started: '2023-06-23T10:11:00.123Z',
     finished: '2023-06-23T10:17:10.123Z',
   },
-] as TestrunStatus[];
+] as TestReportsList;
 
 export const FORMATTED_HISTORY = [
   {
     status: 'Complete',
     result: 'Compliant',
-    mac_addr: '01:02:03:04:05:06',
     device: {
       status: DeviceStatus.VALID,
       manufacturer: 'Delta',
@@ -111,9 +105,9 @@ export const FORMATTED_HISTORY = [
       firmware: '1.2.2',
       test_pack: TestingType.Qualification,
     },
-    tags: [],
-    report: 'https://api.testrun.io/report.pdf',
-    export: 'https://api.testrun.io/export.pdf',
+    report: '/report/123',
+    export: '/export/123',
+    delete: '/report/123',
     started: '2023-06-23T10:11:00.123Z',
     finished: '2023-06-23T10:17:10.123Z',
     deviceFirmware: '1.2.2',
@@ -125,7 +119,6 @@ export const FORMATTED_HISTORY = [
   {
     status: 'Complete',
     result: 'Compliant',
-    mac_addr: '01:02:03:04:05:07',
     device: {
       status: DeviceStatus.VALID,
       manufacturer: 'Delta',
@@ -134,9 +127,9 @@ export const FORMATTED_HISTORY = [
       firmware: '1.2.3',
       test_pack: TestingType.Qualification,
     },
-    tags: [],
-    report: 'https://api.testrun.io/report.pdf',
-    export: 'https://api.testrun.io/export.pdf',
+    report: '/report/1234',
+    export: '/export/1234',
+    delete: '/report/1234',
     started: '2023-07-23T10:11:00.123Z',
     finished: '2023-07-23T10:17:10.123Z',
     deviceFirmware: '1.2.3',
@@ -146,7 +139,6 @@ export const FORMATTED_HISTORY = [
     program: 'Device Qualification',
   },
   {
-    mac_addr: null,
     status: 'Complete',
     result: 'Compliant',
     device: {
@@ -157,9 +149,9 @@ export const FORMATTED_HISTORY = [
       firmware: '1.2.2',
       test_pack: TestingType.Qualification,
     },
-    tags: [],
-    report: 'https://api.testrun.io/report.pdf',
-    export: 'https://api.testrun.io/export.pdf',
+    report: '/report/12345',
+    export: '/export/12345',
+    delete: '/report/12345',
     started: '2023-06-23T10:11:00.123Z',
     finished: '2023-06-23T10:17:10.123Z',
     deviceFirmware: '1.2.2',

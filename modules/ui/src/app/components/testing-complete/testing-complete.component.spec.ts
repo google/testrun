@@ -65,7 +65,7 @@ describe('TestingCompleteComponent', () => {
           profiles: [],
           testrunStatus: MOCK_PROGRESS_DATA_COMPLIANT,
           isTestingComplete: true,
-          report: 'https://api.testrun.io/report.pdf',
+          report: '/report/123',
           export: '',
           isPilot: false,
         },

@@ -14,10 +14,15 @@
 
 """Track device object information."""
 
+import json
+import os
 from typing import List, Dict
 from dataclasses import dataclass, field
 from common.testreport import TestReport
 from datetime import datetime
+
+_LOCAL_DEVICES_DIR = 'local/devices'
+_DEVICE_CONFIG_FILE = 'device_config.json'
 
 @dataclass
 class Device():
@@ -47,17 +52,36 @@ class Device():
   def add_report(self, report):
     self.reports.append(report)
 
+  def get_report_by_folder_name(self, folder_name: str) -> TestReport | None:
+    for report in self.reports:
+      report_folder_name = report.get_folder_name()
+      if report_folder_name == folder_name:
+        return report
+      if report_folder_name is None or report_folder_name == '':
+        if report.get_report_url().split('/')[-1] == folder_name:
+          report.set_report_url(folder_name)
+          return report
+    return None
+
   def get_reports(self):
     return self.reports
+
+  def sort_reports(self):
+    self.reports.sort(key=lambda r: r.get_started() or datetime.min)
 
   def clear_reports(self):
     self.reports = []
 
-  def remove_report(self, timestamp: datetime):
+  def remove_report(self, report: TestReport):
+    if report in self.reports:
+      self.reports.remove(report)
+      report.delete_folder()
+      self.export_config_json()
+
+  def remove_reports(self):
     for report in self.reports:
-      if report.get_started().strftime('%Y-%m-%dT%H:%M:%S') == timestamp:
-        self.reports.remove(report)
-        return
+      report.delete_folder()
+    self.clear_reports()
 
   def to_dict(self):
     """Returns the device as a python dictionary. This is used for the
@@ -78,6 +102,8 @@ class Device():
       device_json['firmware'] = self.firmware
 
     device_json['test_modules'] = self.test_modules
+    device_json['reports'] = [
+      report.to_json() for report in self.reports] if self.reports else []
     return device_json
 
   def to_config_json(self):
@@ -94,12 +120,26 @@ class Device():
     device_json['additional_info'] = self.additional_info
     device_json['created_at'] = self.created_at.isoformat()
     device_json['modified_at'] = self.modified_at.isoformat()
+    device_json['reports'] = [
+      report.to_json() for report in self.reports] if self.reports else []
 
     # Include static IP if configured
     if self.ip_addr is not None:
       device_json['ip_addr'] = self.ip_addr
 
     return device_json
+
+  def export_config_json(self):
+    """Exports the device config as a json file to the specified path."""
+    # Locate parent directory
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    root_dir = os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.dirname(current_dir))))
+    config_file_path = os.path.join(root_dir, _LOCAL_DEVICES_DIR,
+                                    self.device_folder, _DEVICE_CONFIG_FILE)
+
+    with open(config_file_path, 'w+', encoding='utf-8') as config_file:
+      config_file.writelines(json.dumps(self.to_config_json(), indent=4))
 
   def __post_init__(self):
     # Store initial values after creation
@@ -113,3 +153,9 @@ class Device():
       # Update the last_updated timestamp
       super().__setattr__('modified_at', datetime.now())
     super().__setattr__(name, value)
+
+
+@dataclass
+class DeviceWithReport():
+  device: Device | None = None
+  report: TestReport | None = None

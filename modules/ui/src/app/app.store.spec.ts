@@ -56,6 +56,7 @@ import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { MOCK_ADAPTERS } from './mocks/settings.mock';
 import { TestingType } from './model/device';
 import { ResultOfTestrun, StatusOfTestrun } from './model/testrun-status';
+import { MOCK_INFO } from './mocks/topic.mock';
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -109,7 +110,7 @@ describe('AppStore', () => {
     mockFocusManagerService = jasmine.createSpyObj([
       'focusFirstElementInContainer',
     ]);
-    mockMqttService = jasmine.createSpyObj(['getNetworkAdapters']);
+    mockMqttService = jasmine.createSpyObj(['getNetworkAdapters', 'getInfo']);
 
     TestBed.configureTestingModule({
       providers: [
@@ -341,6 +342,20 @@ describe('AppStore', () => {
       });
     });
 
+    describe('getInfo', () => {
+      const info = MOCK_INFO;
+
+      beforeEach(() => {
+        mockMqttService.getInfo.and.returnValue(of(info));
+      });
+
+      it('should notify about new info', () => {
+        appStore.getInfo();
+
+        expect(mockNotificationService.notify).toHaveBeenCalledWith('message');
+      });
+    });
+
     describe('setCloseCallout', () => {
       it('should update store', done => {
         appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
@@ -520,7 +535,7 @@ describe('AppStore', () => {
           },
           started: '2023-06-22T09:20:00.123Z',
           finished: '2023-06-22T09:26:00.123Z',
-          report: 'https://api.testrun.io/report.pdf',
+          report: '/report/123',
           export: 'https://api.testrun.io/export.pdf',
           tags: [],
           tests: {
