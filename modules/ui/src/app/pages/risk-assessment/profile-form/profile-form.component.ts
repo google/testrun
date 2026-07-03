@@ -284,7 +284,10 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
           )
             return false;
         }
-      } else if (this.isEmptyAnswer(answer2) && !this.isEmptyAnswer(answer1)) {
+      } else if (
+        (this.isEmptyAnswer(answer1) && !this.isEmptyAnswer(answer2)) ||
+        (this.isEmptyAnswer(answer2) && !this.isEmptyAnswer(answer1))
+      ) {
         return false;
       }
     }
