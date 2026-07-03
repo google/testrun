@@ -30,7 +30,7 @@ import { FocusManagerService } from '../../services/focus-manager.service';
 import { AppState } from '../../store/state';
 import { selectRiskProfiles } from '../../store/selectors';
 import { setRiskProfiles, setIsOpenProfile } from '../../store/actions';
-import {ProfileAction, ProfileStatus} from '../../model/profile';
+import { ProfileAction, ProfileStatus } from '../../model/profile';
 
 describe('RiskAssessmentStore', () => {
   let riskAssessmentStore: RiskAssessmentStore;
