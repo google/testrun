@@ -28,6 +28,7 @@
   color: colors.$on-surface-variant;
   padding: 8px 16px;
   display: inline-block;
+  &:has(+ .field-select-multiple.ng-invalid.ng-touched),
   &:has(+ .field-select-multiple.ng-invalid.ng-dirty) {
     color: mat.get-theme-color($light-theme, error, 40);
   }
