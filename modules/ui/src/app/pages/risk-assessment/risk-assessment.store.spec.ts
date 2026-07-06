@@ -122,6 +122,7 @@ describe('RiskAssessmentStore', () => {
 
         riskAssessmentStore.deleteProfile({
           name: PROFILE_MOCK.name,
+          created: PROFILE_MOCK.created,
           onDelete: (idx: number) => {
             return idx;
           },
