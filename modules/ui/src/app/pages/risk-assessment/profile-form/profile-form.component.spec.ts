@@ -292,6 +292,13 @@ describe('ProfileFormComponent', () => {
           name: 'Outdated profile',
         });
       });
+
+      it('should mark form fields as touched so empty fields are highlighted', () => {
+        expect(component.getControl('0').touched).toBeTrue();
+        expect(component.getControl('0').hasError('required')).toBeTrue();
+        expect(component.getControl('2').touched).toBeTrue();
+        expect(component.getControl('2').hasError('required')).toBeTrue();
+      });
     });
 
     describe('with expired profile', () => {

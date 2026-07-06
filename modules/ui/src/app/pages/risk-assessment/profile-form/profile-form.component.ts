@@ -116,7 +116,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
         this.profileForm.reset();
       }
       this.profileForm.markAsPristine();
-      this.profileForm.markAsUntouched();
+      this.profileForm.markAllAsTouched();
     } else if (this.profile != profile) {
       // prevent select profile before user confirmation
       this.store.updateSelectedProfile(this.profile);
@@ -369,7 +369,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
         this.getControl(index).setValue(answer?.answer || '');
       }
     });
-    this.nameControl.markAsTouched();
+    this.profileForm.markAllAsTouched();
     this.triggerResize();
   }
 
