@@ -145,7 +145,7 @@ export class RiskAssessmentComponent
     this.isOpenProfileForm = true;
     this.store.updateSelectedProfile(profile);
     await this.liveAnnouncer.announce('Risk assessment questionnaire');
-    this.store.setFocusOnProfileForm();
+    this.store.setFocusOnProfileForm(profile?.status);
     this.cd.detectChanges();
   }
 
