@@ -449,11 +449,11 @@ class Api:
     for report in reports:
       del report["tests"]
       report["device"] = {
-        "manufacturer": report["device"]["manufacturer"],
-        "model": report["device"]["model"],
-        "mac_addr": report["device"]["mac_addr"],
-        "firmware": report["device"]["firmware"],
-        "test_pack": report["device"]["test_pack"],
+        "manufacturer": report["device"].get("manufacturer"),
+        "model": report["device"].get("model"),
+        "mac_addr": report["device"].get("mac_addr"),
+        "firmware": report["device"].get("firmware"),
+        "test_pack": report["device"].get("test_pack", "Device Qualification"),
       }
       report["delete"] = report["report"]
     return reports
