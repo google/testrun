@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { catchError, delay, EMPTY, exhaustMap, throwError, timer } from 'rxjs';
 import { TestRunService } from '../../services/test-run.service';
-import { Profile, ProfileAction, ProfileFormat } from '../../model/profile';
+import {
+  Profile,
+  ProfileAction,
+  ProfileFormat,
+  ProfileStatus,
+} from '../../model/profile';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
@@ -27,7 +32,7 @@ import {
   selectIsOpenCreateProfile,
   selectRiskProfiles,
 } from '../../store/selectors';
-import { setRiskProfiles, setIsOpenProfile } from '../../store/actions';
+import { setIsOpenProfile, setRiskProfiles } from '../../store/actions';
 import { EntityAction } from '../../model/entity-action';
 
 export interface AppComponentState {
@@ -145,12 +150,19 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  setFocusOnProfileForm = this.effect(trigger$ => {
+  setFocusOnProfileForm = this.effect<ProfileStatus | undefined>(trigger$ => {
     return trigger$.pipe(
-      tap(() => {
-        this.focusManagerService.focusFirstElementInContainer(
-          window.document.querySelector('app-profile-form')
-        );
+      tap((status: ProfileStatus | undefined) => {
+        if (status !== ProfileStatus.EXPIRED) {
+          this.focusManagerService.focusFirstElementInContainer(
+            window.document.querySelector('app-profile-form')
+          );
+        } else {
+          const form = window.document.querySelector(
+            '.profile-form'
+          ) as HTMLFormElement;
+          form.focus();
+        }
       })
     );
   });

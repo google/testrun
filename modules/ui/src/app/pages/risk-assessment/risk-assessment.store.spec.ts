@@ -30,7 +30,7 @@ import { FocusManagerService } from '../../services/focus-manager.service';
 import { AppState } from '../../store/state';
 import { selectRiskProfiles } from '../../store/selectors';
 import { setRiskProfiles, setIsOpenProfile } from '../../store/actions';
-import { ProfileAction } from '../../model/profile';
+import { ProfileAction, ProfileStatus } from '../../model/profile';
 
 describe('RiskAssessmentStore', () => {
   let riskAssessmentStore: RiskAssessmentStore;
@@ -234,7 +234,7 @@ describe('RiskAssessmentStore', () => {
     describe('setFocusOnProfileForm', () => {
       const profileForm = window.document.querySelector('app-profile-form');
       it('should call focusFirstElementInContainer', () => {
-        riskAssessmentStore.setFocusOnProfileForm();
+        riskAssessmentStore.setFocusOnProfileForm(ProfileStatus.VALID);
 
         expect(
           mockFocusManagerService.focusFirstElementInContainer

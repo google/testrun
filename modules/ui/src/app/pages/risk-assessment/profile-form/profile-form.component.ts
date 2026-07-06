@@ -58,6 +58,7 @@ import { SimpleDialogComponent } from '../../../components/simple-dialog/simple-
 import { MatDialog } from '@angular/material/dialog';
 import { RiskAssessmentStore } from '../risk-assessment.store';
 import { tap } from 'rxjs/internal/operators/tap';
+import { timer } from 'rxjs';
 
 @Component({
   selector: 'app-profile-form',
@@ -104,6 +105,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
   @Input()
   set selectedProfile(profile: Profile | null) {
+    console.log(profile);
     if (this.changeProfile || this.profileHasNoChanges()) {
       this.changeProfile = false;
       this.profile = profile;
@@ -113,6 +115,8 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
       } else {
         this.profileForm.reset();
       }
+      this.profileForm.markAsPristine();
+      this.profileForm.markAsUntouched();
     } else if (this.profile != profile) {
       // prevent select profile before user confirmation
       this.store.updateSelectedProfile(this.profile);
@@ -127,6 +131,13 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     } else if (profile?.status !== ProfileStatus.COPY) {
       this.copyProfile = null;
     }
+    timer(100).subscribe(() => {
+      if (this.profile?.status === ProfileStatus.EXPIRED) {
+        this.profileForm.disable();
+      } else {
+        this.profileForm.enable();
+      }
+    });
   }
 
   get selectedProfile() {
@@ -282,7 +293,10 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
           )
             return false;
         }
-      } else if (this.isEmptyAnswer(answer2) && !this.isEmptyAnswer(answer1)) {
+      } else if (
+        (this.isEmptyAnswer(answer1) && !this.isEmptyAnswer(answer2)) ||
+        (this.isEmptyAnswer(answer2) && !this.isEmptyAnswer(answer1))
+      ) {
         return false;
       }
     }
