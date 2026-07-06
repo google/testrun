@@ -58,6 +58,7 @@ import { SimpleDialogComponent } from '../../../components/simple-dialog/simple-
 import { MatDialog } from '@angular/material/dialog';
 import { RiskAssessmentStore } from '../risk-assessment.store';
 import { tap } from 'rxjs/internal/operators/tap';
+import { timer } from 'rxjs';
 
 @Component({
   selector: 'app-profile-form',
@@ -104,6 +105,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
   @Input()
   set selectedProfile(profile: Profile | null) {
+    console.log(profile);
     if (this.changeProfile || this.profileHasNoChanges()) {
       this.changeProfile = false;
       this.profile = profile;
@@ -129,6 +131,13 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     } else if (profile?.status !== ProfileStatus.COPY) {
       this.copyProfile = null;
     }
+    timer(100).subscribe(() => {
+      if (this.profile?.status === ProfileStatus.EXPIRED) {
+        this.profileForm.disable();
+      } else {
+        this.profileForm.enable();
+      }
+    });
   }
 
   get selectedProfile() {

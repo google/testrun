@@ -18,7 +18,18 @@ limitations under the License.
   class="profile-form"
   [class.profile-form-outdated]="
     selectedProfile?.status === ProfileStatus.EXPIRED
+  "
+  [attr.tabindex]="
+    selectedProfile?.status === ProfileStatus.EXPIRED ? '-1' : null
+  "
+  [attr.aria-labelledby]="
+    selectedProfile?.status === ProfileStatus.EXPIRED
+      ? 'form-accessible-title'
+      : null
   ">
+  <span id="form-accessible-title" class="visually-hidden">
+    View information (read-only)
+  </span>
   <div class="field-container">
     <label class="field-label name-field-label" for="name-field"
       >Profile name *</label
