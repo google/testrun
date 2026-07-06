@@ -105,7 +105,6 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
   @Input()
   set selectedProfile(profile: Profile | null) {
-    console.log(profile);
     if (this.changeProfile || this.profileHasNoChanges()) {
       this.changeProfile = false;
       this.profile = profile;

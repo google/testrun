@@ -159,6 +159,7 @@ export class RiskAssessmentComponent
     copyOfProfile.name = this.getCopiedProfileName(profile.name);
     delete copyOfProfile.created; // new profile is not create yet
     delete copyOfProfile.risk;
+    delete copyOfProfile.rename;
     copyOfProfile.status = ProfileStatus.COPY;
     return copyOfProfile;
   }
@@ -187,6 +188,7 @@ export class RiskAssessmentComponent
         if (deleteProfile) {
           this.store.deleteProfile({
             name: profileName,
+            created: profile.created,
             onDelete: (idx = 0) => {
               this.closeFormAfterDelete(profileName, selectedProfile);
               timer(100).subscribe(() => {
@@ -271,7 +273,11 @@ export class RiskAssessmentComponent
   }
 
   deleteCopy(copyOfProfile: Profile, profiles: Profile[]) {
-    this.store.removeProfile(copyOfProfile.name, profiles);
+    this.store.removeProfile(
+      copyOfProfile.name,
+      copyOfProfile.created,
+      profiles
+    );
     this.cd.markForCheck();
   }
   setCopy(copyOfProfile: Profile, profiles: Profile[]) {

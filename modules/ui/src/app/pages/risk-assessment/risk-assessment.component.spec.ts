@@ -236,8 +236,16 @@ describe('RiskAssessmentComponent', () => {
         mockRiskAssessmentStore.deleteProfile.and.callFake(
           (
             observableOrValue:
-              | { name: string; onDelete: (idx: number) => void }
-              | Observable<{ name: string; onDelete: (idx: number) => void }>
+              | {
+                  name: string;
+                  created: string | undefined;
+                  onDelete: (idx: number) => void;
+                }
+              | Observable<{
+                  name: string;
+                  created: string | undefined;
+                  onDelete: (idx: number) => void;
+                }>
           ) => {
             // @ts-expect-error onDelete exist in object
             observableOrValue?.onDelete(1);
@@ -282,6 +290,15 @@ describe('RiskAssessmentComponent', () => {
       it('should open the form with copy of profile', () => {
         const copy = component.getCopyOfProfile(PROFILE_MOCK);
         expect(copy).toEqual(DRAFT_COPY_PROFILE_MOCK);
+      });
+
+      it('should remove rename property from copied profile', () => {
+        const profileWithRename = {
+          ...PROFILE_MOCK,
+          rename: 'Renamed profile',
+        };
+        const copy = component.getCopyOfProfile(profileWithRename);
+        expect(copy.rename).toBeUndefined();
       });
     });
 
@@ -457,7 +474,11 @@ describe('RiskAssessmentComponent', () => {
         }));
 
         it('should remove copy if not saved', () => {
-          expect(mockRiskAssessmentStore.removeProfile).toHaveBeenCalled();
+          expect(mockRiskAssessmentStore.removeProfile).toHaveBeenCalledWith(
+            DRAFT_COPY_PROFILE_MOCK.name,
+            DRAFT_COPY_PROFILE_MOCK.created,
+            [DRAFT_COPY_PROFILE_MOCK]
+          );
         });
       });
     });
