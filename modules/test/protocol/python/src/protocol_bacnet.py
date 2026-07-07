@@ -23,6 +23,7 @@ from BAC0.core.io.IOExceptions import (UnknownPropertyError,
                                        ReadPropertyException,
                                        NoResponseFromController,
                                        DeviceNotConnected)
+from bacpypes3.pdu import Address
 
 LOGGER = None
 BAC0_LOG = '/root/.BAC0/BAC0.log'
@@ -64,12 +65,12 @@ class BACnet():
     self.device_hw_addr = device_hw_addr
     self._bin_dir = bin_dir
 
-  async def discover(self, local_ip):
+  async def discover(self, local_ip, device_ip):
     LOGGER.info('Performing BACnet discovery...')
     self.bacnet = BAC0.lite(local_ip)
     LOGGER.info('Local BACnet object: ' + str(self.bacnet))
     try:
-      await self.bacnet._discover(global_broadcast=True) # pylint: disable=protected-access
+      await self.bacnet._discover(global_broadcast=True, timeout=10) # pylint: disable=protected-access
     except Exception as e: # pylint: disable=W0718
       LOGGER.error(e)
     LOGGER.info('BACnet discovery complete')
@@ -86,7 +87,35 @@ class BACnet():
               ip=str(device_info['address'])
             )
           )
-    LOGGER.info('BACnet devices found: ' + str(len(self.devices)))
+    if self.devices:
+      LOGGER.info('BACnet devices found: ' + str(len(self.devices)))
+      return
+    else:
+      msg = 'Trying to discover BACnet device using direct whois request'
+      LOGGER.info(msg)
+      res = await self.bacnet.this_application.app.who_is(
+          low_limit=0,
+          high_limit=4194303,
+          address=Address(f'{device_ip}:47808'),
+          timeout=10,
+      )
+      for iam in res:
+        instance = iam.iAmDeviceIdentifier[1]
+        address = str(iam.pduSource)
+        device = BACnetDevice(
+                device_id=str(instance),
+                ip=str(address)
+              )
+        self.devices.append(device)
+    if self.devices:
+      LOGGER.info('BACnet devices found: ' + str(len(self.devices)))
+      return
+    else:
+      self.devices = self._discover_from_packets(device_ip)
+    if self.devices:
+      LOGGER.info('BACnet devices found: ' + str(len(self.devices)))
+    else:
+      LOGGER.info('No BACnet devices found')
 
   # Check if the device being tested is in the discovered devices list
   # discover needs to be called before this method is invoked
@@ -194,3 +223,27 @@ class BACnet():
     command = f'{bin_file} {args}'
     response = util.run_command(command)
     return json.loads(response[0].strip())
+
+  def _discover_from_packets(self, device_ip: str) -> list[BACnetDevice]:
+    """ Discover BACnet devices from packets in the capture file."""
+    discovered = set()
+    capture_file = os.path.join(self._captures_dir, self._capture_file)
+    LOGGER.info(f'Discovering BACnet devices from packets in {capture_file}...')
+    bin_file = self._bin_dir + '/get_i-am_bacnet_packets.sh'
+    args = f'"{capture_file}" {device_ip}'
+    command = f'{bin_file} {args}'
+    response = util.run_command(command)
+    packets = json.loads(response[0].strip())
+    for packet in packets:
+      info = packet['_source']['layers']['_ws.col.info'][0]
+      if 'i-Am' in info:
+        discovered.add(
+          (
+            packet['_source']['layers']['bacapp.instance_number'][0],
+            packet['_source']['layers']['ip.src'][0]
+           )
+          )
+    return [
+      BACnetDevice(device_id=device_id, ip=ip)
+      for device_id, ip in discovered
+      ]
