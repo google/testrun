@@ -38,6 +38,7 @@ import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { filter, timer } from 'rxjs';
 import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 import { LocalStorageService } from '../../services/local-storage.service';
+import { Routes } from '../../model/routes';
 
 export const INSTALLED_VERSION = 'INSTALLED_VERSION';
 
@@ -56,6 +57,7 @@ export class VersionComponent implements OnInit, OnDestroy {
 
   @Input() consentShown!: boolean;
   @Output() consentShownEvent = new EventEmitter<void>();
+  @Output() navigateToRouteEvent = new EventEmitter<Routes>();
   version$!: Observable<Version | null>;
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -122,7 +124,10 @@ export class VersionComponent implements OnInit, OnDestroy {
         gtag('consent', 'update', {
           analytics_storage: dialogResult.grant ? 'granted' : 'denied',
         });
-        this.localStorageService.setGAConsent(dialogResult.grant);
+
+        if (dialogResult.route) {
+          this.navigateToRouteEvent.emit(dialogResult.route);
+        }
       });
   }
 

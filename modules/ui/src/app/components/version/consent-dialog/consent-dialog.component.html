@@ -50,7 +50,6 @@ limitations under the License.
         >
         to share you thoughts
       </li>
-      <li>Risk Profile was lastly updated in 2026 V2.4.0</li>
     </ul>
   </section>
 
@@ -82,6 +81,32 @@ limitations under the License.
       </app-callout>
     </section>
   }
+  <section class="section-container">
+    <app-callout [type]="CalloutType.Warning">
+      Risk assessment questionnaire was lastly updated in version 2.4.0. Visit
+      the
+      <a
+        id="devices-link"
+        (click)="confirm(optOut, Routes.Devices)"
+        (keydown.enter)="confirm(optOut, Routes.Devices)"
+        tabindex="0"
+        role="button"
+        class="message-link">
+        Devices
+      </a>
+      and
+      <a
+        id="risk-profiles-link"
+        (click)="confirm(optOut, Routes.RiskAssessment)"
+        (keydown.enter)="confirm(optOut, Routes.RiskAssessment)"
+        tabindex="0"
+        role="button"
+        class="message-link">
+        Risk Profiles
+      </a>
+      pages to update outdated data.
+    </app-callout>
+  </section>
   <section class="section-container-info">
     <app-callout [type]="CalloutType.Info">
       Testrun uses Google Analytics to learn about how our users use the

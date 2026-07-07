@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { catchError, delay, EMPTY, exhaustMap, throwError, timer } from 'rxjs';
 import { TestRunService } from '../../services/test-run.service';
-import { Profile, ProfileAction, ProfileFormat } from '../../model/profile';
+import {
+  Profile,
+  ProfileAction,
+  ProfileFormat,
+  ProfileStatus,
+} from '../../model/profile';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
@@ -27,7 +32,7 @@ import {
   selectIsOpenCreateProfile,
   selectRiskProfiles,
 } from '../../store/selectors';
-import { setRiskProfiles, setIsOpenProfile } from '../../store/actions';
+import { setIsOpenProfile, setRiskProfiles } from '../../store/actions';
 import { EntityAction } from '../../model/entity-action';
 
 export interface AppComponentState {
@@ -77,16 +82,17 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
 
   deleteProfile = this.effect<{
     name: string;
+    created: string | undefined;
     onDelete: (idx: number) => void;
   }>(trigger$ => {
     return trigger$.pipe(
-      exhaustMap(({ name, onDelete }) => {
+      exhaustMap(({ name, created, onDelete }) => {
         return this.testRunService.deleteProfile(name).pipe(
           withLatestFrom(this.profiles$),
           tap(([remove, current]) => {
             if (remove) {
               const idx = current.findIndex(item => name === item.name);
-              this.removeProfile(name, current);
+              this.removeProfile(name, created, current);
               onDelete(idx);
             }
           })
@@ -145,12 +151,19 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  setFocusOnProfileForm = this.effect(trigger$ => {
+  setFocusOnProfileForm = this.effect<ProfileStatus | undefined>(trigger$ => {
     return trigger$.pipe(
-      tap(() => {
-        this.focusManagerService.focusFirstElementInContainer(
-          window.document.querySelector('app-profile-form')
-        );
+      tap((status: ProfileStatus | undefined) => {
+        if (status !== ProfileStatus.EXPIRED) {
+          this.focusManagerService.focusFirstElementInContainer(
+            window.document.querySelector('app-profile-form')
+          );
+        } else {
+          const form = window.document.querySelector(
+            '.profile-form'
+          ) as HTMLFormElement;
+          form.focus();
+        }
       })
     );
   });
@@ -206,8 +219,14 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     this.store.dispatch(setRiskProfiles({ riskProfiles }));
   }
 
-  removeProfile(name: string, current: Profile[]): void {
-    const profiles = current.filter(profile => profile.name !== name);
+  removeProfile(
+    name: string,
+    created: string | undefined,
+    current: Profile[]
+  ): void {
+    const profiles = current.filter(
+      profile => !(profile.name == name && created === profile.created)
+    );
     this.updateProfiles(profiles);
   }
 

@@ -295,6 +295,72 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
     );
   }
 
+  compareDevices(device1: Device, device2: Device) {
+    if (device1.manufacturer !== device2.manufacturer) {
+      return false;
+    }
+    if (device1.model !== device2.model) {
+      return false;
+    }
+    if (device1.mac_addr !== device2.mac_addr) {
+      return false;
+    }
+    if (device1.type !== device2.type) {
+      return false;
+    }
+    if (device1.technology !== device2.technology) {
+      return false;
+    }
+    if (device1.test_pack !== device2.test_pack) {
+      return false;
+    }
+    const keys1 = Object.keys(device1.test_modules!);
+
+    for (const key of keys1) {
+      const val1 = device1.test_modules![key];
+      const val2 = device2.test_modules![key];
+      if (val1?.enabled !== val2?.enabled) {
+        return false;
+      }
+    }
+
+    // the 2nd device has the newest version of risk assessment
+    if (device2.additional_info) {
+      for (const question of device2.additional_info) {
+        const answer2 = device1.additional_info?.find(
+          question1 => question1.question === question.question
+        )?.answer;
+        const answer1 = question.answer;
+        if (!this.isEmptyAnswer(answer1) && !this.isEmptyAnswer(answer2)) {
+          if (typeof question.answer === 'string') {
+            if (answer1 !== answer2) {
+              return false;
+            }
+          } else {
+            //the type of answer is array
+            if (answer1?.length !== answer2?.length) {
+              return false;
+            }
+            if (
+              (answer1 as number[]).some(
+                answer => !(answer2 as number[]).includes(answer)
+              )
+            )
+              return false;
+          }
+        } else if (
+          this.isEmptyAnswer(answer2) &&
+          !this.isEmptyAnswer(answer1)
+        ) {
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
+    return true;
+  }
+
   private deviceIsEmpty(device: Device) {
     if (device.manufacturer && device.manufacturer !== '') {
       return false;
@@ -334,50 +400,10 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
     return true;
   }
 
-  private compareDevices(device1: Device, device2: Device) {
-    if (device1.manufacturer !== device2.manufacturer) {
-      return false;
-    }
-    if (device1.model !== device2.model) {
-      return false;
-    }
-    if (device1.mac_addr !== device2.mac_addr) {
-      return false;
-    }
-    if (device1.type !== device2.type) {
-      return false;
-    }
-    if (device1.technology !== device2.technology) {
-      return false;
-    }
-    if (device1.test_pack !== device2.test_pack) {
-      return false;
-    }
-    const keys1 = Object.keys(device1.test_modules!);
-
-    for (const key of keys1) {
-      const val1 = device1.test_modules![key];
-      const val2 = device2.test_modules![key];
-      if (val1?.enabled !== val2?.enabled) {
-        return false;
-      }
-    }
-
-    if (device1.additional_info) {
-      for (const question of device1.additional_info) {
-        if (
-          question.answer !==
-          device2.additional_info?.find(
-            question2 => question2.question === question.question
-          )?.answer
-        ) {
-          return false;
-        }
-      }
-    } else {
-      return false;
-    }
-    return true;
+  private isEmptyAnswer(answer: unknown): boolean {
+    if (answer === undefined || answer === null || answer === '') return true;
+    if (Array.isArray(answer) && answer.length === 0) return true;
+    return false;
   }
 
   private fillDeviceForm(format: QuestionFormat[], device: Device): void {

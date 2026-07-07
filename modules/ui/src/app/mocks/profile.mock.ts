@@ -149,6 +149,29 @@ export const NEW_PROFILE_MOCK_DRAFT = {
   ],
 };
 
+export const NEW_PROFILE_MOCK_CHANGED = {
+  ...NEW_PROFILE_MOCK,
+  questions: [
+    {
+      question: 'What is the email of the device owner(s)?',
+      answer: 'a@test.te;b@test.te, c@test.te, d@test.te',
+    },
+    {
+      question: 'What type of device do you need reviewed?',
+      answer: 'new',
+    },
+    {
+      question: 'Are any of the following statements true about your device?',
+      answer: 'new',
+    },
+    {
+      question: 'What features does the device have?',
+      answer: [0, 1, 2, 4],
+    },
+    { question: 'Comments', answer: 'no' },
+  ],
+};
+
 export const RENAME_PROFILE_MOCK = {
   ...NEW_PROFILE_MOCK,
   name: 'Primary profile',

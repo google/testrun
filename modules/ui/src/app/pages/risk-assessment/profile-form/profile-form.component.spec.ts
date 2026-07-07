@@ -21,6 +21,7 @@ import {
   COPY_PROFILE_MOCK,
   EXPIRED_PROFILE_MOCK,
   NEW_PROFILE_MOCK,
+  NEW_PROFILE_MOCK_CHANGED,
   NEW_PROFILE_MOCK_DRAFT,
   OUTDATED_DRAFT_PROFILE_MOCK,
   PROFILE_FORM,
@@ -291,6 +292,13 @@ describe('ProfileFormComponent', () => {
           name: 'Outdated profile',
         });
       });
+
+      it('should mark form fields as touched so empty fields are highlighted', () => {
+        expect(component.getControl('0').touched).toBeTrue();
+        expect(component.getControl('0').hasError('required')).toBeTrue();
+        expect(component.getControl('2').touched).toBeTrue();
+        expect(component.getControl('2').hasError('required')).toBeTrue();
+      });
     });
 
     describe('with expired profile', () => {
@@ -487,6 +495,48 @@ describe('ProfileFormComponent', () => {
           expect(storeSpy).not.toHaveBeenCalled();
           expect(deleteCopyEmitSpy).not.toHaveBeenCalled();
           done();
+        });
+      });
+
+      describe('compareProfiles', () => {
+        it('should return false if the name is different', () => {
+          const res = component.compareProfiles(PROFILE_MOCK, PROFILE_MOCK_2);
+
+          expect(res).toBeFalse();
+        });
+
+        it('should return false for copy of profile', () => {
+          const res = component.compareProfiles(
+            PROFILE_MOCK,
+            PROFILE_MOCK,
+            PROFILE_MOCK_2
+          );
+
+          expect(res).toBeFalse();
+        });
+
+        it('should return false is profile status is different', () => {
+          const res = component.compareProfiles(
+            NEW_PROFILE_MOCK,
+            NEW_PROFILE_MOCK_DRAFT
+          );
+
+          expect(res).toBeFalse();
+        });
+
+        it('should return false is profile has changes', () => {
+          const res = component.compareProfiles(
+            NEW_PROFILE_MOCK,
+            NEW_PROFILE_MOCK_CHANGED
+          );
+
+          expect(res).toBeFalse();
+        });
+
+        it('should return true is profile has no changes', () => {
+          const res = component.compareProfiles(PROFILE_MOCK, PROFILE_MOCK);
+
+          expect(res).toBeTrue();
         });
       });
     });

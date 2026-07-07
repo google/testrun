@@ -58,6 +58,7 @@ import { SimpleDialogComponent } from '../../../components/simple-dialog/simple-
 import { MatDialog } from '@angular/material/dialog';
 import { RiskAssessmentStore } from '../risk-assessment.store';
 import { tap } from 'rxjs/internal/operators/tap';
+import { timer } from 'rxjs';
 
 @Component({
   selector: 'app-profile-form',
@@ -113,6 +114,8 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
       } else {
         this.profileForm.reset();
       }
+      this.profileForm.markAsPristine();
+      this.profileForm.markAllAsTouched();
     } else if (this.profile != profile) {
       // prevent select profile before user confirmation
       this.store.updateSelectedProfile(this.profile);
@@ -127,6 +130,13 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     } else if (profile?.status !== ProfileStatus.COPY) {
       this.copyProfile = null;
     }
+    timer(100).subscribe(() => {
+      if (this.profile?.status === ProfileStatus.EXPIRED) {
+        this.profileForm.disable();
+      } else {
+        this.profileForm.enable();
+      }
+    });
   }
 
   get selectedProfile() {
@@ -237,8 +247,12 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     return true;
   }
 
-  private compareProfiles(profile1: Profile, profile2: Profile) {
-    if (profile1.name !== profile2.name || this.copyProfile) {
+  compareProfiles(
+    profile1: Profile,
+    profile2: Profile,
+    copyProfile = this.copyProfile
+  ) {
+    if (profile1.name !== profile2.name || copyProfile) {
       return false;
     }
     if (
@@ -278,7 +292,10 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
           )
             return false;
         }
-      } else if (this.isEmptyAnswer(answer2) && !this.isEmptyAnswer(answer1)) {
+      } else if (
+        (this.isEmptyAnswer(answer1) && !this.isEmptyAnswer(answer2)) ||
+        (this.isEmptyAnswer(answer2) && !this.isEmptyAnswer(answer1))
+      ) {
         return false;
       }
     }
@@ -351,7 +368,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
         this.getControl(index).setValue(answer?.answer || '');
       }
     });
-    this.nameControl.markAsTouched();
+    this.profileForm.markAllAsTouched();
     this.triggerResize();
   }
 
