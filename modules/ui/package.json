@@ -46,7 +46,7 @@
     "@angular-eslint/schematics": "19.0.0-alpha.4",
     "@angular-eslint/template-parser": "19.0.0-alpha.4",
     "@angular/build": "^21.1.0",
-    "@angular/cli": "~21.1.0",
+    "@angular/cli": "^21.1.0",
     "@angular/compiler-cli": "^21.1.0",
     "@types/jasmine": "~4.3.6",
     "@types/ws": "^8.18.1",
