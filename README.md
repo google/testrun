@@ -24,7 +24,7 @@ Testrun supports two modes: automated testing and lab network.
 
 ## Automated testing
 
-Automated testing of the device under test (DUT) begins once the device is operational (steady state). Containerized test modules execute against the device one module at a time. Testrun produces a report with the results after all modules are executed.
+Automated testing of the device under test (DUT) begins once the device is operational (steady state). Containerized test modules execute against the device one module at a time. Testrun produces a report with the results after all modules are executed. For instructions on how to achieve a **Compliant** result across automated checks, refer to the [Device compliance guide](/docs/test/compliant.md).
 
 ## Lab network
 
