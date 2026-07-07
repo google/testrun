@@ -247,3 +247,30 @@ class BACnet():
       BACnetDevice(device_id=device_id, ip=ip)
       for device_id, ip in discovered
       ]
+
+
+  def _clear_bacnet_caches(self):
+    LOGGER.info('Clearing BACnet device caches...')
+
+    if hasattr(self, 'bacnet') and self.bacnet:
+      if (hasattr(self.bacnet, 'devices') and
+          isinstance(self.bacnet.devices, dict)):
+        self.bacnet.devices.clear()
+        LOGGER.info('BAC0 device registry cleared.')
+      try:
+        if (hasattr(self.bacnet, 'this_application')
+          and self.bacnet.this_application
+          and hasattr(self.bacnet.this_application, 'app')):
+          app = self.bacnet.this_application.app
+          if hasattr(app, 'device_info_cache') and app.device_info_cache:
+            cache = app.device_info_cache
+            if hasattr(cache, 'clear'):
+              cache.clear()
+            elif hasattr(cache, '_cache') and isinstance(cache._cache, dict):
+              cache._cache.clear()
+            elif hasattr(cache, 'cache') and isinstance(cache.cache, dict):
+              cache.cache.clear()
+            LOGGER.info('bacpypes3 DeviceInfoCache cleared.')
+      except Exception as e:
+        LOGGER.error(f'Error while clearing bacpypes3 cache: {e}')
+
