@@ -13,17 +13,17 @@
 # limitations under the License.
 """Module to run all the BACnet related methods for testing"""
 
+import asyncio
 import BAC0
 from dataclasses import dataclass
 import logging
+import socket
 import json
 from common import util
 import os
-from BAC0.core.io.IOExceptions import (UnknownPropertyError,
-                                       ReadPropertyException,
-                                       NoResponseFromController,
-                                       DeviceNotConnected)
 from bacpypes3.pdu import Address
+from bacpypes3.apdu import IAmRequest
+from bacpypes3.primitivedata import ObjectIdentifier
 
 LOGGER = None
 BAC0_LOG = '/root/.BAC0/BAC0.log'
@@ -145,37 +145,66 @@ class BACnet():
     self,
     device: BACnetDevice
   ) -> tuple[bool, str]:
-    LOGGER.info(
-      f'Resolving protocol version for BACnet device: {device.device_id}'
-    )
+    version = None
+    revision = None
+    result = False
+    result_description = 'Failed to resolve protocol version.'
+    ip = device.ip
+    d_id = device.device_id
+    LOGGER.info(f'Resolving protocol version for BACnet device: {d_id}')
     try:
-      dut = await BAC0.device(
-        device.ip,
-        device.device_id,
-        self.bacnet
-      )
-      version = await dut.read_property(
-        ('device', device.device_id, 'protocolVersion')
-      )
-      revision = await dut.read_property(
-        ('device', device.device_id, 'protocolRevision')
-      )
-      if version is None or revision is None:
-        result = False
-        result_description = (
-            f'Failed to resolve protocol version: version={version}, '
-            f'revision={revision}')
-        LOGGER.error(result_description)
-      else:
-        protocol_version = f'{version}.{revision}'
-        result = True
-        result_description = f'Device uses BACnet version {protocol_version}'
-    except (UnknownPropertyError, ReadPropertyException,
-            NoResponseFromController, DeviceNotConnected) as e:
-      result = False
-      result_description = f'Failed to resolve protocol version {e}'
-      LOGGER.error(result_description)
+      LOGGER.info('Step 1: Attempting via BAC0 with read_property...')
+      dut = await BAC0.device(ip, d_id, self.bacnet)
+      version = await dut.read_property(('device', d_id, 'protocolVersion'))
+      revision = await dut.read_property(('device', d_id, 'protocolRevision'))
+      if version is  None and revision is None:
+        LOGGER.info('Failed to resolve version with read_property.')
+    except Exception:
+      msg = 'Failed to resolve version with read_property.'
+      LOGGER.error(msg)
+    if version is None or revision is None:
+      LOGGER.info('Step 2: Attempting via BAC0 with IAmRequest injection...')
+      try:
+        iam_packet = IAmRequest(
+            iAmDeviceIdentifier=ObjectIdentifier(('device', int(d_id))),
+            maxAPDULengthAccepted=1476,
+            segmentationSupported=3,
+            vendorID=0
+        )
+        iam_packet.pduSource = Address(device.ip)
+        app = self.bacnet.this_application.app
+        await app.device_info_cache.set_device_info(iam_packet)
+        cmd = f'{ip} device {d_id} protocolVersion protocolRevision'
+        results = await self.bacnet.readMultiple(cmd)
+        if isinstance(results, list) and len(results) == 2:
+          version, revision = results[0], results[1]
+        elif isinstance(results, dict):
+          version = results.get('protocolVersion')
+          revision = results.get('protocolRevision')
+        if version is None and revision is None:
+          LOGGER.info('Failed to resolve version with IAmRequest injection.')
+      except Exception:
+        msg = 'Failed to resolve version with IAmRequest injection.'
+        LOGGER.error(msg)
+    if version is None or revision is None:
+      LOGGER.info('Step 3: Starting raw Python UDP socket fallback...')
+      self._stop_self_bacnet()
+      await asyncio.sleep(3)
+      try:
+        loop = asyncio.get_running_loop()
+        version, revision = await loop.run_in_executor(
+          None,
+          self._hex_socket_request,
+          ip,
+          int(d_id)
+        )
+      except Exception as close_err:
+        LOGGER.error(f'Raw packet error: {close_err}')
+    if version is not None and revision is not None:
+      result = True
+      result_description = f'Device uses BACnet version {version}.{revision}'
     return result, result_description
+
 
   # Validate that all traffic to/from BACnet device from
   # discovered object id matches the MAC address of the device
@@ -251,7 +280,6 @@ class BACnet():
 
   def _clear_bacnet_caches(self):
     LOGGER.info('Clearing BACnet device caches...')
-
     if hasattr(self, 'bacnet') and self.bacnet:
       if (hasattr(self.bacnet, 'devices') and
           isinstance(self.bacnet.devices, dict)):
@@ -266,11 +294,96 @@ class BACnet():
             cache = app.device_info_cache
             if hasattr(cache, 'clear'):
               cache.clear()
-            elif hasattr(cache, '_cache') and isinstance(cache._cache, dict):
-              cache._cache.clear()
+            elif hasattr(cache, '_cache') and isinstance(cache._cache, dict): # pylint: disable=protected-access
+              cache._cache.clear() # pylint: disable=protected-access
             elif hasattr(cache, 'cache') and isinstance(cache.cache, dict):
               cache.cache.clear()
             LOGGER.info('bacpypes3 DeviceInfoCache cleared.')
       except Exception as e:
         LOGGER.error(f'Error while clearing bacpypes3 cache: {e}')
+
+  def _stop_self_bacnet(self):
+    if hasattr(self, 'bacnet') and self.bacnet:
+      try:
+        LOGGER.info('Stopping BAC0 instance to free up UDP port 47808...')
+        if hasattr(self.bacnet, 'disconnect'):
+          self.bacnet.disconnect()
+        elif (hasattr(self.bacnet, 'this_application')
+          and self.bacnet.this_application):
+          self.bacnet.this_application.close()
+        LOGGER.info('BAC0 stopped. Waiting for OS to release the socket...')
+      except Exception as close_err:
+        LOGGER.warning(f'Error during BAC0 shutdown: {close_err}')
+
+  def _hex_socket_request(
+      self,
+      ip: str,
+      device_id: int
+    ) -> tuple[int | None, int | None]:
+    version = None
+    revision = None
+
+    obj_id_int = (8 << 22) | device_id
+    obj_bytes = obj_id_int.to_bytes(4, byteorder='big')
+
+    req_version = bytearray([
+        0x81, 0x0a, 0x00, 0x11,
+        0x01, 0x04,
+        0x00, 0x05, 0x01,
+        0x0c,
+        0x0c
+    ])
+    req_version.extend(obj_bytes)
+    req_version.extend([0x19, 0x62])
+
+    req_revision = bytearray([
+        0x81, 0x0a, 0x00, 0x11,
+        0x01, 0x04,
+        0x00, 0x05, 0x02,
+        0x0c,
+        0x0c
+    ])
+    req_revision.extend(obj_bytes)
+    req_revision.extend([0x19, 0x8b])
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.settimeout(2.5)
+
+    try:
+      LOGGER.info(f'''Sending raw hex ReadProperty(protocolVersion)
+                  to {ip}:47808''')
+      sock.sendto(req_version, (ip, 47808))
+      data, _ = sock.recvfrom(1024)
+
+      idx = data.find(b'\x3e')
+      if idx != -1 and len(data) > idx + 2:
+        tag = data[idx+1]
+        if tag == 0x21:
+          version = data[idx+2]
+        elif tag == 0x22 and len(data) > idx + 3:
+          version = int.from_bytes(data[idx+2:idx+4], byteorder='big')
+
+      LOGGER.info(f'RAW packet version {version}')
+
+      LOGGER.info(f'''Sending raw hex ReadProperty(protocolRevision)
+                  to {ip}:47808''')
+      sock.sendto(req_revision, (ip, 47808))
+      data, _ = sock.recvfrom(1024)
+
+      idx = data.find(b'\x3e')
+      if idx != -1 and len(data) > idx + 2:
+        tag = data[idx+1]
+        if tag == 0x21:
+          revision = data[idx+2]
+        elif tag == 0x22 and len(data) > idx + 3:
+          revision = int.from_bytes(data[idx+2:idx+4], byteorder='big')
+      LOGGER.info(f'RAW packet revision {revision}')
+
+    except socket.timeout:
+      LOGGER.error('Device did not respond to unicast request.')
+    except Exception as e:
+      LOGGER.error(f'Raw socket exception occurred: {e}')
+    finally:
+      sock.close()
+    return version, revision
 
