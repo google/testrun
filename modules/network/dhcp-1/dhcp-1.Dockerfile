@@ -18,11 +18,8 @@ FROM testrun/base:latest
 ARG MODULE_NAME=dhcp-1
 ARG MODULE_DIR=modules/network/$MODULE_NAME
 
-#Update and get all additional requirements not contained in the base image
-RUN apt-get update --fix-missing
-
 # Install all necessary packages
-RUN apt-get install -y wget isc-dhcp-server radvd systemd && rm -rf /var/lib/apt/lists/*
+RUN apt-get update --fix-missing && apt-get install -y wget isc-dhcp-server radvd systemd && rm -rf /var/lib/apt/lists/*
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf

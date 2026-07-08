@@ -19,7 +19,7 @@ ARG MODULE_NAME=radius
 ARG MODULE_DIR=modules/network/$MODULE_NAME
 
 # Install radius and git
-RUN apt-get update && apt-get install -y openssl freeradius git
+RUN apt-get update && apt-get install -y openssl freeradius git && rm -rf /var/lib/apt/lists/*
 
 # Clone chewie from source.
 RUN git clone --branch 0.0.25 https://github.com/faucetsdn/chewie

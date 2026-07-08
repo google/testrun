@@ -21,10 +21,8 @@ ARG MODULE_DIR=modules/network/$MODULE_NAME
 # Set DEBIAN_FRONTEND to noninteractive mode
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update
-
 # Install all necessary packages
-RUN apt-get install -y chrony
+RUN apt-get update && apt-get install -y chrony && rm -rf /var/lib/apt/lists/*
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf
