@@ -7,10 +7,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get -y upgrade
 
 # Install the necessary packages
-RUN apt-get update && apt-get install -y isc-dhcp-client dnsutils netcat-openbsd arping
-
-# Clean up the package lists to reduce the image size
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get -y upgrade && apt-get update \
+&& apt-get install -y isc-dhcp-client dnsutils netcat-openbsd arping \
+&& apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh /entrypoint.sh
 

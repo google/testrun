@@ -15,9 +15,7 @@
 FROM ubuntu@sha256:77d57fd89366f7d16615794a5b53e124d742404e20f035c22032233f1826bd6a
 
 # Update and get all additional requirements not contained in the base image 
-RUN apt-get update && apt-get -y upgrade
-
-RUN apt-get install -y isc-dhcp-client ntpdate coreutils moreutils inetutils-ping curl jq dnsutils
+RUN apt-get update && apt-get -y upgrade && apt-get install -y isc-dhcp-client ntpdate coreutils moreutils inetutils-ping curl jq dnsutils && rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh /entrypoint.sh
 
