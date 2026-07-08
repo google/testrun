@@ -19,7 +19,7 @@ FROM testrun/base-test:latest
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install required software
-RUN apt-get update && apt-get install -y tshark
+RUN apt-get update && apt-get install -y tshark && rm -rf /var/lib/apt/lists/*
 
 ARG MODULE_NAME=tls
 ARG MODULE_DIR=modules/test/$MODULE_NAME
@@ -41,13 +41,13 @@ RUN chmod u+x /testrun/bin/*
 COPY $MODULE_DIR/python /testrun/python
 
 # Install all python requirements for the module
-RUN pip install -r /testrun/python/requirements.txt
+RUN pip install --no-cache-dir -r /testrun/python/requirements.txt
 
 # Install all python requirements for the modules unit test
-RUN pip install -r /testrun/python/requirements-test.txt
+RUN pip install --no-cache-dir -r /testrun/python/requirements-test.txt
 
 # Install all python requirements for the modules unit test
-RUN pip3 install -r /testrun/python/requirements-test.txt
+RUN pip3 install --no-cache-dir -r /testrun/python/requirements-test.txt
 
 # Create a directory inside the container to store the root certificates
 RUN mkdir -p /testrun/root_certs

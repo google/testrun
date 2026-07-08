@@ -19,7 +19,7 @@ FROM testrun/base-test:latest
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install required software
-RUN apt-get update && apt-get install -y tshark
+RUN apt-get update && apt-get install -y tshark && rm -rf /var/lib/apt/lists/*
 
 ARG MODULE_NAME=protocol
 ARG MODULE_DIR=modules/test/$MODULE_NAME
@@ -28,7 +28,7 @@ ARG MODULE_DIR=modules/test/$MODULE_NAME
 COPY $MODULE_DIR/python/requirements.txt /testrun/python
 
 #Install all python requirements for the module
-RUN pip install -r /testrun/python/requirements.txt
+RUN pip install --no-cache-dir -r /testrun/python/requirements.txt
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf
