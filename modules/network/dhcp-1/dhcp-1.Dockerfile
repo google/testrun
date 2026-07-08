@@ -22,10 +22,7 @@ ARG MODULE_DIR=modules/network/$MODULE_NAME
 RUN apt-get update --fix-missing
 
 # Install all necessary packages
-RUN apt-get install -y wget
-
-# Install dhcp server
-RUN apt-get install -y isc-dhcp-server radvd systemd
+RUN apt-get install -y wget isc-dhcp-server radvd systemd && rm -rf /var/lib/apt/lists/*
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf

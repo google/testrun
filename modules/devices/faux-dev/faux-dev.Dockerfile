@@ -26,7 +26,7 @@ RUN apt-get update --fix-missing
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install dhcp client and ntp client
-RUN apt-get install -y isc-dhcp-client ntp ntpdate
+RUN apt-get install -y isc-dhcp-client ntp ntpdate && rm -rf /var/lib/apt/lists/*
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf
