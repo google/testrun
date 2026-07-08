@@ -49,6 +49,22 @@ jobs:
           base_dir: "."
           json_exclude_regex: '.*(tsconfig.*\.json|\.venv|node_modules)'
           yaml_exclude_regex: '.*(\.venv|node_modules)'
+  dockerfile_scan:
+    name: Dockerfile Scan
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Run Hadolint
+        uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5 #v3.3.0
+        with:
+          dockerfile: "*Dockerfile"
+          recursive: true
+          ignore: DL3007, DL3008, DL3015, DL3059
+          failure-threshold: warning
+
+
+
   
 
 
