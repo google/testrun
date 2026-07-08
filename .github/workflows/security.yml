@@ -60,7 +60,7 @@ jobs:
         with:
           dockerfile: "*Dockerfile"
           recursive: true
-          ignore: DL3007, DL3008, DL3015, DL3059
+          ignore: DL3007,DL3008,DL3015,DL3059
           failure-threshold: warning
 
 
