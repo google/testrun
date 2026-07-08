@@ -47,7 +47,7 @@ jobs:
           comment: "true"
           update_comment: "true"
           base_dir: "."
-          json_exlude_regex: '(tsconfig.*\.json|\.venv|node_modules|modules/ui)'
+          json_exlude_regex: '.*(tsconfig.*\.json|\.venv|node_modules)'
           yaml_exlude_regex: '^(\.venv|node_modules)'
   
 
