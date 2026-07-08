@@ -10,7 +10,7 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies (BAC0)
-RUN pip install --no-cache-NET_MODULE_PROTO_DIR BAC0==23.7.3 pytz==2024.2 netifaces==0.11.0
+RUN pip install --no-cache-dir BAC0==23.7.3 pytz==2024.2 netifaces==0.11.0
 
 # Copy scripts
 WORKDIR /app
