@@ -13,9 +13,10 @@ on:
   schedule:
     - cron: '0 13 * * *'
 
-
 # Declare default permissions as read only.
-permissions: read-all
+ permissions:
+    contents: read
+    pull-requests: write
 
 jobs:
   secret_scanning:
@@ -33,5 +34,21 @@ jobs:
           base: ${{ github.event.pull_request.base.sha || github.event.before }}
           head: ${{ github.event.pull_request.head.sha || github.sha }}
           extra_args: --only-verified
+  validate_syntax:
+    name: Validate JSON & YAML Syntax
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Run JSON/YAML Syntax validator
+        uses: GrantBirki/json-yaml-validate@3ff75979f3b21171f2e8a44705f0ff4bed30bbc0 # v5.0.0
+        with:
+          mode: "fail"
+          comment: "true"
+          update_comment: "true"
+          base_dir: "."
+          json_exlude_regex: '^(\.venv|node_modules)'
+          yaml_exlude_regex: '^(\.venv|node_modules)'
+  
 
 
