@@ -3,6 +3,11 @@
 # policy, and support documentation.
 
 name: Security
+
+permissions:
+  contents: read
+  pull-requests: write
+
 on:
   # For Branch-Protection check. Only the default branch is supported. See
   # https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection
@@ -12,11 +17,6 @@ on:
   pull_request:
   schedule:
     - cron: '0 13 * * *'
-
-# Declare default permissions as read only.
- permissions:
-    contents: read
-    pull-requests: write
 
 jobs:
   secret_scanning:
