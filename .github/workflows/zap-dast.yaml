@@ -1,0 +1,38 @@
+name: Security DAST (OWASP ZAP)
+
+on:
+  schedule:
+    - cron: '0 2 * * 5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  dast_scan:
+    name: OWASP ZAP Baseline Scan
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: 'dev'
+      - name: Install dependencies
+        shell: bash {0}
+        run: cmd/prepare
+      - name: Install Testrun
+        shell: bash {0}
+        run: TESTRUN_DIR=. cmd/install
+        timeout-minutes: 30
+      - name: Start Testrun
+        shell: bash {0}
+        run: |
+          sudo TESTRUN_DIR=. bin/testrun --single-intf &
+          sleep 30
+      - name: Verify Testrun is running
+        run: curl -v http://127.0.0.1:8080
+        
+        
+        
+
