@@ -14,6 +14,8 @@
 
 """PeriodicTasks tests."""
 
+# pylint: disable=protected-access
+
 import logging
 from unittest import mock
 
