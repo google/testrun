@@ -1,8 +1,9 @@
 name: Security DAST (OWASP ZAP)
 
 on:
-  schedule:
-    - cron: '0 2 * * 5'
+  # schedule:
+  #   - cron: '0 2 * * 5'
+  pull_request:
   workflow_dispatch:
 
 permissions:
