@@ -105,7 +105,7 @@ jobs:
       - name: Install Bandit
         run: pip install bandit==1.9.4
       - name: Run Bandit Analysis
-        run: bandit -r . -ll -x ./testing, ./modules/ui/node_modules
+        run: bandit -r . -ll -x ./testing,./modules/ui/node_modules
 
   
 
