@@ -42,7 +42,9 @@ def test_core_periodic_tasks_init():
   assert tasks_instance.internet_shecker.max_instances == 1
 
   assert logging.getLogger('apscheduler').level == logging.ERROR
-  assert logging.getLogger('apscheduler.executors.default').level == logging.ERROR
+  assert (
+      logging.getLogger('apscheduler.executors.default').level == logging.ERROR
+  )
   assert tasks_instance._scheduler._logger.level == logging.ERROR
 
 
@@ -65,13 +67,17 @@ def test_common_periodic_tasks_init():
   assert tasks_instance.internet_shecker.max_instances == 1
 
   assert logging.getLogger('apscheduler').level == logging.ERROR
-  assert logging.getLogger('apscheduler.executors.default').level == logging.ERROR
+  assert (
+      logging.getLogger('apscheduler.executors.default').level == logging.ERROR
+  )
   assert tasks_instance._scheduler._logger.level == logging.ERROR
 
 
 def test_periodic_tasks_single_intf():
   testrun_obj = MagicMock()
-  testrun_obj.get_session().get_runtime_params.return_value = {'single_intf': True}
+  testrun_obj.get_session().get_runtime_params.return_value = {
+      'single_intf': True
+  }
 
   tasks_instance = core_tasks.PeriodicTasks(testrun_obj)
 

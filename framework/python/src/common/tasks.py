@@ -46,7 +46,9 @@ class PeriodicTasks:
         'coalesce': True,
         'max_instances': 1,
     }
-    self._scheduler = AsyncIOScheduler(timezone=local_tz, job_defaults=job_defaults)
+    self._scheduler = AsyncIOScheduler(
+        timezone=local_tz, job_defaults=job_defaults
+    )
     # Prevent scheduler and executor warnings
     logging.getLogger('apscheduler').setLevel(logging.ERROR)
     logging.getLogger('apscheduler.executors.default').setLevel(logging.ERROR)
