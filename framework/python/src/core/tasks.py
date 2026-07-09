@@ -11,18 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Periodic background tasks"""
+"""Periodic background tasks."""
 
-from contextlib import asynccontextmanager
+import contextlib
 import datetime
 import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from common import logger
+from common import mqtt
 from fastapi import FastAPI
 
-from common import logger, mqtt
-
-# Check adapters period seconds
 # Check adapters period seconds
 CHECK_NETWORK_ADAPTERS_PERIOD = 5
 CHECK_INTERNET_PERIOD = 2
@@ -31,8 +30,8 @@ LOGGER = logger.get_logger('tasks')
 
 
 class PeriodicTasks:
-  """Background periodic tasks
-  """
+  """Background periodic tasks."""
+
   def __init__(
       self, testrun_obj,
   ) -> None:
@@ -44,7 +43,9 @@ class PeriodicTasks:
         'coalesce': True,
         'max_instances': 1,
     }
-    self._scheduler = AsyncIOScheduler(timezone=local_tz, job_defaults=job_defaults)
+    self._scheduler = AsyncIOScheduler(
+        timezone=local_tz, job_defaults=job_defaults
+    )
     # Prevent scheduler and executor warnings
     logging.getLogger('apscheduler').setLevel(logging.ERROR)
     logging.getLogger('apscheduler.executors.default').setLevel(logging.ERROR)
@@ -53,9 +54,9 @@ class PeriodicTasks:
     self.adapters_checker_job = self._scheduler.add_job(
         func=self._testrun.get_net_orc().network_adapters_checker,
         kwargs={
-                'mqtt_client': self._mqtt_client,
-                'topic': mqtt.MQTTTopic.NETWORK_ADAPTERS_TOPIC
-                },
+            'mqtt_client': self._mqtt_client,
+            'topic': mqtt.MQTTTopic.NETWORK_ADAPTERS_TOPIC,
+        },
         trigger='interval',
         seconds=CHECK_NETWORK_ADAPTERS_PERIOD,
         misfire_grace_time=None,
@@ -67,9 +68,9 @@ class PeriodicTasks:
       self.internet_shecker = self._scheduler.add_job(
           func=self._testrun.get_net_orc().internet_conn_checker,
           kwargs={
-                  'mqtt_client': self._mqtt_client,
-                  'topic': mqtt.MQTTTopic.INTERNET_CONNECTION_TOPIC
-                  },
+              'mqtt_client': self._mqtt_client,
+              'topic': mqtt.MQTTTopic.INTERNET_CONNECTION_TOPIC,
+          },
           trigger='interval',
           seconds=CHECK_INTERNET_PERIOD,
           misfire_grace_time=None,
@@ -77,9 +78,9 @@ class PeriodicTasks:
           max_instances=1,
       )
 
-  @asynccontextmanager
+  @contextlib.asynccontextmanager
   async def start(self, app: FastAPI):  # pylint: disable=unused-argument
-    """Start background tasks
+    """Start background tasks.
 
     Args:
         app (FastAPI): app instance

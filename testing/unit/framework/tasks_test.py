@@ -12,64 +12,68 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""PeriodicTasks tests"""
+"""PeriodicTasks tests."""
 
 import logging
-from unittest.mock import MagicMock
+from unittest import mock
 
-from core import tasks as core_tasks
 from common import tasks as common_tasks
+from core import tasks as core_tasks
 
 
 def test_core_periodic_tasks_init():
-  testrun_obj = MagicMock()
+  testrun_obj = mock.MagicMock()
   testrun_obj.get_session().get_runtime_params.return_value = {}
 
   tasks_instance = core_tasks.PeriodicTasks(testrun_obj)
 
   assert tasks_instance._scheduler._job_defaults['misfire_grace_time'] is None
-  assert tasks_instance._scheduler._job_defaults['coalesce'] is True
+  assert tasks_instance._scheduler._job_defaults['coalesce']
   assert tasks_instance._scheduler._job_defaults['max_instances'] == 1
 
   assert tasks_instance.adapters_checker_job.misfire_grace_time is None
-  assert tasks_instance.adapters_checker_job.coalesce is True
+  assert tasks_instance.adapters_checker_job.coalesce
   assert tasks_instance.adapters_checker_job.max_instances == 1
 
   assert tasks_instance.internet_shecker.misfire_grace_time is None
-  assert tasks_instance.internet_shecker.coalesce is True
+  assert tasks_instance.internet_shecker.coalesce
   assert tasks_instance.internet_shecker.max_instances == 1
 
   assert logging.getLogger('apscheduler').level == logging.ERROR
-  assert logging.getLogger('apscheduler.executors.default').level == logging.ERROR
+  default_executor_logger = logging.getLogger('apscheduler.executors.default')
+  assert default_executor_logger.level == logging.ERROR
   assert tasks_instance._scheduler._logger.level == logging.ERROR
 
 
 def test_common_periodic_tasks_init():
-  testrun_obj = MagicMock()
+  testrun_obj = mock.MagicMock()
   testrun_obj.get_session().get_runtime_params.return_value = {}
 
   tasks_instance = common_tasks.PeriodicTasks(testrun_obj)
 
   assert tasks_instance._scheduler._job_defaults['misfire_grace_time'] is None
-  assert tasks_instance._scheduler._job_defaults['coalesce'] is True
+  assert tasks_instance._scheduler._job_defaults['coalesce']
   assert tasks_instance._scheduler._job_defaults['max_instances'] == 1
 
   assert tasks_instance.adapters_checker_job.misfire_grace_time is None
-  assert tasks_instance.adapters_checker_job.coalesce is True
+  assert tasks_instance.adapters_checker_job.coalesce
   assert tasks_instance.adapters_checker_job.max_instances == 1
 
   assert tasks_instance.internet_shecker.misfire_grace_time is None
-  assert tasks_instance.internet_shecker.coalesce is True
+  assert tasks_instance.internet_shecker.coalesce
   assert tasks_instance.internet_shecker.max_instances == 1
 
   assert logging.getLogger('apscheduler').level == logging.ERROR
-  assert logging.getLogger('apscheduler.executors.default').level == logging.ERROR
+  default_executor_logger = logging.getLogger('apscheduler.executors.default')
+  assert default_executor_logger.level == logging.ERROR
   assert tasks_instance._scheduler._logger.level == logging.ERROR
 
 
 def test_periodic_tasks_single_intf():
-  testrun_obj = MagicMock()
-  testrun_obj.get_session().get_runtime_params.return_value = {'single_intf': True}
+  testrun_obj = mock.MagicMock()
+  testrun_obj.get_session().get_runtime_params.return_value = {
+      'single_intf': True
+  }
 
   tasks_instance = core_tasks.PeriodicTasks(testrun_obj)
 
