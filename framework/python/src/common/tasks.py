@@ -41,8 +41,15 @@ class PeriodicTasks:
     self._testrun = testrun_obj
     self._mqtt_client = self._testrun.get_mqtt_client()
     local_tz = datetime.datetime.now().astimezone().tzinfo
-    self._scheduler = AsyncIOScheduler(timezone=local_tz)
-    # Prevent scheduler warnings
+    job_defaults = {
+        'misfire_grace_time': None,
+        'coalesce': True,
+        'max_instances': 1,
+    }
+    self._scheduler = AsyncIOScheduler(timezone=local_tz, job_defaults=job_defaults)
+    # Prevent scheduler and executor warnings
+    logging.getLogger('apscheduler').setLevel(logging.ERROR)
+    logging.getLogger('apscheduler.executors.default').setLevel(logging.ERROR)
     self._scheduler._logger.setLevel(logging.ERROR)
 
     self.adapters_checker_job = self._scheduler.add_job(
@@ -53,6 +60,9 @@ class PeriodicTasks:
                 },
         trigger='interval',
         seconds=CHECK_NETWORK_ADAPTERS_PERIOD,
+        misfire_grace_time=None,
+        coalesce=True,
+        max_instances=1,
     )
     # add internet connection cheking job only in single-intf mode
     if 'single_intf' not in self._testrun.get_session().get_runtime_params():
@@ -64,6 +74,9 @@ class PeriodicTasks:
                   },
           trigger='interval',
           seconds=CHECK_INTERNET_PERIOD,
+          misfire_grace_time=None,
+          coalesce=True,
+          max_instances=1,
       )
 
   @asynccontextmanager
