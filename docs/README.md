@@ -10,6 +10,7 @@
 -  [Testing](/docs/test/README.md)
     -  [Test modules](/docs/test/modules.md)
     -  [Test results](/docs/test/statuses.md)
+    -  [Device compliance guide](/docs/test/compliant.md)
 -  [Developer guidelines](/docs/dev/README.md)
 -  [Accessibility](/docs/ui/accessibility.md)
 -  [Roadmap](/docs/roadmap.pdf)
