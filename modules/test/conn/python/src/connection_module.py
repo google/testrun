@@ -445,8 +445,12 @@ class ConnectionModule(TestModule):
                 mac_address=self._device_mac, timeout=self._lease_wait_time_sec)
             if lease is not None:
               LOGGER.info('Current device lease resolved')
-              if self._dhcp_util.is_lease_active(lease):
-
+              if not self._dhcp_util.is_lease_active(lease):
+                msg = 'Device does not respond to ping'
+                LOGGER.info(msg)
+                result = False
+                description = msg
+              else:
                 # Add a reserved lease with a different IP
                 ip_address = '10.10.10.30'
                 reserved_lease = self._dhcp_util.add_reserved_lease(
