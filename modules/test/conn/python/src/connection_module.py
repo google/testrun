@@ -391,7 +391,7 @@ class ConnectionModule(TestModule):
     lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
                                             timeout=self._lease_wait_time_sec)
     if lease is None or not self._dhcp_util.is_lease_active(lease):
-      return 'Error', 'No active lease available for device'
+      return False, 'Device does not respond to ping'
     try:
       # Disable the device interface
       iface_down = self.host_client.set_iface_down(dev_iface)
@@ -770,7 +770,6 @@ class ConnectionModule(TestModule):
     # Process and return final results
     final_result = None
     final_result_details = ''
-    LOGGER.info(f'====results===={results}')
     if not results:
       msg = 'Device does not respond to ping'
       LOGGER.info(msg)
