@@ -116,7 +116,7 @@ class ConnectionModule(TestModule):
 
     if self._device_ipv4_addr is None:
       LOGGER.error('No device IP could be resolved')
-      return 'Error', 'Could not resolve device IP address'
+      return False, 'Could not resolve device IP address'
 
     no_arp = True
 
