@@ -770,6 +770,11 @@ class ConnectionModule(TestModule):
     # Process and return final results
     final_result = None
     final_result_details = ''
+    LOGGER.info(f'====results===={results}')
+    if not results:
+      msg = 'Device does not respond to ping'
+      LOGGER.info(msg)
+      return False, msg
     for result in results:
       if final_result is None:
         final_result = result['result']
