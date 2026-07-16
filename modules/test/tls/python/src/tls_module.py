@@ -412,8 +412,13 @@ class TLSModule(TestModule):
             tls_1_2_results = self._tls_util.validate_tls_server(
                 host=self._device_ipv4_addr, port=port, tls_version='1.2')
             if tls_1_2_results[0] is not None:
-              result = tls_1_2_results[0] if result is None else result and tls_1_2_results[0]
-              details.append(f'TLS 1.2 {"" if tls_1_2_results[0] else "not "}validated on port {port}:')
+              if result is None:
+                result = tls_1_2_results[0]
+              else:
+                result = result and tls_1_2_results[0]
+              status_str = '' if tls_1_2_results[0] else 'not '
+              details.append(
+                  f'TLS 1.2 {status_str}validated on port {port}:')
               if isinstance(tls_1_2_results[1], list):
                 details.extend(tls_1_2_results[1])
               else:
