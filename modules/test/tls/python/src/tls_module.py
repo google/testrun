@@ -411,19 +411,14 @@ class TLSModule(TestModule):
             LOGGER.info(f'Inspecting Service on port {port}: {service_type}')
             tls_1_2_results = self._tls_util.validate_tls_server(
                 host=self._device_ipv4_addr, port=port, tls_version='1.2')
-            tls_1_3_results = self._tls_util.validate_tls_server(
-                host=self._device_ipv4_addr, port=port, tls_version='1.3')
-            # If TLS 1.2 is not supported don't process the results
             if tls_1_2_results[0] is not None:
-              port_results = self._tls_util.process_tls_server_results(
-                  tls_1_2_results, tls_1_3_results, port=port)
-            else:
-              port_results = None
-            if port_results is not None:
-              result = port_results[
-                  0] if result is None else result and port_results[0]
-              details.extend(port_results[1])
-              if port_results[0]:
+              result = tls_1_2_results[0] if result is None else result and tls_1_2_results[0]
+              details.append(f'TLS 1.2 {"" if tls_1_2_results[0] else "not "}validated on port {port}:')
+              if isinstance(tls_1_2_results[1], list):
+                details.extend(tls_1_2_results[1])
+              else:
+                details.append(tls_1_2_results[1])
+              if tls_1_2_results[0]:
                 ports_valid.append(port)
               else:
                 ports_invalid.append(port)
@@ -439,11 +434,6 @@ class TLSModule(TestModule):
         result = 'Feature Not Detected'
         description = 'TLS 1.2 certificate could not be validated'
         details.append('TLS 1.2 certificate could not be validated.')
-      # If TLS 1.2 cert is not valid but TLS 1.3 is valid test is Compliant
-      elif result and not tls_1_2_results[0] and tls_1_3_results[0]:
-        ports_csv = ','.join(map(str,ports_valid))
-        description = 'TLS 1.2 certificate invalid and '
-        description += f'TLS 1.3 certificate valid on ports: {ports_csv}'
       elif result:
         ports_csv = ','.join(map(str,ports_valid))
         description = f'TLS 1.2 certificate valid on ports: {ports_csv}'
