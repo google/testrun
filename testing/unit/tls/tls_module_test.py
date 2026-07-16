@@ -46,7 +46,11 @@ LOCAL_REPORT_SINGLE = os.path.join(REPORTS_DIR, 'tls_report_single.html')
 LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR, 'tls_report_ext_local.html')
 LOCAL_REPORT_NO_CERT = os.path.join(REPORTS_DIR,
                                     'tls_report_no_cert_local.html')
-CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
+CONF_FILE = (
+    '/testrun/conf/module_config.json'
+    if os.path.exists('/testrun/conf/module_config.json')
+    else 'modules/test/' + MODULE + '/conf/module_config.json'
+)
 
 INTERNET_IFACE = 'eth0'
 
