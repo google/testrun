@@ -19,14 +19,13 @@ ARG MODULE_NAME=faux-dev
 ARG MODULE_DIR=modules/devices/$MODULE_NAME
 ARG COMMON_DIR=framework/python/src/common
 
-# Update and get all additional requirements not contained in the base image
-RUN apt-get update --fix-missing
-
 # NTP requireds interactive installation so we're going to turn that off
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install dhcp client and ntp client
-RUN apt-get install -y isc-dhcp-client ntp ntpdate
+RUN apt-get update --fix-missing && \
+apt-get install -y isc-dhcp-client \
+ntp ntpdate && rm -rf /var/lib/apt/lists/*
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf
