@@ -23,9 +23,12 @@ ARG COMMON_DIR=framework/python/src/common
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install dhcp client and ntp client
-RUN apt-get update --fix-missing && \
-apt-get install -y isc-dhcp-client \
-ntp ntpdate && rm -rf /var/lib/apt/lists/*
+RUN DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing && \
+    apt-get install -y --no-install-recommends \
+        isc-dhcp-client \
+        ntp \
+        ntpdate && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf
