@@ -41,7 +41,9 @@ COPY $MODULE_DIR/python /testrun/python
 
 # Install all python requirements for the module 
 # --break-system-packages flag used to bypass PEP668
-RUN pip3 install --break-system-packages -r /testrun/python/requirements.txt
+RUN pip3 install --no-cache-dir \
+    --break-system-packages -r \
+    /testrun/python/requirements.txt
 
 # Add the bin files
 COPY $MODULE_DIR/bin /testrun/bin
