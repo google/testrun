@@ -30,7 +30,7 @@ RUN git clone --branch 0.0.25 https://github.com/faucetsdn/chewie
 
 # Install chewie as Python module
 # --break-system-packages flag used to bypass PEP668
-RUN pip3 install --no-cache-dir --break-system-packages chewie
+RUN pip3 install --no-cache-dir --break-system-packages chewie==0.0.25
 
 EXPOSE 1812/udp
 EXPOSE 1813/udp
