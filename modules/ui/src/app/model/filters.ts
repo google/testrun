@@ -19,6 +19,7 @@ export enum FilterName {
   Results = 'results',
   Started = 'started',
   DateRange = 'dateRange',
+  QuickSearch = 'quickSearch',
 }
 
 export enum FilterTitle {
@@ -57,6 +58,7 @@ export class Filters {
   deviceFirmware = '';
   results: string[] = [];
   dateRange: DateRange | string = '';
+  quickSearch = '';
 }
 
 function getDateString(date: string | Date) {
