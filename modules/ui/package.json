@@ -65,5 +65,8 @@
     "prettier": "^3.5.3",
     "prettier-eslint": "^13.0.0",
     "typescript": "~5.9.3"
+  },
+  "overrides": {
+    "@babel/core": "^7.29.7"
   }
 }

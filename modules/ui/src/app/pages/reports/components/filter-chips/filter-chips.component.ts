@@ -24,7 +24,6 @@ import { MatButtonModule } from '@angular/material/button';
   selector: 'app-filter-chips',
   templateUrl: './filter-chips.component.html',
   styleUrls: ['./filter-chips.component.scss'],
-
   imports: [
     MatIconModule,
     MatChipsModule,
@@ -59,6 +58,9 @@ export class FilterChipsComponent {
       case FilterName.DateRange:
         this.filters.dateRange = '';
         break;
+      case FilterName.QuickSearch:
+        this.filters.quickSearch = '';
+        break;
     }
     this.filterCleared.emit(this.filters);
   }
@@ -68,6 +70,7 @@ export class FilterChipsComponent {
     this.filters.deviceFirmware = '';
     this.filters.results = [];
     this.filters.dateRange = '';
+    this.filters.quickSearch = '';
     this.filterCleared.emit(this.filters);
   }
 }

@@ -159,6 +159,18 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     );
   });
 
+  setFilteredValuesQuickSearch = this.effect<string>(quickSearch$ => {
+    return quickSearch$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([quickSearch, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          quickSearch,
+        });
+      })
+    );
+  });
+
   setFilteredValuesDeviceInfo = this.effect<string>(deviceInfo$ => {
     return deviceInfo$.pipe(
       withLatestFrom(this.filteredValues$, this.dataSource$),
@@ -298,6 +310,10 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         data.deviceInfo,
         searchString.deviceInfo
       );
+      const isIncludeSearchQuery = this.filterSearchQuery(
+        data,
+        searchString.quickSearch
+      );
       const isIncludeDeviceFirmware = this.filterStringData(
         data.deviceFirmware,
         searchString.deviceFirmware
@@ -312,6 +328,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
       );
 
       return (
+        isIncludeSearchQuery &&
         isIncludeDeviceInfo &&
         isIncludeDeviceFirmware &&
         isIncludeStatus &&
@@ -321,7 +338,43 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     return filterPredicate;
   }
 
-  private filterStringData(data: string, searchString: string): boolean {
+  private filterSearchQuery(
+    data: HistoryTestrun,
+    searchQuery: string = ''
+  ): boolean {
+    if (!searchQuery || !searchQuery.trim()) {
+      return true;
+    }
+    const query = searchQuery.trim().toLowerCase();
+    const searchableFields = [
+      data.deviceInfo,
+      data.deviceFirmware,
+      data.device?.manufacturer,
+      data.device?.model,
+      data.device?.mac_addr,
+      data.device?.firmware,
+      data.device?.test_pack,
+      data.program,
+      data.status,
+      data.testResult,
+      data.result,
+      data.started,
+      data.finished,
+      data.duration,
+      data.folder_name,
+      data.report,
+      data.export,
+      data.location || (data.device as any)?.location,
+      data.kernel || (data.device as any)?.kernel,
+      data.linux_env || (data.device as any)?.linux_env,
+    ];
+
+    return searchableFields.some(
+      field => field && field.toString().toLowerCase().includes(query)
+    );
+  }
+
+  private filterStringData(data: string = '', searchString: string): boolean {
     return (
       data
         .toString()
@@ -375,6 +428,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
   constructor() {
     super({
       displayedColumns: [
+        'expand',
         'started',
         'duration',
         'deviceInfo',
@@ -392,6 +446,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         deviceFirmware: '',
         results: [],
         dateRange: '',
+        quickSearch: '',
       },
       dataLoaded: false,
       selectedRow: null,

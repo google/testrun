@@ -19,6 +19,9 @@ export const HISTORY = [
     delete: '/report/123',
     started: '2023-06-23T10:11:00.123Z',
     finished: '2023-06-23T10:17:10.123Z',
+    location: 'Data Center Alpha - Rack 12, Bay B',
+    kernel: 'Linux 6.8.0-40-generic',
+    linux_env: 'Ubuntu 24.04 LTS (x86_64)',
   },
   {
     status: 'Complete',
@@ -36,6 +39,9 @@ export const HISTORY = [
     delete: '/report/1234',
     started: '2023-07-23T10:11:00.123Z',
     finished: '2023-07-23T10:17:10.123Z',
+    location: 'Data Center Alpha - Rack 12, Bay B',
+    kernel: 'Linux 6.8.0-40-generic',
+    linux_env: 'Ubuntu 24.04 LTS (x86_64)',
   },
   {
     status: 'Complete',
@@ -53,6 +59,9 @@ export const HISTORY = [
     delete: '/report/12345',
     started: '2023-06-23T10:11:00.123Z',
     finished: '2023-06-23T10:17:10.123Z',
+    location: 'Data Center Alpha - Rack 12, Bay B',
+    kernel: 'Linux 6.8.0-40-generic',
+    linux_env: 'Ubuntu 24.04 LTS (x86_64)',
   },
 ] as TestReportsList;
 
@@ -73,6 +82,9 @@ export const HISTORY_AFTER_REMOVE = [
     delete: '/report/123',
     started: '2023-06-23T10:11:00.123Z',
     finished: '2023-06-23T10:17:10.123Z',
+    location: 'Data Center Alpha - Rack 12, Bay B',
+    kernel: 'Linux 6.8.0-40-generic',
+    linux_env: 'Ubuntu 24.04 LTS (x86_64)',
   },
   {
     status: 'Complete',
@@ -90,6 +102,9 @@ export const HISTORY_AFTER_REMOVE = [
     delete: '/report/12345',
     started: '2023-06-23T10:11:00.123Z',
     finished: '2023-06-23T10:17:10.123Z',
+    location: 'Data Center Alpha - Rack 12, Bay B',
+    kernel: 'Linux 6.8.0-40-generic',
+    linux_env: 'Ubuntu 24.04 LTS (x86_64)',
   },
 ] as TestReportsList;
 
@@ -110,6 +125,9 @@ export const FORMATTED_HISTORY = [
     delete: '/report/123',
     started: '2023-06-23T10:11:00.123Z',
     finished: '2023-06-23T10:17:10.123Z',
+    location: 'Data Center Alpha - Rack 12, Bay B',
+    kernel: 'Linux 6.8.0-40-generic',
+    linux_env: 'Ubuntu 24.04 LTS (x86_64)',
     deviceFirmware: '1.2.2',
     deviceInfo: 'Delta 03-DIN-SRC',
     testResult: 'Compliant',
@@ -132,6 +150,9 @@ export const FORMATTED_HISTORY = [
     delete: '/report/1234',
     started: '2023-07-23T10:11:00.123Z',
     finished: '2023-07-23T10:17:10.123Z',
+    location: 'Data Center Alpha - Rack 12, Bay B',
+    kernel: 'Linux 6.8.0-40-generic',
+    linux_env: 'Ubuntu 24.04 LTS (x86_64)',
     deviceFirmware: '1.2.3',
     deviceInfo: 'Delta 03-DIN-SRC',
     testResult: 'Compliant',
@@ -154,6 +175,9 @@ export const FORMATTED_HISTORY = [
     delete: '/report/12345',
     started: '2023-06-23T10:11:00.123Z',
     finished: '2023-06-23T10:17:10.123Z',
+    location: 'Data Center Alpha - Rack 12, Bay B',
+    kernel: 'Linux 6.8.0-40-generic',
+    linux_env: 'Ubuntu 24.04 LTS (x86_64)',
     deviceFirmware: '1.2.2',
     deviceInfo: 'Delta 03-DIN-SRC',
     testResult: 'Compliant',
@@ -167,12 +191,14 @@ export const FILTERS = {
   deviceFirmware: 'test',
   results: ['test'],
   dateRange: 'test',
+  quickSearch: 'test',
 };
 export const EMPTY_FILTERS = {
   deviceInfo: '',
   deviceFirmware: '',
   results: [''],
   dateRange: '',
+  quickSearch: '',
 };
 
 export const DATA_SOURCE_INITIAL_VALUE_NOT_EMPTY =
