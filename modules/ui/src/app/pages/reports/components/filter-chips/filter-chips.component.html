@@ -20,13 +20,20 @@ limitations under the License.
         tabindex="0"
         class="filter-chip"
         (removed)="clearFilter(item.key)">
+        @if (item.key === 'quickSearch') {
+          search: "{{ item.value }}"
+        }
         @if (item.key === 'deviceInfo') {
           Device contains "{{ item.value }}"
         }
         @if (item.key === 'deviceFirmware') {
           Firmware contains "{{ item.value }}"
         }
-        @if (item.key !== 'deviceFirmware' && item.key !== 'deviceInfo') {
+        @if (
+          item.key !== 'deviceFirmware' &&
+          item.key !== 'deviceInfo' &&
+          item.key !== 'quickSearch'
+        ) {
           {{ item.value }}
         }
         <button

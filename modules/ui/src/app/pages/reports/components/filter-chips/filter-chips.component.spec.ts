@@ -42,10 +42,11 @@ describe('FilterChipsComponent', () => {
       deviceFirmware: '03',
       results: ['Compliant'],
       dateRange: { start: '10/2/2024', end: '11/2/2024' },
+      quickSearch: 'Krakow',
     };
 
     beforeEach(() => {
-      component.filters = MOCK_FILTERS;
+      component.filters = { ...MOCK_FILTERS };
     });
 
     it(`should clear deviceFirmware filter`, () => {
@@ -65,6 +66,13 @@ describe('FilterChipsComponent', () => {
     it(`should clear dateRange filter`, () => {
       const clearedFilters = { ...MOCK_FILTERS, dateRange: '' };
       component.clearFilter('dateRange');
+
+      expect(component.filters).toEqual(clearedFilters);
+    });
+
+    it(`should clear quickSearch filter`, () => {
+      const clearedFilters = { ...MOCK_FILTERS, quickSearch: '' };
+      component.clearFilter('quickSearch');
 
       expect(component.filters).toEqual(clearedFilters);
     });
@@ -97,6 +105,7 @@ describe('FilterChipsComponent', () => {
             deviceFirmware: '',
             results: [],
             dateRange: '',
+            quickSearch: '',
           };
           fixture.detectChanges();
         });
@@ -114,13 +123,23 @@ describe('FilterChipsComponent', () => {
             deviceFirmware: '03',
             results: ['Compliant'],
             dateRange: '',
+            quickSearch: 'Krakow',
           };
           fixture.detectChanges();
         });
         it('should be displayed', () => {
           const chips = compiled.querySelectorAll('.filter-chip');
 
-          expect(chips.length).toEqual(3);
+          expect(chips.length).toEqual(4);
+        });
+
+        it('should render search tag for quickSearch filter', () => {
+          const chips = compiled.querySelectorAll('.filter-chip');
+          const quickSearchChip = Array.from(chips).find(c =>
+            c.textContent?.includes('search:')
+          );
+          expect(quickSearchChip).toBeTruthy();
+          expect(quickSearchChip?.textContent).toContain('search: "Krakow"');
         });
 
         it('should call clearFilter on close button click', () => {
@@ -143,6 +162,7 @@ describe('FilterChipsComponent', () => {
         deviceFirmware: '03',
         results: ['Compliant'],
         dateRange: '',
+        quickSearch: 'Krakow',
       };
       fixture.detectChanges();
     });
@@ -155,10 +175,11 @@ describe('FilterChipsComponent', () => {
         deviceFirmware: '',
         results: [],
         dateRange: '',
+        quickSearch: '',
       });
     });
 
-    it('should filter by kay on clearFilter', () => {
+    it('should filter by key on clearFilter', () => {
       component.clearFilter('deviceInfo');
 
       expect(component.filters).toEqual({
@@ -166,6 +187,7 @@ describe('FilterChipsComponent', () => {
         deviceFirmware: '03',
         results: ['Compliant'],
         dateRange: '',
+        quickSearch: 'Krakow',
       });
     });
   });

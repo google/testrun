@@ -24,15 +24,65 @@ limitations under the License.
         vm.dataSource.filteredData.length === 0 ||
         vm.dataSource.data.length === 0
       ">
+      <!-- Search Bar at the Top of the Table -->
+      <div
+        class="persistent-search-bar search-bar-top"
+        id="reports-persistent-search-bar">
+        <div class="search-input-wrapper">
+          <mat-icon fontSet="material-symbols-outlined" class="search-icon"
+            >search</mat-icon
+          >
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Quick search"
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="applySearchQuery()"
+            (keyup.enter)="applySearchQuery()"
+            aria-label="Reports search filter input" />
+          @if (searchQuery.length > 0) {
+            <button
+              mat-icon-button
+              class="clear-input-btn"
+              aria-label="Clear search text"
+              (click)="clearSearchQuery()">
+              <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+            </button>
+          }
+        </div>
+      </div>
+
       <table
         (matSortChange)="sortData($event)"
         [dataSource]="vm.dataSource"
         [trackBy]="trackByStarted"
         mat-table
+        multiTemplateDataRows
         matSort
         [matSortActive]="FilterName.Started"
         matSortDirection="desc"
         tabindex="0">
+        <!-- Expand Arrow Column -->
+        <ng-container matColumnDef="expand">
+          <th mat-header-cell *matHeaderCellDef aria-label="row expand icon">
+            &nbsp;
+          </th>
+          <td mat-cell *matCellDef="let data">
+            <button
+              mat-icon-button
+              class="expand-row-button"
+              [attr.aria-label]="
+                isExpanded(data) ? 'Collapse metadata' : 'Expand metadata'
+              "
+              (click)="toggleRowExpand(data, $event)">
+              <mat-icon fontSet="material-symbols-outlined">
+                {{
+                  isExpanded(data) ? 'keyboard_arrow_up' : 'keyboard_arrow_down'
+                }}
+              </mat-icon>
+            </button>
+          </td>
+        </ng-container>
         <!-- Started Column -->
         <ng-container matColumnDef="started">
           <app-filter-header
@@ -183,6 +233,54 @@ limitations under the License.
             </div>
           </th>
         </ng-container>
+        <!-- Expanded Detail Column (Metadata Accordion) -->
+        <ng-container matColumnDef="expandedDetail">
+          <td
+            mat-cell
+            *matCellDef="let data"
+            [attr.colspan]="vm.displayedColumns.length"
+            class="expanded-detail-cell">
+            <div
+              class="metadata-accordion-detail"
+              [@detailExpand]="isExpanded(data) ? 'expanded' : 'collapsed'">
+              <div class="metadata-card">
+                <div class="metadata-grid">
+                  <div class="metadata-item">
+                    <span class="meta-label">
+                      <mat-icon fontSet="material-symbols-outlined"
+                        >location_on</mat-icon
+                      >
+                      Location:
+                    </span>
+                    <span class="meta-value">{{ getLocation(data) }}</span>
+                  </div>
+                  <div class="metadata-item">
+                    <span class="meta-label">
+                      <mat-icon fontSet="material-symbols-outlined"
+                        >terminal</mat-icon
+                      >
+                      Linux Environment:
+                    </span>
+                    <span class="meta-value highlight">{{
+                      getLinuxEnv(data)
+                    }}</span>
+                  </div>
+                  <div class="metadata-item">
+                    <span class="meta-label">
+                      <mat-icon fontSet="material-symbols-outlined"
+                        >memory</mat-icon
+                      >
+                      Kernel:
+                    </span>
+                    <span class="meta-value font-mono">{{
+                      getKernel(data)
+                    }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </ng-container>
         <tr *matHeaderRowDef="vm.displayedColumns" mat-header-row></tr>
         <tr
           *matHeaderRowDef="vm.chips"
@@ -216,6 +314,10 @@ limitations under the License.
           (click)="selectRow(rowElement)"
           (keydown.enter)="selectRow(rowElement)"
           (keydown.space)="selectRow(rowElement)"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: ['expandedDetail']"
+          class="detail-row"></tr>
       </table>
     </div>
   }

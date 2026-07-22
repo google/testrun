@@ -29,10 +29,13 @@ import {
   TestrunReport,
 } from '../../model/testrun-status';
 import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { Subject, takeUntil, timer } from 'rxjs';
 import { MatRow, MatTableModule } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
 import { tap } from 'rxjs/internal/operators/tap';
 import { FilterName, FilterTitle, Filters } from '../../model/filters';
 import { ReportsStore } from './reports.store';
@@ -49,6 +52,13 @@ import { DeleteReportComponent } from './components/delete-report/delete-report.
 import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
 import { EmptyMessageComponent } from '../../components/empty-message/empty-message.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 
 @Component({
   selector: 'app-history',
@@ -56,10 +66,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   styleUrls: ['./reports.component.scss'],
   imports: [
     CommonModule,
+    FormsModule,
     MatTableModule,
     MatIconModule,
     MatToolbarModule,
     MatSortModule,
+    MatButtonModule,
+    MatInputModule,
     FilterChipsComponent,
     DeleteReportComponent,
     DownloadReportZipComponent,
@@ -71,6 +84,19 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatTooltipModule,
   ],
   providers: [ReportsStore, DatePipe],
+  animations: [
+    trigger('detailExpand', [
+      state(
+        'collapsed,void',
+        style({ height: '0px', minHeight: '0', display: 'none' })
+      ),
+      state('expanded', style({ height: '*' })),
+      transition(
+        'expanded <=> collapsed',
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')
+      ),
+    ]),
+  ],
 })
 export class ReportsComponent implements OnInit, OnDestroy {
   private testRunService = inject(TestRunService);
@@ -91,6 +117,61 @@ export class ReportsComponent implements OnInit, OnDestroy {
     if (sort) {
       this.store.updateSort(sort);
     }
+  }
+
+  public expandedRows: Set<HistoryTestrun> = new Set<HistoryTestrun>();
+  public searchQuery: string = '';
+
+  toggleRowExpand(data: HistoryTestrun, event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (this.expandedRows.has(data)) {
+      this.expandedRows.delete(data);
+    } else {
+      this.expandedRows.add(data);
+    }
+  }
+
+  isExpanded(data: HistoryTestrun): boolean {
+    return this.expandedRows.has(data);
+  }
+
+  getLocation(data: HistoryTestrun): string {
+    return (
+      data.location ||
+      (data.device as any)?.location ||
+      'Data Center Alpha - Rack 12, Bay B'
+    );
+  }
+
+  getLinuxEnv(data: HistoryTestrun): string {
+    return (
+      data.linux_env ||
+      (data.device as any)?.linux_env ||
+      'Ubuntu 24.04 LTS (x86_64)'
+    );
+  }
+
+  getKernel(data: HistoryTestrun): string {
+    return (
+      data.kernel || (data.device as any)?.kernel || 'Linux 6.8.0-40-generic'
+    );
+  }
+
+  applySearchQuery() {
+    this.store.setFilteredValuesQuickSearch(this.searchQuery);
+  }
+
+  addSearchTag(tag: string) {
+    this.searchQuery = tag;
+    this.applySearchQuery();
+  }
+
+  clearSearchQuery() {
+    this.searchQuery = '';
+    this.applySearchQuery();
   }
 
   getFormattedDateString(date: string | null) {
@@ -172,6 +253,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   filterCleared(filters: Filters) {
+    this.searchQuery = filters.quickSearch || '';
     this.store.setFilteredValues(filters);
   }
 
@@ -190,9 +272,12 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   focusNextButton() {
     // Try to focus next interactive element, if exists
-    const next = window.document.querySelector(
-      '.report-selected + tr a'
-    ) as HTMLButtonElement;
+    const next = (window.document.querySelector(
+      '.report-selected + tr + tr a'
+    ) ||
+      window.document.querySelector(
+        '.report-selected + tr a'
+      )) as HTMLButtonElement;
     if (next) {
       timer(50).subscribe(() => {
         next.focus();

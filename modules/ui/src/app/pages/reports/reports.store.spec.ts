@@ -132,6 +132,7 @@ describe('ReportsStore', () => {
       reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
         expect(store).toEqual({
           displayedColumns: [
+            'expand',
             'started',
             'duration',
             'deviceInfo',
@@ -149,6 +150,7 @@ describe('ReportsStore', () => {
             deviceFirmware: '',
             results: [],
             dateRange: '',
+            quickSearch: '',
           },
           dataLoaded: true,
           selectedRow: null,
@@ -248,6 +250,64 @@ describe('ReportsStore', () => {
           expect(store.dataSource.filter).toEqual(
             JSON.stringify(updatedFilters)
           );
+          done();
+        });
+      });
+    });
+
+    describe('setFilteredValuesQuickSearch', () => {
+      it('should update store', done => {
+        const updatedFilters = { ...FILTERS, ...{ quickSearch: 'test2' } };
+        store.overrideSelector(selectReports, [...HISTORY]);
+        reportsStore.setFilteredValues({ ...FILTERS });
+
+        reportsStore.setFilteredValuesQuickSearch('test2');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.filteredValues).toEqual(updatedFilters);
+          expect(store.dataSource.filter).toEqual(
+            JSON.stringify(updatedFilters)
+          );
+          done();
+        });
+      });
+
+      it('should filter by location, kernel, or linux_env', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch('Data Center Alpha');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.filteredData.length).toBe(3);
+          done();
+        });
+      });
+
+      it('should filter by kernel', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch('Linux 6.8');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.filteredData.length).toBe(3);
+          done();
+        });
+      });
+
+      it('should filter by linux_env', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch('Ubuntu 24.04');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.filteredData.length).toBe(3);
+          done();
+        });
+      });
+
+      it('should filter by mac address', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch('05:07');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.filteredData.length).toBe(1);
           done();
         });
       });

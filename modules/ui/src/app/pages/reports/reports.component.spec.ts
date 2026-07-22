@@ -53,6 +53,7 @@ describe('ReportsComponent', () => {
   ) => {
     return of({
       displayedColumns: [
+        'expand',
         'started',
         'duration',
         'deviceInfo',
@@ -69,6 +70,7 @@ describe('ReportsComponent', () => {
         deviceFirmware: '',
         results: ['compliant'],
         dateRange: '',
+        quickSearch: '',
       },
       dataLoaded: dataLoaded,
       selectedRow: null,
@@ -85,6 +87,7 @@ describe('ReportsComponent', () => {
       'setFilteredValuesDateRange',
       'setFilteredValuesDeviceFirmware',
       'setFilteredValuesDeviceInfo',
+      'setFilteredValuesQuickSearch',
       'setFilteredValuesResults',
       'setActiveFiler',
       'setFilterOpened',
@@ -267,9 +270,12 @@ describe('ReportsComponent', () => {
       it('should focus next active element if exist', fakeAsync(() => {
         const row = window.document.querySelector('tbody tr') as HTMLElement;
         row.classList.add('report-selected');
-        const nextButton = window.document.querySelector(
-          '.report-selected + tr a'
-        ) as HTMLButtonElement;
+        const nextButton = (window.document.querySelector(
+          '.report-selected + tr + tr a'
+        ) ||
+          window.document.querySelector(
+            '.report-selected + tr a'
+          )) as HTMLButtonElement;
         const buttonFocusSpy = spyOn(nextButton, 'focus');
 
         component.focusNextButton();
@@ -297,6 +303,36 @@ describe('ReportsComponent', () => {
       const data = HISTORY[0];
       component.removeReport(data);
       expect(mockReportsStore.deleteReport).toHaveBeenCalledWith('/report/123');
+    });
+
+    describe('search query methods', () => {
+      it('applySearchQuery should call setFilteredValuesQuickSearch', () => {
+        component.searchQuery = 'testSearch';
+        component.applySearchQuery();
+
+        expect(
+          mockReportsStore.setFilteredValuesQuickSearch
+        ).toHaveBeenCalledWith('testSearch');
+      });
+
+      it('addSearchTag should set searchQuery and call applySearchQuery', () => {
+        component.addSearchTag('tagSearch');
+
+        expect(component.searchQuery).toBe('tagSearch');
+        expect(
+          mockReportsStore.setFilteredValuesQuickSearch
+        ).toHaveBeenCalledWith('tagSearch');
+      });
+
+      it('clearSearchQuery should reset searchQuery and call applySearchQuery', () => {
+        component.searchQuery = 'someQuery';
+        component.clearSearchQuery();
+
+        expect(component.searchQuery).toBe('');
+        expect(
+          mockReportsStore.setFilteredValuesQuickSearch
+        ).toHaveBeenCalledWith('');
+      });
     });
   });
 
