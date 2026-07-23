@@ -129,8 +129,8 @@ class Modbus():
     LOGGER.info(f'Reading holding registers: {address}:{count}')
     try:
       response = self.client.read_holding_registers(address,
-                                                    count,
-                                                    slave=device_id)
+                                                    count=count,
+                                                    device_id=device_id)
       if response.isError():
         LOGGER.error(f'Failed to read holding registers: {address}:{count}')
         LOGGER.error('Read Response: ' + str(response))
@@ -149,9 +149,9 @@ class Modbus():
     registers = None
     LOGGER.info(f'Reading input registers: {address}:{count}')
     try:
-      response = self.client.read_input_registers(address,
-                                                  count,
-                                                  slave=device_id)
+      response = self.client.read_input_registers(address=address,
+                                                  count=count,
+                                                  device_id=device_id)
       if response.isError():
         LOGGER.error(f'Failed to read input registers: {address}:{count}')
         LOGGER.error('Read Response: ' + str(response))
@@ -170,7 +170,11 @@ class Modbus():
     coils = None
     LOGGER.info(f'Reading coil registers: {address}:{count}')
     try:
-      response = self.client.read_coils(address, count, slave=device_id)
+      response = self.client.read_coils(
+        address=address,
+        count=count,
+        device_id=device_id
+      )
       if response.isError():
         LOGGER.error(f'Failed to read coil registers: {address}:{count}')
         LOGGER.error('Read Response: ' + str(response))
@@ -189,9 +193,9 @@ class Modbus():
     inputs = None
     LOGGER.info(f'Reading discrete inputs: {address}:{count}')
     try:
-      response = self.client.read_discrete_inputs(address,
-                                                  count,
-                                                  slave=device_id)
+      response = self.client.read_discrete_inputs(address=address,
+                                                  count=count,
+                                                  device_id=device_id)
       if response.isError():
         LOGGER.error(f'Failed to read discrete inputs: {address}:{count}')
         LOGGER.error('Read Response: ' + str(response))

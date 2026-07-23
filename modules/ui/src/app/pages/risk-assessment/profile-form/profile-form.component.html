@@ -13,7 +13,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<form [formGroup]="profileForm" class="profile-form">
+<form
+  [formGroup]="profileForm"
+  class="profile-form"
+  [class.profile-form-outdated]="
+    selectedProfile?.status === ProfileStatus.EXPIRED
+  "
+  [attr.tabindex]="
+    selectedProfile?.status === ProfileStatus.EXPIRED ? '-1' : null
+  "
+  [attr.aria-labelledby]="
+    selectedProfile?.status === ProfileStatus.EXPIRED
+      ? 'form-accessible-title'
+      : null
+  ">
+  <span id="form-accessible-title" class="visually-hidden">
+    View information (read-only)
+  </span>
   <div class="field-container">
     <label class="field-label name-field-label" for="name-field"
       >Profile name *</label
@@ -58,7 +74,7 @@ limitations under the License.
       mat-flat-button
       color="primary"
       class="save-profile-button"
-      [disabled]="profileHasNoChanges() || !profileForm.valid"
+      [disabled]="isSaveDisabled"
       (click)="onSaveClick(ProfileStatus.VALID)">
       Save
     </button>

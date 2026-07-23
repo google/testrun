@@ -222,6 +222,8 @@ class TestReport():
 
     if 'test_pack' in json_file['device']:
       self._device['test_pack'] = json_file['device']['test_pack']
+    else:
+      self._device['test_pack'] = 'Device Qualification'
 
     if 'additional_info' in json_file['device']:
       self._device['device_profile'] = json_file['device']['additional_info']
@@ -297,7 +299,7 @@ class TestReport():
 
     # Obtain test pack
     current_test_pack = test_pack.TestPack.get_test_pack(
-      self._device['test_pack'])
+      self._device.get('test_pack', 'Device Qualification'))
     template_folder = os.path.join(current_test_pack.path,
                                   TEMPLATES_FOLDER)
     # Jinja template

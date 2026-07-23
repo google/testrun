@@ -499,6 +499,105 @@ describe('DeviceQualificationFromComponent', () => {
       expect(saveSpy).toHaveBeenCalledWith(MOCK_DEVICE);
     });
   });
+
+  describe('compareDevices', () => {
+    it('should return false if manufacturer has changes', () => {
+      const updated_device = {
+        ...device,
+        manufacturer: 'new manufacturer',
+      };
+
+      expect(component.compareDevices(device, updated_device)).toBeFalse();
+    });
+  });
+
+  it('should return false if model has changes', () => {
+    const updated_device = {
+      ...device,
+      model: 'new model',
+    };
+
+    expect(component.compareDevices(device, updated_device)).toBeFalse();
+  });
+
+  it('should return false if mac_addr has changes', () => {
+    const updated_device = {
+      ...device,
+      mac_addr: 'new mac_addr',
+    };
+
+    expect(component.compareDevices(device, updated_device)).toBeFalse();
+  });
+
+  it('should return false if type has changes', () => {
+    const updated_device = {
+      ...device,
+      type: 'new type',
+    };
+
+    expect(component.compareDevices(device, updated_device)).toBeFalse();
+  });
+
+  it('should return false if technology has changes', () => {
+    const updated_device = {
+      ...device,
+      technology: 'new technology',
+    };
+
+    expect(component.compareDevices(device, updated_device)).toBeFalse();
+  });
+
+  it('should return false if test_pack has changes', () => {
+    const updated_device = {
+      ...device,
+      test_pack: TestingType.Qualification,
+    };
+
+    expect(component.compareDevices(device, updated_device)).toBeFalse();
+  });
+
+  it('should return false if test modules has changes', () => {
+    const updated_device = {
+      ...device,
+      test_modules: {
+        dns: {
+          enabled: true,
+        },
+        connection: {
+          enabled: true,
+        },
+      },
+    };
+
+    expect(component.compareDevices(device, updated_device)).toBeFalse();
+  });
+
+  it('should return false if additional info has changes', () => {
+    const updated_device = {
+      ...device,
+      additional_info: [
+        {
+          question: 'Please select the technology this device falls into',
+          answer: 'Building Automation',
+        },
+      ],
+    };
+
+    expect(component.compareDevices(device, updated_device)).toBeFalse();
+  });
+
+  it('should return true if device has no changes', () => {
+    const new_device = {
+      ...device,
+      additional_info: [
+        {
+          question: 'Please select the technology this device falls into',
+          answer: 'Building Automation',
+        },
+      ],
+    };
+    expect(component.compareDevices(new_device, new_device)).toBeTrue();
+  });
 });
 
 @Component({
