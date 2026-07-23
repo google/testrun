@@ -28,7 +28,7 @@ responses==0.25.3
 markdown==3.5.2
 
 # Requirements for the session
-cryptography==46.0.6
+cryptography==49.0.0
 pytz==2024.1
 
 # Requirements for the risk profile
