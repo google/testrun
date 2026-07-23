@@ -2,11 +2,11 @@
 # Package dependencies should always be defined before the user defined
 # packages to prevent auto-upgrades of stable dependencies
 cffi==2.0.0
-cryptography==48.0.1
+cryptography==49.0.0
 pycparser==3.0
 six==1.17.0
 
 # User defined packages
-pyOpenSSL==26.2.0
+pyOpenSSL==26.3.0
 scapy==2.7.0
 python-dateutil==2.9.0.post0
