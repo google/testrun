@@ -116,7 +116,7 @@ class ConnectionModule(TestModule):
 
     if self._device_ipv4_addr is None:
       LOGGER.error('No device IP could be resolved')
-      return 'Error', 'Could not resolve device IP address'
+      return False, 'Could not resolve device IP address'
 
     no_arp = True
 
@@ -391,7 +391,7 @@ class ConnectionModule(TestModule):
     lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
                                             timeout=self._lease_wait_time_sec)
     if lease is None or not self._dhcp_util.is_lease_active(lease):
-      return 'Error', 'No active lease available for device'
+      return False, 'Device does not respond to ping'
     try:
       # Disable the device interface
       iface_down = self.host_client.set_iface_down(dev_iface)
@@ -445,8 +445,12 @@ class ConnectionModule(TestModule):
                 mac_address=self._device_mac, timeout=self._lease_wait_time_sec)
             if lease is not None:
               LOGGER.info('Current device lease resolved')
-              if self._dhcp_util.is_lease_active(lease):
-
+              if not self._dhcp_util.is_lease_active(lease):
+                msg = 'Device does not respond to ping'
+                LOGGER.info(msg)
+                result = False
+                description = msg
+              else:
                 # Add a reserved lease with a different IP
                 ip_address = '10.10.10.30'
                 reserved_lease = self._dhcp_util.add_reserved_lease(
@@ -770,6 +774,10 @@ class ConnectionModule(TestModule):
     # Process and return final results
     final_result = None
     final_result_details = ''
+    if not results:
+      msg = 'Device does not respond to ping'
+      LOGGER.info(msg)
+      return False, msg
     for result in results:
       if final_result is None:
         final_result = result['result']
