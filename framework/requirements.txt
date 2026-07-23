@@ -15,7 +15,7 @@ pydyf==0.11.0
 fastapi==0.115.0
 psutil==5.9.8
 uvicorn==0.27.0
-python-multipart==0.0.22
+python-multipart==0.0.32
 pydantic==2.10.0
 
 # Requirements for testing
