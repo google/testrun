@@ -16,6 +16,10 @@ This file provides the integration between all of the
 Testrun components, such as net_orc, test_orc and test_ui.
 """
 import docker
+<<<<<<< HEAD
+import ipaddress
+=======
+>>>>>>> upstream/main
 import json
 import os
 import shutil
@@ -51,6 +55,10 @@ DEVICE_TYPE_KEY = 'type'
 DEVICE_TECHNOLOGY_KEY = 'technology'
 DEVICE_TEST_PACK_KEY = 'test_pack'
 DEVICE_ADDITIONAL_INFO_KEY = 'additional_info'
+<<<<<<< HEAD
+DEVICE_IP_ADDR_KEY = 'ip_addr'
+=======
+>>>>>>> upstream/main
 DEVICE_REPORT_NAME_FORMAT = '{mac_addr}_{timestamp}'
 DEVICE_QUESTIONS_FILE_NAME = 'device_profile.json'
 
@@ -260,6 +268,19 @@ class Testrun:  # pylint: disable=too-few-public-methods
             test_report.from_json(report)
             device_reports.append(test_report)
 
+<<<<<<< HEAD
+        static_ip = device_config_json.get(DEVICE_IP_ADDR_KEY)
+        if static_ip is not None:
+          try:
+            ipaddress.IPv4Address(static_ip)
+          except ValueError:
+            LOGGER.error(
+                f'Invalid ip_addr "{static_ip}" in config for {mac_addr}; '
+                'ignoring')
+            static_ip = None
+
+=======
+>>>>>>> upstream/main
         device = Device(folder_url=folder_url,
                         manufacturer=device_manufacturer,
                         model=device_model,
@@ -267,7 +288,12 @@ class Testrun:  # pylint: disable=too-few-public-methods
                         test_modules=test_modules,
                         max_device_reports=max_device_reports,
                         device_folder=device_folder,
+<<<<<<< HEAD
+                        reports=device_reports,
+                        ip_addr=static_ip
+=======
                         reports=device_reports
+>>>>>>> upstream/main
                         )
 
         # Load in the additional fields
