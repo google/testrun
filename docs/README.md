@@ -11,6 +11,7 @@
     -  [Test modules](/docs/test/modules.md)
     -  [Test results](/docs/test/statuses.md)
     -  [Device compliance guide](/docs/test/compliant.md)
+    -  [Risk profiles](/docs/risk_profiles.md)
 -  [Developer guidelines](/docs/dev/README.md)
 -  [Accessibility](/docs/ui/accessibility.md)
 -  [Roadmap](/docs/roadmap.pdf)
