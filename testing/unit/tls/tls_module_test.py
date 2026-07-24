@@ -46,7 +46,11 @@ LOCAL_REPORT_SINGLE = os.path.join(REPORTS_DIR, 'tls_report_single.html')
 LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR, 'tls_report_ext_local.html')
 LOCAL_REPORT_NO_CERT = os.path.join(REPORTS_DIR,
                                     'tls_report_no_cert_local.html')
-CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
+CONF_FILE = (
+    '/testrun/conf/module_config.json'
+    if os.path.exists('/testrun/conf/module_config.json')
+    else 'modules/test/' + MODULE + '/conf/module_config.json'
+)
 
 INTERNET_IFACE = 'eth0'
 
@@ -69,12 +73,14 @@ class TLSModuleTest(unittest.TestCase):
 
   # Setup the default ipv4 address and the scan results
   def setUp(self):
-    self.tls_module = TLSModule(module=MODULE)
+    self.tls_module = TLSModule(module=MODULE, conf_file=CONF_FILE)
     self.tls_module._device_ipv4_addr = None # pylint: disable=W0212
     self.tls_module._scan_results = None # pylint: disable=W0212
 
-  def security_tls_v1_2_server_no_ip_test(self):
+  @patch('tls_module.TLSModule._get_device_ipv4')
+  def security_tls_v1_2_server_no_ip_test(self, mock_get_device_ipv4):
     """Test _security_tls_v1_2_server when device IP could not be resolved"""
+    mock_get_device_ipv4.return_value = None
 
     result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
 
@@ -162,11 +168,10 @@ class TLSModuleTest(unittest.TestCase):
     self.assertEqual(details, ['TLS 1.2 certificate could not be validated.'])
 
   @patch('tls_module.TLSUtil.validate_tls_server')
-  def security_tls_v1_2_server_compliant_invalid_v1_2_cert_test(self,
+  def security_tls_v1_2_server_invalid_v1_2_cert_test(self,
                               mock_validate_tls_server):
     """
-    Test _security_tls_v1_2_server when TLS 1.2 cert is invalid but 
-    TLS 1.3 cert is valid
+    Test _security_tls_v1_2_server when TLS 1.2 cert is invalid
     """
 
     self.tls_module._device_ipv4_addr = '10.10.10.14' # pylint: disable=W0212
@@ -177,30 +182,21 @@ class TLSModuleTest(unittest.TestCase):
       tls_version = kwargs.get('tls_version')
       if tls_version == '1.2':
         return (False, ['Certificate has expired'])
-      elif tls_version == '1.3':
-        return (True, ['Time range valid',
-                       'Public key valid',
-                       'Signature valid']
-                )
 
     mock_validate_tls_server.side_effect = validate_side_effect
     result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
 
-    # Expects compliant result
-    self.assertEqual(result, True)
+    # Expects non-compliant result
+    self.assertEqual(result, False)
 
     expected_description = (
-      'TLS 1.2 certificate invalid and TLS 1.3 certificate valid on ports: 443'
+      'TLS 1.2 certificate invalid on ports: 443'
     )
     self.assertEqual(description, expected_description )
 
     expected_details = [
     'TLS 1.2 not validated on port 443:',
-    'Certificate has expired',
-    'TLS 1.3 validated on port 443:',
-    'Time range valid',
-    'Public key valid',
-    'Signature valid'
+    'Certificate has expired'
     ]
     self.assertEqual(details, expected_details)
 
@@ -231,9 +227,7 @@ class TLSModuleTest(unittest.TestCase):
 
     expected_details = [
     'TLS 1.2 not validated on port 443:',
-    'Certificate has expired',
-    'TLS 1.3 not validated on port 443:',
-    'Device certificate has not been signed'
+    'Certificate has expired'
     ]
     self.assertEqual(details, expected_details)
 
@@ -263,10 +257,6 @@ class TLSModuleTest(unittest.TestCase):
 
     expected_details = [
     'TLS 1.2 validated on port 443:',
-    'Time range valid',
-    'Public key valid',
-    'Signature valid',
-    'TLS 1.3 validated on port 443:',
     'Time range valid',
     'Public key valid',
     'Signature valid'
@@ -303,15 +293,7 @@ class TLSModuleTest(unittest.TestCase):
     'Time range valid',
     'Public key valid',
     'Signature valid',
-    'TLS 1.3 validated on port 443:',
-    'Time range valid',
-    'Public key valid',
-    'Signature valid',
     'TLS 1.2 validated on port 8443:',
-    'Time range valid',
-    'Public key valid',
-    'Signature valid',
-    'TLS 1.3 validated on port 8443:',
     'Time range valid',
     'Public key valid',
     'Signature valid',
@@ -342,10 +324,6 @@ class TLSModuleTest(unittest.TestCase):
 
     expected_details = [
     'TLS 1.2 validated on port 443:',
-    'Time range valid',
-    'Public key valid',
-    'Signature valid',
-    'TLS 1.3 validated on port 443:',
     'Time range valid',
     'Public key valid',
     'Signature valid',
@@ -640,7 +618,7 @@ class TLSModuleTest(unittest.TestCase):
     capture_file = os.path.join(CAPTURES_DIR, 'monitor.pcap')
     ip_dst = TLS_UTIL.get_all_outbound_connections(
         device_mac='70:b3:d5:96:c0:00', capture_files=[capture_file])
-    tls = TLSModule(module=MODULE)
+    tls = TLSModule(module=MODULE, conf_file=CONF_FILE)
     gen_html = tls.generate_outbound_connection_table(ip_dst)
     print(gen_html)
 
@@ -651,6 +629,7 @@ class TLSModuleTest(unittest.TestCase):
     monitor_pcap_file = os.path.join(CAPTURES_DIR, 'multi_page_monitor.pcap')
     tls_pcap_file = os.path.join(CAPTURES_DIR, 'multi_page_tls.pcap')
     tls = TLSModule(module=MODULE,
+                    conf_file=CONF_FILE,
                     results_dir=OUTPUT_DIR,
                     startup_capture_file=startup_pcap_file,
                     monitor_capture_file=monitor_pcap_file,
@@ -674,6 +653,7 @@ class TLSModuleTest(unittest.TestCase):
     os.environ['DEVICE_MAC'] = '38:d1:35:01:17:fe'
     pcap_file = os.path.join(CAPTURES_DIR, 'tls.pcap')
     tls = TLSModule(module=MODULE,
+                    conf_file=CONF_FILE,
                     results_dir=OUTPUT_DIR,
                     startup_capture_file=pcap_file,
                     monitor_capture_file=pcap_file,
@@ -692,6 +672,7 @@ class TLSModuleTest(unittest.TestCase):
     os.environ['DEVICE_MAC'] = '28:29:86:27:d6:05'
     pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
     tls = TLSModule(module=MODULE,
+                    conf_file=CONF_FILE,
                     results_dir=OUTPUT_DIR,
                     startup_capture_file=pcap_file,
                     monitor_capture_file=pcap_file,
@@ -718,6 +699,7 @@ class TLSModuleTest(unittest.TestCase):
     os.environ['DEVICE_MAC'] = ''
     pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
     tls = TLSModule(module=MODULE,
+                    conf_file=CONF_FILE,
                     results_dir=OUTPUT_DIR,
                     startup_capture_file=pcap_file,
                     monitor_capture_file=pcap_file,
@@ -902,7 +884,7 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('security_tls_v1_2_multiple_https_servers_test'))
   suite.addTest(TLSModuleTest('security_tls_v1_2_server_http_test'))
   suite.addTest(
-    TLSModuleTest('security_tls_v1_2_server_compliant_invalid_v1_2_cert_test')
+    TLSModuleTest('security_tls_v1_2_server_invalid_v1_2_cert_test')
   )
   suite.addTest(
     TLSModuleTest(
