@@ -21,13 +21,15 @@ ARG GRPC_PROTO_DIR=/testrun/python/src/grpc/proto/dhcp
 ARG GRPC_PROTO_FILE="grpc.proto"
 
 # Install all necessary packages
-RUN apt-get install -y wget tshark
+RUN apt-get update && \
+    apt-get install -y wget tshark &&\
+    rm -rf /var/lib/apt/lists/*
 
 # Load the requirements file
 COPY $MODULE_DIR/python/requirements.txt /testrun/python
 
 # Install all python requirements for the module
-RUN pip install -r /testrun/python/requirements.txt
+RUN pip install --no-cache-dir -r /testrun/python/requirements.txt
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf
