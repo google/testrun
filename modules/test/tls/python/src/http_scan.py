@@ -62,7 +62,7 @@ class HTTPScan():
 
     # Try HTTPS first
     try:
-      requests.head(f'https://{ip}:{port}', verify=False, timeout=5)
+      requests.head(f'https://{ip}:{port}', verify=False, timeout=10)
       LOGGER.info(f'Port {port} supports HTTPS.')
       return 'HTTPS'
     except requests.exceptions.SSLError as e:
@@ -80,7 +80,7 @@ class HTTPScan():
 
     # try HTTP
     try:
-      requests.head(f'http://{ip}:{port}', timeout=5)
+      requests.head(f'http://{ip}:{port}', timeout=10)
       LOGGER.info(f'Port {port} supports HTTP.')
       return 'HTTP'
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
