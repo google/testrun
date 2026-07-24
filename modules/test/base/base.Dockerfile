@@ -22,7 +22,9 @@ ARG COMMON_DIR=framework/python/src/common
 
 # Install additional requirements needed to build python packages
 RUN apt-get update && \
-	apt-get install -y gcc dos2unix
+	apt-get install -y gcc \
+  dos2unix && \
+  rm -rf /var/lib/apt/lists/*
 
 # Create the virtual environment
 RUN python -m venv /opt/venv
@@ -37,7 +39,7 @@ COPY $COMMON_DIR/ /testrun/python/src/common
 COPY $MODULE_DIR/python /testrun/python
 
 # Install all python requirements for the module
-RUN pip install -r /testrun/python/requirements.txt
+RUN pip install --no-cache-dir -r /testrun/python/requirements.txt
 
 # Copy over all binary files
 COPY $MODULE_DIR/bin /testrun/bin
@@ -62,13 +64,24 @@ RUN mkdir -p /usr/local/etc
 COPY $MODULE_DIR/usr/local/etc/oui.txt /usr/local/etc/oui.txt
 
 # Update the oui.txt file from ieee
-RUN wget https://standards-oui.ieee.org/oui.txt -O /usr/local/etc/oui.txt || echo "Unable to update the MAC OUI database"
+RUN wget --progress=dot:giga https://standards-oui.ieee.org/oui.txt -O /usr/local/etc/oui.txt || echo "Unable to update the MAC OUI database"
 
 # Operational stage
 FROM python:3.13-slim
 
 # Install common software
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq net-tools iputils-ping tzdata tcpdump iproute2 jq dos2unix nmap wget procps --fix-missing
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get install -yq net-tools \
+    iputils-ping \
+    tzdata \
+    tcpdump \
+    iproute2 \
+    jq \
+    dos2unix \
+    nmap \
+    wget \
+    procps --fix-missing && \
+    rm -rf /var/lib/apt/lists/*
 
 # Get the virtual environment from builder stage
 COPY --from=builder /opt/venv /opt/venv
