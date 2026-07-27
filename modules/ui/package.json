@@ -14,7 +14,8 @@
     "lint": "ng lint",
     "lint:fix": "ng lint --fix",
     "format": "npx prettier --check .",
-    "format:fix": "npx prettier --write ."
+    "format:fix": "npx prettier --write .",
+    "postinstall": "node -e \"const fs=require('fs');const p='node_modules/brace-expansion/dist/commonjs/index.js';if(fs.existsSync(p)&&!fs.readFileSync(p,'utf8').includes('module.exports=Object.assign'))fs.appendFileSync(p,'\\nmodule.exports=Object.assign(expand,exports);\\n')\""
   },
   "private": true,
   "dependencies": {
@@ -65,5 +66,9 @@
     "prettier": "^3.5.3",
     "prettier-eslint": "^13.0.0",
     "typescript": "~5.9.3"
+  },
+  "overrides": {
+    "brace-expansion": "^5.0.8",
+    "@hono/node-server": "^2.0.5"
   }
 }
