@@ -41,7 +41,7 @@ fi
 # Set MAC address to match the only_baseline 
 # device_config in testing folder
 desired_mac="02:42:aa:00:01:01" 
-ip link set dev eth0 address $desired_mac
+ip link set dev eth0 address "$desired_mac"
 
 
 dhclient -v eth0
