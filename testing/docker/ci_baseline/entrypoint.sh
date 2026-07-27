@@ -32,9 +32,11 @@ dig @8.8.8.8 +short www.google.com
 
 # DHCP
 ip addr flush dev eth0
-PID_FILE=/var/run/dhclient.pid
+PID_FILE="/var/run/dhclient.pid"
 if [ -f "$PID_FILE" ]; then
-    pkill -F "$PID_FILE" -9 || true
+    if [ -s "$PID_FILE" ]; then
+        kill -9 "$(cat "$PID_FILE")" 2>/dev/null || true
+    fi
     rm -f "$PID_FILE"
 fi
 
