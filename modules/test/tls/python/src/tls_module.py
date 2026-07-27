@@ -469,7 +469,7 @@ class TLSModule(TestModule):
           if 'HTTPS' in service_type:
             LOGGER.info(f'Inspecting Service on port {port}: {service_type}')
             tls_1_3_results = self._tls_util.validate_tls_server(
-                self._device_ipv4_addr, tls_version='1.3', port=port)
+                host=self._device_ipv4_addr, port=port, tls_version='1.3')
             if tls_1_3_results[0] is not None:
               if result is None:
                 result = tls_1_3_results[0]
