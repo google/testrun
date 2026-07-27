@@ -46,7 +46,7 @@
     "@angular-eslint/schematics": "19.0.0-alpha.4",
     "@angular-eslint/template-parser": "19.0.0-alpha.4",
     "@angular/build": "^21.1.0",
-    "@angular/cli": "^21.1.0",
+    "@angular/cli": "^21.0.4",
     "@angular/compiler-cli": "^21.1.0",
     "@types/jasmine": "~4.3.6",
     "@types/ws": "^8.18.1",
@@ -67,6 +67,7 @@
     "typescript": "~5.9.3"
   },
   "overrides": {
-    "brace-expansion": "^5.0.8"
+    "brace-expansion": "^5.0.8",
+    "@hono/node-server": "^2.0.5"
   }
 }
