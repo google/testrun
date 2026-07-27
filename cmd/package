@@ -28,7 +28,7 @@ if ! (id -nGz "$USER" | grep -qzxF "docker"); then
     exit 1
 fi
 
-MAKE_SRC_DIR=$(make)
+MAKE_SRC_DIR=make
 MAKE_CONTROL_DIR=make/DEBIAN/control
 
 # Edit the version in make/DEBIAN/control
@@ -41,7 +41,7 @@ echo Building package for testrun v${version}
 
 # Delete existing make files
 echo Cleaning up previous build files
-rm -rf "${MAKE_SRC_DIR:?}/usr"
+rm -rf $MAKE_SRC_DIR/usr
 
 # Copy testrun script to /bin
 mkdir -p $MAKE_SRC_DIR/bin
