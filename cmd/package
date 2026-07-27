@@ -28,7 +28,7 @@ if ! (id -nGz "$USER" | grep -qzxF "docker"); then
     exit 1
 fi
 
-MAKE_SRC_DIR=make
+MAKE_SRC_DIR=$(make)
 MAKE_CONTROL_DIR=make/DEBIAN/control
 
 # Edit the version in make/DEBIAN/control
