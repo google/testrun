@@ -14,6 +14,8 @@
 """Module that contains various methods for scaning for HTTP/HTTPS services"""
 import nmap
 import requests
+import ssl
+import socket
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 
@@ -62,7 +64,7 @@ class HTTPScan():
 
     # Try HTTPS first
     try:
-      requests.head(f'https://{ip}:{port}', verify=False, timeout=10)
+      requests.head(f'https://{ip}:{port}', verify=False, timeout=20)
       LOGGER.info(f'Port {port} supports HTTPS.')
       return 'HTTPS'
     except requests.exceptions.SSLError as e:
@@ -80,7 +82,7 @@ class HTTPScan():
 
     # try HTTP
     try:
-      requests.head(f'http://{ip}:{port}', timeout=10)
+      requests.head(f'http://{ip}:{port}', timeout=20)
       LOGGER.info(f'Port {port} supports HTTP.')
       return 'HTTP'
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
@@ -88,6 +90,19 @@ class HTTPScan():
     except Exception as e:
       LOGGER.error(f'An unexpected error occurred during HTTP check: {e}')
 
+    # Try raw TLS
+    LOGGER.info(f"Raw SSL {ip} {port}")
+    try:
+      context = ssl.create_default_context()
+      context.check_hostname = False
+      context.verify_mode = ssl.CERT_NONE
+      with socket.create_connection((ip, port), timeout=20) as sock:
+        with context.wrap_socket(sock, server_hostname=ip):
+          return 'HTTPS'
+    except ssl.SSLError as e:
+      LOGGER.info(f'Connection failed for SSL on port {port}: {e}')
+    except Exception as e:  # pylint: disable=W0718
+      LOGGER.error(f'An unexpected error occurred during HTTP check: {e}')
     return 'UNKNOWN'
 
   def verify_http_or_https(self, ip, ports):
