@@ -504,7 +504,11 @@ class TLSModuleTest(unittest.TestCase):
       if tls_version == '1.3':
         return (None, ['Failed to resolve public certificate'])
       elif tls_version == '1.2':
-        return (True, ['Time range valid', 'Public key valid', 'Signature valid'])
+        return (True, [
+            'Time range valid',
+            'Public key valid',
+            'Signature valid',
+        ])
 
     mock_validate_tls_server.side_effect = validate_side_effect
     result, description, details = self.tls_module._security_tls_v1_3_server() # pylint: disable=W0212
