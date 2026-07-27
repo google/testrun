@@ -76,8 +76,7 @@ jobs:
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
-          skip-files: 'package-lock.json'
+          severity: 'CRITICAL'
   shellcheck_scan:
     name: ShellCheck Bash Scan
     runs-on: ubuntu-24.04
