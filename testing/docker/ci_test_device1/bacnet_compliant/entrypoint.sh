@@ -17,7 +17,7 @@ DHCP_TPID=$!
 echo $DHCP_TPID
 
 # Start BACnet device
-exec python3 /entrypoint.py
+python3 /entrypoint.py
 
 # Keep network monitoring (can refactor later for other network modules)
 (while true; do arping 10.10.10.1; sleep 10; done) &
