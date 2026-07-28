@@ -97,8 +97,8 @@ class TLSModuleTest(unittest.TestCase):
     result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
 
     self.assertEqual(result, 'Feature Not Detected')
-    self.assertEqual(description, 'TLS 1.2 certificate could not be validated')
-    self.assertEqual(details, ['TLS 1.2 certificate could not be validated.'])
+    self.assertEqual(description, 'No outbound TLS connections detected')
+    self.assertEqual(details, ['No outbound TLS connections detected.'])
 
   def security_tls_v1_2_server_scan_failure_test(self):
     """Tests _security_tls_v1_2_server when scan fails"""
@@ -108,8 +108,8 @@ class TLSModuleTest(unittest.TestCase):
     result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
 
     self.assertEqual(result, 'Feature Not Detected')
-    self.assertEqual(description, 'TLS 1.2 certificate could not be validated')
-    self.assertEqual(details, ['TLS 1.2 certificate could not be validated.'])
+    self.assertEqual(description, 'No outbound TLS connections detected')
+    self.assertEqual(details, ['No outbound TLS connections detected.'])
 
   @patch('tls_module.TLSUtil.validate_tls_server')
   def security_tls_v1_2_server_no_tls_v1_3_test(self, mock_validate_tls_server):
@@ -164,8 +164,8 @@ class TLSModuleTest(unittest.TestCase):
     result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
 
     self.assertEqual(result, 'Feature Not Detected')
-    self.assertEqual(description, 'TLS 1.2 certificate could not be validated')
-    self.assertEqual(details, ['TLS 1.2 certificate could not be validated.'])
+    self.assertEqual(description, 'No outbound TLS connections detected')
+    self.assertEqual(details, ['No outbound TLS connections detected.'])
 
   @patch('tls_module.TLSUtil.validate_tls_server')
   def security_tls_v1_2_server_invalid_v1_2_cert_test(self,
@@ -478,6 +478,44 @@ class TLSModuleTest(unittest.TestCase):
   def security_tls_v1_3_server_test(self):
     test_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.3')
     self.assertTrue(test_results[0])
+
+  def security_tls_v1_3_server_no_scan_results_test(self):
+    """Tests _security_tls_v1_3_server when scan finds no HTTP/HTTPS ports"""
+
+    self.tls_module._device_ipv4_addr = '10.10.10.14' # pylint: disable=W0212
+    self.tls_module._scan_results = {} # pylint: disable=W0212
+
+    result, description, details = self.tls_module._security_tls_v1_3_server() # pylint: disable=W0212
+
+    self.assertEqual(result, 'Feature Not Detected')
+    self.assertEqual(description, 'No outbound TLS connections detected')
+    self.assertEqual(details, ['No outbound TLS connections detected.'])
+
+  @patch('tls_module.TLSUtil.validate_tls_server')
+  def security_tls_v1_3_server_no_tls_v1_3_test(self, mock_validate_tls_server):
+    """Test _security_tls_v1_3_server when TLS 1.3 is not supported"""
+
+    self.tls_module._device_ipv4_addr = '10.10.10.14' # pylint: disable=W0212
+    self.tls_module._scan_results = {443 : 'HTTPS'} # pylint: disable=W0212
+
+    # Mock the result of validate_tls_server from TLSUtil
+    def validate_side_effect(**kwargs):
+      tls_version = kwargs.get('tls_version')
+      if tls_version == '1.3':
+        return (None, ['Failed to resolve public certificate'])
+      elif tls_version == '1.2':
+        return (True, [
+            'Time range valid',
+            'Public key valid',
+            'Signature valid',
+        ])
+
+    mock_validate_tls_server.side_effect = validate_side_effect
+    result, description, details = self.tls_module._security_tls_v1_3_server() # pylint: disable=W0212
+
+    self.assertEqual(result, 'Feature Not Detected')
+    self.assertEqual(description, 'No outbound TLS connections detected')
+    self.assertEqual(details, ['No outbound TLS connections detected.'])
 
   def security_tls_v1_2_client_test(self):
     test_results = self.test_client_tls('1.2')
@@ -902,6 +940,10 @@ if __name__ == '__main__':
 
   # TLS 1.3 server tests
   suite.addTest(TLSModuleTest('security_tls_v1_3_server_test'))
+  suite.addTest(
+      TLSModuleTest('security_tls_v1_3_server_no_scan_results_test')
+  )
+  suite.addTest(TLSModuleTest('security_tls_v1_3_server_no_tls_v1_3_test'))
 
   # TLS client tests
   suite.addTest(TLSModuleTest('security_tls_v1_2_client_test'))
