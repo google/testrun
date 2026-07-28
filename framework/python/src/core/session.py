@@ -873,8 +873,7 @@ question {question.get('question')}''')
 
       profile_path = os.path.join(PROFILES_DIR, file_name)
 
-      if os.path.exists(profile_path):
-        os.remove(profile_path)
+      os.remove(profile_path)
       self._profiles.remove(profile)
 
       return True
