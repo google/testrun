@@ -720,7 +720,10 @@ class TestrunSession():
           try:
             os.remove(old_file_path)
           except OSError as e:
-            LOGGER.error(f'An error occurred whilst deleting old profile file {old_file_path}: {e}')
+            LOGGER.error(
+                f'An error occurred whilst deleting old profile file '
+                f'{old_file_path}: {e}'
+            )
 
     # Write file to disk
     with open(os.path.join(PROFILES_DIR, risk_profile.name + '.json'),
