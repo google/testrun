@@ -715,7 +715,15 @@ class TestrunSession():
         old_name = profile_json.get('name')
 
         # Delete the original file
-        os.remove(os.path.join(PROFILES_DIR, old_name + '.json'))
+        old_file_path = os.path.join(PROFILES_DIR, old_name + '.json')
+        if os.path.exists(old_file_path):
+          try:
+            os.remove(old_file_path)
+          except OSError as e:
+            LOGGER.error(
+                f'An error occurred whilst deleting old profile file '
+                f'{old_file_path}: {e}'
+            )
 
     # Write file to disk
     with open(os.path.join(PROFILES_DIR, risk_profile.name + '.json'),
