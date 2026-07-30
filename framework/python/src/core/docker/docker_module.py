@@ -155,6 +155,8 @@ class Module:
 
     try:
       client = docker.from_env()
+      if not self.image_name.startswith(IMAGE_PREFIX):
+        raise ValueError(f'Untrusted container image: {self.image_name}')
       self.container = client.containers.run(
           self.image_name,
           auto_remove=True,
