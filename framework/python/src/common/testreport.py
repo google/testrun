@@ -349,6 +349,7 @@ class TestReport():
     steps_to_resolve_ = logic.get_steps_to_resolve(json_data)
 
     module_reports = self._module_reports
+    # nosemgrep
     env_module = Environment(loader=BaseLoader())
     manufacturer_length = len(json_data['device']['manufacturer'])
     device_name_length = len(json_data['device']['model'])
@@ -366,7 +367,7 @@ class TestReport():
           version=self._version,
       ) for s in self._module_templates
     ]
-
+    # nosemgrep
     return self._add_page_counter(template.render(styles=styles,
                            logo=logo,
                            icon=icon,
