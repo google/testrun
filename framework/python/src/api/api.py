@@ -139,7 +139,7 @@ class Api:
                                methods=["POST"])
 
     # Allow all origins to access the API
-    origins = ["*"]
+    origins = ["*"] # nosemgrep: python.fastapi.security.wildcard-cors.wildcard-cors
 
     # Scheduler for background periodic tasks
     self._scheduler = tasks.PeriodicTasks(self._testrun)
