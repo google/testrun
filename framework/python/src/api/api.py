@@ -139,7 +139,6 @@ class Api:
                                methods=["POST"])
 
     # Allow all origins to access the API
-    # nosemgrep: python.fastapi.security.wildcard-cors.wildcard-cors
     origins = ["*"]
 
     # Scheduler for background periodic tasks
@@ -154,6 +153,7 @@ class Api:
     # Attach CORS middleware
     self._app.add_middleware(
         CORSMiddleware,
+        # nosemgrep: python.fastapi.security.wildcard-cors.wildcard-cors
         allow_origins=origins,
         allow_credentials=True,
         allow_methods=["*"],
