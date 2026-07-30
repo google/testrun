@@ -303,6 +303,7 @@ class TestReport():
     template_folder = os.path.join(current_test_pack.path,
                                   TEMPLATES_FOLDER)
     # Jinja template
+    # nosemgrep
     template_env = Environment(
                                 loader=FileSystemLoader(
                                               template_folder
