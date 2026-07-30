@@ -597,7 +597,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     client = docker.from_env()
 
     try:
-      client.containers.run(image='testrun/ui',
+      client.containers.run('testrun/ui',
                             auto_remove=True,
                             name='tr-ui',
                             hostname='testrun.io',
@@ -636,7 +636,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     client = docker.from_env()
 
     try:
-      client.containers.run(image='testrun/ws',
+      client.containers.run('testrun/ws',
                             auto_remove=True,
                             name='tr-ws',
                             detach=True,
