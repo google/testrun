@@ -9,7 +9,7 @@ netifaces==0.11.0
 scapy==2.7.0
 
 # Requirements for the test_orc module
-weasyprint==68.0
+weasyprint==69.0
 pydyf==0.11.0
 
 # Requirements for the API
