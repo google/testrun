@@ -367,9 +367,12 @@ class NetworkOrchestrator:
         network creation and flushes internet interface
         """
     LOGGER.info('Pre network create')
-    self._ethmac = subprocess.check_output(
-        f'cat /sys/class/net/{self._session.get_internet_interface()}/address',
-        shell=True).decode('utf-8').strip()
+    iface = self._session.get_internet_interface()
+    try:
+      with open(f'/sys/class/net/{iface}/address', 'r', encoding='utf-8') as f:
+        self._ethmac = f.read().strip()
+    except OSError:
+      self._ethmac = ''
     self._gateway = subprocess.check_output(
         'ip route | head -n 1 | awk \'{print $3}\'',
         shell=True).decode('utf-8').strip()
