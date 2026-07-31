@@ -376,6 +376,15 @@ class NetworkOrchestrator:
     self._gateway = subprocess.check_output(
         'ip route | head -n 1 | awk \'{print $3}\'',
         shell=True).decode('utf-8').strip()
+    self._gateway = ''
+    try:
+      route_output = subprocess.check_output(['ip', 'route']).decode('utf-8')
+      first_line = route_output.strip().splitlines()[0]
+      parts = first_line.split()
+      if len(parts) >= 3:
+        self._gateway = parts[2]
+    except (subprocess.SubprocessError, IndexError):
+        pass
     self._ipv4 = subprocess.check_output(
         (f'ip a show {self._session.get_internet_interface()} | ' +
          'grep \"inet \" | awk \'{{print $2}}\''),
