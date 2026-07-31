@@ -384,19 +384,28 @@ class NetworkOrchestrator:
       if len(parts) >= 3:
         self._gateway = parts[2]
     except (subprocess.SubprocessError, IndexError):
-        pass
-    self._ipv4 = subprocess.check_output(
-        (f'ip a show {self._session.get_internet_interface()} | ' +
-         'grep \"inet \" | awk \'{{print $2}}\''),
-        shell=True).decode('utf-8').strip()
-    self._ipv6 = subprocess.check_output(
-        (f'ip a show {self._session.get_internet_interface()} | grep inet6 | ' +
-         'awk \'{{print $2}}\''),
-        shell=True).decode('utf-8').strip()
-    self._brd = subprocess.check_output(
-        (f'ip a show {self._session.get_internet_interface()} | grep \"inet \" '
-         + '| awk \'{{print $4}}\''),
-        shell=True).decode('utf-8').strip()
+      pass
+    self._ipv4 = ''
+    self._ipv6 = ''
+    self._brd = ''
+    try:
+      ip_output = subprocess.check_output(
+        ['ip', 'a', 'show', iface]
+        ).decode('utf-8')
+      for line in ip_output.splitlines():
+        line = line.strip()
+        if line.startswith('inet '):
+          parts = line.split()
+          if len(parts) >= 2:
+            self._ipv4 = parts[1]
+          if len(parts) >= 4:
+            self._brd = parts[3]
+        elif line.startswith('inet6 '):
+          parts = line.split()
+          if len(parts) >= 2:
+            self._ipv6 = parts[1]
+    except subprocess.SubprocessError:
+      pass
 
   def _ci_post_network_create(self):
     """ Restore network connection in CI environment """
