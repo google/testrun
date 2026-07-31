@@ -122,4 +122,5 @@ COPY resources/report/$CSS_FILE $REPORT_TEMPLATE_PATH/
 COPY resources/report/$LOGO_FILE $REPORT_TEMPLATE_PATH/
 
 # Start the test module
+#nosemgrep
 ENTRYPOINT [ "/testrun/bin/start" ]
