@@ -18,6 +18,7 @@ import logger
 import time
 import util
 import subprocess
+import shlex
 
 LOGGER = None
 LOG_NAME = 'dns_validator'
@@ -98,16 +99,24 @@ class DNSValidator:
         Returns
             List of packets matching the filter
         """
-    command = f'tcpdump -tttt -n -r {CAPTURE_FILE} {tcpdump_filter}'
+    command = ['tcpdump', '-tttt', '-n', '-r', CAPTURE_FILE]
 
-    LOGGER.debug('tcpdump command: ' + command)
+    # If tcpdump_filter contains multiple space-separated flags or expressions,
+    # split it into individual arguments safely
+    if isinstance(tcpdump_filter, str):
+      command.extend(shlex.split(tcpdump_filter))
+    elif isinstance(tcpdump_filter, list):
+      command.extend(tcpdump_filter)
 
-    with subprocess.Popen(command,
-                               universal_newlines=True,
-                               shell=True,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE) as process:
-      text = str(process.stdout.read()).rstrip()
+    LOGGER.debug('tcpdump command: ' + ' '.join(command))
+    with subprocess.Popen(
+      command,
+      text=True,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE
+    ) as process:
+      stdout, _ = process.communicate()
+      text = stdout.rstrip()
 
       LOGGER.debug('tcpdump response: ' + text)
 
