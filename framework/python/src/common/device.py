@@ -40,6 +40,7 @@ class Device():
   test_modules: Dict = field(default_factory=dict)
   ip_addr: str = None
   firmware: str = None
+  kernel: str = None
   device_folder: str = None
   reports: List[TestReport] = field(default_factory=list)
   max_device_reports: int = None
@@ -101,6 +102,9 @@ class Device():
     if self.firmware is not None:
       device_json['firmware'] = self.firmware
 
+    if self.kernel is not None:
+      device_json['kernel'] = self.kernel
+
     device_json['test_modules'] = self.test_modules
     device_json['reports'] = [
       report.to_json() for report in self.reports] if self.reports else []
@@ -120,6 +124,10 @@ class Device():
     device_json['additional_info'] = self.additional_info
     device_json['created_at'] = self.created_at.isoformat()
     device_json['modified_at'] = self.modified_at.isoformat()
+
+    if self.kernel is not None:
+      device_json['kernel'] = self.kernel
+
     device_json['reports'] = [
       report.to_json() for report in self.reports] if self.reports else []
 
