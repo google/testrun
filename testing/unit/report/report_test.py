@@ -246,8 +246,12 @@ class ReportTest(unittest.TestCase):
     report.from_json(report_json)
     out_json = report.to_json()
     self.assertEqual(out_json['device'].get('kernel'), 'Linux 6.8.0-40-generic')
-    self.assertEqual(out_json['host'].get('location'), 'Data Center Alpha - Rack 12, Bay B')
-    self.assertEqual(out_json['host'].get('linux_env'), 'Ubuntu 24.04 LTS (x86_64)')
+    self.assertEqual(
+        out_json['host'].get('location'),
+        'Data Center Alpha - Rack 12, Bay B')
+    self.assertEqual(
+        out_json['host'].get('linux_env'),
+        'Ubuntu 24.04 LTS (x86_64)')
     self.assertEqual(out_json['host'].get('python_version'), '3.11.2')
 
 
