@@ -61,11 +61,41 @@ class HTTPScan():
     Detects if the port serves HTTPS, HTTP, or neither.
     Returns 'HTTPS', 'HTTP' or 'UNKNOWN'.
     """
+    result = 'UNKNOWN'
 
-    # Try HTTPS first
+    # try HTTP first
     try:
-      requests.head(f'https://{ip}:{port}', verify=False, timeout=20)
+      response = requests.get(f'http://{ip}:{port}', timeout=20, stream=True)
+      content = ''
+      if response.status_code == 400:
+        content = response.raw.read(512).decode(
+          'utf-8', errors='ignore'
+          ).lower()
+      response.close()
+      if ('sent to http port' in content or
+          'ssl' in content or
+          'https' in content
+          ):
+        LOGGER.info(f'Port {port} returned HTTPS-redirection.')
+        result = 'HTTPS'
+      else:
+        LOGGER.info(f'Port {port} supports HTTP.')
+        return 'HTTP'
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+      LOGGER.info(f'Port {port} does not support HTTP.')
+    except Exception as e:
+      LOGGER.error(f'An unexpected error occurred during HTTP check: {e}')
+
+    # Try HTTPS
+    try:
+      response = requests.get(
+        f'https://{ip}:{port}',
+        verify=False,
+        timeout=20,
+        stream=True
+      )
       LOGGER.info(f'Port {port} supports HTTPS.')
+      response.close()
       return 'HTTPS'
     except requests.exceptions.SSLError as e:
       # This error occurs if the SSL handshake fails for any reason
@@ -80,31 +110,7 @@ class HTTPScan():
     except Exception as e:
       LOGGER.error(f'An unexpected error occurred during HTTPS check: {e}')
 
-    # try HTTP
-    try:
-      requests.head(f'http://{ip}:{port}', timeout=20)
-      LOGGER.info(f'Port {port} supports HTTP.')
-      return 'HTTP'
-    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-      LOGGER.info(f'Port {port} does not support HTTP.')
-    except Exception as e:
-      LOGGER.error(f'An unexpected error occurred during HTTP check: {e}')
-
-    # Try raw TLS
-    LOGGER.info(f"Raw SSL {ip} {port}")
-    try:
-      context = ssl.create_default_context()
-      context.check_hostname = False
-      context.verify_mode = ssl.CERT_NONE
-      context.minimum_version = ssl.TLSVersion.TLSv1_2
-      with socket.create_connection((ip, port), timeout=20) as sock:
-        with context.wrap_socket(sock, server_hostname=ip):
-          return 'HTTPS'
-    except ssl.SSLError as e:
-      LOGGER.info(f'Connection failed for SSL on port {port}: {e}')
-    except Exception as e:  # pylint: disable=W0718
-      LOGGER.error(f'An unexpected error occurred during HTTP check: {e}')
-    return 'UNKNOWN'
+    return result
 
   def verify_http_or_https(self, ip, ports):
     """Classifies each port as HTTP, HTTPS, or UNKNOWN."""
