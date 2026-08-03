@@ -16,7 +16,6 @@ import copy
 import os
 import json
 import pathlib
-import platform
 import re
 import time
 import shutil
