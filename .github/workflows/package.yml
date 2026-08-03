@@ -48,7 +48,7 @@ jobs:
         run: sudo cmd/prepare
       - name: Install package
         shell: bash {0}
-        run: sudo apt install ./testrun*.deb
+        run: sudo -E DEBIAN_FRONTEND=noninteractive apt install ./testrun*.deb
       - name: Start testrun
         shell: bash {0}
         run: sudo testrun > >(tee testrun_output.log) 2>&1 &
@@ -82,7 +82,7 @@ jobs:
         run: sudo cmd/prepare
       - name: Install package
         shell: bash {0}
-        run: sudo apt install ./testrun*.deb
+        run: sudo -E DEBIAN_FRONTEND=noninteractive apt install ./testrun*.deb
       - name: Start testrun
         shell: bash {0}
         run: sudo testrun > >(tee testrun_output.log) 2>&1 &
