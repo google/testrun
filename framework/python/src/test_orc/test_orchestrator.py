@@ -16,6 +16,7 @@ import copy
 import os
 import json
 import pathlib
+import platform
 import re
 import time
 import shutil
@@ -254,6 +255,11 @@ class TestOrchestrator:
 
     report["mac_addr"] = device.mac_addr
     report["device"] = device.to_dict()
+    report["host"] = {
+      "location": "",
+      "linux_env": "",
+      "python_version": ""
+    }
     report["started"] = self.get_session().get_started().strftime(
         "%Y-%m-%d %H:%M:%S")
     report["finished"] = self.get_session().get_finished().strftime(

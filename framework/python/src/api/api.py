@@ -454,6 +454,7 @@ class Api:
         "model": report["device"].get("model"),
         "mac_addr": report["device"].get("mac_addr"),
         "firmware": report["device"].get("firmware"),
+        "kernel": report["device"].get("kernel"),
         "test_pack": report["device"].get("test_pack", "Device Qualification"),
       }
       report["delete"] = report["report"]

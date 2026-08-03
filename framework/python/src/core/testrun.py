@@ -271,6 +271,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
                         )
 
         # Load in the additional fields
+        if 'kernel' in device_config_json:
+          device.kernel = device_config_json.get('kernel')
+
         if DEVICE_TYPE_KEY in device_config_json:
           device.type = device_config_json.get(DEVICE_TYPE_KEY)
 

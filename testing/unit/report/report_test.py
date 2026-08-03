@@ -218,6 +218,38 @@ class ReportTest(unittest.TestCase):
       report = file.read()
     return report
 
+  def test_report_host_and_device_kernel(self):
+    """Test host object and device kernel in TestReport"""
+    report = TestReport()
+    report_json = {
+      'testrun': {'version': '2.2.2'},
+      'mac_addr': 'aa:bb:cc:dd:ee:ff',
+      'device': {
+        'mac_addr': 'aa:bb:cc:dd:ee:ff',
+        'manufacturer': 'Testrun',
+        'model': 'Faux',
+        'firmware': '1.0.0',
+        'kernel': 'Linux 6.8.0-40-generic',
+        'test_pack': 'Device Qualification'
+      },
+      'host': {
+        'location': 'Data Center Alpha - Rack 12, Bay B',
+        'linux_env': 'Ubuntu 24.04 LTS (x86_64)',
+        'python_version': '3.11.2'
+      },
+      'status': 'Complete',
+      'result': 'Compliant',
+      'started': '2026-02-02 17:24:52',
+      'finished': '2026-02-02 17:34:58',
+      'tests': {'total': 0, 'results': []}
+    }
+    report.from_json(report_json)
+    out_json = report.to_json()
+    self.assertEqual(out_json['device'].get('kernel'), 'Linux 6.8.0-40-generic')
+    self.assertEqual(out_json['host'].get('location'), 'Data Center Alpha - Rack 12, Bay B')
+    self.assertEqual(out_json['host'].get('linux_env'), 'Ubuntu 24.04 LTS (x86_64)')
+    self.assertEqual(out_json['host'].get('python_version'), '3.11.2')
+
 
 if __name__ == '__main__':
 
@@ -227,6 +259,7 @@ if __name__ == '__main__':
   suite.addTest(ReportTest('pilot_proceed_compliant_test'))
   suite.addTest(ReportTest('pilot_proceed_noncompliant_test'))
   suite.addTest(ReportTest('pilot_do_not_proceed_noncompliant_test'))
+  suite.addTest(ReportTest('test_report_host_and_device_kernel'))
 
   # Create html test reports for each module in 'output' dir
   suite.addTest(ReportTest('report_formatting'))
