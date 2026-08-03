@@ -14,8 +14,6 @@
 """Module that contains various methods for scaning for HTTP/HTTPS services"""
 import nmap
 import requests
-import ssl
-import socket
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 
