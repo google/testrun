@@ -166,7 +166,7 @@ class TestrunSession():
 
     # Load host metadata
     self._host = Host.get_host_metadata()
-    LOGGER.info(f'Host metadata: {self._host.to_dict()}')
+    LOGGER.debug(f'Host metadata: {self._host.to_dict()}')
 
     # Fetch the timezone of the host system
     try:
@@ -1102,3 +1102,6 @@ question {question.get('question')}''')
 
   def get_ifaces(self):
     return self._ifaces
+
+  def get_host_metadata(self):
+    return self._host
