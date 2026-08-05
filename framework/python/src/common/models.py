@@ -177,7 +177,10 @@ class Host():
   @classmethod
   def get_host_metadata(cls) -> 'Host':
     """Returns the host metadata as a Host object"""
-    return cls(python_version=platform.python_version(), os=distro.name(pretty=True))
+    return cls(
+      python_version=platform.python_version(),
+      os=distro.name(pretty=True)
+      )
 
   def to_dict(self) -> Mapping:
     """Returns the host metadata as a python dictionary"""
