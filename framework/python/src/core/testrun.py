@@ -25,7 +25,7 @@ import time
 import docker.errors
 
 from common import logger, util, mqtt
-from common.device import Device
+from common.models import Device
 from common.testreport import TestReport
 from common.statuses import TestrunStatus
 from session import TestrunSession
