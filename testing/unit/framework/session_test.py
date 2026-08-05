@@ -21,7 +21,7 @@ import pytz
 from unittest.mock import patch, MagicMock, mock_open
 
 from common.statuses import TestResult
-from common.device import Device
+from common.models import Device
 from core import session
 
 
