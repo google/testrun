@@ -16,10 +16,12 @@
 
 import json
 import os
+import platform
 from typing import List, Dict, Mapping
 from dataclasses import dataclass, field
 from common.testreport import TestReport
 from datetime import datetime
+import distro
 
 _LOCAL_DEVICES_DIR = 'local/devices'
 _DEVICE_CONFIG_FILE = 'device_config.json'
@@ -172,6 +174,11 @@ class Host():
   os: str | None = None
   location: str | None = None
 
+  @classmethod
+  def get_host_metadata(cls) -> 'Host':
+    """Returns the host metadata as a Host object"""
+    return cls(python_version=platform.python_version(), os=distro.name(pretty=True))
+
   def to_dict(self) -> Mapping:
     """Returns the host metadata as a python dictionary"""
     host_json = {}
@@ -179,4 +186,5 @@ class Host():
     host_json['os'] = self.os
     host_json['location'] = self.location
     return host_json
+
 
