@@ -1,5 +1,0 @@
-scan:
-  pkg-types:
-    - os
-    - pip
-    - gobinary
