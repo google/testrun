@@ -27,7 +27,7 @@ import uvicorn
 
 from core import tasks
 from common import logger
-from common.device import Device
+from common.models import Device
 from common.statuses import TestrunStatus
 
 LOGGER = logger.get_logger("api")

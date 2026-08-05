@@ -21,7 +21,7 @@ from fastapi.encoders import jsonable_encoder
 from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
 from common.statuses import TestrunStatus, TestResult, TestrunResult
-from common.device import Device, DeviceWithReport
+from common.models import Device, DeviceWithReport
 from net_orc.ip_control import IPControl
 
 # Certificate dependencies

@@ -23,7 +23,7 @@ import docker
 from common import logger, util, risk_profile
 from common.testreport import TestReport
 from common.statuses import TestrunStatus, TestrunResult, TestResult
-from common.device import Device
+from common.models import Device
 from core.testrun import REPORTS_FOLDER, DEVICE_REPORT_NAME_FORMAT
 from core.docker.test_docker_module import TestModule
 from test_orc.test_case import TestCase
