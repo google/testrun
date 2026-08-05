@@ -16,7 +16,7 @@
 
 import json
 import os
-from typing import List, Dict
+from typing import List, Dict, Mapping
 from dataclasses import dataclass, field
 from common.testreport import TestReport
 from datetime import datetime
@@ -171,3 +171,12 @@ class Host():
   python_version: str
   os: str | None = None
   location: str | None = None
+
+  def to_dict(self) -> Mapping:
+    """Returns the host metadata as a python dictionary"""
+    host_json = {}
+    host_json['python_version'] = self.python_version
+    host_json['os'] = self.os
+    host_json['location'] = self.location
+    return host_json
+
