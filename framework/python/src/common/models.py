@@ -163,3 +163,11 @@ class Device():
 class DeviceWithReport():
   device: Device | None = None
   report: TestReport | None = None
+
+
+@dataclass
+class Host():
+  """Testrun host metadata"""
+  python_version: str
+  os: str | None = None
+  location: str | None = None
