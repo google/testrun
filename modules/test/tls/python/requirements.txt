@@ -14,7 +14,7 @@ urllib3==2.7.0
 
 # User defined packages
 cryptography==50.0.0
-pyOpenSSL==26.2.0
+pyOpenSSL==26.4.0
 lxml==6.1.1
 requests==2.34.2
 python-nmap==0.7.1
