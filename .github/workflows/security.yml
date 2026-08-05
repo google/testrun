@@ -78,7 +78,7 @@ jobs:
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
           skip-dirs: 'node_modules'
-          trivy-options: '--disabled-analyzers npm,yarn,pnpm,package-json'
+          trivy-options: '--disabled-analyzers npm-pkg-lock,yarn,pnpm,node-pkg'
   shellcheck_scan:
     name: ShellCheck Bash Scan
     runs-on: ubuntu-24.04
