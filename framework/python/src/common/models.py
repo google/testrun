@@ -182,7 +182,10 @@ class Host():
       response = requests.get('https://ipinfo.io/json', timeout=5)
       if response.status_code == 200:
         data = response.json()
-        return '{country}/{region}/{city}'.format(**data)
+        country = data['country']
+        region = data['region']
+        city = data['city']
+        return f'{country}/{region}/{city}'
       else:
         return ''
     except Exception:
