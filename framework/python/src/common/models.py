@@ -194,9 +194,19 @@ class Host():
   @classmethod
   def get_host_metadata(cls) -> 'Host':
     """Returns the host metadata as a Host object"""
-    return cls(
-      python_version=platform.python_version(),
+    try:
+      python_version = platform.python_version()
+    except Exception:
+      python_version = ''
+    try:
       linux_env=distro.name(pretty=True)
+    except Exception:
+      linux_env = ''
+    location = Host.get_location()
+    return cls(
+      python_version=python_version,
+      linux_env=linux_env,
+      location=location
       )
 
   def to_dict(self) -> Mapping:
@@ -204,7 +214,7 @@ class Host():
     host_json = {}
     host_json['python_version'] = self.python_version
     host_json['linux_env'] = self.linux_env
-    host_json['location'] = Host.get_location()
+    host_json['location'] = self.location
     return host_json
 
 
