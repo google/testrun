@@ -96,10 +96,10 @@ class TestReport():
     if hasattr(device, 'kernel') and device.kernel is not None:
       self._device['kernel'] = device.kernel
 
-  def get_host(self):
+  def get_host(self) -> dict:
     return self._host
 
-  def set_host(self, host):
+  def set_host(self, host: dict):
     self._host = host
 
   def add_module_reports(self, module_reports):
