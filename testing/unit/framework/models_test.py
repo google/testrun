@@ -33,7 +33,8 @@ def test_get_location_returns_expected_string(
   mock_response.status_code = status_code
   mock_response.json.return_value = json_value
 
-  with patch('common.models.requests.get', return_value=mock_response):
+  with patch('common.models.requests.get',
+             return_value=mock_response):
     assert Host.get_location() == expected
 
 
