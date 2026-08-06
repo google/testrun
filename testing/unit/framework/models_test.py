@@ -14,30 +14,27 @@
 
 """Host metadata tests."""
 
+import pytest
 from unittest.mock import patch, MagicMock
 
 from common.models import Host
 
 
-def test_get_location_success():
+@pytest.mark.parametrize('status_code, json_value, expected', [
+    (200, {'country': 'US', 'region': 'California', 'city': 'San Jose'}, 'US/California/San Jose'),
+    (500, {}, ''),
+])
+def test_get_location_returns_expected_string(
+    status_code: int,
+    json_value: dict,
+    expected: str
+):
   mock_response = MagicMock()
-  mock_response.status_code = 200
-  mock_response.json.return_value = {
-      'country': 'US',
-      'region': 'California',
-      'city': 'San Jose'
-  }
+  mock_response.status_code = status_code
+  mock_response.json.return_value = json_value
 
   with patch('common.models.requests.get', return_value=mock_response):
-    assert Host.get_location() == 'US/California/San Jose'
-
-
-def test_get_location_returns_empty_when_api_unavailable():
-  mock_response = MagicMock()
-  mock_response.status_code = 500
-
-  with patch('common.models.requests.get', return_value=mock_response):
-    assert Host.get_location() == ''
+    assert Host.get_location() == expected
 
 
 def test_get_location_returns_empty_on_exception():
@@ -47,7 +44,9 @@ def test_get_location_returns_empty_on_exception():
 
 @patch('common.models.distro.name', return_value='Ubuntu 24.04 LTS')
 @patch('common.models.platform.python_version', return_value='3.12.0')
+@patch.object(Host, 'get_location', return_value='')
 def test_get_host_metadata_returns_expected_host(
+    mock_get_location: MagicMock, #pylint: disable=W0613, W0621
     mock_python_version: MagicMock, #pylint: disable=W0613, W0621
     mock_distro_name: MagicMock #pylint: disable=W0613, W0621
 ):
@@ -59,14 +58,14 @@ def test_get_host_metadata_returns_expected_host(
 
 
 def test_host_to_dict_includes_location():
-  host = Host(python_version='3.12.0', linux_env='Ubuntu 24.04 LTS')
+  host = Host(
+      python_version='3.12.0',
+      linux_env='Ubuntu 24.04 LTS',
+      location='US/California/San Jose'
+  )
 
-  with patch.object(Host,
-                    'get_location',
-                    return_value='US/California/San Jose'
-                    ):
-    host_dict = host.to_dict()
-
-  assert host_dict['python_version'] == '3.12.0'
-  assert host_dict['linux_env'] == 'Ubuntu 24.04 LTS'
-  assert host_dict['location'] == 'US/California/San Jose'
+  assert host.to_dict() == {
+      'python_version': '3.12.0',
+      'linux_env': 'Ubuntu 24.04 LTS',
+      'location': 'US/California/San Jose'
+  }
