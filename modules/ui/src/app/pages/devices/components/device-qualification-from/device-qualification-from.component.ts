@@ -443,8 +443,7 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
 
     if (
       device.test_pack &&
-      (device.test_pack === TestingType.Qualification ||
-        device.test_pack === TestingType.Pilot)
+      Object.values(TestingType).includes(device.test_pack)
     ) {
       this.test_pack.setValue(device.test_pack);
     } else {

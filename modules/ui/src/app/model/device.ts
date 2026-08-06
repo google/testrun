@@ -61,6 +61,7 @@ export enum DeviceView {
 export enum TestingType {
   Pilot = 'Pilot Assessment',
   Qualification = 'Device Qualification',
+  Informational = 'Informational Assessment',
 }
 
 export enum DeviceAction {
