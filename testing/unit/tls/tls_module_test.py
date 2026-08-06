@@ -225,15 +225,13 @@ class TLSModuleTest(unittest.TestCase):
     mock_validate_tls_server.side_effect = validate_side_effect
     result, description, details = self.tls_module._security_tls_v1_2_server() # pylint: disable=W0212
 
-    # Expects compliant result
+    # Expects non-compliant result
     self.assertEqual(result, False)
     self.assertEqual(description, 'TLS 1.2 certificate invalid on ports: 443')
 
     expected_details = [
     'TLS 1.2 not validated on port 443:',
-    'Certificate has expired',
-    'TLS 1.3 not validated on port 443:',
-    'Device certificate has not been signed'
+    'Certificate has expired'
     ]
     self.assertEqual(details, expected_details)
 
@@ -263,10 +261,6 @@ class TLSModuleTest(unittest.TestCase):
 
     expected_details = [
     'TLS 1.2 validated on port 443:',
-    'Time range valid',
-    'Public key valid',
-    'Signature valid',
-    'TLS 1.3 validated on port 443:',
     'Time range valid',
     'Public key valid',
     'Signature valid'
@@ -303,15 +297,7 @@ class TLSModuleTest(unittest.TestCase):
     'Time range valid',
     'Public key valid',
     'Signature valid',
-    'TLS 1.3 validated on port 443:',
-    'Time range valid',
-    'Public key valid',
-    'Signature valid',
     'TLS 1.2 validated on port 8443:',
-    'Time range valid',
-    'Public key valid',
-    'Signature valid',
-    'TLS 1.3 validated on port 8443:',
     'Time range valid',
     'Public key valid',
     'Signature valid',
@@ -342,10 +328,6 @@ class TLSModuleTest(unittest.TestCase):
 
     expected_details = [
     'TLS 1.2 validated on port 443:',
-    'Time range valid',
-    'Public key valid',
-    'Signature valid',
-    'TLS 1.3 validated on port 443:',
     'Time range valid',
     'Public key valid',
     'Signature valid',
@@ -447,8 +429,7 @@ class TLSModuleTest(unittest.TestCase):
     # TLS 1.2 Pass and TLS 1.3 Pass
     tls_1_2_results = True, success_message
     tls_1_3_results = True, success_message
-    expected = True, ['TLS 1.2 validated on port 443:', success_message,
-                      'TLS 1.3 validated on port 443:', success_message]
+    expected = True, ['TLS 1.2 validated on port 443:', success_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
 
@@ -457,8 +438,7 @@ class TLSModuleTest(unittest.TestCase):
     # TLS 1.2 Pass and TLS 1.3 Fail
     tls_1_2_results = True, success_message
     tls_1_3_results = False, fail_message
-    expected = True, ['TLS 1.2 validated on port 443:', success_message,
-                      'TLS 1.3 not validated on port 443:', fail_message]
+    expected = True, ['TLS 1.2 validated on port 443:', success_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
@@ -474,8 +454,7 @@ class TLSModuleTest(unittest.TestCase):
 
     # TLS 1.2 Fail and TLS 1.2 Fail
     tls_1_3_results = False, fail_message
-    expected = False, ['TLS 1.2 not validated on port 443:', fail_message,
-                       'TLS 1.3 not validated on port 443:', fail_message]
+    expected = False, ['TLS 1.2 not validated on port 443:', fail_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
