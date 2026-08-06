@@ -28,6 +28,7 @@ from common import logger, util, mqtt
 from common.statuses import TestrunStatus
 from net_orc.listener import Listener
 from net_orc.network_event import NetworkEvent
+from net_orc.arp_prober import ArpProber, STATIC_IP_ADDRESS
 from net_orc.network_validator import NetworkValidator
 from net_orc.ovs_control import OVSControl
 from net_orc.ip_control import IPControl
@@ -57,6 +58,7 @@ class NetworkOrchestrator:
     self._monitor_in_progress = False
     self._monitor_packets = []
     self._listener = None
+    self._arp_prober = None
     self._net_modules = []
 
     self._path = os.path.dirname(
@@ -159,6 +161,10 @@ class NetworkOrchestrator:
   def start_listener(self):
     LOGGER.debug('Starting network listener')
     self.get_listener().start_listener()
+    # Begin probing for statically addressed devices in parallel with the
+    # listener's DHCP-based detection.
+    if self._arp_prober is not None:
+      self._arp_prober.start()
 
   def stop(self, kill=False):
     """Stop the network orchestrator."""
@@ -202,6 +208,13 @@ class NetworkOrchestrator:
       # Ignore device if not registered
       return
 
+    # Clear any IP address carried over from a previous run. ip_addr persists on
+    # the device object across runs and is never otherwise reset, so a stale
+    # value would cause _device_has_ip to short-circuit the waiting phase before
+    # this run's DHCP lease or ARP probe response is observed. Resetting here
+    # ensures the transition to monitoring reflects only this-run detection.
+    device.ip_addr = None
+
     # Cleanup any old test files
     test_dir = os.path.join(RUNTIME_DIR, TEST_DIR)
     device_tests = os.listdir(test_dir)
@@ -219,6 +232,12 @@ class NetworkOrchestrator:
     packet_capture = sniff(iface=self._session.get_device_interface(),
                            timeout=self._session.get_startup_timeout(),
                            stop_filter=self._device_has_ip)
+
+    # The waiting phase has ended for this device (it obtained an IP or timed
+    # out), so stop probing.
+    if self._arp_prober is not None:
+      self._arp_prober.stop()
+
     wrpcap(os.path.join(device_runtime_dir, 'startup.pcap'), packet_capture)
 
     # Copy the device config file to the runtime directory
@@ -294,6 +313,30 @@ class NetworkOrchestrator:
 
     # TODO: Check if device is None
     device.ip_addr = packet[BOOTP].yiaddr
+
+  def _arp_response(self, hwsrc):
+    """Handle a device that answered our ARP probe for the mandated static IP
+    address. Mirrors _dhcp_lease_ack: assigns the static IP to the matching
+    registered device so the waiting phase can complete just as it would for a
+    device that obtained its address via DHCP."""
+    device = self._session.get_device(mac_addr=hwsrc)
+
+    # Ignore responses from devices that are not registered
+    if device is None:
+      return
+
+    # Only progress for the device the user configured. If the responder's MAC
+    # does not match the configured target MAC, do not assign the static IP.
+    target = self._session.get_target_device()
+    if target is not None and hwsrc.lower() != target.mac_addr.lower():
+      return
+
+    # Assign the mandated static IP once. The waiting-phase stop filter
+    # (_device_has_ip) detects this and the flow proceeds to monitoring.
+    if device.ip_addr is None:
+      device.ip_addr = STATIC_IP_ADDRESS
+      LOGGER.info(f'Device with mac addr {device.mac_addr} responded to ARP '
+                  f'probe with static IP address {STATIC_IP_ADDRESS}')
 
   def _start_device_monitor(self, device):
     """Start a timer until the steady state has been reached and
@@ -436,6 +479,11 @@ class NetworkOrchestrator:
                                           [NetworkEvent.DEVICE_DISCOVERED])
     self.get_listener().register_callback(self._dhcp_lease_ack,
                                           [NetworkEvent.DHCP_LEASE_ACK])
+    self.get_listener().register_callback(self._arp_response,
+                                          [NetworkEvent.ARP_RESPONSE])
+
+    # Prober for detecting devices configured with a static IP address
+    self._arp_prober = ArpProber(self._session.get_device_interface())
 
   def load_network_modules(self):
     """Load network modules from module_config.json."""
@@ -668,6 +716,11 @@ class NetworkOrchestrator:
   def restore_net(self):
 
     LOGGER.info('Clearing baseline network')
+
+    # Stop probing if it is still active (e.g. cancelled before a device was
+    # discovered).
+    if self._arp_prober is not None:
+      self._arp_prober.stop()
 
     if self.get_listener() is not None and self.get_listener().is_running():
       self.get_listener().stop_listener()
