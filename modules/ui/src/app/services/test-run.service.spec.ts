@@ -616,7 +616,7 @@ describe('TestRunService', () => {
     const spyObj = jasmine.createSpyObj('a', ['click', 'dispatchEvent']);
     spyOn(document, 'createElement').and.returnValue(spyObj);
 
-    service.downloadZip('localhost:8080/export/test', '');
+    service.downloadZip('localhost:8080/export/test', '', 'report');
     const req = httpTestingController.expectOne('localhost:8080/export/test');
     req.flush(new Blob());
     tick();

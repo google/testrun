@@ -402,5 +402,58 @@
         "id": 3
       }
     ]
+  },
+  {
+    "id": 7,
+    "question": "Does the device UI web dashboard have a mechanism to enforce the change of default passwords, SSH, Hardcoded Accounts Credentials and factory-default API keys upon first use?",
+    "validation": { "required": true },
+    "type": "select",
+    "options": [
+      { "id": 1, "text": "Yes, mandatory change required", "risk": "Limited" },
+      { "id": 2, "text": "Yes, but can be bypassed", "risk": "High" },
+      { "id": 3, "text": "No, default credentials remain", "risk": "High" },
+      { "id": 4, "text": "N/A (No password-based login)", "risk": "High" }
+    ]
+  },
+  {
+    "id": 8,
+    "question": "Does the device support encrypted management protocols (e.g., HTTPS, SSHv2, TLS 1.2, or TLS 1.3)?",
+    "validation": { "required": true },
+    "type": "select",
+    "options": [
+      { "id": 1, "text": "Yes, only encrypted protocols", "risk": "Limited" },
+      { "id": 2, "text": "Yes, but unencrypted protocols (HTTP/Telnet) are also available", "risk": "High" },
+      { "id": 3, "text": "No, only unencrypted protocols are supported", "risk": "High" }
+    ]
+  },
+  {
+    "id": 9,
+    "question": "How are firmware updates delivered and verified on the device?",
+    "validation": { "required": true },
+    "type": "select",
+    "options": [
+      { "id": 1, "text": "Automatic updates with cryptographic signature verification", "risk": "Limited" },
+      { "id": 2, "text": "Manual updates with cryptographic signature verification", "risk": "Limited" },
+      { "id": 3, "text": "Manual updates without signature verification", "risk": "High" },
+      { "id": 4, "text": "The device does not support firmware updates", "risk": "High" }
+    ]
+  },
+  {
+    "id": 10,
+    "question": "Does the device include physical tamper-resistant features?",
+    "validation": { "required": true },
+    "type": "select",
+    "options": [
+      {
+        "id": 1,
+        "text": "Yes, includes physical seals or chassis intrusion detection",
+        "risk": "Limited"
+      },
+      {
+        "id": 2,
+        "text": "No physical tamper protection",
+        "risk": "High"
+      }
+    ]
   }
 ]

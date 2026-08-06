@@ -14,7 +14,7 @@
 
 # Builder stage
 # Image name: testrun/base-test
-FROM python:3.10-slim AS builder
+FROM python:3.13-slim AS builder
 
 ARG MODULE_NAME=base
 ARG MODULE_DIR=modules/test/$MODULE_NAME
@@ -65,7 +65,7 @@ COPY $MODULE_DIR/usr/local/etc/oui.txt /usr/local/etc/oui.txt
 RUN wget https://standards-oui.ieee.org/oui.txt -O /usr/local/etc/oui.txt || echo "Unable to update the MAC OUI database"
 
 # Operational stage
-FROM python:3.10-slim
+FROM python:3.13-slim
 
 # Install common software
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq net-tools iputils-ping tzdata tcpdump iproute2 jq dos2unix nmap wget procps --fix-missing

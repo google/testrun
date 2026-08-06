@@ -32,13 +32,7 @@ $profile-item-container-gap: 8px;
   }
 }
 
-:host:has(.profile-item-container-expired) {
-  cursor: not-allowed;
-}
-
 .profile-item-container-expired {
-  pointer-events: none;
-  opacity: 0.5;
   .profile-item-info {
     .profile-item-icon,
     .profile-item-name,

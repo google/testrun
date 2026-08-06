@@ -33,6 +33,7 @@ import { of } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
 import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { Routes } from '../../model/routes';
 
 describe('VersionComponent', () => {
   let component: VersionComponent;
@@ -43,6 +44,8 @@ describe('VersionComponent', () => {
   const versionBehaviorSubject$ = new BehaviorSubject<Version | null>(null);
 
   beforeEach(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (<any>window).gtag = jasmine.createSpy('gtag');
     // @ts-expect-error data layer should be defined
     window.dataLayer = window.dataLayer || [];
     mockService = jasmine.createSpyObj(['getVersion', 'fetchVersion']);
@@ -101,6 +104,25 @@ describe('VersionComponent', () => {
     button.click();
 
     expect(openSpy).toHaveBeenCalled();
+  });
+
+  it('should emit navigateToRouteEvent when dialogResult contains a route', () => {
+    const navigateToRouteEventSpy = spyOn(
+      component.navigateToRouteEvent,
+      'emit'
+    );
+    const mockDialogResult = {
+      grant: true,
+      route: Routes.Devices,
+    };
+    spyOn(component.dialog, 'open').and.returnValue({
+      afterClosed: () => of(mockDialogResult),
+    } as MatDialogRef<typeof ConsentDialogComponent>);
+
+    component.openConsentDialog(VERSION);
+
+    expect(navigateToRouteEventSpy).toHaveBeenCalledTimes(1);
+    expect(navigateToRouteEventSpy).toHaveBeenCalledWith(Routes.Devices);
   });
 
   describe('update is not available', () => {

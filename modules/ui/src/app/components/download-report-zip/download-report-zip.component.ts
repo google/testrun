@@ -64,6 +64,8 @@ export class DownloadReportZipComponent
         report: this.report,
         export: this.export,
         isPilot: this.data?.device.test_pack === TestingType.Pilot,
+        device: this.data?.device,
+        started: this.data?.started,
       },
       autoFocus: true,
       hasBackdrop: true,

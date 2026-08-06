@@ -1,0 +1,87 @@
+name: Security DAST (OWASP ZAP)
+
+on:
+  schedule:
+    - cron: '0 2 * * 5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  dast_ui_scan:
+    name: OWASP ZAP UI Scan
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: 'dev'
+      - name: Install dependencies
+        shell: bash {0}
+        run: cmd/prepare
+      - name: Install Testrun
+        shell: bash {0}
+        run: TESTRUN_DIR=. cmd/install
+        timeout-minutes: 30
+      - name: Start Testrun
+        shell: bash {0}
+        run: |
+          sudo TESTRUN_DIR=. bin/testrun --single-intf &
+          sleep 30
+      - name: Verify Testrun is running
+        run: curl -v http://127.0.0.1:8080
+      - name: Run OWASP ZAP DAST scan
+        uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 #v0.15.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target: 'http://127.0.0.1:8080'
+          docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
+          cmd_options: '-a -I'
+          allow_issue_writing: true
+          issue_title: "Security: OWASP ZAP DAST Vulnerabilities detected"
+          fail_action: true
+          artifact_name: 'zap_dast_report'
+          rules_file_name: '.zap/rules.tsv'
+  dast_api_scan:
+    name: OWASP ZAP API SCAN
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: 'dev'
+      - name: Install dependencies
+        shell: bash {0}
+        run: cmd/prepare
+      - name: Install Testrun
+        shell: bash {0}
+        run: TESTRUN_DIR=. cmd/install
+        timeout-minutes: 30
+      - name: Start Testrun
+        shell: bash {0}
+        run: |
+          sudo TESTRUN_DIR=. bin/testrun --single-intf &
+          sleep 30
+      - name: Verify Testrun is running
+        run: curl -v http://127.0.0.1:8000/openapi.json
+      - name: Run OWASP ZAP API Scan
+        uses: zaproxy/action-api-scan@5158fe4d9d8fcc75ea204db81317cce7f9e5453d #v0.10.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          format: openapi
+          target: http://127.0.0.1:8000/openapi.json
+          docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
+          cmd_options: '-a -I'
+          allow_issue_writing: true
+          issue_title: "Security: OWASP ZAP DAST API alerts detected"
+          fail_action: true
+          artifact_name: 'zap_dast_api_report'
+          rules_file_name: '.zap/api-rules.tsv'
+
+
+        
+        
+        
+

@@ -5,5 +5,5 @@
 # User defined packages
 scapy==2.7.0
 pyshark==0.6
-aiohttp==3.13.5
+aiohttp==3.14.1
 ntplib==0.4.0

@@ -301,7 +301,7 @@ export class TestRunService {
       .pipe(map(() => true));
   }
 
-  downloadZip(url: string, profile: string) {
+  downloadZip(url: string, profile: string, name: string) {
     this.http
       .post(url, JSON.stringify({ profile }), {
         responseType: 'blob',
@@ -319,7 +319,7 @@ export class TestRunService {
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.target = '_blank';
-        link.download = fileName ?? 'report.zip';
+        link.download = fileName ?? `${name}.zip`;
         link.dispatchEvent(new MouseEvent('click'));
       });
   }

@@ -72,7 +72,11 @@ limitations under the License.
   <ng-template #itemTemplate let-entity="entity">
     <app-profile-item
       [profile]="entity"
-      [ngClass]="{ selected: entity.name === vm.selectedProfile?.name }"
+      [ngClass]="{
+        selected:
+          entity.name === vm.selectedProfile?.name &&
+          entity.created === vm.selectedProfile?.created,
+      }"
       (profileClicked)="profileClicked($event)">
     </app-profile-item>
   </ng-template>

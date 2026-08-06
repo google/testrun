@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { Routes } from './routes';
+
 export interface Version {
   installed_version: string;
   update_available: boolean;
@@ -23,4 +25,5 @@ export interface Version {
 
 export interface ConsentDialogResult {
   grant: boolean;
+  route?: Routes;
 }

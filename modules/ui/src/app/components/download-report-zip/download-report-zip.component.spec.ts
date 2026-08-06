@@ -25,6 +25,7 @@ import {
 import { RouterTestingModule } from '@angular/router/testing';
 import { Component } from '@angular/core';
 import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/testrun.mock';
+import { DeviceStatus } from '../../model/device';
 
 describe('DownloadReportZipComponent', () => {
   let component: DownloadReportZipComponent;
@@ -68,6 +69,14 @@ describe('DownloadReportZipComponent', () => {
             report: 'localhost:8080',
             export: 'localhost:8080',
             isPilot: false,
+            device: {
+              status: DeviceStatus.VALID,
+              manufacturer: 'Delta',
+              model: '03-DIN-CPU',
+              mac_addr: '01:02:03:04:05:06',
+              firmware: '1.2.2',
+            },
+            started: '2023-06-22T09:20:00.123Z',
           },
           autoFocus: true,
           hasBackdrop: true,

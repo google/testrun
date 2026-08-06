@@ -30,6 +30,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { of } from 'rxjs';
 import { NEW_VERSION, VERSION } from '../../../mocks/version.mock';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { Routes } from '../../../model/routes';
 
 describe('ConsentDialogComponent', () => {
   let component: ConsentDialogComponent;
@@ -72,7 +73,7 @@ describe('ConsentDialogComponent', () => {
     const confirmButton = compiled.querySelector(
       '.confirm-button'
     ) as HTMLButtonElement;
-    const dialogRes = { grant: true };
+    const dialogRes = { grant: true, route: undefined };
 
     confirmButton?.click();
 
@@ -88,9 +89,41 @@ describe('ConsentDialogComponent', () => {
     const confirmButton = compiled.querySelector(
       '.confirm-button'
     ) as HTMLButtonElement;
-    const dialogRes = { grant: false };
+    const dialogRes = { grant: false, route: undefined };
 
     confirmButton?.click();
+
+    expect(closeSpy).toHaveBeenCalledWith(dialogRes);
+
+    closeSpy.calls.reset();
+  });
+
+  it('should close dialog with devices route on device link click', () => {
+    component.optOut = true;
+    fixture.detectChanges();
+    const closeSpy = spyOn(component.dialogRef, 'close');
+    const devicesLink = compiled.querySelector(
+      '#devices-link'
+    ) as HTMLButtonElement;
+    const dialogRes = { grant: false, route: Routes.Devices };
+
+    devicesLink?.click();
+
+    expect(closeSpy).toHaveBeenCalledWith(dialogRes);
+
+    closeSpy.calls.reset();
+  });
+
+  it('should close dialog with risk profiles route on risk profiles link click', () => {
+    component.optOut = true;
+    fixture.detectChanges();
+    const closeSpy = spyOn(component.dialogRef, 'close');
+    const devicesLink = compiled.querySelector(
+      '#risk-profiles-link'
+    ) as HTMLButtonElement;
+    const dialogRes = { grant: false, route: Routes.RiskAssessment };
+
+    devicesLink?.click();
 
     expect(closeSpy).toHaveBeenCalledWith(dialogRes);
 

@@ -1,7 +1,7 @@
 # Dependencies to user defined packages
 # Package dependencies should always be defined before the user defined
 # packages to prevent auto-upgrades of stable dependencies
-bacpypes3==0.0.104
+bacpypes3==0.0.106
 colorama==0.4.6
 
 # User defined packages
@@ -11,4 +11,4 @@ BAC0==2025.9.15
 pytz==2024.2
 
 # Required for Modbus protocol tests
-pymodbus==3.7.4
+pymodbus==3.13.0

@@ -54,7 +54,7 @@ class ProtocolModule(TestModule):
     if local_address:
       local_address += '/24'
       self._get_bacnet_loop().run_until_complete(
-          self._bacnet.discover(local_address))
+          self._bacnet.discover(local_address, self._device_ipv4_addr))
       result = self._bacnet.validate_device()
       if result[0]:
         self._supports_bacnet = True

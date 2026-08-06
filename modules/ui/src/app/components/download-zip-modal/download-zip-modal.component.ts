@@ -33,6 +33,7 @@ import {
 import { DownloadReportComponent } from '../download-report/download-report.component';
 import { Subject, takeUntil, timer } from 'rxjs';
 import { FocusManagerService } from '../../services/focus-manager.service';
+import { Device } from '../../model/device';
 
 interface DialogData {
   profiles: Profile[];
@@ -41,6 +42,8 @@ interface DialogData {
   report: string | null;
   export: string | null;
   isPilot?: boolean;
+  device: Device;
+  started: string | null;
 }
 
 export enum DialogCloseAction {
@@ -56,7 +59,6 @@ export interface DialogCloseResult {
 
 @Component({
   selector: 'app-download-zip-modal',
-
   imports: [
     CommonModule,
     MatDialogActions,
@@ -133,7 +135,8 @@ export class DownloadZipModalComponent
         ) {
           this.testRunService.downloadZip(
             this.getZipLink(this.data),
-            result.profile
+            result.profile,
+            this.getZipName(this.data)
           );
           if (this.data.isPilot) {
             // @ts-expect-error data layer is not null
@@ -188,5 +191,9 @@ export class DownloadZipModalComponent
     return this.testRunService.getReportLink(
       data.export || data.report!.replace('report', 'export')
     );
+  }
+
+  private getZipName(data: DialogData) {
+    return `${data.device.manufacturer}_${data.device.model}_${data.device.firmware}_${data.started}`;
   }
 }

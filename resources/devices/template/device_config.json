@@ -2,7 +2,53 @@
   "manufacturer": "Manufacturer X",
   "model": "Device X",
   "mac_addr": "aa:bb:cc:dd:ee:ff",
-  "max_device_tests": 0,
+  "status": "Valid",
+  "type": "Type X",
+  "technology": "Technology X",
+  "test_pack": "Pilot Assessment",
+  "firmware": "Firmware X",
+  "additional_info":[
+    {
+      "question":"What type of device is this?",
+      "answer":""
+    },
+    {
+      "question":"Please select the technology this device falls into",
+      "answer":""
+    },
+    {
+      "question":"Does your device process any sensitive information? ",
+      "answer":""
+    },
+    {
+      "question":"Can all non-essential services be disabled on your device?",
+      "answer":""
+    },
+    {
+      "question":"Is there a second IP port on the device?",
+      "answer":""
+    },
+    {
+      "question":"Can the second IP port on your device be disabled?",
+      "answer":""
+    },
+    {
+      "question":"Does the device UI web dashboard have a mechanism to enforce the change of default passwords, SSH, Hardcoded Accounts Credentials and factory-default API keys upon first use?",
+      "answer":""
+    },
+    {
+      "question":"Does the device support encrypted management protocols (e.g., HTTPS, SSHv2, TLS 1.2, or TLS 1.3)?",
+      "answer":""
+    },
+    {
+      "question":"How are firmware updates delivered and verified on the device?",
+      "answer":""
+    },
+    {
+      "question":"Does the device include physical tamper-resistant features?",
+      "answer":""
+    }
+  ],
   "test_modules": {
     "dns": {
       "enabled": true
@@ -12,9 +58,6 @@
     },
     "ntp": {
       "enabled": true
-    },
-    "baseline": {
-      "enabled": false
     },
     "services": {
       "enabled": true

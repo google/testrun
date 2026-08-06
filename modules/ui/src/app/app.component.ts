@@ -324,6 +324,10 @@ export class AppComponent implements AfterViewInit {
     }
   }
 
+  navigateToRoute(route: Routes): void {
+    this.route.navigate([route]);
+  }
+
   private subscribeToNavigation() {
     this.route.events
       .pipe(

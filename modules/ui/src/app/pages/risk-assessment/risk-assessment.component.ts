@@ -138,16 +138,14 @@ export class RiskAssessmentComponent
   }
 
   async profileClicked(profile: Profile | null = null) {
-    if (profile === null || profile.status !== ProfileStatus.EXPIRED) {
-      await this.openForm(profile);
-    }
+    await this.openForm(profile);
   }
 
   async openForm(profile: Profile | null = null) {
     this.isOpenProfileForm = true;
     this.store.updateSelectedProfile(profile);
     await this.liveAnnouncer.announce('Risk assessment questionnaire');
-    this.store.setFocusOnProfileForm();
+    this.store.setFocusOnProfileForm(profile?.status);
     this.cd.detectChanges();
   }
 
@@ -161,6 +159,7 @@ export class RiskAssessmentComponent
     copyOfProfile.name = this.getCopiedProfileName(profile.name);
     delete copyOfProfile.created; // new profile is not create yet
     delete copyOfProfile.risk;
+    delete copyOfProfile.rename;
     copyOfProfile.status = ProfileStatus.COPY;
     return copyOfProfile;
   }
@@ -189,6 +188,7 @@ export class RiskAssessmentComponent
         if (deleteProfile) {
           this.store.deleteProfile({
             name: profileName,
+            created: profile.created,
             onDelete: (idx = 0) => {
               this.closeFormAfterDelete(profileName, selectedProfile);
               timer(100).subscribe(() => {
@@ -273,7 +273,11 @@ export class RiskAssessmentComponent
   }
 
   deleteCopy(copyOfProfile: Profile, profiles: Profile[]) {
-    this.store.removeProfile(copyOfProfile.name, profiles);
+    this.store.removeProfile(
+      copyOfProfile.name,
+      copyOfProfile.created,
+      profiles
+    );
     this.cd.markForCheck();
   }
   setCopy(copyOfProfile: Profile, profiles: Profile[]) {
@@ -288,10 +292,6 @@ export class RiskAssessmentComponent
       // unsaved copy of profile can't have any action
       if (profile.status === ProfileStatus.COPY) {
         return [];
-      }
-      // expired profiles can only be removed
-      if (profile.status === ProfileStatus.EXPIRED) {
-        return [{ action: ProfileAction.Delete, icon: 'delete' }];
       }
       return actions;
     };

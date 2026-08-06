@@ -3,186 +3,195 @@
     "question": "How will this device be used at Google?",
     "description": "Describe your use case. Add links to user journey diagrams and TDD if available.",
     "type": "text-long",
-    "validation": {
-      "max": "512",
-      "required": true
-    }
+    "validation": { "max": "512", "required": true }
   },
   {
     "question": "Is this device going to be managed by Google or a third party?",
     "description": "A manufacturer or supplier is considered third party in this case",
     "type": "select",
     "options": [
-      {
-        "text": "Google",
-        "risk": "Limited"
-      },
-      {
-        "text": "Third Party",
-        "risk": "High"
-      }
+      { "text": "Google", "risk": "Limited" },
+      { "text": "Third Party", "risk": "High" }
     ],
-    "validation": {
-      "required": true
-    }
+    "validation": { "required": true }
   },
   {
     "question": "Will the third-party device administrator be able to grant access to authorized Google personnel upon request?",
     "type": "select",
     "options": [
-      {
-        "text": "Yes"
-      },
-      {
-        "text": "No"
-      },
-      {
-        "text": "N/A"
-      }
+      { "text": "Yes" },
+      { "text": "No" },
+      { "text": "N/A" }
     ],
     "default": "N/A",
-    "validation": {
-      "required": true
-    }
+    "validation": { "required": true }
   },
   {
     "category": "Data Transmission",
     "question": "Which of the following statements are true about this device?",
-    "description": "This tells us about the types of data that are transmitted from this device and how the transmission is performed from a technical standpoint.",
+    "description": "Types of data transmitted and technical transmission methods.",
     "type": "select-multiple",
     "options": [
-      {
-        "text": "PII/PHI, confidential/sensitive business data, Intellectual Property and Trade Secrets, Critical Infrastructure and Identity Assets to a domain outside Alphabet's ownership",
-        "risk": "High"
-      },
-      {
-        "text": "Data transmission occurs across less-trusted networks (e.g. the internet).",
-        "risk": "High"
-      },
-      {
-        "text": "A failure in data transmission would likely have a substantial negative impact (<a href='https://www.rra.rocks/docs/standard_levels#levels-definitions' target='_blank'>https://www.rra.rocks/docs/standard_levels#levels-definitions</a>)",
-        "risk": "High"
-      },
-      {
-        "text": "A confidentiality breach during transmission would have a substantial negative impact",
-        "risk": "High"
-      },
-      {
-        "text": "The device does not encrypt data during transmission",
-        "risk": "High"
-      },
-      {
-        "text": "None of the above",
-        "risk": "Limited"
-      }
+      { "text": "PII/PHI, confidential/sensitive business data, Intellectual Property and Trade Secrets, Critical Infrastructure and Identity Assets to a domain outside Alphabet's ownership", "risk": "High" },
+      { "text": "Data transmission occurs across less-trusted networks (e.g. the internet).", "risk": "High" },
+      { "text": "A failure in data transmission would likely have a substantial negative impact", "risk": "High" },
+      { "text": "A confidentiality breach during transmission would have a substantial negative impact", "risk": "High" },
+      { "text": "The device does not encrypt data during transmission", "risk": "High" },
+      { "text": "None of the above", "risk": "Limited" }
     ],
-    "validation": {
-      "required": true
-    }
+    "validation": { "required": true }
   },
   {
     "category": "Data Transmission",
     "question": "Does the network protocol assure server-to-client identity verification?",
     "type": "select",
     "options": [
-      {
-        "text": "Yes",
-        "risk": "Limited"
-      },
-      {
-        "text": "No",
-        "risk": "High"
-      },
-      {
-        "text": "I don't know",
-        "risk": "High"
-      }
-      
+      { "text": "Yes", "risk": "Limited" },
+      { "text": "No", "risk": "High" },
+      { "text": "I don't know", "risk": "High" }
     ],
-    "validation": {
-      "required": true
-    }
+    "validation": { "required": true }
   },
   {
     "category": "Remote Operation",
     "question": "Click the statements that best describe the characteristics of this device.",
-    "description": "This tells us about how this device is managed remotely.",
+    "description": "Remote management and access characteristics.",
     "type": "select-multiple",
     "options": [
-      {
-        "text": "PII/PHI, or confidential business data is accessible from the device without authentication",
-        "risk": "High"
-      },
-      {
-        "text": "Unrecoverable actions (e.g. disk wipe) can be performed remotely",
-        "risk": "High"
-      },
-      {
-        "text": "Authentication is not required for remote access",
-        "risk": "High"
-      },
-      {
-        "text": "The management interface is accessible from the public internet",
-        "risk": "High"
-      },
-      {
-        "text": "Static credentials are used for administration",
-        "risk": "High"
-      },
-      {
-        "text": "None of the above",
-        "risk": "Limited"
-      }
+      { "text": "PII/PHI, or confidential business data is accessible from the device without authentication", "risk": "High" },
+      { "text": "Unrecoverable actions (e.g. disk wipe) can be performed remotely", "risk": "High" },
+      { "text": "Authentication is not required for remote access", "risk": "High" },
+      { "text": "The management interface is accessible from the public internet", "risk": "High" },
+      { "text": "Static credentials are used for administration", "risk": "High" },
+      { "text": "None of the above", "risk": "Limited" }
     ],
-    "validation": {
-      "required": true
-    }
+    "validation": { "required": true }
   },
   {
     "category": "Operating Environment",
     "question": "Are any of the following statements true about this device?",
-    "description": "This informs us about what other systems and processes this device is a part of.",
+    "description": "Context of the device within larger systems and processes.",
+    "type": "select-multiple",
+    "options": [
+      { "text": "The device monitors an environment for active risks to human life.", "risk": "High" },
+      { "text": "The device is used to convey people, or critical property.", "risk": "High" },
+      { "text": "The device controls robotics in human-accessible spaces.", "risk": "High" },
+      { "text": "The device controls physical access systems.", "risk": "High" },
+      { "text": "The device is involved in processes required by regulations, or compliance.", "risk": "High" },
+      { "text": "The device's failure would cause faults in other high-criticality processes.", "risk": "High" },
+      { "text": "None of the above", "risk": "Limited" }
+    ],
+    "validation": { "required": true }
+  },
+  {
+    "category": "Wireless Security",
+    "question": "What types of wireless connectivity does this device support or utilize? (Select all that apply)",
+    "description": "Select all active or physically present wireless interfaces.",
     "type": "select-multiple",
     "options": [
       {
-        "text": "The device monitors an environment for active risks to human life.",
+        "text": "Cellular / WWAN (e.g., LTE, 5G, NB-IoT, eSIM)",
         "risk": "High"
       },
       {
-        "text": "The device is used to convey people, or critical property.",
+        "text": "LPWAN / Long-Range RF (e.g., LoRaWAN)",
         "risk": "High"
       },
       {
-        "text": "The device controls robotics in human-accessible spaces.",
+        "text": "Wi-Fi / WLAN - broadcasts its own network (acts as an Access Point / Wi-Fi Direct)",
         "risk": "High"
       },
       {
-        "text": "The device controls physical access systems.",
-        "risk": "High"
+        "text": "Wi-Fi / WLAN - connects as a standard client to an existing network",
+        "risk": "Limited"
       },
       {
-        "text": "The device is involved in processes required by regulations, or compliance. (ex. privacy, security, safety regulations)",
-        "risk": "High"
+        "text": "Short-range RF (e.g., Bluetooth, BLE, Zigbee)",
+        "risk": "Limited"
       },
       {
-        "text": "The device's failure would cause faults in other high-criticality processes.",
-        "risk": "High"
-      },
-      {
-        "text": "None of the above",
+        "text": "None (Hardwired Ethernet or serial connections only)",
         "risk": "Limited"
       }
     ],
     "validation": {
       "required": true
     }
+
+  },
+  {
+    "category": "Physical Security",
+    "question": "Are physical debug interfaces (JTAG, UART, SWD) disabled or physically inaccessible?",
+    "type": "select",
+    "options": [
+      { "text": "Yes, disabled in hardware/firmware", "risk": "Limited" },
+      { "text": "No, ports are active and accessible", "risk": "High" }
+    ],
+    "validation": { "required": true }
+  },
+  {
+    "category": "Authentication",
+    "question": "Does the device support integration with Google's SSO or MFA for administrative access?",
+    "type": "select",
+    "options": [
+      { "text": "Yes, supports Google’s SSO or MFA", "risk": "Limited" },
+      { "text": "No, uses local unique or shared passwords", "risk": "High" }
+    ],
+    "validation": { "required": true }
+  },
+  {
+    "category": "Software Integrity",
+    "question": "Is firmware cryptographically signed and verified during the boot process?",
+    "type": "select",
+    "options": [
+      { "text": "Yes, verified Secure Boot", "risk": "Limited" },
+      { "text": "No signing used", "risk": "High" }
+    ],
+    "validation": { "required": true }
+  },
+  {
+    "category": "Vulnerability Management",
+    "question": "How frequently are security patches released and applied to this device?",
+    "type": "select",
+    "options": [
+      { "text": "Automatically within 30 days of release", "risk": "Limited" },
+      { "text": "Rarely or no patch support", "risk": "High" }
+    ],
+    "validation": { "required": true }
+  },
+  {
+    "category": "Privacy",
+    "question": "Does the device include audio or video recording capabilities?",
+    "type": "select",
+    "options": [
+      { "text": "No", "risk": "Limited" },
+      { "text": "Yes", "risk": "High" }
+    ],
+    "validation": { "required": true }
+  },
+  {
+    "category": "Logging",
+    "question": "Does the device generate security audit logs (e.g., login attempts, config changes)?",
+    "type": "select",
+    "options": [
+      { "text": "Yes", "risk": "Limited" },
+      { "text": "No", "risk": "High" }
+    ],
+    "validation": { "required": true }
+  },
+  {
+    "question": "Does the device undergo regular third-party penetration testing?",
+    "type": "select",
+    "options": [
+      { "text": "Yes", "risk": "Limited" },
+      { "text": "No", "risk": "High" }
+    ],
+    "validation": { "required": true }
   },
   {
     "question": "Comments",
     "description": "Anything else to share?",
     "type": "text-long",
-    "validation": {
-      "max": "512"
-    }
+    "validation": { "max": "512" }
   }
 ]

@@ -1,0 +1,7 @@
+2	IGNORE	Private IP Disclosure
+90004	IGNORE	Cross-Origin-Resource-Policy
+90005	IGNORE	Sec-Fetch HEADERS Missing
+10011	IGNORE	Cookie Without Secure Flag
+10021	IGNORE	X-Content-Type-Options Header Missing
+10049	IGNORE	cacheable content
+100000	IGNORE

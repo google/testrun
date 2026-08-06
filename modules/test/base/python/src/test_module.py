@@ -129,12 +129,24 @@ class TestModule:
     return None
 
   def run_tests(self):
-
+    tests = self._get_tests()
     if self._config['config']['network']:
       self._device_ipv4_addr = self._get_device_ipv4()
-      LOGGER.info('Resolved device IP: ' + str(self._device_ipv4_addr))
-
-    tests = self._get_tests()
+      if self._device_ipv4_addr is not None:
+        LOGGER.info('Resolved device IP: ' + str(self._device_ipv4_addr))
+      else:
+        LOGGER.error('Could not resolve device IP address.')
+        now_iso = datetime.now().isoformat()
+        for test in tests:
+          test['start'] = now_iso
+          test['end'] = now_iso
+          test['duration'] = str(datetime.fromisoformat(test['end']) -
+                                 datetime.fromisoformat(test['start']))
+          test['result'] = TestResult.ERROR
+          test['description'] = 'Could not resolve device IP address'
+        json_results = json.dumps({'results': tests}, indent=2)
+        self._write_results(json_results)
+        return
     for test in tests:
       test_method_name = '_' + test['name'].replace('.', '_')
       result = None
