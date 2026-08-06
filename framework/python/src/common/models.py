@@ -171,22 +171,22 @@ class DeviceWithReport():
 class Host():
   """Testrun host metadata"""
   python_version: str
-  os: str | None = None
-  location: str | None = None
+  linux_env: str | None = ''
+  location: str | None = ''
 
   @classmethod
   def get_host_metadata(cls) -> 'Host':
     """Returns the host metadata as a Host object"""
     return cls(
       python_version=platform.python_version(),
-      os=distro.name(pretty=True)
+      linux_env=distro.name(pretty=True)
       )
 
   def to_dict(self) -> Mapping:
     """Returns the host metadata as a python dictionary"""
     host_json = {}
     host_json['python_version'] = self.python_version
-    host_json['os'] = self.os
+    host_json['linux_env'] = self.linux_env
     host_json['location'] = self.location
     return host_json
 
