@@ -21,6 +21,7 @@ export interface Device {
   mac_addr: string;
   test_modules?: TestModules;
   firmware?: string;
+  kernel?: string;
   status?: DeviceStatus;
   type?: string;
   technology?: string;

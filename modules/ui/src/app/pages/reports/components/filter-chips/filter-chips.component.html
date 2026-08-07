@@ -20,21 +20,15 @@ limitations under the License.
         tabindex="0"
         class="filter-chip"
         (removed)="clearFilter(item.key)">
-        @if (item.key === 'deviceInfo') {
-          Device contains "{{ item.value }}"
-        }
-        @if (item.key === 'deviceFirmware') {
-          Firmware contains "{{ item.value }}"
-        }
-        @if (item.key !== 'deviceFirmware' && item.key !== 'deviceInfo') {
-          {{ item.value }}
-        }
+        {{ getFilterChipLabel(item.key, item.value) }}
         <button
+          type="button"
           class="filter-chip-remove"
-          [attr.aria-label]="'clear filter ' + item.value"
-          matChipRemove
-          [tabIndex]="0">
-          <mat-icon fontSet="material-icons-outlined">close</mat-icon>
+          [attr.aria-label]="getRemoveFilterAriaLabel(item.key, item.value)"
+          matChipRemove>
+          <mat-icon fontSet="material-icons-outlined" aria-hidden="true"
+            >close</mat-icon
+          >
         </button>
       </mat-chip-row>
     }
@@ -42,12 +36,12 @@ limitations under the License.
   <div
     tabindex="0"
     mat-chip-row
-    role="row"
+    role="button"
     (click)="clearAllFilters()"
     (keydown.enter)="clearAllFilters()"
     (keydown.space)="clearAllFilters()"
     aria-label="Clear all filters"
     class="clear-button">
-    <div class="clear-button-label" [tabIndex]="0">Clear all filters</div>
+    <div class="clear-button-label">Clear all filters</div>
   </div>
 </mat-chip-set>
