@@ -143,21 +143,21 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   getLocation(data: HistoryTestrun | TestrunReport): string | null | undefined {
-    return data.host?.location || data.location || data.device?.location;
+    return data.host?.location;
   }
 
   getLinuxEnv(data: HistoryTestrun | TestrunReport): string | null | undefined {
-    return data.host?.linux_env || data.linux_env || data.device?.linux_env;
+    return data.host?.linux_env;
   }
 
   getKernel(data: HistoryTestrun | TestrunReport): string | null | undefined {
-    return data.device?.kernel || data.kernel;
+    return data.device?.kernel;
   }
 
   getPythonVersion(
     data: HistoryTestrun | TestrunReport
   ): string | null | undefined {
-    return data.host?.python_version || data.python_version;
+    return data.host?.python_version;
   }
 
   applySearchQuery() {

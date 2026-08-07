@@ -368,9 +368,6 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
       data.host?.location,
       data.host?.linux_env,
       data.host?.python_version,
-      data.location || data.device?.location,
-      data.kernel || data.device?.kernel,
-      data.linux_env || data.device?.linux_env,
     ];
 
     return searchableFields.some(

@@ -22,8 +22,6 @@ export interface Device {
   test_modules?: TestModules;
   firmware?: string;
   kernel?: string;
-  location?: string;
-  linux_env?: string;
   status?: DeviceStatus;
   type?: string;
   technology?: string;

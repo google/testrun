@@ -37,10 +37,6 @@ export interface TestrunReport {
   export: string;
   folder_name: string;
   delete: string;
-  location?: string | null;
-  kernel?: string | null;
-  linux_env?: string | null;
-  python_version?: string | null;
 }
 
 export type TestReportsList = TestrunReport[];
