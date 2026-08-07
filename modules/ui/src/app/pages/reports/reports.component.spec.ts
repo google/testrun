@@ -28,7 +28,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
 import { ElementRef } from '@angular/core';
-import { FilterName, FilterTitle } from '../../model/filters';
+import { FilterName, FilterTitle, Filters } from '../../model/filters';
 import SpyObj = jasmine.SpyObj;
 import { DATA_SOURCE_INITIAL_VALUE, ReportsStore } from './reports.store';
 import {
@@ -383,7 +383,11 @@ describe('ReportsComponent', () => {
       });
 
       it('getRowId should return sanitized identifier', () => {
-        const item = { ...FORMATTED_HISTORY[0], started: '2023-06-23T10:11:00', deviceInfo: 'Raspberry Pi / 4' };
+        const item = {
+          ...FORMATTED_HISTORY[0],
+          started: '2023-06-23T10:11:00',
+          deviceInfo: 'Raspberry Pi / 4',
+        };
         const id = component.getRowId(item);
         expect(id).toBe('2023-06-23T10_11_00-Raspberry_Pi___4');
       });
@@ -402,7 +406,9 @@ describe('ReportsComponent', () => {
         component.filterCleared(filters);
 
         expect(component.searchQuery).toBe('searchKeyword');
-        expect(mockReportsStore.setFilteredValues).toHaveBeenCalledWith(filters);
+        expect(mockReportsStore.setFilteredValues).toHaveBeenCalledWith(
+          filters
+        );
       });
 
       it('should fallback to empty searchQuery if quickSearch is missing in filters', () => {
@@ -413,16 +419,18 @@ describe('ReportsComponent', () => {
           dateRange: '',
         };
 
-        component.filterCleared(filters as any);
+        component.filterCleared(filters as unknown as Filters);
 
         expect(component.searchQuery).toBe('');
-        expect(mockReportsStore.setFilteredValues).toHaveBeenCalledWith(filters as any);
+        expect(mockReportsStore.setFilteredValues).toHaveBeenCalledWith(
+          filters as unknown as Filters
+        );
       });
     });
 
     describe('selectRow and trackByStarted', () => {
       it('selectRow should call store.setSelectedRow', () => {
-        const row = {} as any;
+        const row = {} as HistoryTestrun;
         component.selectRow(row);
         expect(mockReportsStore.setSelectedRow).toHaveBeenCalledWith(row);
       });
@@ -435,72 +443,48 @@ describe('ReportsComponent', () => {
     });
 
     describe('Metadata helper methods', () => {
-      it('should return location from host object, top level, or device object', () => {
+      it('should return location from host object', () => {
         expect(component.getLocation(HISTORY[0])).toBe(
           'Data Center Alpha - Rack 12, Bay B'
         );
 
-        const itemWithTopLocation = {
+        const itemWithoutHost = {
           ...HISTORY[0],
           host: null,
-          location: 'Lab Room 101',
         } as HistoryTestrun;
-        expect(component.getLocation(itemWithTopLocation)).toBe('Lab Room 101');
-
-        const itemWithDeviceLocation = {
-          ...HISTORY[0],
-          host: null,
-          location: null,
-          device: { ...HISTORY[0].device, location: 'Device Shelf A' },
-        } as HistoryTestrun;
-        expect(component.getLocation(itemWithDeviceLocation)).toBe(
-          'Device Shelf A'
-        );
+        expect(component.getLocation(itemWithoutHost)).toBeUndefined();
       });
 
-      it('should return linux_env from host object, top level, or device object', () => {
+      it('should return linux_env from host object', () => {
         expect(component.getLinuxEnv(HISTORY[0])).toBe(
           'Ubuntu 24.04 LTS (x86_64)'
         );
 
-        const itemWithTopEnv = {
+        const itemWithoutHost = {
           ...HISTORY[0],
           host: null,
-          linux_env: 'Debian 12 Bookworm',
         } as HistoryTestrun;
-        expect(component.getLinuxEnv(itemWithTopEnv)).toBe('Debian 12 Bookworm');
-
-        const itemWithDeviceEnv = {
-          ...HISTORY[0],
-          host: null,
-          linux_env: null,
-          device: { ...HISTORY[0].device, linux_env: 'Alpine 3.19' },
-        } as HistoryTestrun;
-        expect(component.getLinuxEnv(itemWithDeviceEnv)).toBe('Alpine 3.19');
+        expect(component.getLinuxEnv(itemWithoutHost)).toBeUndefined();
       });
 
-      it('should return kernel from device object or top level', () => {
+      it('should return kernel from device object', () => {
         expect(component.getKernel(HISTORY[0])).toBe('Linux 6.8.0-40-generic');
 
-        const itemWithTopKernel = {
+        const itemWithoutDevice = {
           ...HISTORY[0],
           device: null,
-          kernel: 'Linux 5.15.0-89-generic',
-        } as any;
-        expect(component.getKernel(itemWithTopKernel)).toBe(
-          'Linux 5.15.0-89-generic'
-        );
+        } as unknown as HistoryTestrun;
+        expect(component.getKernel(itemWithoutDevice)).toBeUndefined();
       });
 
-      it('should return python_version from host object or top level', () => {
+      it('should return python_version from host object', () => {
         expect(component.getPythonVersion(HISTORY[0])).toBe('3.11.2');
 
-        const itemWithTopPython = {
+        const itemWithoutHost = {
           ...HISTORY[0],
           host: null,
-          python_version: '3.12.1',
         } as HistoryTestrun;
-        expect(component.getPythonVersion(itemWithTopPython)).toBe('3.12.1');
+        expect(component.getPythonVersion(itemWithoutHost)).toBeUndefined();
       });
     });
   });

@@ -19,7 +19,9 @@ import SpyObj = jasmine.SpyObj;
 import { TestBed } from '@angular/core/testing';
 import { skip, take } from 'rxjs';
 import { of } from 'rxjs/internal/observable/of';
-import { ReportsStore } from './reports.store';
+import { ReportsComponentState, ReportsStore } from './reports.store';
+import { DateRange } from '../../model/filters';
+import { HistoryTestrun } from '../../model/testrun-status';
 import {
   EMPTY_FILTERS,
   FILTERS,
@@ -388,12 +390,22 @@ describe('ReportsStore', () => {
     describe('sortingDataAccessor and formatting helpers', () => {
       it('sortingDataAccessor should handle string and non-string values', () => {
         reportsStore.setDataSource([...HISTORY]);
-        const dataSource = (reportsStore as any).get().dataSource;
+        const dataSource = (
+          reportsStore as unknown as { get: () => ReportsComponentState }
+        ).get().dataSource;
 
-        expect(dataSource.sortingDataAccessor({ deviceInfo: 'Raspberry Pi' }, 'deviceInfo')).toBe(
-          'raspberry pi'
-        );
-        expect(dataSource.sortingDataAccessor({ count: 123 }, 'count')).toBe(123);
+        expect(
+          dataSource.sortingDataAccessor(
+            { deviceInfo: 'Raspberry Pi' } as HistoryTestrun,
+            'deviceInfo'
+          )
+        ).toBe('raspberry pi');
+        expect(
+          dataSource.sortingDataAccessor(
+            { count: 123 } as unknown as HistoryTestrun,
+            'count'
+          )
+        ).toBe(123);
       });
 
       it('should handle Pilot test pack and non-complete qualification in test results', done => {
@@ -415,7 +427,10 @@ describe('ReportsStore', () => {
           result: null,
         };
 
-        reportsStore.setDataSource([pilotItem as any, incompleteQualItem as any]);
+        reportsStore.setDataSource([
+          pilotItem as unknown as HistoryTestrun,
+          incompleteQualItem as unknown as HistoryTestrun,
+        ]);
 
         reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
           expect(vm.dataSource.data[0].testResult).toBe('In Progress');
@@ -431,7 +446,9 @@ describe('ReportsStore', () => {
           finished: null,
         };
 
-        reportsStore.setDataSource([itemWithoutDates as any]);
+        reportsStore.setDataSource([
+          itemWithoutDates as unknown as HistoryTestrun,
+        ]);
 
         reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
           expect(vm.dataSource.data[0].duration).toBe('');
@@ -447,7 +464,7 @@ describe('ReportsStore', () => {
         reportsStore.setFilteredValuesDateRange({
           start: '2023-06-20T00:00:00Z',
           end: '2023-06-25T23:59:59Z',
-        } as any);
+        } as unknown as DateRange);
 
         reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
           expect(vm.dataSource.filteredData.length).toBe(2);
@@ -461,7 +478,7 @@ describe('ReportsStore', () => {
         reportsStore.setFilteredValuesDateRange({
           start: '2024-01-01T00:00:00Z',
           end: '2024-01-05T23:59:59Z',
-        } as any);
+        } as unknown as DateRange);
 
         reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
           expect(vm.dataSource.filteredData.length).toBe(0);

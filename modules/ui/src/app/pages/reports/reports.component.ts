@@ -115,7 +115,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   getRowId(data: HistoryTestrun | TestrunReport): string {
     const rawId =
-      (data as any)?.id ||
+      (data as { id?: string })?.id ||
       `${data.started || ''}-${(data as HistoryTestrun).deviceInfo || data.device?.model || ''}`;
     return rawId.toString().replace(/[^a-zA-Z0-9_-]/g, '_');
   }
