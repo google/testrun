@@ -52,13 +52,7 @@ import { DeleteReportComponent } from './components/delete-report/delete-report.
 import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
 import { EmptyMessageComponent } from '../../components/empty-message/empty-message.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import {
-  animate,
-  state,
-  style,
-  transition,
-  trigger,
-} from '@angular/animations';
+import { state, style, trigger } from '@angular/animations';
 
 @Component({
   selector: 'app-history',
@@ -91,14 +85,11 @@ import {
         style({ height: '0px', minHeight: '0', display: 'none' })
       ),
       state('expanded', style({ height: '*' })),
-      transition(
-        'expanded <=> collapsed',
-        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')
-      ),
     ]),
   ],
 })
 export class ReportsComponent implements OnInit, OnDestroy {
+  EMPTY_DETAIL_TEXT = 'Could not fetch details';
   private testRunService = inject(TestRunService);
   private datePipe = inject(DatePipe);
   private liveAnnouncer = inject(LiveAnnouncer);
@@ -122,6 +113,13 @@ export class ReportsComponent implements OnInit, OnDestroy {
   public expandedRows: Set<HistoryTestrun> = new Set<HistoryTestrun>();
   public searchQuery: string = '';
 
+  getRowId(data: HistoryTestrun | TestrunReport): string {
+    const rawId =
+      (data as any)?.id ||
+      `${data.started || ''}-${(data as HistoryTestrun).deviceInfo || data.device?.model || ''}`;
+    return rawId.toString().replace(/[^a-zA-Z0-9_-]/g, '_');
+  }
+
   toggleRowExpand(data: HistoryTestrun, event?: Event) {
     if (event) {
       event.preventDefault();
@@ -129,8 +127,14 @@ export class ReportsComponent implements OnInit, OnDestroy {
     }
     if (this.expandedRows.has(data)) {
       this.expandedRows.delete(data);
+      this.liveAnnouncer.announce(
+        `Metadata collapsed for ${data.deviceInfo || 'test run'}`
+      );
     } else {
       this.expandedRows.add(data);
+      this.liveAnnouncer.announce(
+        `Metadata expanded for ${data.deviceInfo || 'test run'}`
+      );
     }
   }
 
@@ -138,26 +142,22 @@ export class ReportsComponent implements OnInit, OnDestroy {
     return this.expandedRows.has(data);
   }
 
-  getLocation(data: HistoryTestrun): string {
-    return (
-      data.location ||
-      (data.device as any)?.location ||
-      'Data Center Alpha - Rack 12, Bay B'
-    );
+  getLocation(data: HistoryTestrun | TestrunReport): string | null | undefined {
+    return data.host?.location || data.location || data.device?.location;
   }
 
-  getLinuxEnv(data: HistoryTestrun): string {
-    return (
-      data.linux_env ||
-      (data.device as any)?.linux_env ||
-      'Ubuntu 24.04 LTS (x86_64)'
-    );
+  getLinuxEnv(data: HistoryTestrun | TestrunReport): string | null | undefined {
+    return data.host?.linux_env || data.linux_env || data.device?.linux_env;
   }
 
-  getKernel(data: HistoryTestrun): string {
-    return (
-      data.kernel || (data.device as any)?.kernel || 'Linux 6.8.0-40-generic'
-    );
+  getKernel(data: HistoryTestrun | TestrunReport): string | null | undefined {
+    return data.device?.kernel || data.kernel;
+  }
+
+  getPythonVersion(
+    data: HistoryTestrun | TestrunReport
+  ): string | null | undefined {
+    return data.host?.python_version || data.python_version;
   }
 
   applySearchQuery() {

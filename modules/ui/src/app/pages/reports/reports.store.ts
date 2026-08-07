@@ -353,6 +353,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
       data.device?.model,
       data.device?.mac_addr,
       data.device?.firmware,
+      data.device?.kernel,
       data.device?.test_pack,
       data.program,
       data.status,
@@ -364,9 +365,12 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
       data.folder_name,
       data.report,
       data.export,
-      data.location || (data.device as any)?.location,
-      data.kernel || (data.device as any)?.kernel,
-      data.linux_env || (data.device as any)?.linux_env,
+      data.host?.location,
+      data.host?.linux_env,
+      data.host?.python_version,
+      data.location || data.device?.location,
+      data.kernel || data.device?.kernel,
+      data.linux_env || data.device?.linux_env,
     ];
 
     return searchableFields.some(

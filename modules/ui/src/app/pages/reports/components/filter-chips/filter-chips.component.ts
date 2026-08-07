@@ -44,6 +44,32 @@ export class FilterChipsComponent {
     return value === null || value.length === 0;
   }
 
+  getFilterChipLabel(key: string, value: any): string {
+    if (key === FilterName.QuickSearch) {
+      return `search: "${value}"`;
+    }
+    if (key === FilterName.DeviceInfo) {
+      return `Device contains "${value}"`;
+    }
+    if (key === FilterName.DeviceFirmware) {
+      return `Firmware contains "${value}"`;
+    }
+    if (key === FilterName.DateRange) {
+      if (typeof value === 'object' && value && (value.start || value.end)) {
+        return `${value.start || ''} - ${value.end || ''}`;
+      }
+      return String(value);
+    }
+    if (Array.isArray(value)) {
+      return value.join(', ');
+    }
+    return String(value);
+  }
+
+  getRemoveFilterAriaLabel(key: string, value: any): string {
+    return `Clear filter: ${this.getFilterChipLabel(key, value)}`;
+  }
+
   clearFilter(filter: string) {
     switch (filter) {
       case FilterName.DeviceInfo:

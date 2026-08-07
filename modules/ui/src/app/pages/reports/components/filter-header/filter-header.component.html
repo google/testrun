@@ -25,6 +25,7 @@
   let-filterOpened="filterOpened"
   let-activeFilter="activeFilter">
   <button
+    type="button"
     (click)="openFilter($event, name, title, filterOpened)"
     (keydown.enter)="openFilter($event, name, title, filterOpened)"
     (keydown.space)="openFilter($event, name, title, filterOpened)"
@@ -37,8 +38,13 @@
       (filterOpened && activeFilter === name) || filtered ? 'active' : ''
     "
     matTooltip="Filter by {{ headerText }}"
-    attr.aria-label="filter by {{ name }}">
-    <mat-icon fontSet="material-icons-outlined" class="filter-icon"
+    [attr.aria-label]="'Filter by ' + headerText"
+    aria-haspopup="dialog"
+    [attr.aria-expanded]="filterOpened && activeFilter === name">
+    <mat-icon
+      fontSet="material-icons-outlined"
+      class="filter-icon"
+      aria-hidden="true"
       >filter_list</mat-icon
     >
   </button>

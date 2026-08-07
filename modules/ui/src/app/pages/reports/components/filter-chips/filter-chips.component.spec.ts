@@ -190,5 +190,35 @@ describe('FilterChipsComponent', () => {
         quickSearch: 'Krakow',
       });
     });
+
+    it('should format filter chip labels correctly', () => {
+      expect(component.getFilterChipLabel('quickSearch', 'Krakow')).toBe(
+        'search: "Krakow"'
+      );
+      expect(component.getFilterChipLabel('deviceInfo', 'Pixel')).toBe(
+        'Device contains "Pixel"'
+      );
+      expect(component.getFilterChipLabel('deviceFirmware', '1.0')).toBe(
+        'Firmware contains "1.0"'
+      );
+      expect(
+        component.getFilterChipLabel('dateRange', {
+          start: '01/01/2024',
+          end: '01/05/2024',
+        })
+      ).toBe('01/01/2024 - 01/05/2024');
+      expect(
+        component.getFilterChipLabel('results', ['Compliant', 'Non-Compliant'])
+      ).toBe('Compliant, Non-Compliant');
+    });
+
+    it('should generate accessible remove button aria-labels', () => {
+      expect(component.getRemoveFilterAriaLabel('quickSearch', 'Krakow')).toBe(
+        'Clear filter: search: "Krakow"'
+      );
+      expect(component.getRemoveFilterAriaLabel('deviceInfo', 'Pixel')).toBe(
+        'Clear filter: Device contains "Pixel"'
+      );
+    });
   });
 });

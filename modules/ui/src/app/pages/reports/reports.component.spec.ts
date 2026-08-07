@@ -34,9 +34,11 @@ import { DATA_SOURCE_INITIAL_VALUE, ReportsStore } from './reports.store';
 import {
   DATA_SOURCE_FOR_EMPTY_FILTERS,
   DATA_SOURCE_INITIAL_VALUE_NOT_EMPTY,
+  FORMATTED_HISTORY,
   HISTORY,
 } from '../../mocks/reports.mock';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
 import { HistoryTestrun } from '../../model/testrun-status';
 
 describe('ReportsComponent', () => {
@@ -124,11 +126,24 @@ describe('ReportsComponent', () => {
 
         expect(mockReportsStore.fetchReports).toHaveBeenCalled();
       }));
+
+      it('should update sort if sort viewChild is available', () => {
+        const mockSort = new MatSort();
+        spyOn(component, 'sort').and.returnValue(mockSort);
+
+        component.ngOnInit();
+
+        expect(mockReportsStore.updateSort).toHaveBeenCalledWith(mockSort);
+      });
     });
 
-    it('#sortData should call liveAnnouncer with sorted direction message', () => {
+    it('#sortData should call liveAnnouncer with sorted direction message and update sort', () => {
+      const mockSort = new MatSort();
+      spyOn(component, 'sort').and.returnValue(mockSort);
+
       component.sortData({ active: '', direction: 'desc' });
 
+      expect(mockReportsStore.updateSort).toHaveBeenCalledWith(mockSort);
       expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
         'Sorted descending'
       );
@@ -334,6 +349,160 @@ describe('ReportsComponent', () => {
         ).toHaveBeenCalledWith('');
       });
     });
+
+    describe('Row expansion methods', () => {
+      it('toggleRowExpand should add and delete row from expandedRows and announce to screen reader', () => {
+        const item = FORMATTED_HISTORY[0];
+        expect(component.isExpanded(item)).toBeFalse();
+
+        component.toggleRowExpand(item);
+        expect(component.isExpanded(item)).toBeTrue();
+        expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+          `Metadata expanded for ${item.deviceInfo}`
+        );
+
+        component.toggleRowExpand(item);
+        expect(component.isExpanded(item)).toBeFalse();
+        expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+          `Metadata collapsed for ${item.deviceInfo}`
+        );
+      });
+
+      it('toggleRowExpand should stop event propagation when event is provided', () => {
+        const item = FORMATTED_HISTORY[0];
+        const event = jasmine.createSpyObj<Event>('Event', [
+          'preventDefault',
+          'stopPropagation',
+        ]);
+
+        component.toggleRowExpand(item, event);
+
+        expect(event.preventDefault).toHaveBeenCalled();
+        expect(event.stopPropagation).toHaveBeenCalled();
+        expect(component.isExpanded(item)).toBeTrue();
+      });
+
+      it('getRowId should return sanitized identifier', () => {
+        const item = { ...FORMATTED_HISTORY[0], started: '2023-06-23T10:11:00', deviceInfo: 'Raspberry Pi / 4' };
+        const id = component.getRowId(item);
+        expect(id).toBe('2023-06-23T10_11_00-Raspberry_Pi___4');
+      });
+    });
+
+    describe('filterCleared', () => {
+      it('should update searchQuery and call store.setFilteredValues', () => {
+        const filters = {
+          deviceInfo: '',
+          deviceFirmware: '',
+          results: [],
+          dateRange: '',
+          quickSearch: 'searchKeyword',
+        };
+
+        component.filterCleared(filters);
+
+        expect(component.searchQuery).toBe('searchKeyword');
+        expect(mockReportsStore.setFilteredValues).toHaveBeenCalledWith(filters);
+      });
+
+      it('should fallback to empty searchQuery if quickSearch is missing in filters', () => {
+        const filters = {
+          deviceInfo: '',
+          deviceFirmware: '',
+          results: [],
+          dateRange: '',
+        };
+
+        component.filterCleared(filters as any);
+
+        expect(component.searchQuery).toBe('');
+        expect(mockReportsStore.setFilteredValues).toHaveBeenCalledWith(filters as any);
+      });
+    });
+
+    describe('selectRow and trackByStarted', () => {
+      it('selectRow should call store.setSelectedRow', () => {
+        const row = {} as any;
+        component.selectRow(row);
+        expect(mockReportsStore.setSelectedRow).toHaveBeenCalledWith(row);
+      });
+
+      it('trackByStarted should return started date of item', () => {
+        expect(component.trackByStarted(0, FORMATTED_HISTORY[0])).toBe(
+          FORMATTED_HISTORY[0].started
+        );
+      });
+    });
+
+    describe('Metadata helper methods', () => {
+      it('should return location from host object, top level, or device object', () => {
+        expect(component.getLocation(HISTORY[0])).toBe(
+          'Data Center Alpha - Rack 12, Bay B'
+        );
+
+        const itemWithTopLocation = {
+          ...HISTORY[0],
+          host: null,
+          location: 'Lab Room 101',
+        } as HistoryTestrun;
+        expect(component.getLocation(itemWithTopLocation)).toBe('Lab Room 101');
+
+        const itemWithDeviceLocation = {
+          ...HISTORY[0],
+          host: null,
+          location: null,
+          device: { ...HISTORY[0].device, location: 'Device Shelf A' },
+        } as HistoryTestrun;
+        expect(component.getLocation(itemWithDeviceLocation)).toBe(
+          'Device Shelf A'
+        );
+      });
+
+      it('should return linux_env from host object, top level, or device object', () => {
+        expect(component.getLinuxEnv(HISTORY[0])).toBe(
+          'Ubuntu 24.04 LTS (x86_64)'
+        );
+
+        const itemWithTopEnv = {
+          ...HISTORY[0],
+          host: null,
+          linux_env: 'Debian 12 Bookworm',
+        } as HistoryTestrun;
+        expect(component.getLinuxEnv(itemWithTopEnv)).toBe('Debian 12 Bookworm');
+
+        const itemWithDeviceEnv = {
+          ...HISTORY[0],
+          host: null,
+          linux_env: null,
+          device: { ...HISTORY[0].device, linux_env: 'Alpine 3.19' },
+        } as HistoryTestrun;
+        expect(component.getLinuxEnv(itemWithDeviceEnv)).toBe('Alpine 3.19');
+      });
+
+      it('should return kernel from device object or top level', () => {
+        expect(component.getKernel(HISTORY[0])).toBe('Linux 6.8.0-40-generic');
+
+        const itemWithTopKernel = {
+          ...HISTORY[0],
+          device: null,
+          kernel: 'Linux 5.15.0-89-generic',
+        } as any;
+        expect(component.getKernel(itemWithTopKernel)).toBe(
+          'Linux 5.15.0-89-generic'
+        );
+      });
+
+      it('should return python_version from host object or top level', () => {
+        expect(component.getPythonVersion(HISTORY[0])).toBe('3.11.2');
+
+        const itemWithTopPython = {
+          ...HISTORY[0],
+          host: null,
+          python_version: '3.12.1',
+        } as HistoryTestrun;
+        expect(component.getPythonVersion(itemWithTopPython)).toBe('3.12.1');
+      });
+    });
   });
 
   describe('DOM tests', () => {
@@ -438,6 +607,67 @@ describe('ReportsComponent', () => {
         row.click();
 
         expect(mockReportsStore.setSelectedRow).toHaveBeenCalled();
+      });
+
+      it('should render detail row with spacer cell and expanded detail cell with accessibility attributes', () => {
+        const detailRow = compiled.querySelector('tr.detail-row');
+        const spacerCell = detailRow?.querySelector(
+          '.expanded-detail-spacer-cell'
+        );
+        const detailCell = detailRow?.querySelector('.expanded-detail-cell');
+        const metadataDetail = detailRow?.querySelector(
+          '.metadata-accordion-detail'
+        );
+        const metadataGrid = detailRow?.querySelector('dl.metadata-grid');
+        const expandButton = compiled.querySelector('.expand-row-button');
+
+        expect(detailRow).toBeTruthy();
+        expect(spacerCell).toBeTruthy();
+        expect(detailCell).toBeTruthy();
+        expect(metadataDetail).toBeTruthy();
+        expect(metadataGrid).toBeTruthy();
+        expect(detailCell?.getAttribute('colspan')).toBe('6');
+        expect(expandButton?.getAttribute('aria-expanded')).toBe('false');
+        expect(metadataDetail?.getAttribute('role')).toBe('region');
+        expect(expandButton?.getAttribute('aria-controls')).toBeTruthy();
+      });
+
+      it('should add expanded-row class to detail row when row is expanded', () => {
+        const detailRow = compiled.querySelector('tr.detail-row');
+        expect(detailRow?.classList).not.toContain('expanded-row');
+
+        component.toggleRowExpand(DATA_SOURCE_INITIAL_VALUE_NOT_EMPTY.data[0]);
+        fixture.detectChanges();
+
+        expect(detailRow?.classList).toContain('expanded-row');
+      });
+
+      it('should render metadata values when present', () => {
+        const detailRow = compiled.querySelector('tr.detail-row');
+        const metaValues = detailRow?.querySelectorAll('.meta-value');
+        expect(metaValues?.length).toBeGreaterThanOrEqual(4);
+      });
+
+      it('should render "Could not fetch details" with error icon when metadata is missing', () => {
+        const itemWithoutMeta = {
+          ...DATA_SOURCE_INITIAL_VALUE_NOT_EMPTY.data[0],
+          host: null,
+          location: null,
+          device: {
+            ...DATA_SOURCE_INITIAL_VALUE_NOT_EMPTY.data[0].device,
+            kernel: undefined,
+            location: undefined,
+            linux_env: undefined,
+          },
+          kernel: null,
+          linux_env: null,
+          python_version: null,
+        } as HistoryTestrun;
+
+        expect(component.getLocation(itemWithoutMeta)).toBeFalsy();
+        expect(component.getLinuxEnv(itemWithoutMeta)).toBeFalsy();
+        expect(component.getKernel(itemWithoutMeta)).toBeFalsy();
+        expect(component.getPythonVersion(itemWithoutMeta)).toBeFalsy();
       });
     });
   });
