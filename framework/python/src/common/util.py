@@ -153,3 +153,16 @@ def diff_dicts(d1: t.Dict[t.Any, t.Any], d2: t.Dict[t.Any, t.Any]) -> t.Dict:
     if items_added:
       diff['items_added'] = items_added
   return diff
+
+
+def get_device_os_ssh(ip):
+  """Attempts to determine the OS of a device via SSH"""
+  try:
+    cmd = f'timeout 10 docker exec tr-ct-gateway nc -v -w 2 {ip} 22'
+    output, _ = run_command(cmd)
+    if output:
+      return output.split(' ')[-1].strip()
+    return ''
+  except Exception as e:
+    LOGGER.error(f'Error determining device OS via SSH: {e}')
+    return ''
