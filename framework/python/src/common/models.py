@@ -43,7 +43,7 @@ class Device():
   test_modules: Dict = field(default_factory=dict)
   ip_addr: str = None
   firmware: str = None
-  kernel: str = None
+  kernel: str = ''
   device_folder: str = None
   reports: List[TestReport] = field(default_factory=list)
   max_device_reports: int = None
