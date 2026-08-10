@@ -432,6 +432,10 @@ class TestrunSession():
   def get_ipv6_subnet(self):
     return self._ipv6_subnet
 
+  def set_device_kernel(self, kernel: str):
+    if self._device is not None:
+      self._device.kernel = kernel
+
   def get_status(self) -> TestrunStatus:
     return self._status
 
