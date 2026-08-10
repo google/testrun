@@ -20,11 +20,17 @@ import { CommonModule, KeyValuePipe } from '@angular/common';
 import { DateRange, FilterName, Filters } from '../../../../model/filters';
 import { MatButtonModule } from '@angular/material/button';
 
+export type FilterValue =
+  | string
+  | string[]
+  | DateRange
+  | { start?: string | Date | null; end?: string | Date | null }
+  | null;
+
 @Component({
   selector: 'app-filter-chips',
   templateUrl: './filter-chips.component.html',
   styleUrls: ['./filter-chips.component.scss'],
-
   imports: [
     MatIconModule,
     MatChipsModule,
@@ -38,11 +44,45 @@ export class FilterChipsComponent {
 
   @Output() filterCleared = new EventEmitter<Filters>();
 
-  isValueEmpty(value: string | string[] | DateRange) {
-    if (value instanceof DateRange) {
+  isValueEmpty(value: FilterValue) {
+    if (
+      value instanceof DateRange ||
+      (typeof value === 'object' && value !== null && !Array.isArray(value))
+    ) {
       return !value.start && !value.end;
     }
-    return value === null || value.length === 0;
+    return value === null || value === undefined || value.length === 0;
+  }
+
+  getFilterChipLabel(key: string, value: FilterValue): string {
+    if (key === FilterName.QuickSearch) {
+      return `search: "${value}"`;
+    }
+    if (key === FilterName.DeviceInfo) {
+      return `Device contains "${value}"`;
+    }
+    if (key === FilterName.DeviceFirmware) {
+      return `Firmware contains "${value}"`;
+    }
+    if (key === FilterName.DateRange) {
+      if (
+        typeof value === 'object' &&
+        value &&
+        !Array.isArray(value) &&
+        (value.start || value.end)
+      ) {
+        return `${value.start || ''} - ${value.end || ''}`;
+      }
+      return String(value ?? '');
+    }
+    if (Array.isArray(value)) {
+      return value.join(', ');
+    }
+    return String(value ?? '');
+  }
+
+  getRemoveFilterAriaLabel(key: string, value: FilterValue): string {
+    return `Clear filter: ${this.getFilterChipLabel(key, value)}`;
   }
 
   clearFilter(filter: string) {
@@ -59,6 +99,9 @@ export class FilterChipsComponent {
       case FilterName.DateRange:
         this.filters.dateRange = '';
         break;
+      case FilterName.QuickSearch:
+        this.filters.quickSearch = '';
+        break;
     }
     this.filterCleared.emit(this.filters);
   }
@@ -68,6 +111,7 @@ export class FilterChipsComponent {
     this.filters.deviceFirmware = '';
     this.filters.results = [];
     this.filters.dateRange = '';
+    this.filters.quickSearch = '';
     this.filterCleared.emit(this.filters);
   }
 }
