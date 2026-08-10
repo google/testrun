@@ -340,8 +340,6 @@ class NetworkOrchestrator:
             self._session.set_status(TestrunStatus.CANCELLED)
             LOGGER.error('Device interface disconnected, cancelling Testrun')
 
-    
-
     LOGGER.debug('Writing packets to monitor.pcap')
     wrpcap(os.path.join(device_runtime_dir, 'monitor.pcap'),
            self._monitor_packets)
