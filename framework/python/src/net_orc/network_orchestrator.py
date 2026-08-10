@@ -311,8 +311,18 @@ class NetworkOrchestrator:
                            prn=self._monitor_packet_callback)
     sniffer.start()
 
+    device_os_discover_attempts = 3
+    device_os = ''
     while sniffer.running:
       time.sleep(1)
+
+      # Discovering device OS
+      if device_os_discover_attempts > 0:
+        device_os = util.get_device_os_nmap(device.ip_addr)
+        if not device_os:
+          device_os = util.get_device_os_ssh(device.ip_addr)
+        device_os_discover_attempts -= 1
+        self._session.set_device_kernel(device_os)
 
       # Check Testrun hasn't been cancelled
       if self._session.get_status() in (TestrunStatus.STOPPING,
@@ -329,6 +339,8 @@ class NetworkOrchestrator:
           finally:
             self._session.set_status(TestrunStatus.CANCELLED)
             LOGGER.error('Device interface disconnected, cancelling Testrun')
+
+    
 
     LOGGER.debug('Writing packets to monitor.pcap')
     wrpcap(os.path.join(device_runtime_dir, 'monitor.pcap'),
