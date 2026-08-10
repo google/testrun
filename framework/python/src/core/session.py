@@ -21,7 +21,7 @@ from fastapi.encoders import jsonable_encoder
 from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
 from common.statuses import TestrunStatus, TestResult, TestrunResult
-from common.device import Device, DeviceWithReport
+from common.models import Device, DeviceWithReport, Host
 from net_orc.ip_control import IPControl
 
 # Certificate dependencies
@@ -163,6 +163,10 @@ class TestrunSession():
 
     self._certs = []
     self.load_certs()
+
+    # Load host metadata
+    self._host = Host.get_host_metadata()
+    LOGGER.debug(f'Host metadata: {self._host.to_dict()}')
 
     # Fetch the timezone of the host system
     try:
@@ -1098,3 +1102,6 @@ question {question.get('question')}''')
 
   def get_ifaces(self):
     return self._ifaces
+
+  def get_host_metadata(self):
+    return self._host

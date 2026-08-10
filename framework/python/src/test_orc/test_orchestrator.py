@@ -23,7 +23,7 @@ import docker
 from common import logger, util, risk_profile
 from common.testreport import TestReport
 from common.statuses import TestrunStatus, TestrunResult, TestResult
-from common.device import Device
+from common.models import Device
 from core.testrun import REPORTS_FOLDER, DEVICE_REPORT_NAME_FORMAT
 from core.docker.test_docker_module import TestModule
 from test_orc.test_case import TestCase
@@ -246,6 +246,7 @@ class TestOrchestrator:
   def _generate_report(self):
 
     device = self.get_session().get_target_device()
+    host = self.get_session().get_host_metadata().to_dict()
     test_pack_name = device.test_pack
     test_pack = self.get_test_pack(test_pack_name)
 
@@ -254,11 +255,7 @@ class TestOrchestrator:
 
     report["mac_addr"] = device.mac_addr
     report["device"] = device.to_dict()
-    report["host"] = {
-      "location": "",
-      "linux_env": "",
-      "python_version": ""
-    }
+    report["host"] = host
     report["started"] = self.get_session().get_started().strftime(
         "%Y-%m-%d %H:%M:%S")
     report["finished"] = self.get_session().get_finished().strftime(

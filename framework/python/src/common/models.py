@@ -16,10 +16,13 @@
 
 import json
 import os
-from typing import List, Dict
+import platform
+from typing import List, Dict, Mapping
 from dataclasses import dataclass, field
 from common.testreport import TestReport
 from datetime import datetime
+import distro
+import requests
 
 _LOCAL_DEVICES_DIR = 'local/devices'
 _DEVICE_CONFIG_FILE = 'device_config.json'
@@ -163,3 +166,55 @@ class Device():
 class DeviceWithReport():
   device: Device | None = None
   report: TestReport | None = None
+
+
+@dataclass
+class Host():
+  """Testrun host metadata"""
+  python_version: str
+  linux_env: str | None = ''
+  location: str | None = ''
+
+  @classmethod
+  def get_location(cls) -> str:
+    """Fetches the location of the host system using an external API."""
+    try:
+      response = requests.get('https://ipinfo.io/json', timeout=5)
+      if response.status_code == 200:
+        data = response.json()
+        country = data['country']
+        region = data['region']
+        city = data['city']
+        return f'{country}/{region}/{city}'
+      else:
+        return ''
+    except Exception:
+      return ''
+
+  @classmethod
+  def get_host_metadata(cls) -> 'Host':
+    """Returns the host metadata as a Host object"""
+    try:
+      python_version = platform.python_version()
+    except Exception:
+      python_version = ''
+    try:
+      linux_env=distro.name(pretty=True)
+    except Exception:
+      linux_env = ''
+    location = Host.get_location()
+    return cls(
+      python_version=python_version,
+      linux_env=linux_env,
+      location=location
+      )
+
+  def to_dict(self) -> Mapping:
+    """Returns the host metadata as a python dictionary"""
+    host_json = {}
+    host_json['python_version'] = self.python_version
+    host_json['linux_env'] = self.linux_env
+    host_json['location'] = self.location
+    return host_json
+
+
