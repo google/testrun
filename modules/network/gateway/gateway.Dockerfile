@@ -21,6 +21,8 @@ ARG MODULE_DIR=modules/network/$MODULE_NAME
 # Install required packages
 RUN apt-get update && \
     apt-get install -y iptables \
+    netcat-openbsd \
+    nmap \
     isc-dhcp-client && \
     rm -rf /var/lib/apt/lists/*
 
