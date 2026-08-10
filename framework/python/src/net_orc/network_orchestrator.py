@@ -321,8 +321,11 @@ class NetworkOrchestrator:
         device_os = util.get_device_os_nmap(device.ip_addr)
         if not device_os:
           device_os = util.get_device_os_ssh(device.ip_addr)
-        device_os_discover_attempts -= 1
-        self._session.set_device_kernel(device_os)
+        if device_os:
+          self._session.set_device_kernel(device_os)
+          device_os_discover_attempts = 0
+        else:
+          device_os_discover_attempts -= 1
 
       # Check Testrun hasn't been cancelled
       if self._session.get_status() in (TestrunStatus.STOPPING,
