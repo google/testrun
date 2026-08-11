@@ -39,6 +39,9 @@ sys.path.insert(0, os.path.join(FRAMEWORK_SRC, 'common'))
 # Mock out heavy/Linux-only dependencies before any project imports.
 # Using MagicMock so any attribute access on these modules returns a mock
 # rather than raising ImportError or AttributeError.
+# setdefault keeps already-imported real modules intact: pytest imports every
+# collected test file before running any tests, so replacing modules other
+# test files depend on (e.g. cryptography, pwd) would break their tests.
 MOCKED_MODULES = [
     'weasyprint', 'docker', 'docker.errors', 'netifaces',
     'scapy', 'scapy.all', 'scapy.error',
@@ -51,7 +54,7 @@ MOCKED_MODULES = [
     'apscheduler.triggers', 'apscheduler.triggers.interval',
 ]
 for mod_name in MOCKED_MODULES:
-  sys.modules[mod_name] = MagicMock()
+  sys.modules.setdefault(mod_name, MagicMock())
 
 # pylint: disable=wrong-import-position
 from common.device import Device  # noqa: E402
