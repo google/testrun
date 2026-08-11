@@ -19,7 +19,9 @@ import SpyObj = jasmine.SpyObj;
 import { TestBed } from '@angular/core/testing';
 import { skip, take } from 'rxjs';
 import { of } from 'rxjs/internal/observable/of';
-import { ReportsStore } from './reports.store';
+import { ReportsComponentState, ReportsStore } from './reports.store';
+import { DateRange } from '../../model/filters';
+import { HistoryTestrun } from '../../model/testrun-status';
 import {
   EMPTY_FILTERS,
   FILTERS,
@@ -34,6 +36,7 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { selectReports, selectRiskProfiles } from '../../store/selectors';
 import { AppState } from '../../store/state';
 import { setReports } from '../../store/actions';
+import { TestingType } from '../../model/device';
 
 describe('ReportsStore', () => {
   let reportsStore: ReportsStore;
@@ -132,6 +135,7 @@ describe('ReportsStore', () => {
       reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
         expect(store).toEqual({
           displayedColumns: [
+            'expand',
             'started',
             'duration',
             'deviceInfo',
@@ -149,6 +153,7 @@ describe('ReportsStore', () => {
             deviceFirmware: '',
             results: [],
             dateRange: '',
+            quickSearch: '',
           },
           dataLoaded: true,
           selectedRow: null,
@@ -253,6 +258,74 @@ describe('ReportsStore', () => {
       });
     });
 
+    describe('setFilteredValuesQuickSearch', () => {
+      it('should update store', done => {
+        const updatedFilters = { ...FILTERS, ...{ quickSearch: 'test2' } };
+        store.overrideSelector(selectReports, [...HISTORY]);
+        reportsStore.setFilteredValues({ ...FILTERS });
+
+        reportsStore.setFilteredValuesQuickSearch('test2');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.filteredValues).toEqual(updatedFilters);
+          expect(store.dataSource.filter).toEqual(
+            JSON.stringify(updatedFilters)
+          );
+          done();
+        });
+      });
+
+      it('should filter by location, kernel, or linux_env', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch('Data Center Alpha');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.filteredData.length).toBe(3);
+          done();
+        });
+      });
+
+      it('should filter by kernel', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch('Linux 6.8');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.filteredData.length).toBe(3);
+          done();
+        });
+      });
+
+      it('should filter by linux_env', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch('Ubuntu 24.04');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.filteredData.length).toBe(3);
+          done();
+        });
+      });
+
+      it('should filter by python_version', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch('3.11.2');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.filteredData.length).toBe(3);
+          done();
+        });
+      });
+
+      it('should filter by mac address', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch('05:07');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.filteredData.length).toBe(1);
+          done();
+        });
+      });
+    });
+
     describe('setFilteredValuesDeviceFirmware', () => {
       it('should update store', done => {
         const updatedFilters = { ...FILTERS, ...{ deviceFirmware: 'test2' } };
@@ -302,6 +375,133 @@ describe('ReportsStore', () => {
           expect(store.dataSource.filter).toEqual(
             JSON.stringify(updatedFilters)
           );
+          done();
+        });
+      });
+    });
+
+    describe('fetchReports', () => {
+      it('should dispatch fetchReports action', () => {
+        reportsStore.fetchReports();
+        expect(store.dispatch).toHaveBeenCalled();
+      });
+    });
+
+    describe('sortingDataAccessor and formatting helpers', () => {
+      it('sortingDataAccessor should handle string and non-string values', () => {
+        reportsStore.setDataSource([...HISTORY]);
+        const dataSource = (
+          reportsStore as unknown as { get: () => ReportsComponentState }
+        ).get().dataSource;
+
+        expect(
+          dataSource.sortingDataAccessor(
+            { deviceInfo: 'Raspberry Pi' } as HistoryTestrun,
+            'deviceInfo'
+          )
+        ).toBe('raspberry pi');
+        expect(
+          dataSource.sortingDataAccessor(
+            { count: 123 } as unknown as HistoryTestrun,
+            'count'
+          )
+        ).toBe(123);
+      });
+
+      it('should handle Pilot test pack and non-complete qualification in test results', done => {
+        const pilotItem = {
+          ...HISTORY[0],
+          device: {
+            ...HISTORY[0].device,
+            test_pack: TestingType.Pilot,
+          },
+          status: 'In Progress',
+        };
+        const incompleteQualItem = {
+          ...HISTORY[0],
+          device: {
+            ...HISTORY[0].device,
+            test_pack: TestingType.Qualification,
+          },
+          status: 'Running',
+          result: null,
+        };
+
+        reportsStore.setDataSource([
+          pilotItem as unknown as HistoryTestrun,
+          incompleteQualItem as unknown as HistoryTestrun,
+        ]);
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
+          expect(vm.dataSource.data[0].testResult).toBe('In Progress');
+          expect(vm.dataSource.data[1].testResult).toBe('Running');
+          done();
+        });
+      });
+
+      it('should handle missing started or finished dates in duration calculation', done => {
+        const itemWithoutDates = {
+          ...HISTORY[0],
+          started: null,
+          finished: null,
+        };
+
+        reportsStore.setDataSource([
+          itemWithoutDates as unknown as HistoryTestrun,
+        ]);
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
+          expect(vm.dataSource.data[0].duration).toBe('');
+          done();
+        });
+      });
+    });
+
+    describe('DateRange and search query filter variations', () => {
+      it('should filter by date strings in dateRange', done => {
+        reportsStore.setDataSource([...HISTORY]);
+
+        reportsStore.setFilteredValuesDateRange({
+          start: '2023-06-20T00:00:00Z',
+          end: '2023-06-25T23:59:59Z',
+        } as unknown as DateRange);
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
+          expect(vm.dataSource.filteredData.length).toBe(2);
+          done();
+        });
+      });
+
+      it('should filter out items outside DateRange', done => {
+        reportsStore.setDataSource([...HISTORY]);
+
+        reportsStore.setFilteredValuesDateRange({
+          start: '2024-01-01T00:00:00Z',
+          end: '2024-01-05T23:59:59Z',
+        } as unknown as DateRange);
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
+          expect(vm.dataSource.filteredData.length).toBe(0);
+          done();
+        });
+      });
+
+      it('should filter by folder_name, report URL, and export URL in quickSearch', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch('12345');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
+          expect(vm.dataSource.filteredData.length).toBe(1);
+          done();
+        });
+      });
+
+      it('should return all items when quickSearch is empty or contains only whitespace', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch('   ');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
+          expect(vm.dataSource.filteredData.length).toBe(3);
           done();
         });
       });

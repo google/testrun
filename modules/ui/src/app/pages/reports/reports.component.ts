@@ -29,10 +29,13 @@ import {
   TestrunReport,
 } from '../../model/testrun-status';
 import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { Subject, takeUntil, timer } from 'rxjs';
 import { MatRow, MatTableModule } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
 import { tap } from 'rxjs/internal/operators/tap';
 import { FilterName, FilterTitle, Filters } from '../../model/filters';
 import { ReportsStore } from './reports.store';
@@ -49,6 +52,7 @@ import { DeleteReportComponent } from './components/delete-report/delete-report.
 import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
 import { EmptyMessageComponent } from '../../components/empty-message/empty-message.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { state, style, trigger } from '@angular/animations';
 
 @Component({
   selector: 'app-history',
@@ -56,10 +60,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   styleUrls: ['./reports.component.scss'],
   imports: [
     CommonModule,
+    FormsModule,
     MatTableModule,
     MatIconModule,
     MatToolbarModule,
     MatSortModule,
+    MatButtonModule,
+    MatInputModule,
     FilterChipsComponent,
     DeleteReportComponent,
     DownloadReportZipComponent,
@@ -71,8 +78,18 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatTooltipModule,
   ],
   providers: [ReportsStore, DatePipe],
+  animations: [
+    trigger('detailExpand', [
+      state(
+        'collapsed,void',
+        style({ height: '0px', minHeight: '0', display: 'none' })
+      ),
+      state('expanded', style({ height: '*' })),
+    ]),
+  ],
 })
 export class ReportsComponent implements OnInit, OnDestroy {
+  EMPTY_DETAIL_TEXT = 'Could not fetch details';
   private testRunService = inject(TestRunService);
   private datePipe = inject(DatePipe);
   private liveAnnouncer = inject(LiveAnnouncer);
@@ -91,6 +108,70 @@ export class ReportsComponent implements OnInit, OnDestroy {
     if (sort) {
       this.store.updateSort(sort);
     }
+  }
+
+  public expandedRows: Set<HistoryTestrun> = new Set<HistoryTestrun>();
+  public searchQuery: string = '';
+
+  getRowId(data: HistoryTestrun | TestrunReport): string {
+    const rawId =
+      (data as { id?: string })?.id ||
+      `${data.started || ''}-${(data as HistoryTestrun).deviceInfo || data.device?.model || ''}`;
+    return rawId.toString().replace(/[^a-zA-Z0-9_-]/g, '_');
+  }
+
+  toggleRowExpand(data: HistoryTestrun, event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (this.expandedRows.has(data)) {
+      this.expandedRows.delete(data);
+      this.liveAnnouncer.announce(
+        `Metadata collapsed for ${data.deviceInfo || 'test run'}`
+      );
+    } else {
+      this.expandedRows.add(data);
+      this.liveAnnouncer.announce(
+        `Metadata expanded for ${data.deviceInfo || 'test run'}`
+      );
+    }
+  }
+
+  isExpanded(data: HistoryTestrun): boolean {
+    return this.expandedRows.has(data);
+  }
+
+  getLocation(data: HistoryTestrun | TestrunReport): string | null | undefined {
+    return data.host?.location;
+  }
+
+  getLinuxEnv(data: HistoryTestrun | TestrunReport): string | null | undefined {
+    return data.host?.linux_env;
+  }
+
+  getKernel(data: HistoryTestrun | TestrunReport): string | null | undefined {
+    return data.device?.kernel;
+  }
+
+  getPythonVersion(
+    data: HistoryTestrun | TestrunReport
+  ): string | null | undefined {
+    return data.host?.python_version;
+  }
+
+  applySearchQuery() {
+    this.store.setFilteredValuesQuickSearch(this.searchQuery);
+  }
+
+  addSearchTag(tag: string) {
+    this.searchQuery = tag;
+    this.applySearchQuery();
+  }
+
+  clearSearchQuery() {
+    this.searchQuery = '';
+    this.applySearchQuery();
   }
 
   getFormattedDateString(date: string | null) {
@@ -172,6 +253,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   filterCleared(filters: Filters) {
+    this.searchQuery = filters.quickSearch || '';
     this.store.setFilteredValues(filters);
   }
 
@@ -190,9 +272,12 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   focusNextButton() {
     // Try to focus next interactive element, if exists
-    const next = window.document.querySelector(
-      '.report-selected + tr a'
-    ) as HTMLButtonElement;
+    const next = (window.document.querySelector(
+      '.report-selected + tr + tr a'
+    ) ||
+      window.document.querySelector(
+        '.report-selected + tr a'
+      )) as HTMLButtonElement;
     if (next) {
       timer(50).subscribe(() => {
         next.focus();

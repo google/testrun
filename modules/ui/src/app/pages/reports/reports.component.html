@@ -16,10 +16,13 @@ limitations under the License.
 @if (viewModel$ | async; as vm) {
   @if (vm.dataLoaded) {
     <mat-toolbar class="history-toolbar">
-      <h2 class="title" tabindex="-1">Reports</h2>
+      <h2 id="reports-heading" class="title" tabindex="-1">Reports</h2>
     </mat-toolbar>
     <div
       class="history-content"
+      role="region"
+      aria-labelledby="reports-heading"
+      tabindex="0"
       [class.history-content-empty]="
         vm.dataSource.filteredData.length === 0 ||
         vm.dataSource.data.length === 0
@@ -29,10 +32,39 @@ limitations under the License.
         [dataSource]="vm.dataSource"
         [trackBy]="trackByStarted"
         mat-table
+        multiTemplateDataRows
         matSort
         [matSortActive]="FilterName.Started"
         matSortDirection="desc"
+        aria-labelledby="reports-heading"
         tabindex="0">
+        <!-- Expand Arrow Column -->
+        <ng-container matColumnDef="expand">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            aria-label="Metadata expansion"></th>
+          <td mat-cell *matCellDef="let data">
+            <button
+              mat-icon-button
+              type="button"
+              class="expand-row-button"
+              [attr.aria-expanded]="isExpanded(data)"
+              [attr.aria-controls]="'metadata-details-' + getRowId(data)"
+              [attr.aria-label]="
+                (isExpanded(data) ? 'Collapse' : 'Expand') +
+                ' metadata for ' +
+                (data.deviceInfo || 'test run')
+              "
+              (click)="toggleRowExpand(data, $event)">
+              <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">
+                {{
+                  isExpanded(data) ? 'keyboard_arrow_up' : 'keyboard_arrow_down'
+                }}
+              </mat-icon>
+            </button>
+          </td>
+        </ng-container>
         <!-- Started Column -->
         <ng-container matColumnDef="started">
           <app-filter-header
@@ -137,7 +169,8 @@ limitations under the License.
                 <app-download-report-pdf [data]="data">
                   <mat-icon
                     class="download-report-icon"
-                    fontSet="material-symbols-outlined">
+                    fontSet="material-symbols-outlined"
+                    aria-hidden="true">
                     lab_profile
                   </mat-icon>
                 </app-download-report-pdf>
@@ -151,7 +184,8 @@ limitations under the License.
                   <span class="download-report-zip-icon-container">
                     <mat-icon
                       class="download-report-icon"
-                      fontSet="material-symbols-outlined">
+                      fontSet="material-symbols-outlined"
+                      aria-hidden="true">
                       archive
                     </mat-icon>
                   </span>
@@ -163,7 +197,8 @@ limitations under the License.
                   (removeDevice)="removeReport(data)">
                   <mat-icon
                     class="delete-report-icon"
-                    fontSet="material-symbols-outlined">
+                    fontSet="material-symbols-outlined"
+                    aria-hidden="true">
                     delete
                   </mat-icon>
                 </app-delete-report>
@@ -182,6 +217,94 @@ limitations under the License.
                 (filterCleared)="filterCleared($event)"></app-filter-chips>
             </div>
           </th>
+        </ng-container>
+        <!-- Expanded Detail Spacer Column -->
+        <ng-container matColumnDef="expandedDetailSpacer">
+          <td
+            mat-cell
+            *matCellDef="let data"
+            class="expanded-detail-spacer-cell"></td>
+        </ng-container>
+        <!-- Expanded Detail Column (Metadata Accordion) -->
+        <ng-container matColumnDef="expandedDetail">
+          <td
+            mat-cell
+            *matCellDef="let data"
+            [attr.colspan]="vm.displayedColumns.length - 1"
+            class="expanded-detail-cell">
+            <div
+              [id]="'metadata-details-' + getRowId(data)"
+              class="metadata-accordion-detail"
+              role="region"
+              [attr.aria-label]="
+                'Metadata details for ' + (data.deviceInfo || 'test run')
+              "
+              [attr.aria-hidden]="!isExpanded(data)"
+              [@detailExpand]="isExpanded(data) ? 'expanded' : 'collapsed'">
+              <div class="metadata-card">
+                <dl class="metadata-grid">
+                  <div class="metadata-item">
+                    <dt class="meta-label">Location</dt>
+                    <dd class="meta-value-container">
+                      @if (getLocation(data)) {
+                        <span class="meta-value" [title]="getLocation(data)">{{
+                          getLocation(data)
+                        }}</span>
+                      } @else {
+                        <ng-container
+                          *ngTemplateOutlet="emptyDetails"></ng-container>
+                      }
+                    </dd>
+                  </div>
+                  <div class="metadata-item">
+                    <dt class="meta-label">Linux Environment</dt>
+                    <dd class="meta-value-container">
+                      @if (getLinuxEnv(data)) {
+                        <span
+                          class="meta-value highlight"
+                          [title]="getLinuxEnv(data)"
+                          >{{ getLinuxEnv(data) }}</span
+                        >
+                      } @else {
+                        <ng-container
+                          *ngTemplateOutlet="emptyDetails"></ng-container>
+                      }
+                    </dd>
+                  </div>
+                  <div class="metadata-item">
+                    <dt class="meta-label">Python Version</dt>
+                    <dd class="meta-value-container">
+                      @if (getPythonVersion(data)) {
+                        <span
+                          class="meta-value font-mono"
+                          [title]="getPythonVersion(data)"
+                          >{{ getPythonVersion(data) }}</span
+                        >
+                      } @else {
+                        <ng-container
+                          *ngTemplateOutlet="emptyDetails"></ng-container>
+                      }
+                    </dd>
+                  </div>
+                  <div class="metadata-item">
+                    <dt class="meta-label">Kernel</dt>
+                    <dd class="meta-value-container">
+                      @if (getKernel(data)) {
+                        <span
+                          class="meta-value font-mono"
+                          [title]="getKernel(data)"
+                          >{{ getKernel(data) }}</span
+                        >
+                      } @else {
+                        <ng-container
+                          *ngTemplateOutlet="emptyDetails"></ng-container>
+                      }
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+          </td>
         </ng-container>
         <tr *matHeaderRowDef="vm.displayedColumns" mat-header-row></tr>
         <tr
@@ -216,6 +339,14 @@ limitations under the License.
           (click)="selectRow(rowElement)"
           (keydown.enter)="selectRow(rowElement)"
           (keydown.space)="selectRow(rowElement)"></tr>
+        <tr
+          mat-row
+          *matRowDef="
+            let row;
+            columns: ['expandedDetailSpacer', 'expandedDetail']
+          "
+          class="detail-row"
+          [class.expanded-row]="isExpanded(row)"></tr>
       </table>
     </div>
   }
@@ -226,4 +357,16 @@ limitations under the License.
     [header]="header"
     [message]="message">
   </app-empty-message>
+</ng-template>
+
+<ng-template #emptyDetails>
+  <span class="meta-value meta-value-missing" title="{{ EMPTY_DETAIL_TEXT }}">
+    <mat-icon
+      fontSet="material-symbols-outlined"
+      class="missing-icon filled"
+      aria-hidden="true"
+      >error</mat-icon
+    >
+    <span>{{ EMPTY_DETAIL_TEXT }}</span>
+  </span>
 </ng-template>
