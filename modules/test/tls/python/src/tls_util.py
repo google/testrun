@@ -484,11 +484,14 @@ class TLSUtil():
         details.extend(tls_1_2_results[1])
       else:
         details.append(tls_1_2_results[1])
-      details.append(f'TLS 1.3 {positive_1_3}validated on port {port}:')
-      if isinstance(tls_1_3_results[1], list):
-        details.extend(tls_1_3_results[1])
-      else:
-        details.append(tls_1_3_results[1])
+      # Include TLS 1.3 details only when a valid TLS 1.3 certificate
+      # is what makes an invalid TLS 1.2 result compliant
+      if not tls_1_2_results[0] and tls_1_3_results[0]:
+        details.append(f'TLS 1.3 {positive_1_3}validated on port {port}:')
+        if isinstance(tls_1_3_results[1], list):
+          details.extend(tls_1_3_results[1])
+        else:
+          details.append(tls_1_3_results[1])
       results = tls_1_2_results[0] or tls_1_3_results[0], details
     else:
       details.append(f'TLS 1.2 not validated on port {port}:')
