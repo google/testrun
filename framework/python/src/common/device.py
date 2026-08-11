@@ -123,6 +123,10 @@ class Device():
     device_json['reports'] = [
       report.to_json() for report in self.reports] if self.reports else []
 
+    # Include static IP if configured
+    if self.ip_addr is not None:
+      device_json['ip_addr'] = self.ip_addr
+
     return device_json
 
   def export_config_json(self):
