@@ -179,6 +179,7 @@ class Host():
   def get_location(cls) -> str:
     """Fetches the location of the host system using an external API."""
     try:
+      # nosemgrep
       response = requests.get('http://ip-api.com/json/?lang=en', timeout=5)
       if response.status_code == 200:
         data = response.json()
