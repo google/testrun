@@ -381,7 +381,7 @@ class TestReport():
 
     module_reports = self._module_reports
     # nosemgrep
-    env_module = Environment(loader=BaseLoader())
+    env_module = Environment(loader=BaseLoader()) # nosec B701
     manufacturer_length = len(json_data['device']['manufacturer'])
     device_name_length = len(json_data['device']['model'])
     title_length = manufacturer_length + device_name_length + 1
