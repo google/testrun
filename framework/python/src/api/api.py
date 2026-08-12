@@ -21,9 +21,11 @@ from json import JSONDecodeError
 import os
 import psutil
 import requests
+import shutil
 import signal
 import threading
 import uvicorn
+import tempfile
 
 from core import tasks
 from common import logger
@@ -731,18 +733,23 @@ class Api:
     device = device_with_report.device
     report = device_with_report.report
 
+    temp_dir = tempfile.mkdtemp(prefix="testrun_")
+
     zip_file_path = self._get_testrun().get_test_orc().zip_results(
-        device, report, profile)
+        device, report, profile, temp_dir)
 
     if zip_file_path is None:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+      shutil.rmtree(temp_dir, ignore_errors=True)
       return self._generate_msg(
           False, "An error occurred whilst archiving test results")
 
     if os.path.isfile(zip_file_path):
-      return FileResponse(zip_file_path)
+      return FileResponse(zip_file_path, media_type="application/zip",
+                         filename=os.path.basename(zip_file_path))
     else:
       LOGGER.info("Test results could not be found, returning 404")
+      shutil.rmtree(temp_dir, ignore_errors=True)
       response.status_code = 404
       return self._generate_msg(False, "Test results could not be found")
 
