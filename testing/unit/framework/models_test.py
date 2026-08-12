@@ -23,7 +23,7 @@ from common.models import Host
 @pytest.mark.parametrize('status_code, json_value, expected', [
     (200,
      {'country': 'US',
-      'region': 'California',
+      'regionName': 'California',
       'city': 'San Jose'},
       'US/California/San Jose'),
     (500, {}, ''),
