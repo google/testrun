@@ -335,7 +335,7 @@ class TestReport():
                                   TEMPLATES_FOLDER)
     # Jinja template
     # nosemgrep
-    template_env = Environment(
+    template_env = Environment( # nosec B701
                                 loader=FileSystemLoader(
                                               template_folder
                                               ),
