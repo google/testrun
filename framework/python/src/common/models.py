@@ -179,11 +179,11 @@ class Host():
   def get_location(cls) -> str:
     """Fetches the location of the host system using an external API."""
     try:
-      response = requests.get('https://ipinfo.io/json', timeout=5)
+      response = requests.get('http://ip-api.com/json/?lang=en', timeout=5)
       if response.status_code == 200:
         data = response.json()
         country = data['country']
-        region = data['region']
+        region = data['regionName']
         city = data['city']
         return f'{country}/{region}/{city}'
       else:
