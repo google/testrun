@@ -189,7 +189,7 @@ class Api:
   def _start(self):
     uvicorn.run(self._app,
                 log_config=None,
-                host="0.0.0.0",
+                host="0.0.0.0", # nosec B104
                 port=self._session.get_api_port())
 
   def stop(self):
