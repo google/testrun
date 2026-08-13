@@ -19,6 +19,7 @@ import time
 from datetime import datetime
 import util
 from dateutil import tz
+import ast
 
 LOG_NAME = 'dhcp_util'
 LOGGER = None
@@ -117,7 +118,7 @@ class DHCPUtil():
     response = self.get_dhcp_client(dhcp_server_primary).get_status()
     if response.code == 200:
       LOGGER.debug(f'DHCP {server_name} server status: {response.message}')
-      status = eval(response.message)  # pylint: disable=W0123
+      status = ast.literal_eval(response.message)  # pylint: disable=W0123
       return status['dhcpStatus']
     else:
       return False
