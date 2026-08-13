@@ -364,13 +364,12 @@ class DNSModule(TestModule):
     Returns
         List of packets matching the filter
     """
-    command = f'tcpdump -tttt -n -r {capture_file} {tcpdump_filter}'
+    command = ['tcpdump', '-tttt', '-n', '-r', capture_file, tcpdump_filter]
 
-    LOGGER.debug('tcpdump command: ' + command)
+    LOGGER.debug('tcpdump command: ' + str(command))
 
     with subprocess.Popen(command,
-                          universal_newlines=True,
-                          shell=True,
+                          text=True,
                           stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE) as process:
       text = str(process.stdout.read()).rstrip()
