@@ -141,7 +141,7 @@ class ConnectionModule(TestModule):
       if (arp_packet.hwsrc == self._device_mac
           and (
               arp_packet.psrc not in (
-                  self._device_ipv4_addr, 
+                  self._device_ipv4_addr,
                   '0.0.0.0'  # nosec B104
               )
           )
