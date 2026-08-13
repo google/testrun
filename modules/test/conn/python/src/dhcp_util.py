@@ -190,7 +190,7 @@ class DHCPUtil():
       response = self.get_dhcp_client(dhcp_server_primary).get_lease(
           mac_address)
       if response.code == 200:
-        lease_resp = eval(response.message)  # pylint: disable=W0123
+        lease_resp = ast.literal_eval(response.message)  # pylint: disable=W0123
         if lease_resp:  # Check if non-empty lease
           lease = lease_resp
     return lease
