@@ -57,7 +57,7 @@ class DNSModule(TestModule):
     header_height = 48
     summary_height = 135
     loader=FileSystemLoader(self._report_template_folder)
-    template = Environment(
+    template = Environment( # nosec B701
                             loader=loader,
                             trim_blocks=True,
                             lstrip_blocks=True
