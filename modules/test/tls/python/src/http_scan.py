@@ -62,7 +62,7 @@ class HTTPScan():
 
     # Try HTTPS first
     try:
-      requests.head(f'https://{ip}:{port}', verify=False, timeout=5)
+      requests.head(f'https://{ip}:{port}', verify=False, timeout=5) # nosec B501
       LOGGER.info(f'Port {port} supports HTTPS.')
       return 'HTTPS'
     except requests.exceptions.SSLError as e:
