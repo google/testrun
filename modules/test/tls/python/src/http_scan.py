@@ -88,7 +88,7 @@ class HTTPScan():
     try:
       response = requests.get(
         f'https://{ip}:{port}',
-        verify=False,
+        verify=False, # nosec B501
         timeout=20,
         stream=True
       )
