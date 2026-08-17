@@ -13,6 +13,11 @@
         <div class="summary-item-space"></div>
         <div class="summary-item-label"><h4>MAC Address</h4></div>
         <div class="summary-item-value">{{ device['mac_addr'] }}</div>
+        {% if device['kernel'] %}
+          <div class="summary-item-space"></div>
+          <div class="summary-item-label"><h4>Kernel</h4></div>
+          <div class="summary-item-value">{{ device['kernel'] }}</div>
+        {% endif %}
       </div>
     </div>
       <div class="summary-device-modules">
