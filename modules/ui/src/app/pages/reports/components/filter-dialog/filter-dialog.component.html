@@ -59,6 +59,46 @@ limitations under the License.
         }
       </mat-form-field>
     }
+    @if (data.filter === FilterName.Location) {
+      <mat-form-field appearance="outline" class="text-field">
+        <mat-label>Location</mat-label>
+        <input
+          class="text-field-input"
+          formControlName="location"
+          matInput
+          aria-label="location" />
+      </mat-form-field>
+    }
+    @if (data.filter === FilterName.LinuxEnv) {
+      <mat-form-field appearance="outline" class="text-field">
+        <mat-label>Linux Environment</mat-label>
+        <input
+          class="text-field-input"
+          formControlName="linuxEnv"
+          matInput
+          aria-label="linux environment" />
+      </mat-form-field>
+    }
+    @if (data.filter === FilterName.PythonVersion) {
+      <mat-form-field appearance="outline" class="text-field">
+        <mat-label>Python Version</mat-label>
+        <input
+          class="text-field-input"
+          formControlName="pythonVersion"
+          matInput
+          aria-label="python version" />
+      </mat-form-field>
+    }
+    @if (data.filter === FilterName.Kernel) {
+      <mat-form-field appearance="outline" class="text-field">
+        <mat-label>Kernel</mat-label>
+        <input
+          class="text-field-input"
+          formControlName="kernel"
+          matInput
+          aria-label="kernel" />
+      </mat-form-field>
+    }
     @if (data.filter === FilterName.Results) {
       <div class="filter-result" formArrayName="results">
         @for (result of results.controls; track result; let i = $index) {

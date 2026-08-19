@@ -207,6 +207,54 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     );
   });
 
+  setFilteredValuesLocation = this.effect<string>(location$ => {
+    return location$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([location, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          location,
+        });
+      })
+    );
+  });
+
+  setFilteredValuesLinuxEnv = this.effect<string>(linuxEnv$ => {
+    return linuxEnv$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([linuxEnv, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          linuxEnv,
+        });
+      })
+    );
+  });
+
+  setFilteredValuesPythonVersion = this.effect<string>(pythonVersion$ => {
+    return pythonVersion$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([pythonVersion, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          pythonVersion,
+        });
+      })
+    );
+  });
+
+  setFilteredValuesKernel = this.effect<string>(kernel$ => {
+    return kernel$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([kernel, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          kernel,
+        });
+      })
+    );
+  });
+
   setFilteredValues = this.effect<Filters>(filteredValues$ => {
     return filteredValues$.pipe(
       withLatestFrom(this.dataSource$),
@@ -326,13 +374,33 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         data.started,
         searchString
       );
+      const isIncludeLocation = this.filterStringData(
+        data.host?.location ?? '',
+        searchString.location ?? ''
+      );
+      const isIncludeLinuxEnv = this.filterStringData(
+        data.host?.linux_env ?? '',
+        searchString.linuxEnv ?? ''
+      );
+      const isIncludePythonVersion = this.filterStringData(
+        data.host?.python_version ?? '',
+        searchString.pythonVersion ?? ''
+      );
+      const isIncludeKernel = this.filterStringData(
+        data.device?.kernel ?? '',
+        searchString.kernel ?? ''
+      );
 
       return (
         isIncludeSearchQuery &&
         isIncludeDeviceInfo &&
         isIncludeDeviceFirmware &&
         isIncludeStatus &&
-        isIncludeStartedDate
+        isIncludeStartedDate &&
+        isIncludeLocation &&
+        isIncludeLinuxEnv &&
+        isIncludePythonVersion &&
+        isIncludeKernel
       );
     };
     return filterPredicate;
@@ -448,6 +516,10 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         results: [],
         dateRange: '',
         quickSearch: '',
+        location: '',
+        linuxEnv: '',
+        pythonVersion: '',
+        kernel: '',
       },
       dataLoaded: false,
       selectedRow: null,

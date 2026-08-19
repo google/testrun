@@ -216,6 +216,10 @@ export const FILTERS = {
   results: ['test'],
   dateRange: 'test',
   quickSearch: 'test',
+  location: 'test',
+  linuxEnv: 'test',
+  pythonVersion: 'test',
+  kernel: 'test',
 };
 export const EMPTY_FILTERS = {
   deviceInfo: '',
@@ -223,6 +227,10 @@ export const EMPTY_FILTERS = {
   results: [''],
   dateRange: '',
   quickSearch: '',
+  location: '',
+  linuxEnv: '',
+  pythonVersion: '',
+  kernel: '',
 };
 
 export const DATA_SOURCE_INITIAL_VALUE_NOT_EMPTY =

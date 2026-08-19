@@ -1,6 +1,6 @@
 {
   "uuid": "a8882b26-c990-47b9-9dfb-49532a5934c2",
-  "lastMigration": 32,
+  "lastMigration": 33,
   "name": "Testrun",
   "endpointPrefix": "",
   "latency": 0,
@@ -35,7 +35,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "ea00c773-fb7c-4889-b140-c2b48cae7819",
@@ -113,7 +115,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "6299b6ba-2746-4f44-b7ba-2c31bdd795dc",
@@ -142,7 +146,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "cf9a795b-6b3d-41cf-8115-3777a3514dc8",
@@ -236,7 +242,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "1f580148-ed7a-47f4-bc4b-6b3ce5c8d8a2",
@@ -384,7 +392,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "69fe7ba0-1a81-482f-b8a7-f92cb75d957c",
@@ -546,7 +556,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "9a013389-fa81-4b39-a60b-d0305eab5f58",
@@ -594,7 +606,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "d808737a-e666-4ff4-89d6-7df7da041710",
@@ -618,7 +632,7 @@
           "rulesOperator": "OR",
           "disableTemplating": false,
           "fallbackTo404": false,
-          "default": false,
+          "default": true,
           "crudKey": "id",
           "callbacks": []
         },
@@ -656,12 +670,52 @@
           "rulesOperator": "OR",
           "disableTemplating": false,
           "fallbackTo404": false,
-          "default": true,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "1c96c809-73c7-4f8f-bc11-2b51e3168124",
+          "body": "[\n  {\n    \"testrun\": {\n      \"version\": \"2.2.2\"\n    },\n    \"device\": {{data 'cntg' '0'}},\n    \"host\": {\n      \"location\": \"Data Center Alpha - Rack 12, Bay B\",\n      \"linux_env\": \"Ubuntu 24.04 LTS (x86_64)\",\n      \"python_version\": \"3.11.2\"\n    },\n    \"status\": \"Non-Compliant\",\n    \"started\": \"2026-02-02 17:24:52\",\n    \"finished\": \"2026-02-02 17:34:58\",\n    \"report\": \"/report/f0d4e2f2f541_2026-02-02T17:24:52\",\n    \"export\": \"/export/f0d4e2f2f541_2026-02-02T17:24:52\",\n    \"folder_name\": \"f0d4e2f2f541_2026-02-02T17:24:52\",\n    \"delete\": \"/report/f0d4e2f2f541_2026-02-02T17:24:52\"\n  },\n    {\n    \"testrun\": {\n      \"version\": \"2.2.2\"\n    },\n    \"device\": {{data 'cntg' '0'}},\n    \"host\": {\n      \"location\": \"Data Center Alpha - Rack 12, Bay B\",\n      \"linux_env\": \"Ubuntu 24.04 LTS (x86_64)\",\n      \"python_version\": \"3.11.2\"\n    },\n    \"status\": \"Non-Compliant\",\n    \"started\": \"2026-02-02 17:24:52\",\n    \"finished\": \"2026-02-02 17:34:58\",\n    \"report\": \"/report/f0d4e2f2f541_2026-02-02T17:24:52\",\n    \"export\": \"/export/f0d4e2f2f541_2026-02-02T17:24:52\",\n    \"folder_name\": \"f0d4e2f2f541_2026-02-02T17:24:52\",\n    \"delete\": \"/report/f0d4e2f2f541_2026-02-02T17:24:52\"\n  },\n    {\n    \"testrun\": {\n      \"version\": \"2.2.2\"\n    },\n    \"device\": {{data 'cntg' '0'}},\n    \"host\": {\n      \"location\": \"Data Center Alpha - Rack 12, Bay B\",\n      \"linux_env\": \"Ubuntu 24.04 LTS (x86_64)\",\n      \"python_version\": \"3.11.2\"\n    },\n    \"status\": \"Non-Compliant\",\n    \"started\": \"2026-02-02 17:24:52\",\n    \"finished\": \"2026-02-02 17:34:58\",\n    \"report\": \"/report/f0d4e2f2f541_2026-02-02T17:24:52\",\n    \"export\": \"/export/f0d4e2f2f541_2026-02-02T17:24:52\",\n    \"folder_name\": \"f0d4e2f2f541_2026-02-02T17:24:52\",\n    \"delete\": \"/report/f0d4e2f2f541_2026-02-02T17:24:52\"\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "0f23461b-1a9b-43dd-b56a-5bd15cbffe84",
+          "body": "[]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
           "crudKey": "id",
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "adeda7ee-f6d2-4ab1-ac2a-861d1f2abaed",
@@ -763,7 +817,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "f3b4ed0b-11e2-4d7f-8d08-4b9840c70d5c",
@@ -774,7 +830,7 @@
       "responses": [
         {
           "uuid": "e6bb13a8-2755-412d-bdee-65241dd4b28d",
-          "body": "{\n  \"network\": {\n    \"device_intf\": \"enx207bd2620617\",\n    \"internet_intf\": \"enx207bd26205e9\"\n  },\n  \"log_level\": \"INFO\",\n  \"startup_timeout\": 60,\n  \"monitor_period\": 60\n}",
+          "body": "{\n  \"network\": {\n    \"device_intf\": \"enx00e04c020fa8\",\n    \"internet_intf\": \"enx207bd26205e9\"\n  },\n  \"log_level\": \"INFO\",\n  \"startup_timeout\": 60,\n  \"monitor_period\": 60\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "",
@@ -807,7 +863,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "04dae1d8-3ff8-49d8-8068-33cfbaf00a4c",
@@ -855,7 +913,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "eadeb46e-c9d5-4f97-9a8d-ed12ee53c789",
@@ -941,7 +1001,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "40b2c138-af73-419a-af00-37efe9e08dfc",
@@ -1027,7 +1089,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "ce48617f-b7d2-4284-925d-964ac4e453f2",
@@ -1121,7 +1185,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "a760ed7c-5ad0-43ae-96aa-cf9357a157a3",
@@ -1207,7 +1273,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "a9101349-5805-4914-ad13-06a5b466cfd1",
@@ -1255,7 +1323,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "36128197-31dc-4b55-bcbe-f42c958d0e1b",
@@ -1303,7 +1373,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "c1da7f9f-6f12-48fa-8c4c-df30664ca393",
@@ -1351,7 +1423,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "03fc347f-20b4-461d-a865-a6e56917166c",
@@ -1418,7 +1492,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "6325baee-2cd2-4d35-a69c-57cce8235450",
@@ -1447,7 +1523,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "b6def8f1-0275-4b95-a327-68c75b3c871b",
@@ -1514,7 +1592,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "94e2892b-2650-4508-ac19-63c0529b5f65",
@@ -1562,7 +1642,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "727b4183-2d2c-4c0f-9102-77bd53a9c9f1",
@@ -1629,7 +1711,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "6667bead-2851-46fa-8dee-de8adfc63b25",
@@ -1658,7 +1742,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "65398138-9bd5-4701-af27-48cd268c30cb",
@@ -1706,7 +1792,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -1852,7 +1940,7 @@
       "id": "cntg",
       "name": "device_list",
       "documentation": "",
-      "value": "[\n  {\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"status\": \"Valid\",\n    \"manufacturer\": \"Teltonika\",\n    \"model\": \"TRB 140\",\n    \"type\": \"IoT Gateway\",\n    \"technology\": \"Hardware - Air quality\",\n    \"test_pack\": \"Pilot Assessment\",\n    \"firmware\": \"3.14 omega\",\n    \"additional_info\": [\n      {\n        \"question\": \"What type of device is this?\",\n        \"answer\": \"IoT Gateway\"\n      },\n      {\n        \"question\": \"Please select the technology this device falls into\",\n        \"answer\": \"Building Automation\"\n      },\n      {\n        \"question\": \"Does your device process any sensitive information? \",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can all non-essential services be disabled on your device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Is there a second IP port on the device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can the second IP port on your device be disabled?\",\n        \"answer\": \"No\"\n      }\n    ],\n    \"test_modules\": {\n      \"dns\": {\n        \"enabled\": false\n      },\n      \"connection\": {\n        \"enabled\": true\n      },\n      \"ntp\": {\n        \"enabled\": false\n      },\n      \"nmap\": {\n        \"enabled\": false\n      }\n    },\n    \"kernel\": \"Linux 6.8.0-40-generic\"\n  },\n  {\n    \"mac_addr\": \"aa:bb:cc:dd:ee:ff\",\n    \"status\": \"Invalid\",\n    \"manufacturer\": \"Manufacturer X\",\n    \"model\": \"Device X\",\n    \"type\": \"IoT Gateway\",\n    \"technology\": \"Building Automation\",\n    \"test_pack\": \"Device Qualification\",\n    \"additional_info\": [\n      {\n        \"question\": \"What type of device is this?\",\n        \"answer\": \"IoT Gateway\"\n      },\n      {\n        \"question\": \"Please select the technology this device falls into\",\n        \"answer\": \"Building Automation\"\n      },\n      {\n        \"question\": \"Does your device process any sensitive information? \",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can all non-essential services be disabled on your device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Is there a second IP port on the device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can the second IP port on your device be disabled?\",\n        \"answer\": \"No\"\n      }\n    ],\n    \"test_modules\": {\n      \"connection\": {\n        \"enabled\": true\n      },\n      \"dns\": {\n        \"enabled\": true\n      },\n      \"ntp\": {\n        \"enabled\": true\n      },\n      \"protocol\": {\n        \"enabled\": false\n      },\n      \"services\": {\n        \"enabled\": true\n      },\n      \"tls\": {\n        \"enabled\": false\n      }\n    },\n    \"kernel\": \"Linux 6.10.0-40-generic\"\n  },\n  {\n    \"mac_addr\": \"aa:bb:cc:dd:ee:fa\",\n    \"status\": \"Valid\",\n    \"manufacturer\": \"Manufacturer Y\",\n    \"model\": \"Device y\",\n    \"type\": \"IoT Gateway\",\n    \"technology\": \"Building Automation\",\n    \"test_pack\": \"Device Qualification\",\n    \"additional_info\": [\n      {\n        \"question\": \"What type of device is this?\",\n        \"answer\": \"IoT Gateway\"\n      },\n      {\n        \"question\": \"Please select the technology this device falls into\",\n        \"answer\": \"Building Automation\"\n      },\n      {\n        \"question\": \"Does your device process any sensitive information? \",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can all non-essential services be disabled on your device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Is there a second IP port on the device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can the second IP port on your device be disabled?\",\n        \"answer\": \"Yes\"\n      }\n    ],\n    \"test_modules\": {\n      \"connection\": {\n        \"enabled\": false\n      },\n      \"dns\": {\n        \"enabled\": true\n      },\n      \"ntp\": {\n        \"enabled\": false\n      },\n      \"protocol\": {\n        \"enabled\": false\n      },\n      \"services\": {\n        \"enabled\": false\n      },\n      \"tls\": {\n        \"enabled\": false\n      }\n    },\n    \"kernel\": \"Linux 6.8.0-40\"\n  }\n]"
+      "value": "[\n  {\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"status\": \"Valid\",\n    \"manufacturer\": \"Teltonika\",\n    \"model\": \"TRB 140\",\n    \"type\": \"IoT Gateway\",\n    \"technology\": \"Hardware - Air quality\",\n    \"test_pack\": \"Pilot Assessment\",\n    \"firmware\": \"3.14 omega\",\n    \"additional_info\": [\n      {\n        \"question\": \"What type of device is this?\",\n        \"answer\": \"IoT Gateway\"\n      },\n      {\n        \"question\": \"Please select the technology this device falls into\",\n        \"answer\": \"Building Automation\"\n      },\n      {\n        \"question\": \"Does your device process any sensitive information? \",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can all non-essential services be disabled on your device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Is there a second IP port on the device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can the second IP port on your device be disabled?\",\n        \"answer\": \"No\"\n      }\n    ],\n    \"test_modules\": {\n      \"dns\": {\n        \"enabled\": false\n      },\n      \"connection\": {\n        \"enabled\": true\n      },\n      \"ntp\": {\n        \"enabled\": false\n      },\n      \"nmap\": {\n        \"enabled\": false\n      }\n    },\n    \"kernel\": \"Linux 6.8.0-40-generic\"\n  },\n  {\n    \"mac_addr\": \"aa:bb:cc:dd:ee:ff\",\n    \"status\": \"Valid\",\n    \"manufacturer\": \"Manufacturer X\",\n    \"model\": \"Device X\",\n    \"type\": \"IoT Gateway\",\n    \"technology\": \"Building Automation\",\n    \"test_pack\": \"Device Qualification\",\n    \"additional_info\": [\n      {\n        \"question\": \"What type of device is this?\",\n        \"answer\": \"IoT Gateway\"\n      },\n      {\n        \"question\": \"Please select the technology this device falls into\",\n        \"answer\": \"Building Automation\"\n      },\n      {\n        \"question\": \"Does your device process any sensitive information? \",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can all non-essential services be disabled on your device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Is there a second IP port on the device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can the second IP port on your device be disabled?\",\n        \"answer\": \"No\"\n      }\n    ],\n    \"test_modules\": {\n      \"connection\": {\n        \"enabled\": true\n      },\n      \"dns\": {\n        \"enabled\": true\n      },\n      \"ntp\": {\n        \"enabled\": true\n      },\n      \"protocol\": {\n        \"enabled\": false\n      },\n      \"services\": {\n        \"enabled\": true\n      },\n      \"tls\": {\n        \"enabled\": false\n      }\n    },\n    \"kernel\": \"Linux 6.10.0-40-generic\"\n  },\n  {\n    \"mac_addr\": \"aa:bb:cc:dd:ee:fa\",\n    \"status\": \"Valid\",\n    \"manufacturer\": \"Manufacturer Y\",\n    \"model\": \"Device y\",\n    \"type\": \"IoT Gateway\",\n    \"technology\": \"Building Automation\",\n    \"test_pack\": \"Device Qualification\",\n    \"additional_info\": [\n      {\n        \"question\": \"What type of device is this?\",\n        \"answer\": \"IoT Gateway\"\n      },\n      {\n        \"question\": \"Please select the technology this device falls into\",\n        \"answer\": \"Building Automation\"\n      },\n      {\n        \"question\": \"Does your device process any sensitive information? \",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can all non-essential services be disabled on your device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Is there a second IP port on the device?\",\n        \"answer\": \"No\"\n      },\n      {\n        \"question\": \"Can the second IP port on your device be disabled?\",\n        \"answer\": \"Yes\"\n      }\n    ],\n    \"test_modules\": {\n      \"connection\": {\n        \"enabled\": false\n      },\n      \"dns\": {\n        \"enabled\": true\n      },\n      \"ntp\": {\n        \"enabled\": false\n      },\n      \"protocol\": {\n        \"enabled\": false\n      },\n      \"services\": {\n        \"enabled\": false\n      },\n      \"tls\": {\n        \"enabled\": false\n      }\n    },\n    \"kernel\": \"Linux 6.8.0-40\"\n  }\n]"
     }
   ],
   "callbacks": []

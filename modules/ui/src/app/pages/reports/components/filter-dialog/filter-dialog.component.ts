@@ -86,6 +86,8 @@ interface DialogData {
   trigger: ElementRef;
   filter: string;
   title: string;
+  menuRect?: DOMRect;
+  itemRect?: DOMRect;
 }
 
 @Component({
@@ -167,6 +169,22 @@ export class FilterDialogComponent
     return this.filterForm.get('deviceFirmware') as AbstractControl;
   }
 
+  get location() {
+    return this.filterForm.get('location') as AbstractControl;
+  }
+
+  get linuxEnv() {
+    return this.filterForm.get('linuxEnv') as AbstractControl;
+  }
+
+  get pythonVersion() {
+    return this.filterForm.get('pythonVersion') as AbstractControl;
+  }
+
+  get kernel() {
+    return this.filterForm.get('kernel') as AbstractControl;
+  }
+
   ngOnInit() {
     this.setDialogView();
     this.createFilterForm();
@@ -174,17 +192,7 @@ export class FilterDialogComponent
 
   private setDialogView(): void {
     const matDialogConfig: MatDialogConfig = new MatDialogConfig();
-    const rect = this.data.trigger?.nativeElement.getBoundingClientRect();
 
-    matDialogConfig.position = {
-      left:
-        this.data.filter === FilterName.Results
-          ? `${rect.left - 240}px`
-          : `${rect.left}px`,
-      top: `${rect.bottom + 14}px`,
-    };
-
-    this.topPosition = rect.bottom + this.dialog_actions_height;
     if (this.data.filter === FilterName.Started) {
       matDialogConfig.width = '360px';
     } else if (this.data.filter === FilterName.Results) {
@@ -193,13 +201,49 @@ export class FilterDialogComponent
       matDialogConfig.width = '328px';
     }
 
+    const dialogWidthNum = parseInt(matDialogConfig.width, 10) || 328;
+
+    if (this.data.menuRect) {
+      let left = this.data.menuRect.right;
+      if (left + dialogWidthNum > window.innerWidth) {
+        left = Math.max(0, window.innerWidth - dialogWidthNum);
+      }
+      const top = this.data.itemRect
+        ? this.data.itemRect.top
+        : this.data.menuRect.top;
+
+      matDialogConfig.position = {
+        left: `${left}px`,
+        top: `${top}px`,
+      };
+      this.topPosition = top + this.dialog_actions_height;
+    } else {
+      const rect = this.data.trigger?.nativeElement?.getBoundingClientRect?.();
+      if (rect) {
+        matDialogConfig.position = {
+          left:
+            this.data.filter === FilterName.Results
+              ? `${rect.left - 240}px`
+              : `${rect.left}px`,
+          top: `${rect.bottom + 14}px`,
+        };
+        this.topPosition = rect.bottom + this.dialog_actions_height;
+      }
+    }
+
     this.dialogRef.updateSize(matDialogConfig.width);
-    this.dialogRef.updatePosition(matDialogConfig.position);
+    if (matDialogConfig.position) {
+      this.dialogRef.updatePosition(matDialogConfig.position);
+    }
   }
   private createFilterForm() {
     this.filterForm = this.fb.group({
       deviceInfo: ['', [this.deviceValidators.deviceStringFormat()]],
       deviceFirmware: ['', [this.deviceValidators.firmwareStringFormat()]],
+      location: ['', []],
+      linuxEnv: ['', []],
+      pythonVersion: ['', []],
+      kernel: ['', []],
       results: new FormArray(this.resultList.map(() => new FormControl(false))),
     });
   }
@@ -249,8 +293,12 @@ export class FilterDialogComponent
     }
 
     const filtersData = {
-      deviceInfo: formData.deviceInfo.trim(),
-      deviceFirmware: formData.deviceFirmware.trim(),
+      deviceInfo: formData.deviceInfo?.trim() || '',
+      deviceFirmware: formData.deviceFirmware?.trim() || '',
+      location: formData.location?.trim() || '',
+      linuxEnv: formData.linuxEnv?.trim() || '',
+      pythonVersion: formData.pythonVersion?.trim() || '',
+      kernel: formData.kernel?.trim() || '',
       results,
       dateRange: this.range,
     };

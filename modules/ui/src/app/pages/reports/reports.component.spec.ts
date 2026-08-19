@@ -73,6 +73,10 @@ describe('ReportsComponent', () => {
         results: ['compliant'],
         dateRange: '',
         quickSearch: '',
+        location: '',
+        linuxEnv: '',
+        pythonVersion: '',
+        kernel: '',
       },
       dataLoaded: dataLoaded,
       selectedRow: null,
@@ -91,10 +95,13 @@ describe('ReportsComponent', () => {
       'setFilteredValuesDeviceInfo',
       'setFilteredValuesQuickSearch',
       'setFilteredValuesResults',
+      'setFilteredValuesLocation',
+      'setFilteredValuesLinuxEnv',
+      'setFilteredValuesPythonVersion',
+      'setFilteredValuesKernel',
       'setActiveFiler',
       'setFilterOpened',
       'updateSort',
-      'getReports',
       'getReports',
       'fetchReports',
     ]);
@@ -198,6 +205,8 @@ describe('ReportsComponent', () => {
           filter: '',
           title: '',
           trigger: new ElementRef(event.currentTarget),
+          menuRect: undefined,
+          itemRect: undefined,
         },
         autoFocus: true,
         hasBackdrop: true,
@@ -222,12 +231,20 @@ describe('ReportsComponent', () => {
         start: 'Wed Jun 21 2023 00:00:00',
         end: 'Thu Jun 22 2023 00:00:00',
       };
+      const mockFilterLocation = 'mockLocation';
+      const mockFilterLinuxEnv = 'mockLinuxEnv';
+      const mockFilterPythonVersion = 'mockPythonVersion';
+      const mockFilterKernel = 'mockKernel';
 
       const mockFilteredData = {
         results: mockFilterResults,
         deviceInfo: mockFilterDeviceInfo,
         deviceFirmware: mockFilterDeviceFirmware,
         dateRange: mockFilterDateRange,
+        location: mockFilterLocation,
+        linuxEnv: mockFilterLinuxEnv,
+        pythonVersion: mockFilterPythonVersion,
+        kernel: mockFilterKernel,
       };
 
       spyOn(component.dialog, 'open').and.returnValue({
@@ -259,6 +276,30 @@ describe('ReportsComponent', () => {
         title: FilterTitle.DeviceInfo,
         filterOpened: false,
       });
+      component.openFilter({
+        event,
+        filter: FilterName.Location,
+        title: FilterTitle.Location,
+        filterOpened: false,
+      });
+      component.openFilter({
+        event,
+        filter: FilterName.LinuxEnv,
+        title: FilterTitle.LinuxEnv,
+        filterOpened: false,
+      });
+      component.openFilter({
+        event,
+        filter: FilterName.PythonVersion,
+        title: FilterTitle.PythonVersion,
+        filterOpened: false,
+      });
+      component.openFilter({
+        event,
+        filter: FilterName.Kernel,
+        title: FilterTitle.Kernel,
+        filterOpened: false,
+      });
       expect(mockReportsStore.setFilteredValuesResults).toHaveBeenCalledWith(
         mockFilterResults
       );
@@ -270,6 +311,18 @@ describe('ReportsComponent', () => {
       ).toHaveBeenCalledWith(mockFilterDeviceFirmware);
       expect(mockReportsStore.setFilteredValuesDateRange).toHaveBeenCalledWith(
         mockFilterDateRange
+      );
+      expect(mockReportsStore.setFilteredValuesLocation).toHaveBeenCalledWith(
+        mockFilterLocation
+      );
+      expect(mockReportsStore.setFilteredValuesLinuxEnv).toHaveBeenCalledWith(
+        mockFilterLinuxEnv
+      );
+      expect(
+        mockReportsStore.setFilteredValuesPythonVersion
+      ).toHaveBeenCalledWith(mockFilterPythonVersion);
+      expect(mockReportsStore.setFilteredValuesKernel).toHaveBeenCalledWith(
+        mockFilterKernel
       );
     });
 
@@ -328,6 +381,15 @@ describe('ReportsComponent', () => {
         expect(
           mockReportsStore.setFilteredValuesQuickSearch
         ).toHaveBeenCalledWith('testSearch');
+      });
+
+      it('onSearchQueryChanged should update searchQuery and call applySearchQuery', () => {
+        component.onSearchQueryChanged('newQuery');
+
+        expect(component.searchQuery).toBe('newQuery');
+        expect(
+          mockReportsStore.setFilteredValuesQuickSearch
+        ).toHaveBeenCalledWith('newQuery');
       });
 
       it('addSearchTag should set searchQuery and call applySearchQuery', () => {
@@ -395,12 +457,16 @@ describe('ReportsComponent', () => {
 
     describe('filterCleared', () => {
       it('should update searchQuery and call store.setFilteredValues', () => {
-        const filters = {
+        const filters: Filters = {
           deviceInfo: '',
           deviceFirmware: '',
           results: [],
           dateRange: '',
           quickSearch: 'searchKeyword',
+          location: '',
+          linuxEnv: '',
+          pythonVersion: '',
+          kernel: '',
         };
 
         component.filterCleared(filters);
@@ -560,10 +626,10 @@ describe('ReportsComponent', () => {
         expect(link).toBeTruthy();
       });
 
-      it('should have filter chips', () => {
-        const chips = compiled.querySelector('app-filter-chips');
+      it('should have search component', () => {
+        const search = compiled.querySelector('app-search');
 
-        expect(chips).toBeTruthy();
+        expect(search).toBeTruthy();
       });
 
       it('should have empty state when no data satisfy filters', () => {
