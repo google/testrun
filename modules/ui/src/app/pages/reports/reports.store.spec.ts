@@ -154,6 +154,10 @@ describe('ReportsStore', () => {
             results: [],
             dateRange: '',
             quickSearch: '',
+            location: '',
+            linuxEnv: '',
+            pythonVersion: '',
+            kernel: '',
           },
           dataLoaded: true,
           selectedRow: null,
@@ -351,6 +355,78 @@ describe('ReportsStore', () => {
         reportsStore.setFilteredValues({ ...FILTERS });
 
         reportsStore.setFilteredValuesDateRange('test2');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.filteredValues).toEqual(updatedFilters);
+          expect(store.dataSource.filter).toEqual(
+            JSON.stringify(updatedFilters)
+          );
+          done();
+        });
+      });
+    });
+
+    describe('setFilteredValuesLocation', () => {
+      it('should update store', done => {
+        const updatedFilters = { ...FILTERS, ...{ location: 'test2' } };
+        store.overrideSelector(selectReports, [...HISTORY]);
+        reportsStore.setFilteredValues({ ...FILTERS });
+
+        reportsStore.setFilteredValuesLocation('test2');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.filteredValues).toEqual(updatedFilters);
+          expect(store.dataSource.filter).toEqual(
+            JSON.stringify(updatedFilters)
+          );
+          done();
+        });
+      });
+    });
+
+    describe('setFilteredValuesLinuxEnv', () => {
+      it('should update store', done => {
+        const updatedFilters = { ...FILTERS, ...{ linuxEnv: 'test2' } };
+        store.overrideSelector(selectReports, [...HISTORY]);
+        reportsStore.setFilteredValues({ ...FILTERS });
+
+        reportsStore.setFilteredValuesLinuxEnv('test2');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.filteredValues).toEqual(updatedFilters);
+          expect(store.dataSource.filter).toEqual(
+            JSON.stringify(updatedFilters)
+          );
+          done();
+        });
+      });
+    });
+
+    describe('setFilteredValuesPythonVersion', () => {
+      it('should update store', done => {
+        const updatedFilters = { ...FILTERS, ...{ pythonVersion: 'test2' } };
+        store.overrideSelector(selectReports, [...HISTORY]);
+        reportsStore.setFilteredValues({ ...FILTERS });
+
+        reportsStore.setFilteredValuesPythonVersion('test2');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.filteredValues).toEqual(updatedFilters);
+          expect(store.dataSource.filter).toEqual(
+            JSON.stringify(updatedFilters)
+          );
+          done();
+        });
+      });
+    });
+
+    describe('setFilteredValuesKernel', () => {
+      it('should update store', done => {
+        const updatedFilters = { ...FILTERS, ...{ kernel: 'test2' } };
+        store.overrideSelector(selectReports, [...HISTORY]);
+        reportsStore.setFilteredValues({ ...FILTERS });
+
+        reportsStore.setFilteredValuesKernel('test2');
 
         reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
           expect(store.filteredValues).toEqual(updatedFilters);
