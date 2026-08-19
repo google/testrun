@@ -16,7 +16,7 @@
       {% if device['kernel'] %}
         <div class="summary-item-space"></div>
         <div class="summary-item-label"><h4>Kernel</h4></div>
-        <div class="summary-item-value">{{ device['kernel'] }}</div>
+        <div class="summary-item-value kernel-value">{{ device['kernel'] }}</div>
       {% endif %}
     </div>
   </div>
@@ -54,118 +54,31 @@
       </div>
   </div>
 </div>
-{% endmacro %}
-
-<style>
-  /* Import Google Sans for accurate typography */
-  @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@500&display=swap');
-  
-  /* Fallback to system fonts if Google Sans isn't available */
-  :root {
-    --font-family-title: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-family-text: 'Google Sans Text', 'Google Sans Flex', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  }
-
-  .environment-details-card {
-    /* Auto layout */
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 20px 20px 20px 24px;
-    gap: 16px;
-    
-    /* Dimensions & Styling */
-    width: 1110px;
-    box-sizing: border-box;
-    background: #F0F4F8;
-    border-radius: 12px;
-  }
-
-  .env-title {
-    font-family: var(--font-family-title);
-    font-style: normal;
-    font-weight: 500;
-    font-size: 22px;
-    line-height: 28px;
-    color: #202124;
-    margin: 0;
-  }
-
-  .env-data-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 0px;
-    gap: 16px;
-    width: 100%;
-  }
-
-  .env-data-row {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    padding: 0px;
-    gap: 16px;
-    width: 100%;
-  }
-
-  .env-data-item {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 0px;
-    gap: 4px;
-    flex: 1; /* Равномерно распределяет все элементы в ряду */
-  }
-
-  .env-label {
-    font-family: var(--font-family-text);
-    font-style: normal;
-    font-weight: 500;
-    font-size: 12px;
-    line-height: 16px;
-    letter-spacing: 0.1px;
-    color: #5F6368;
-  }
-
-  .env-value {
-    font-family: var(--font-family-text);
-    font-style: normal;
-    font-weight: 500;
-    font-size: 16px;
-    line-height: 24px;
-    color: #202124;
-  }
-</style>
-</head>
-<body>
-
-<div class="environment-details-card">
-  <h2 class="env-title">Environment Details</h2>
-  
-  <div class="env-data-container">
-    <!-- Единственный ряд со всеми данными -->
-    <div class="env-data-row">
-      <div class="env-data-item">
-        <span class="env-label">Location ID</span>
-        <span class="env-value">LOC-2847-US-WEST</span>
+<div class="host-metadata">
+  <div class="host-metadata-card">
+    <h2 class="host-metadata-title">Environment Details</h2>
+    <div class="host-metadata-row">
+    {% if json_data['host']['location'] %}
+      <div class="host-metadata-item">
+        <div class="summary-item-label"><h4>Location</h4></div>
+        <div class="summary-item-value">{{ json_data['host']['location'] }}</div>
       </div>
-      <div class="env-data-item">
-        <span class="env-label">Timestamp</span>
-        <span class="env-value">2023-06-22T16:12:34.567Z</span>
+    {% endif %}
+
+    {% if json_data['host']['linux_env'] %}
+      <div class="host-metadata-item">
+        <div class="summary-item-label"><h4>Host OS environment</h4></div>
+        <div class="summary-item-value">{{ json_data['host']['linux_env'] }}</div>
       </div>
-      <div class="env-data-item">
-        <span class="env-label">Linux Environment Details</span>
-        <span class="env-value">Ubuntu 22.04.2 LTS (Jammy Jellyfish) x86_64</span>
+    {% endif %}
+
+    {% if json_data['host']['python_version'] %}
+      <div class="host-metadata-item">
+        <div class="summary-item-label"><h4>Python version</h4></div>
+        <div class="summary-item-value">{{ json_data['host']['python_version'] }}</div>
       </div>
-      <div class="env-data-item">
-        <span class="env-label">Linux Kernel Version</span>
-        <span class="env-value">5.15.0-76-generic</span>
-      </div>
-      <div class="env-data-item">
-        <span class="env-label">Device Hardware Version</span>
-        <span class="env-value">Rev. 3.2.1 (PCB-A07)</span>
-      </div>
-    </div>
+    {% endif %}
+  </div>
   </div>
 </div>
+{% endmacro %}
