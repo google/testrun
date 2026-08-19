@@ -37,15 +37,16 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { tap } from 'rxjs/internal/operators/tap';
-import { FilterName, FilterTitle, Filters } from '../../model/filters';
-import { ReportsStore } from './reports.store';
 import {
-  FilterHeaderComponent,
+  FilterName,
+  FilterTitle,
+  Filters,
   OpenFilterEvent,
-} from './components/filter-header/filter-header.component';
+} from '../../model/filters';
+import { ReportsStore } from './reports.store';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { FilterChipsComponent } from './components/filter-chips/filter-chips.component';
+import { MatIconModule } from '@angular/material/icon';
+import { SearchComponent } from './components/search/search.component';
 import { DownloadReportZipComponent } from '../../components/download-report-zip/download-report-zip.component';
 import { DownloadReportPdfComponent } from '../../components/download-report-pdf/download-report-pdf.component';
 import { DeleteReportComponent } from './components/delete-report/delete-report.component';
@@ -67,14 +68,11 @@ import { state, style, trigger } from '@angular/animations';
     MatSortModule,
     MatButtonModule,
     MatInputModule,
-    FilterChipsComponent,
+    SearchComponent,
     DeleteReportComponent,
     DownloadReportZipComponent,
     DownloadReportPdfComponent,
-    FilterHeaderComponent,
     EmptyMessageComponent,
-    MatSortModule,
-    MatIcon,
     MatTooltipModule,
   ],
   providers: [ReportsStore, DatePipe],
@@ -164,6 +162,11 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.store.setFilteredValuesQuickSearch(this.searchQuery);
   }
 
+  onSearchQueryChanged(query: string) {
+    this.searchQuery = query;
+    this.applySearchQuery();
+  }
+
   addSearchTag(tag: string) {
     this.searchQuery = tag;
     this.applySearchQuery();
@@ -193,20 +196,29 @@ export class ReportsComponent implements OnInit, OnDestroy {
     return this.testRunService.getResultClass(status);
   }
 
-  openFilter({ event, filter, title, filterOpened }: OpenFilterEvent) {
+  openFilter({
+    event,
+    filter,
+    title,
+    filterOpened,
+    menuRect,
+    itemRect,
+  }: OpenFilterEvent) {
     event.preventDefault();
     event.stopPropagation();
     const target = new ElementRef(event.currentTarget);
 
     if (!filterOpened) {
-      this.openFilterDialog(target, filter, title);
+      this.openFilterDialog(target, filter, title, menuRect, itemRect);
     }
   }
 
   openFilterDialog(
     target: ElementRef<EventTarget | null>,
     filter: string,
-    title: string
+    title: string,
+    menuRect?: DOMRect,
+    itemRect?: DOMRect
   ) {
     this.store.setFilterOpened(true);
     this.store.setActiveFiler(filter);
@@ -216,6 +228,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
         filter,
         title,
         trigger: target,
+        menuRect,
+        itemRect,
       },
       autoFocus: true,
       hasBackdrop: true,
@@ -247,6 +261,20 @@ export class ReportsComponent implements OnInit, OnDestroy {
           }
           if (filter === FilterName.Started) {
             this.store.setFilteredValuesDateRange(filteredData.dateRange);
+          }
+          if (filter === FilterName.Location) {
+            this.store.setFilteredValuesLocation(filteredData.location);
+          }
+          if (filter === FilterName.LinuxEnv) {
+            this.store.setFilteredValuesLinuxEnv(filteredData.linuxEnv);
+          }
+          if (filter === FilterName.PythonVersion) {
+            this.store.setFilteredValuesPythonVersion(
+              filteredData.pythonVersion
+            );
+          }
+          if (filter === FilterName.Kernel) {
+            this.store.setFilteredValuesKernel(filteredData.kernel);
           }
         }
       });
