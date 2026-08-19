@@ -38,7 +38,7 @@ TEST_REPORT_STYLES = 'test_report_styles.css'
 TEMPLATES_FOLDER = 'report_templates'
 TEST_REPORT_TEMPLATE = 'report_template.html'
 ICON = 'icon.png'
-RESULTS_SPACE_FIRST_PAGE = 440
+RESULTS_SPACE_FIRST_PAGE = 280
 RESULTS_SPACE = 800
 
 _REPORTS_FOLDER = 'local/reports'
