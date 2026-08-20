@@ -487,8 +487,8 @@ class TestrunSession():
         details = result.details
         if isinstance(details, str):
           details = list(filter(lambda s: s!='', details.split('\n')))
-        if isinstance(details, list):
-          details = ' '.join(details)
+        if isinstance(details, list) and details:
+          details = '; '.join(details)
         test_result.details = details
 
         # Add recommendations if provided
