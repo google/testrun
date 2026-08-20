@@ -195,7 +195,7 @@ class TLSModuleTest(unittest.TestCase):
     self.assertEqual(description, expected_description )
 
     expected_details = [
-    'TLS 1.2 not validated on port 443:',
+    'TLS 1.2 not validated on port 443',
     'Certificate has expired'
     ]
     self.assertEqual(details, expected_details)
@@ -226,7 +226,7 @@ class TLSModuleTest(unittest.TestCase):
     self.assertEqual(description, 'TLS 1.2 certificate invalid on ports: 443')
 
     expected_details = [
-    'TLS 1.2 not validated on port 443:',
+    'TLS 1.2 not validated on port 443',
     'Certificate has expired'
     ]
     self.assertEqual(details, expected_details)
