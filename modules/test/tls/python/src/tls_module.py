@@ -418,7 +418,7 @@ class TLSModule(TestModule):
                 result = result and tls_1_2_results[0]
               status_str = '' if tls_1_2_results[0] else 'not '
               details.append(
-                  f'TLS 1.2 {status_str}validated on port {port}:')
+                  f'TLS 1.2 {status_str}validated on port {port}')
               if isinstance(tls_1_2_results[1], list):
                 details.extend(tls_1_2_results[1])
               else:
@@ -430,7 +430,7 @@ class TLSModule(TestModule):
           elif 'HTTP' in service_type:
             # Any non-HTTPS service detetcted is automatically invalid
             ports_invalid.append(port)
-            details.append(f'HTTP service detected on port {port}.')
+            details.append(f'HTTP service detected on port {port}')
             result = False
         LOGGER.debug(f'Valid Ports: {ports_valid}')
         LOGGER.debug(f'Invalid Ports: {ports_invalid}')
@@ -477,7 +477,7 @@ class TLSModule(TestModule):
                 result = result and tls_1_3_results[0]
               status_str = '' if tls_1_3_results[0] else 'not '
               details.append(
-                  f'TLS 1.3 {status_str}validated on port {port}:')
+                  f'TLS 1.3 {status_str}validated on port {port}')
               if isinstance(tls_1_3_results[1], list):
                 details.extend(tls_1_3_results[1])
               else:
@@ -489,7 +489,7 @@ class TLSModule(TestModule):
           elif 'HTTP' in service_type:
             # Any non-HTTPS service detetcted is automatically invalid
             ports_invalid.append(port)
-            details.append(f'HTTP service detected on port {port}.')
+            details.append(f'HTTP service detected on port {port}')
             result = False
         LOGGER.debug(f'Valid Ports: {ports_valid}')
         LOGGER.debug(f'Invalid Ports: {ports_invalid}')
@@ -575,7 +575,7 @@ class TLSModule(TestModule):
     result_tags = []
 
     if client_results[0] is not None:
-      result_details.append(client_results[1])
+      result_details.extend(client_results[1])
       if client_results[0]:
         result_state = True
         result_message = f'TLS {tls_version} client connections valid'
