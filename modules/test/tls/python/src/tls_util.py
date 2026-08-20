@@ -462,7 +462,7 @@ class TLSUtil():
     positive_1_3 = '' if tls_1_3_results[0] else 'not '
     if tls_1_2_results[0] is None and tls_1_3_results[0] is not None:
       # Validate only TLS 1.3 results
-      msg = f'TLS 1.3 {positive_1_3}validated on port {port}:'
+      msg = f'TLS 1.3 {positive_1_3}validated on port {port}'
       details.append(msg)
       if isinstance(tls_1_3_results[1], list):
         details.extend(tls_1_3_results[1])
@@ -471,7 +471,7 @@ class TLSUtil():
       results = tls_1_3_results[0], details
     elif tls_1_3_results[0] is None and tls_1_2_results[0] is not None:
       # Vaidate only TLS 1.2 results
-      details.append(f'TLS 1.2 {positive_1_2}validated on port {port}:')
+      details.append(f'TLS 1.2 {positive_1_2}validated on port {port}')
       if isinstance(tls_1_2_results[1], list):
         details.extend(tls_1_2_results[1])
       else:
@@ -479,12 +479,12 @@ class TLSUtil():
       results = tls_1_2_results[0], details
     elif tls_1_2_results[0] is not None and tls_1_3_results[0] is not None:
       # Validate both results
-      details.append(f'TLS 1.2 {positive_1_2}validated on port {port}:')
+      details.append(f'TLS 1.2 {positive_1_2}validated on port {port}')
       if isinstance(tls_1_2_results[1], list):
         details.extend(tls_1_2_results[1])
       else:
         details.append(tls_1_2_results[1])
-      details.append(f'TLS 1.3 {positive_1_3}validated on port {port}:')
+      details.append(f'TLS 1.3 {positive_1_3}validated on port {port}')
       if isinstance(tls_1_3_results[1], list):
         details.extend(tls_1_3_results[1])
       else:
