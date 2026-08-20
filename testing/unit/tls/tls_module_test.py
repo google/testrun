@@ -138,7 +138,7 @@ class TLSModuleTest(unittest.TestCase):
     self.assertEqual(description, 'TLS 1.2 certificate valid on ports: 443')
 
     expected_details = [
-    'TLS 1.2 validated on port 443:',
+    'TLS 1.2 validated on port 443',
     'Time range valid',
     'Public key valid',
     'Signature valid'
@@ -256,7 +256,7 @@ class TLSModuleTest(unittest.TestCase):
     self.assertEqual(description, 'TLS 1.2 certificate valid on ports: 443')
 
     expected_details = [
-    'TLS 1.2 validated on port 443:',
+    'TLS 1.2 validated on port 443',
     'Time range valid',
     'Public key valid',
     'Signature valid'
@@ -289,11 +289,11 @@ class TLSModuleTest(unittest.TestCase):
     self.assertEqual(description, expected_description)
 
     expected_details = [
-    'TLS 1.2 validated on port 443:',
+    'TLS 1.2 validated on port 443',
     'Time range valid',
     'Public key valid',
     'Signature valid',
-    'TLS 1.2 validated on port 8443:',
+    'TLS 1.2 validated on port 8443',
     'Time range valid',
     'Public key valid',
     'Signature valid',
@@ -323,11 +323,11 @@ class TLSModuleTest(unittest.TestCase):
     self.assertEqual(description, 'TLS 1.2 certificate invalid on ports: 80')
 
     expected_details = [
-    'TLS 1.2 validated on port 443:',
+    'TLS 1.2 validated on port 443',
     'Time range valid',
     'Public key valid',
     'Signature valid',
-    'HTTP service detected on port 80.'
+    'HTTP service detected on port 80'
     ]
     self.assertEqual(details, expected_details)
 
@@ -387,22 +387,22 @@ class TLSModuleTest(unittest.TestCase):
     # Both None
     tls_1_2_results = None, none_message
     tls_1_3_results = None, none_message
-    expected = None, ['TLS 1.2 not validated on port 443:', none_message,
-                      'TLS 1.3 not validated on port 443:', none_message]
+    expected = None, ['TLS 1.2 not validated on port 443', none_message,
+                      'TLS 1.3 not validated on port 443', none_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
 
     # TLS 1.2 Pass and TLS 1.3 None
     tls_1_2_results = True, success_message
-    expected = True, ['TLS 1.2 validated on port 443:', success_message]
+    expected = True, ['TLS 1.2 validated on port 443', success_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
 
     # TLS 1.2 Fail and TLS 1.3 None
     tls_1_2_results = False, fail_message
-    expected = False, ['TLS 1.2 not validated on port 443:', fail_message]
+    expected = False, ['TLS 1.2 not validated on port 443', fail_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
@@ -410,14 +410,14 @@ class TLSModuleTest(unittest.TestCase):
     # TLS 1.3 Pass and TLS 1.2 None
     tls_1_2_results = None, fail_message
     tls_1_3_results = True, success_message
-    expected = True, ['TLS 1.3 validated on port 443:', success_message]
+    expected = True, ['TLS 1.3 validated on port 443', success_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
 
     # TLS 1.3 Fail and TLS 1.2 None
     tls_1_3_results = False, fail_message
-    expected = False, ['TLS 1.3 not validated on port 443:', fail_message]
+    expected = False, ['TLS 1.3 not validated on port 443', fail_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
@@ -425,8 +425,8 @@ class TLSModuleTest(unittest.TestCase):
     # TLS 1.2 Pass and TLS 1.3 Pass
     tls_1_2_results = True, success_message
     tls_1_3_results = True, success_message
-    expected = True, ['TLS 1.2 validated on port 443:', success_message,
-                      'TLS 1.3 validated on port 443:', success_message]
+    expected = True, ['TLS 1.2 validated on port 443', success_message,
+                      'TLS 1.3 validated on port 443', success_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
 
@@ -435,8 +435,8 @@ class TLSModuleTest(unittest.TestCase):
     # TLS 1.2 Pass and TLS 1.3 Fail
     tls_1_2_results = True, success_message
     tls_1_3_results = False, fail_message
-    expected = True, ['TLS 1.2 validated on port 443:', success_message,
-                      'TLS 1.3 not validated on port 443:', fail_message]
+    expected = True, ['TLS 1.2 validated on port 443', success_message,
+                      'TLS 1.3 not validated on port 443', fail_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
@@ -444,16 +444,16 @@ class TLSModuleTest(unittest.TestCase):
     # TLS 1.2 Fail and TLS 1.2 Pass
     tls_1_2_results = False, fail_message
     tls_1_3_results = True, success_message
-    expected = True, ['TLS 1.2 not validated on port 443:', fail_message,
-                      'TLS 1.3 validated on port 443:', success_message]
+    expected = True, ['TLS 1.2 not validated on port 443', fail_message,
+                      'TLS 1.3 validated on port 443', success_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
 
     # TLS 1.2 Fail and TLS 1.2 Fail
     tls_1_3_results = False, fail_message
-    expected = False, ['TLS 1.2 not validated on port 443:', fail_message,
-                       'TLS 1.3 not validated on port 443:', fail_message]
+    expected = False, ['TLS 1.2 not validated on port 443', fail_message,
+                       'TLS 1.3 not validated on port 443', fail_message]
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
     self.assertEqual(result, expected)
