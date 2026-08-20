@@ -491,12 +491,12 @@ class TLSUtil():
         details.append(tls_1_3_results[1])
       results = tls_1_2_results[0] or tls_1_3_results[0], details
     else:
-      details.append(f'TLS 1.2 not validated on port {port}:')
+      details.append(f'TLS 1.2 not validated on port {port}')
       if isinstance(tls_1_2_results[1], list):
         details.extend(tls_1_2_results[1])
       else:
         details.append(tls_1_2_results[1])
-      details.append(f'TLS 1.3 not validated on port {port}:')
+      details.append(f'TLS 1.3 not validated on port {port}')
       if isinstance(tls_1_3_results[1], list):
         details.extend(tls_1_3_results[1])
       else:
@@ -880,43 +880,43 @@ class TLSUtil():
       LOGGER.info('Valid TLS client connection to server: ' + str(handshake))
 
     # Process and return the results
-    tls_client_details = ''
+    tls_client_details = []
     tls_client_valid = None
     if len(hello_packets) > 0:
       if len(client_hello_results['invalid']) > 0:
         tls_client_valid = False
         for result in client_hello_results['invalid']:
-          tls_client_details += 'Client hello packet to ' + result[
+          details_item = 'Client hello packet to ' + result[
               'dst_ip'] + ' did not have expected ciphers:'
           if not result['cipher_support']['ecdh']:
-            tls_client_details += ' ecdh '
+            details_item += ' ecdh '
           if not result['cipher_support']['ecdsa']:
-            tls_client_details += 'ecdsa'
-          tls_client_details += '\n'
+            details_item += 'ecdsa'
+          tls_client_details.append(details_item)
       if len(handshakes['incomplete']) > 0:
         for result in handshakes['incomplete']:
-          tls_client_details += 'Incomplete handshake detected from server: '
-          tls_client_details += result + '.'
+          details_item = 'Incomplete handshake detected from server: '
+          details_item += result
           hello_result = client_hello_results[result]
           if 'protocol_details' in hello_result:
-            tls_client_details += hello_result['protocol_details']
-          tls_client_details += '\n'
+            details_item += hello_result['protocol_details']
+          tls_client_details.append(details_item)
       if len(handshakes['complete']) > 0:
         # If we haven't already failed the test from previous checks
         # allow a passing result
         if tls_client_valid is None:
           tls_client_valid = True
         for result in handshakes['complete']:
-          tls_client_details += 'Completed handshake detected from server: '
-          tls_client_details += result + '.'
+          details_item = 'Completed handshake detected from server: '
+          details_item += result
           for packet in client_hello_results['valid']:
             if result in packet['dst_ip']:
               if 'protocol_details' in packet:
-                tls_client_details += packet['protocol_details']
-          tls_client_details += '\n'
+                details_item += packet['protocol_details']
+          tls_client_details.append(details_item)
     else:
       LOGGER.info('No client hello packets detected')
-      tls_client_details = 'No client hello packets detected'
+      tls_client_details.append('No client hello packets detected')
 
     # Resolve all non-TLS related client connections
     non_tls_client_ips = self.get_non_tls_client_connection_ips(
@@ -935,11 +935,11 @@ class TLSUtil():
           # Allow private IP unencrypted traffic but report in results
           LOGGER.info(
               f'Non-TLS client traffic detected on private subnet to {ip}')
-          tls_client_details += (
-              f'\nAllowing non-TLS traffic to private subnet {ip}')
+          tls_client_details.append(
+              f'Allowing non-TLS traffic to private subnet {ip}')
         elif ip not in tls_client_ips:
           tls_client_valid = False
-          tls_client_details += f'''Non-TLS connection detected to {ip}\n'''
+          tls_client_details.append(f'Non-TLS connection detected to {ip}')
         else:
           LOGGER.info(f'''TLS connection detected to {ip}.
                        Ignoring non-TLS traffic detected to this IP''')
@@ -951,8 +951,8 @@ class TLSUtil():
       tls_client_valid = False
       for ip, tls_versions in unsupported_tls_ips.items():
         for version in tls_versions:
-          tls_client_details += f'''Unsupported TLS {version}
-          connection detected to {ip}\n'''
+          tls_client_details.append(f'''Unsupported TLS {version}
+          connection detected to {ip}''')
     return tls_client_valid, tls_client_details
 
   def detect_tls_client_versions(self,
