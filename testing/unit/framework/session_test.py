@@ -181,7 +181,7 @@ def test_add_test_result_update_existing(
   session_instance.add_test_result(updated_result)
 
   assert initial_result.description == "NTP Verification Success"
-  assert initial_result.details == "Sync complete. Server resolved."
+  assert initial_result.details == "Sync complete.; Server resolved."
   assert initial_result.recommendations == ["Keep server stable"]
   assert initial_result.result == TestResult.COMPLIANT
 
