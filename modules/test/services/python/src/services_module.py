@@ -254,7 +254,7 @@ class ServicesModule(TestModule):
       LOGGER.info(f'Running nmap UDP port scan for {self._device_ipv4_addr}')
       LOGGER.info('UDP ports: ' + str(port_list))
       nmap_results = util.run_command( # pylint: disable=E1120
-          f'nmap -sU -sV -p {port_list} -oX - {self._device_ipv4_addr}')[0]
+          f'nmap -sU -sV -sC -p {port_list} -oX - {self._device_ipv4_addr}')[0]
       LOGGER.info('UDP port scan complete')
       LOGGER.debug(f'UDP Scan results raw: {nmap_results}')
       nmap_results_json = self._nmap_results_to_json(nmap_results)
@@ -283,7 +283,6 @@ class ServicesModule(TestModule):
       elif isinstance(ports['port'], list):
         for port in ports['port']:
           results.update(self._json_port_to_dict(port))
-    print(str(results))
     return results
 
   def _json_port_to_dict(self, port_json):
@@ -455,9 +454,24 @@ class ServicesModule(TestModule):
 
   def _protocol_services_bacnet(self, config):
     LOGGER.info('Running protocol.services.bacnet')
-
+    cmd = f'nmap -sUV -p 47808 -g 47808 -oX - {self._device_ipv4_addr}'
     open_ports = self._check_results(config['ports'], config['services'])
     if len(open_ports) == 0:
+      nmap_results = util.run_command(cmd)[0]
+      nmap_results_json = self._nmap_results_to_json(nmap_results)
+      if nmap_results_json is not None:
+        port_state = nmap_results_json.get('nmaprun', {}
+          ).get('host', {}
+              ).get('ports', {}
+                ).get('port', {}
+                  ).get('state', {}
+                    ).get('@state', 'closed/filtered')
+        LOGGER.info(f'BACNet port is {port_state}')
+        if port_state == 'open':
+          return (
+                  True,
+                  'Found BACnet server running on port 47808'
+                  )
       return False, 'No BACnet server found'
     else:
       return (
