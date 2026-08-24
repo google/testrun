@@ -328,6 +328,16 @@ describe('ReportsStore', () => {
           done();
         });
       });
+
+      it('should filter by formatted timestamp date', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch('Jul 2023');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.filteredData.length).toBe(1);
+          done();
+        });
+      });
     });
 
     describe('setFilteredValuesDeviceFirmware', () => {
