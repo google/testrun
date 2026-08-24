@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="search-field" [class.focused]="isFocused">
+<div class="search-field">
   <button
     type="button"
     mat-icon-button
@@ -62,22 +62,9 @@ limitations under the License.
         </button>
       </div>
     }
-
-    <input
-      #searchInput
-      type="text"
-      class="search-input"
-      [placeholder]="'Add a filter'"
-      [value]="inputValue"
-      (input)="onInputChange($event)"
-      (keydown.enter)="onEnter($event)"
-      (keydown.backspace)="onBackspace()"
-      (focus)="isFocused = true"
-      (blur)="isFocused = false"
-      aria-label="Search reports" />
   </div>
 
-  @if (inputValue || hasActiveFilters()) {
+  @if (hasActiveFilters()) {
     <button
       type="button"
       mat-button
@@ -94,7 +81,7 @@ limitations under the License.
   class="search-filter-menu"
   yPosition="below"
   [overlapTrigger]="false">
-  @for (menuItem of filterMenuItems; track menuItem) {
+  @for (menuItem of filterMenuItems; track menuItem.name) {
     <button
       mat-menu-item
       class="filter-menu-item"

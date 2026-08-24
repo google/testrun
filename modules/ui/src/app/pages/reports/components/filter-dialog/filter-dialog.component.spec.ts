@@ -114,6 +114,7 @@ describe('FilterDialogComponent', () => {
     fixture.detectChanges();
     component.filterForm.get('deviceInfo')?.setValue('deviceInfo  ');
     const mockFormData = {
+      quickSearch: '',
       deviceInfo: 'deviceInfo',
       deviceFirmware: '',
       location: '',
@@ -144,6 +145,7 @@ describe('FilterDialogComponent', () => {
     component.results.controls[0].setValue(true);
 
     const mockFormData = {
+      quickSearch: '',
       deviceInfo: '',
       deviceFirmware: '',
       location: 'Data Center 1',
@@ -151,6 +153,35 @@ describe('FilterDialogComponent', () => {
       pythonVersion: '3.11',
       kernel: '6.8.0',
       results: [ResultOfTestrun.Compliant],
+      dateRange: new DateRange(),
+    };
+    const closeSpy = spyOn(component.dialogRef, 'close');
+    const confirmButton = compiled.querySelector(
+      '.confirm-button'
+    ) as HTMLButtonElement;
+
+    confirmButton?.click();
+
+    expect(closeSpy).toHaveBeenCalledWith(mockFormData);
+  });
+
+  it('should close dialog with raw search on "confirm" click', () => {
+    component.data = {
+      trigger: mockClientRest,
+      filter: FilterName.QuickSearch,
+      title: FilterTitle.QuickSearch,
+    };
+    fixture.detectChanges();
+    component.filterForm.get('quickSearch')?.setValue('  my raw query  ');
+    const mockFormData = {
+      quickSearch: 'my raw query',
+      deviceInfo: '',
+      deviceFirmware: '',
+      location: '',
+      linuxEnv: '',
+      pythonVersion: '',
+      kernel: '',
+      results: [],
       dateRange: new DateRange(),
     };
     const closeSpy = spyOn(component.dialogRef, 'close');
@@ -199,6 +230,9 @@ describe('FilterDialogComponent', () => {
 
   it('should provide form control getters', () => {
     fixture.detectChanges();
+    expect(component.quickSearch).toBe(
+      component.filterForm.get('quickSearch')!
+    );
     expect(component.deviceInfo).toBe(component.filterForm.get('deviceInfo')!);
     expect(component.deviceFirmware).toBe(
       component.filterForm.get('deviceFirmware')!

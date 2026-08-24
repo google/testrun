@@ -248,6 +248,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
       )
       .subscribe(filteredData => {
         if (filteredData) {
+          if (filter === FilterName.QuickSearch) {
+            this.store.setFilteredValuesQuickSearch(filteredData.quickSearch);
+          }
           if (filter === FilterName.Results) {
             this.store.setFilteredValuesResults(filteredData.results);
           }

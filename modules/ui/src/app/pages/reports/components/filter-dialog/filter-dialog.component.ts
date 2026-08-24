@@ -161,6 +161,10 @@ export class FilterDialogComponent
     this.dialogRef = dialogRef;
   }
 
+  get quickSearch() {
+    return this.filterForm.get('quickSearch') as AbstractControl;
+  }
+
   get deviceInfo() {
     return this.filterForm.get('deviceInfo') as AbstractControl;
   }
@@ -238,6 +242,7 @@ export class FilterDialogComponent
   }
   private createFilterForm() {
     this.filterForm = this.fb.group({
+      quickSearch: ['', []],
       deviceInfo: ['', [this.deviceValidators.deviceStringFormat()]],
       deviceFirmware: ['', [this.deviceValidators.firmwareStringFormat()]],
       location: ['', []],
@@ -293,6 +298,7 @@ export class FilterDialogComponent
     }
 
     const filtersData = {
+      quickSearch: formData.quickSearch?.trim() || '',
       deviceInfo: formData.deviceInfo?.trim() || '',
       deviceFirmware: formData.deviceFirmware?.trim() || '',
       location: formData.location?.trim() || '',

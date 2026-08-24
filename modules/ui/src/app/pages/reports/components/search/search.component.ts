@@ -65,17 +65,19 @@ export class SearchComponent {
   @Output() filterCleared = new EventEmitter<Filters>();
   @Output() searchQueryChanged = new EventEmitter<string>();
 
-  readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
   readonly filterButton =
     viewChild<ElementRef<HTMLButtonElement>>('filterButton');
 
   public readonly FilterName = FilterName;
   public readonly FilterTitle = FilterTitle;
 
-  inputValue: string = '';
-  isFocused: boolean = false;
   isMenuOpened: boolean = false;
   filterMenuItems: FilterMenuItem[] = [
+    {
+      displayName: FilterItem.QuickSearch,
+      name: FilterName.QuickSearch,
+      title: FilterTitle.QuickSearch,
+    },
     {
       displayName: FilterItem.Started,
       name: FilterName.Started,
@@ -117,39 +119,6 @@ export class SearchComponent {
       title: FilterTitle.Kernel,
     },
   ];
-
-  focusInput(): void {
-    this.searchInput()?.nativeElement.focus();
-  }
-
-  onInputChange(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    this.inputValue = target.value;
-  }
-
-  onEnter(event: Event): void {
-    event.preventDefault();
-    const query = this.inputValue.trim();
-    if (query) {
-      this.filters.quickSearch = query;
-      this.searchQueryChanged.emit(query);
-      this.filterCleared.emit(this.filters);
-      this.inputValue = '';
-      if (this.searchInput()?.nativeElement) {
-        this.searchInput()!.nativeElement.value = '';
-      }
-    }
-  }
-
-  onBackspace(): void {
-    if (this.inputValue === '') {
-      const active = this.getActiveFilters();
-      if (active.length > 0) {
-        const lastFilter = active[active.length - 1];
-        this.removeFilter(lastFilter.key);
-      }
-    }
-  }
 
   getActiveFilters(): ActiveFilterItem[] {
     if (!this.filters) {
@@ -203,7 +172,7 @@ export class SearchComponent {
 
   getFilterChipLabel(key: string, value: FilterValue): string {
     if (key === FilterName.QuickSearch) {
-      return `search: "${value}"`;
+      return `Raw search contains "${value}"`;
     }
     if (key === FilterName.DeviceInfo) {
       return `Device contains "${value}"`;
@@ -269,7 +238,6 @@ export class SearchComponent {
         break;
       case FilterName.QuickSearch:
         this.filters.quickSearch = '';
-        //this.searchQueryChanged.emit('');
         break;
       case FilterName.Location:
         this.filters.location = '';
@@ -291,10 +259,6 @@ export class SearchComponent {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
-    }
-    this.inputValue = '';
-    if (this.searchInput()?.nativeElement) {
-      this.searchInput()!.nativeElement.value = '';
     }
     this.filters.deviceInfo = '';
     this.filters.deviceFirmware = '';

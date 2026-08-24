@@ -21,6 +21,16 @@ limitations under the License.
     'max-height': 'calc(100vh - ' + (topPosition + dialogTitle) + 'px)',
   }">
   <form [formGroup]="filterForm" class="filter-form">
+    @if (data.filter === FilterName.QuickSearch) {
+      <mat-form-field appearance="outline" class="text-field">
+        <mat-label>Raw search</mat-label>
+        <input
+          class="text-field-input raw-search-input"
+          formControlName="quickSearch"
+          matInput
+          aria-label="raw search" />
+      </mat-form-field>
+    }
     @if (data.filter === FilterName.DeviceInfo) {
       <mat-form-field appearance="outline" class="text-field">
         <mat-label>Device</mat-label>

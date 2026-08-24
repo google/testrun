@@ -99,6 +99,7 @@ describe('Filters Models', () => {
 
   describe('Enums', () => {
     it('should define FilterItem values correctly', () => {
+      expect(FilterItem.QuickSearch).toBe('Raw search');
       expect(FilterItem.DeviceInfo).toBe('Device');
       expect(FilterItem.DeviceFirmware).toBe('Firmware');
       expect(FilterItem.Results).toBe('Result');
@@ -123,6 +124,7 @@ describe('Filters Models', () => {
     });
 
     it('should define FilterTitle values correctly', () => {
+      expect(FilterTitle.QuickSearch).toBe('Enter raw search');
       expect(FilterTitle.DeviceInfo).toBe('Enter device name');
       expect(FilterTitle.DeviceFirmware).toBe('Enter firmware name');
       expect(FilterTitle.Results).toBe('Select status');
