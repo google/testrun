@@ -177,6 +177,25 @@
   }
 }
 
+.progress-card-result-loading-monitoring {
+  display: flex;
+  align-items: center;
+
+  .monitoring-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+    margin-left: 32px;
+    gap: 32px;
+    flex-wrap: wrap;
+
+    .progress-card-result-title {
+      margin-left: 0;
+    }
+  }
+}
+
 @for $i from 1 through 100 {
   .progress-value-#{$i} ::ng-deep .mdc-linear-progress__primary-bar {
     transform: scaleX(1) !important;

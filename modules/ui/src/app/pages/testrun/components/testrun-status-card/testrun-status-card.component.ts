@@ -13,7 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import {
   ResultOfTestrun,
   StatusOfTestResult,
@@ -32,6 +42,12 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { TimerComponent } from '../timer/timer.component';
+import { Store } from '@ngrx/store';
+import { AppState } from '../../../../store/state';
+import { selectSystemConfig } from '../../../../store/selectors';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-testrun-status-card',
@@ -49,13 +65,57 @@ import { MatButtonModule } from '@angular/material/button';
     MatExpansionModule,
     ReactiveFormsModule,
     MatTooltipModule,
+    TimerComponent,
   ],
 })
-export class TestrunStatusCardComponent {
+export class TestrunStatusCardComponent
+  implements OnInit, OnChanges, OnDestroy
+{
   @Input() systemStatus!: TestrunStatus;
+  @Input() monitorPeriod?: number;
+
+  public isTimerExpired = false;
+  private readonly store = inject(Store<AppState>, { optional: true });
+  private readonly cdr = inject(ChangeDetectorRef);
+  private destroy$ = new Subject<void>();
 
   public readonly StatusOfTestrun = StatusOfTestrun;
   public readonly TestingType = TestingType;
+
+  ngOnInit(): void {
+    if (this.store && this.monitorPeriod === undefined) {
+      this.store
+        .select(selectSystemConfig)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(config => {
+          if (config?.monitor_period) {
+            this.monitorPeriod = Number(config.monitor_period);
+            this.cdr.markForCheck();
+          }
+        });
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['systemStatus']) {
+      const current = changes['systemStatus'].currentValue as
+        TestrunStatus | undefined;
+      const previous = changes['systemStatus'].previousValue as
+        TestrunStatus | undefined;
+      if (
+        current?.status === StatusOfTestrun.Monitoring &&
+        previous?.status !== StatusOfTestrun.Monitoring
+      ) {
+        this.isTimerExpired = false;
+        this.cdr.markForCheck();
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   public getClass(
     status: StatusOfTestrun,
