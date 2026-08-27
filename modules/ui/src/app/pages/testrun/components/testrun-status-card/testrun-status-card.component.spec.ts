@@ -458,8 +458,7 @@ describe('ProgressStatusCardComponent', () => {
       });
 
       it('should not render timer component when monitorPeriod is not defined', () => {
-        component.monitorPeriod = undefined;
-        fixture.changeDetectorRef.markForCheck();
+        fixture.componentRef.setInput('monitorPeriod', undefined);
         fixture.detectChanges();
 
         const timerEl = compiled.querySelector('app-timer');
