@@ -69,12 +69,11 @@ import { takeUntil } from 'rxjs/operators';
   ],
 })
 export class TestrunStatusCardComponent
-  implements OnInit, OnChanges, OnDestroy
+  implements OnInit, OnDestroy
 {
   @Input() systemStatus!: TestrunStatus;
   @Input() monitorPeriod?: number;
 
-  public isTimerExpired = false;
   private readonly store = inject(Store<AppState>, { optional: true });
   private readonly cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
@@ -93,22 +92,6 @@ export class TestrunStatusCardComponent
             this.cdr.markForCheck();
           }
         });
-    }
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['systemStatus']) {
-      const current = changes['systemStatus'].currentValue as
-        TestrunStatus | undefined;
-      const previous = changes['systemStatus'].previousValue as
-        TestrunStatus | undefined;
-      if (
-        current?.status === StatusOfTestrun.Monitoring &&
-        previous?.status !== StatusOfTestrun.Monitoring
-      ) {
-        this.isTimerExpired = false;
-        this.cdr.markForCheck();
-      }
     }
   }
 

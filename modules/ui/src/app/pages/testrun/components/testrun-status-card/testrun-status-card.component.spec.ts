@@ -457,8 +457,9 @@ describe('ProgressStatusCardComponent', () => {
         expect(timerEl).not.toBeNull();
       });
 
-      it('should remove timer component when isTimerExpired is true', () => {
-        component.onTimerExpired();
+      it('should not render timer component when monitorPeriod is not defined', () => {
+        component.monitorPeriod = undefined;
+        fixture.changeDetectorRef.markForCheck();
         fixture.detectChanges();
 
         const timerEl = compiled.querySelector('app-timer');

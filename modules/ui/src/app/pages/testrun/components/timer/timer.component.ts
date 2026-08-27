@@ -17,11 +17,9 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  EventEmitter,
   Input,
   OnDestroy,
   OnInit,
-  Output,
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -29,13 +27,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { Subject, Subscription, interval } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { TestrunStatus } from '../../../../model/testrun-status';
 
 export const MONITORING_TIMER_STORAGE_KEY = 'testrun_monitoring_timer_session';
 export const DEFAULT_MONITOR_PERIOD = 300;
 
 export interface TimerSessionData {
-  macAddr: string;
   startTime: number;
   endTime: number;
   duration: number;
@@ -50,8 +46,6 @@ export interface TimerSessionData {
 })
 export class TimerComponent implements OnInit, OnDestroy {
   @Input() duration?: number;
-  @Input() systemStatus?: TestrunStatus | null;
-  @Output() timerExpired = new EventEmitter<void>();
 
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly liveAnnouncer = inject(LiveAnnouncer, { optional: true });
@@ -116,18 +110,10 @@ export class TimerComponent implements OnInit, OnDestroy {
   }
 
   public startTimer(): void {
-    const macAddr =
-      this.systemStatus?.mac_addr || this.systemStatus?.device?.mac_addr || '';
     const existingSession = this.getStoredSession();
     const now = Date.now();
 
-    if (
-      existingSession &&
-      existingSession.endTime > now &&
-      (!macAddr ||
-        !existingSession.macAddr ||
-        existingSession.macAddr === macAddr)
-    ) {
+    if (existingSession && existingSession.endTime > now) {
       // Resume from saved session (e.g. browser refresh during monitoring)
       this.startTime = existingSession.startTime;
       this.endTime = existingSession.endTime;
@@ -142,7 +128,6 @@ export class TimerComponent implements OnInit, OnDestroy {
       this.endTime = now + this.totalDuration * 1000;
       this.remainingSeconds = this.totalDuration;
       this.saveSession({
-        macAddr,
         startTime: this.startTime,
         endTime: this.endTime,
         duration: this.totalDuration,
@@ -203,7 +188,6 @@ export class TimerComponent implements OnInit, OnDestroy {
     this.isExpired = true;
     this.stopTimer();
     this.clearStoredSession();
-    this.timerExpired.emit();
     this.announceText('Monitoring period completed');
     this.cdr.markForCheck();
   }

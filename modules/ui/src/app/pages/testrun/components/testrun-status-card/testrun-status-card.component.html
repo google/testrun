@@ -118,9 +118,8 @@ limitations under the License.
 </ng-template>
 
 <ng-template #Monitoring>
-  @if (!isTimerExpired && monitorPeriod) {
-    <app-timer [duration]="monitorPeriod" [systemStatus]="systemStatus">
-    </app-timer>
+  @if (monitorPeriod) {
+    <app-timer [duration]="monitorPeriod"> </app-timer>
   }
 </ng-template>
 
