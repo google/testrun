@@ -18,10 +18,8 @@ import {
   ChangeDetectorRef,
   Component,
   Input,
-  OnChanges,
   OnDestroy,
   OnInit,
-  SimpleChanges,
   inject,
 } from '@angular/core';
 import {
@@ -68,9 +66,7 @@ import { takeUntil } from 'rxjs/operators';
     TimerComponent,
   ],
 })
-export class TestrunStatusCardComponent
-  implements OnInit, OnDestroy
-{
+export class TestrunStatusCardComponent implements OnInit, OnDestroy {
   @Input() systemStatus!: TestrunStatus;
   @Input() monitorPeriod?: number;
 
