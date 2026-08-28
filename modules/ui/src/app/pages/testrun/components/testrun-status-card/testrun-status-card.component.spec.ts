@@ -418,6 +418,7 @@ describe('ProgressStatusCardComponent', () => {
     describe('with available systemStatus$ data, as Monitoring', () => {
       beforeEach(() => {
         component.systemStatus = MOCK_PROGRESS_DATA_MONITORING;
+        component.monitorPeriod = 300;
         fixture.detectChanges();
       });
 
@@ -433,15 +434,12 @@ describe('ProgressStatusCardComponent', () => {
         expect(progressCardEl?.classList).toContain('progress');
       });
 
-      it('should have progress card result title', () => {
+      it('should not have progress card result title during Monitoring', () => {
         const progressCardResultEl = compiled.querySelector(
           '.progress-card-result-title'
         );
 
-        expect(progressCardResultEl).not.toBeNull();
-        expect(progressCardResultEl?.textContent?.trim()).toEqual(
-          'Please wait, this could take a few minutes'
-        );
+        expect(progressCardResultEl).toBeNull();
       });
 
       it('should have progress card status text as "Monitoring"', () => {
@@ -451,6 +449,20 @@ describe('ProgressStatusCardComponent', () => {
 
         expect(progressCardStatusText).not.toBeNull();
         expect(progressCardStatusText?.textContent).toEqual('Monitoring');
+      });
+
+      it('should render the countdown timer component during Monitoring', () => {
+        const timerEl = compiled.querySelector('app-timer');
+
+        expect(timerEl).not.toBeNull();
+      });
+
+      it('should not render timer component when monitorPeriod is not defined', () => {
+        fixture.componentRef.setInput('monitorPeriod', undefined);
+        fixture.detectChanges();
+
+        const timerEl = compiled.querySelector('app-timer');
+        expect(timerEl).toBeNull();
       });
     });
 
