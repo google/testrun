@@ -478,7 +478,7 @@ class NetworkOrchestrator:
     loaded_modules = 'Loaded the following network modules: '
     net_modules_dir = os.path.join(self._path, NETWORK_MODULES_DIR)
 
-    for module_dir in os.listdir(net_modules_dir):
+    for module_dir in sorted(os.listdir(net_modules_dir)):
 
       if (self._get_network_module(module_dir) is None
           and module_dir != 'template'):
