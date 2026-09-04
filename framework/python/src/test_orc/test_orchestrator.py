@@ -733,7 +733,7 @@ class TestOrchestrator:
     loaded_modules = "Loaded the following test modules: "
     test_modules_dir = os.path.join(self._root_path, TEST_MODULES_DIR)
 
-    module_dirs = os.listdir(test_modules_dir)
+    module_dirs = sorted(os.listdir(test_modules_dir))
     # Check if the directory protocol exists and move it to the beginning
     # protocol should always be run first so BACnet binding doesn't get
     # corrupted during DHCP changes in the conn module
@@ -743,8 +743,9 @@ class TestOrchestrator:
     # so it always runs before connection. Connection may cause too many
     # DHCP changes causing nmap to use wrong IP during scan
     if "services" in module_dirs and "conn" in module_dirs:
-      module_dirs.insert(module_dirs.index("conn"),
-                         module_dirs.pop(module_dirs.index("services")))
+      services_dir = module_dirs.pop(module_dirs.index("services"))
+      conn_index = module_dirs.index("conn")
+      module_dirs.insert(conn_index, services_dir)
 
     for module_dir in module_dirs:
 

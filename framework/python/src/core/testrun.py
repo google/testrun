@@ -218,7 +218,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     util.run_command(f'chown -R {util.get_host_user()} {device_dir}')
 
-    for device_folder in os.listdir(device_dir):
+    for device_folder in sorted(os.listdir(device_dir)):
 
       device_config_file_path = os.path.join(device_dir, device_folder,
                                              DEVICE_CONFIG)
@@ -343,7 +343,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     if not os.path.exists(reports_folder):
       return
 
-    for report_folder in os.listdir(reports_folder):
+    for report_folder in sorted(os.listdir(reports_folder)):
       # 1.3 file path
       report_json_file_path = os.path.join(reports_folder, report_folder,
                                            'test',
