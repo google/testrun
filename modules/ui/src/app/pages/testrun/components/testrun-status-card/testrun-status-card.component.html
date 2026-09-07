@@ -119,7 +119,10 @@ limitations under the License.
 
 <ng-template #Monitoring>
   @if (monitorPeriod) {
-    <app-timer [duration]="monitorPeriod"> </app-timer>
+    <app-timer
+      [duration]="monitorPeriod"
+      [startTime]="systemStatus.monitor_started">
+    </app-timer>
   }
 </ng-template>
 

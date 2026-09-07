@@ -46,6 +46,7 @@ export interface TimerSessionData {
 })
 export class TimerComponent implements OnInit, OnDestroy {
   @Input() duration?: number;
+  @Input() startTime?: string | number | null;
 
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly liveAnnouncer = inject(LiveAnnouncer, { optional: true });
@@ -59,7 +60,7 @@ export class TimerComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private lastAnnouncedInterval = -1;
   private endTime: number | null = null;
-  private startTime: number | null = null;
+  private sessionStartTime: number | null = null;
 
   public readonly circleRadius = 122;
   public readonly circleCircumference = 2 * Math.PI * 122;
@@ -101,7 +102,11 @@ export class TimerComponent implements OnInit, OnDestroy {
   }
 
   private initDuration(): void {
-    this.totalDuration = Number(this.duration);
+    if (this.duration !== undefined && !isNaN(Number(this.duration))) {
+      this.totalDuration = Number(this.duration);
+    } else {
+      this.totalDuration = DEFAULT_MONITOR_PERIOD;
+    }
   }
 
   private init(): void {
@@ -113,9 +118,36 @@ export class TimerComponent implements OnInit, OnDestroy {
     const existingSession = this.getStoredSession();
     const now = Date.now();
 
-    if (existingSession && existingSession.endTime > now) {
+    let parsedServerStart: number | null = null;
+    if (this.startTime) {
+      const parsed =
+        typeof this.startTime === 'number'
+          ? this.startTime
+          : new Date(this.startTime).getTime();
+      if (!isNaN(parsed) && parsed > 0) {
+        parsedServerStart = parsed;
+      }
+    }
+
+    if (
+      parsedServerStart &&
+      parsedServerStart + this.totalDuration * 1000 > now
+    ) {
+      // Resume from server-authoritative start timestamp
+      this.sessionStartTime = parsedServerStart;
+      this.endTime = parsedServerStart + this.totalDuration * 1000;
+      this.remainingSeconds = Math.max(
+        0,
+        Math.ceil((this.endTime - now) / 1000)
+      );
+      this.saveSession({
+        startTime: this.sessionStartTime,
+        endTime: this.endTime,
+        duration: this.totalDuration,
+      });
+    } else if (existingSession && existingSession.endTime > now) {
       // Resume from saved session (e.g. browser refresh during monitoring)
-      this.startTime = existingSession.startTime;
+      this.sessionStartTime = existingSession.startTime;
       this.endTime = existingSession.endTime;
       this.totalDuration = existingSession.duration;
       this.remainingSeconds = Math.max(
@@ -124,11 +156,11 @@ export class TimerComponent implements OnInit, OnDestroy {
       );
     } else {
       // Initiate fresh countdown
-      this.startTime = now;
+      this.sessionStartTime = now;
       this.endTime = now + this.totalDuration * 1000;
       this.remainingSeconds = this.totalDuration;
       this.saveSession({
-        startTime: this.startTime,
+        startTime: this.sessionStartTime,
         endTime: this.endTime,
         duration: this.totalDuration,
       });

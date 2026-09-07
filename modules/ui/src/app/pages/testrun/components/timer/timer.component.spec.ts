@@ -21,6 +21,7 @@ import {
 } from '@angular/core/testing';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import {
+  DEFAULT_MONITOR_PERIOD,
   TimerComponent,
   MONITORING_TIMER_STORAGE_KEY,
   TimerSessionData,
@@ -33,6 +34,8 @@ describe('TimerComponent', () => {
   let liveAnnouncerSpy: jasmine.SpyObj<LiveAnnouncer>;
 
   beforeEach(() => {
+    localStorage.removeItem(MONITORING_TIMER_STORAGE_KEY);
+    sessionStorage.removeItem(MONITORING_TIMER_STORAGE_KEY);
     liveAnnouncerSpy = jasmine.createSpyObj('LiveAnnouncer', ['announce']);
 
     TestBed.configureTestingModule({
@@ -47,6 +50,7 @@ describe('TimerComponent', () => {
 
   afterEach(() => {
     component.ngOnDestroy();
+    component.clearStoredSession();
   });
 
   it('should create', () => {
@@ -60,10 +64,20 @@ describe('TimerComponent', () => {
       expect(component.totalDuration).toBe(180);
     });
 
-    it('should set totalDuration to NaN when duration input is undefined', () => {
+    it('should fallback to DEFAULT_MONITOR_PERIOD when duration input is undefined', () => {
       component.duration = undefined;
       component.ngOnInit();
-      expect(component.totalDuration).toBeNaN();
+      expect(component.totalDuration).toBe(DEFAULT_MONITOR_PERIOD);
+    });
+
+    it('should initialize and calculate remaining time from startTime input', () => {
+      const now = Date.now();
+      component.duration = 300;
+      component.startTime = new Date(now - 60000).toISOString();
+      component.ngOnInit();
+
+      expect(component.totalDuration).toBe(300);
+      expect(component.remainingSeconds).toBeCloseTo(240, 1);
     });
   });
 
@@ -329,6 +343,23 @@ describe('TimerComponent', () => {
 
       expect(localRemoveSpy).toHaveBeenCalledWith(MONITORING_TIMER_STORAGE_KEY);
       expect(sessionRemoveSpy).toHaveBeenCalledWith(
+        MONITORING_TIMER_STORAGE_KEY
+      );
+    });
+
+    it('should stop timer without clearing session storage on ngOnDestroy', () => {
+      const localRemoveSpy = spyOn(localStorage, 'removeItem');
+      const sessionRemoveSpy = spyOn(sessionStorage, 'removeItem');
+
+      component.duration = 300;
+      component.ngOnInit();
+      component.ngOnDestroy();
+
+      expect(component['timerSubscription']).toBeUndefined();
+      expect(localRemoveSpy).not.toHaveBeenCalledWith(
+        MONITORING_TIMER_STORAGE_KEY
+      );
+      expect(sessionRemoveSpy).not.toHaveBeenCalledWith(
         MONITORING_TIMER_STORAGE_KEY
       );
     });
