@@ -632,8 +632,8 @@ class TestrunSession():
     LOGGER.debug('Loading risk profiles')
 
     try:
-      for risk_profile_file in os.listdir(
-          os.path.join(self._root_dir, PROFILES_DIR)):
+      for risk_profile_file in sorted(os.listdir(
+          os.path.join(self._root_dir, PROFILES_DIR))):
 
         if not risk_profile_file.endswith('.json'):
           continue
