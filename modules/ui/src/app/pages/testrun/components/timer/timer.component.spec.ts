@@ -347,7 +347,7 @@ describe('TimerComponent', () => {
       );
     });
 
-    it('should stop timer without clearing session storage on ngOnDestroy', () => {
+    it('should call handleExpire on ngOnDestroy', () => {
       const localRemoveSpy = spyOn(localStorage, 'removeItem');
       const sessionRemoveSpy = spyOn(sessionStorage, 'removeItem');
 
@@ -355,11 +355,10 @@ describe('TimerComponent', () => {
       component.ngOnInit();
       component.ngOnDestroy();
 
+      expect(component.isExpired).toBeTrue();
       expect(component['timerSubscription']).toBeUndefined();
-      expect(localRemoveSpy).not.toHaveBeenCalledWith(
-        MONITORING_TIMER_STORAGE_KEY
-      );
-      expect(sessionRemoveSpy).not.toHaveBeenCalledWith(
+      expect(localRemoveSpy).toHaveBeenCalledWith(MONITORING_TIMER_STORAGE_KEY);
+      expect(sessionRemoveSpy).toHaveBeenCalledWith(
         MONITORING_TIMER_STORAGE_KEY
       );
     });
