@@ -13,12 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+export type FilterValue =
+  | string
+  | string[]
+  | DateRange
+  | { start?: string | Date | null; end?: string | Date | null }
+  | null;
+
+export interface OpenFilterEvent {
+  event: Event;
+  filter: string;
+  title: string;
+  filterOpened: boolean;
+  menuRect?: DOMRect;
+  itemRect?: DOMRect;
+}
+
+export interface FilterMenuItem {
+  displayName: FilterItem;
+  name: FilterName;
+  title: FilterTitle;
+}
+
+export enum FilterItem {
+  DeviceInfo = 'Device',
+  DeviceFirmware = 'Firmware',
+  Results = 'Result',
+  Started = 'Started',
+  Location = 'Location',
+  LinuxEnv = 'Linux Environment',
+  PythonVersion = 'Python Version',
+  Kernel = 'Kernel',
+}
+
 export enum FilterName {
   DeviceInfo = 'deviceInfo',
   DeviceFirmware = 'deviceFirmware',
   Results = 'results',
   Started = 'started',
   DateRange = 'dateRange',
+  QuickSearch = 'quickSearch',
+  Location = 'location',
+  LinuxEnv = 'linuxEnv',
+  PythonVersion = 'pythonVersion',
+  Kernel = 'kernel',
 }
 
 export enum FilterTitle {
@@ -26,13 +65,10 @@ export enum FilterTitle {
   DeviceFirmware = 'Enter firmware name',
   Results = 'Select status',
   Started = 'Select dates',
-}
-
-export interface ReportFilters {
-  deviceInfo: string;
-  deviceFirmware: string;
-  results: string[];
-  dateRange: DateRange | string;
+  Location = 'Enter location',
+  LinuxEnv = 'Enter Linux environment',
+  PythonVersion = 'Enter Python version',
+  Kernel = 'Enter kernel',
 }
 
 export class DateRange {
@@ -57,6 +93,11 @@ export class Filters {
   deviceFirmware = '';
   results: string[] = [];
   dateRange: DateRange | string = '';
+  quickSearch = '';
+  location = '';
+  linuxEnv = '';
+  pythonVersion = '';
+  kernel = '';
 }
 
 function getDateString(date: string | Date) {

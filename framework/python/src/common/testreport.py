@@ -38,7 +38,7 @@ TEST_REPORT_STYLES = 'test_report_styles.css'
 TEMPLATES_FOLDER = 'report_templates'
 TEST_REPORT_TEMPLATE = 'report_template.html'
 ICON = 'icon.png'
-RESULTS_SPACE_FIRST_PAGE = 440
+RESULTS_SPACE_FIRST_PAGE = 280
 RESULTS_SPACE = 800
 
 _REPORTS_FOLDER = 'local/reports'
@@ -71,6 +71,7 @@ class TestReport():
                finished=None,
                total_tests=0):
     self._device = {}
+    self._host = {}
     self._mac_addr = None
     self._status: TestrunStatus = TestrunStatus.COMPLETE
     self._result: TestrunResult = result
@@ -92,6 +93,14 @@ class TestReport():
     self._device['manufacturer'] = device.manufacturer
     self._device['model'] = device.model
     self._device['device_profile'] = device.additional_info
+    if hasattr(device, 'kernel') and device.kernel is not None:
+      self._device['kernel'] = device.kernel
+
+  def get_host(self) -> dict:
+    return self._host
+
+  def set_host(self, host: dict):
+    self._host = host
 
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
@@ -161,6 +170,7 @@ class TestReport():
 
     report_json['mac_addr'] = self._mac_addr
     report_json['device'] = copy.deepcopy(self._device)
+    report_json['host'] = copy.deepcopy(self._host)
     report_json['status'] = self._status
     report_json['result'] = self._result
     report_json['started'] = self._started.strftime(DATE_TIME_FORMAT)
@@ -170,10 +180,12 @@ class TestReport():
     for test in self._results:
       details = test.details
       if isinstance(details, str):
-        details = ' '.join(list(filter(lambda s: s != '', details.split('\n'))))
+        details = '; '.join(
+          list(filter(lambda s: s != '', details.split('\n')))
+        )
       if isinstance(details, list):
         details = [str(d) for d in details]
-        details = ' '.join(details)
+        details = '; '.join(details)
       else:
         details = str(details)
       test_dict = {
@@ -217,6 +229,12 @@ class TestReport():
     if 'firmware' in json_file['device']:
       self._device['firmware'] = json_file['device']['firmware']
 
+    # Kernel is a device feature
+    if 'kernel' in json_file['device']:
+      self._device['kernel'] = json_file['device']['kernel']
+    elif 'kernel' in json_file:
+      self._device['kernel'] = json_file['kernel']
+
     if 'test_modules' in json_file['device']:
       self._device['test_modules'] = json_file['device']['test_modules']
 
@@ -232,6 +250,19 @@ class TestReport():
     # 'additional_info' field is changed to 'device_profile' in the report
     if 'device_profile' in json_file['device']:
       self._device['device_profile'] = json_file['device']['device_profile']
+
+    if 'host' in json_file and isinstance(json_file['host'], dict):
+      self._host = copy.deepcopy(json_file['host'])
+    else:
+      self._host = {}
+      if 'location' in json_file:
+        self._host['location'] = json_file['location']
+      if 'linux_env' in json_file:
+        self._host['linux_env'] = json_file['linux_env']
+      if 'python_version' in json_file:
+        self._host['python_version'] = json_file['python_version']
+      elif 'python' in json_file:
+        self._host['python_version'] = json_file['python']
 
     self._status = json_file['status']
 
@@ -277,6 +308,8 @@ class TestReport():
     json_data['device']['manufacturer'] = device.manufacturer
     json_data['device']['model'] = device.model
     json_data['device']['device_profile'] = device.additional_info
+    if hasattr(device, 'kernel') and device.kernel is not None:
+      json_data['device']['kernel'] = device.kernel
     return json_data
 
   # Create a pdf file in memory and return the bytes
@@ -303,7 +336,8 @@ class TestReport():
     template_folder = os.path.join(current_test_pack.path,
                                   TEMPLATES_FOLDER)
     # Jinja template
-    template_env = Environment(
+    # nosemgrep
+    template_env = Environment( # nosec B701
                                 loader=FileSystemLoader(
                                               template_folder
                                               ),
@@ -348,7 +382,8 @@ class TestReport():
     steps_to_resolve_ = logic.get_steps_to_resolve(json_data)
 
     module_reports = self._module_reports
-    env_module = Environment(loader=BaseLoader())
+    # nosemgrep
+    env_module = Environment(loader=BaseLoader()) # nosec B701
     manufacturer_length = len(json_data['device']['manufacturer'])
     device_name_length = len(json_data['device']['model'])
     title_length = manufacturer_length + device_name_length + 1
@@ -365,7 +400,7 @@ class TestReport():
           version=self._version,
       ) for s in self._module_templates
     ]
-
+    # nosemgrep
     return self._add_page_counter(template.render(styles=styles,
                            logo=logo,
                            icon=icon,

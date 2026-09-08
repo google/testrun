@@ -25,7 +25,7 @@ import time
 import docker.errors
 
 from common import logger, util, mqtt
-from common.device import Device
+from common.models import Device
 from common.testreport import TestReport
 from common.statuses import TestrunStatus
 from session import TestrunSession
@@ -218,7 +218,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     util.run_command(f'chown -R {util.get_host_user()} {device_dir}')
 
-    for device_folder in os.listdir(device_dir):
+    for device_folder in sorted(os.listdir(device_dir)):
 
       device_config_file_path = os.path.join(device_dir, device_folder,
                                              DEVICE_CONFIG)
@@ -271,6 +271,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
                         )
 
         # Load in the additional fields
+        if 'kernel' in device_config_json:
+          device.kernel = device_config_json.get('kernel')
+
         if DEVICE_TYPE_KEY in device_config_json:
           device.type = device_config_json.get(DEVICE_TYPE_KEY)
 
@@ -340,7 +343,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     if not os.path.exists(reports_folder):
       return
 
-    for report_folder in os.listdir(reports_folder):
+    for report_folder in sorted(os.listdir(reports_folder)):
       # 1.3 file path
       report_json_file_path = os.path.join(reports_folder, report_folder,
                                            'test',
@@ -597,7 +600,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     client = docker.from_env()
 
     try:
-      client.containers.run(image='testrun/ui',
+      client.containers.run('testrun/ui',
                             auto_remove=True,
                             name='tr-ui',
                             hostname='testrun.io',
@@ -636,7 +639,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     client = docker.from_env()
 
     try:
-      client.containers.run(image='testrun/ws',
+      client.containers.run('testrun/ws',
                             auto_remove=True,
                             name='tr-ws',
                             detach=True,

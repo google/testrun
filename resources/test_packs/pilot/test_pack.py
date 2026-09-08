@@ -30,7 +30,7 @@ def calculate_status(result, json): # pylint: disable=unused-argument
 
   required_tests = [
     "connection.dhcp_address",
-    "security.tls.v1_0_client"
+    "security.tls.v1_2_client"
   ]
 
   for test_result in json:

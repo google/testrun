@@ -311,8 +311,21 @@ class NetworkOrchestrator:
                            prn=self._monitor_packet_callback)
     sniffer.start()
 
+    device_os_discover_attempts = 3
+    device_os = ''
     while sniffer.running:
       time.sleep(1)
+
+      # Discovering device OS
+      if device_os_discover_attempts > 0:
+        device_os = util.get_device_os_nmap(device.ip_addr)
+        if not device_os:
+          device_os = util.get_device_os_ssh(device.ip_addr)
+        if device_os:
+          self._session.set_device_kernel(device_os)
+          device_os_discover_attempts = 0
+        else:
+          device_os_discover_attempts -= 1
 
       # Check Testrun hasn't been cancelled
       if self._session.get_status() in (TestrunStatus.STOPPING,
@@ -367,24 +380,45 @@ class NetworkOrchestrator:
         network creation and flushes internet interface
         """
     LOGGER.info('Pre network create')
-    self._ethmac = subprocess.check_output(
-        f'cat /sys/class/net/{self._session.get_internet_interface()}/address',
-        shell=True).decode('utf-8').strip()
+    iface = self._session.get_internet_interface()
+    try:
+      with open(f'/sys/class/net/{iface}/address', 'r', encoding='utf-8') as f:
+        self._ethmac = f.read().strip()
+    except OSError:
+      self._ethmac = ''
     self._gateway = subprocess.check_output(
         'ip route | head -n 1 | awk \'{print $3}\'',
         shell=True).decode('utf-8').strip()
-    self._ipv4 = subprocess.check_output(
-        (f'ip a show {self._session.get_internet_interface()} | ' +
-         'grep \"inet \" | awk \'{{print $2}}\''),
-        shell=True).decode('utf-8').strip()
-    self._ipv6 = subprocess.check_output(
-        (f'ip a show {self._session.get_internet_interface()} | grep inet6 | ' +
-         'awk \'{{print $2}}\''),
-        shell=True).decode('utf-8').strip()
-    self._brd = subprocess.check_output(
-        (f'ip a show {self._session.get_internet_interface()} | grep \"inet \" '
-         + '| awk \'{{print $4}}\''),
-        shell=True).decode('utf-8').strip()
+    self._gateway = ''
+    try:
+      route_output = subprocess.check_output(['ip', 'route']).decode('utf-8')
+      first_line = route_output.strip().splitlines()[0]
+      parts = first_line.split()
+      if len(parts) >= 3:
+        self._gateway = parts[2]
+    except (subprocess.SubprocessError, IndexError):
+      pass
+    self._ipv4 = ''
+    self._ipv6 = ''
+    self._brd = ''
+    try:
+      ip_output = subprocess.check_output(
+        ['ip', 'a', 'show', iface]
+        ).decode('utf-8')
+      for line in ip_output.splitlines():
+        line = line.strip()
+        if line.startswith('inet '):
+          parts = line.split()
+          if len(parts) >= 2:
+            self._ipv4 = parts[1]
+          if len(parts) >= 4:
+            self._brd = parts[3]
+        elif line.startswith('inet6 '):
+          parts = line.split()
+          if len(parts) >= 2:
+            self._ipv6 = parts[1]
+    except subprocess.SubprocessError:
+      pass
 
   def _ci_post_network_create(self):
     """ Restore network connection in CI environment """
@@ -444,7 +478,7 @@ class NetworkOrchestrator:
     loaded_modules = 'Loaded the following network modules: '
     net_modules_dir = os.path.join(self._path, NETWORK_MODULES_DIR)
 
-    for module_dir in os.listdir(net_modules_dir):
+    for module_dir in sorted(os.listdir(net_modules_dir)):
 
       if (self._get_network_module(module_dir) is None
           and module_dir != 'template'):

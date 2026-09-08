@@ -28,15 +28,17 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
 import { ElementRef } from '@angular/core';
-import { FilterName, FilterTitle } from '../../model/filters';
+import { FilterName, FilterTitle, Filters } from '../../model/filters';
 import SpyObj = jasmine.SpyObj;
 import { DATA_SOURCE_INITIAL_VALUE, ReportsStore } from './reports.store';
 import {
   DATA_SOURCE_FOR_EMPTY_FILTERS,
   DATA_SOURCE_INITIAL_VALUE_NOT_EMPTY,
+  FORMATTED_HISTORY,
   HISTORY,
 } from '../../mocks/reports.mock';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
 import { HistoryTestrun } from '../../model/testrun-status';
 
 describe('ReportsComponent', () => {
@@ -53,6 +55,7 @@ describe('ReportsComponent', () => {
   ) => {
     return of({
       displayedColumns: [
+        'expand',
         'started',
         'duration',
         'deviceInfo',
@@ -69,6 +72,11 @@ describe('ReportsComponent', () => {
         deviceFirmware: '',
         results: ['compliant'],
         dateRange: '',
+        quickSearch: '',
+        location: '',
+        linuxEnv: '',
+        pythonVersion: '',
+        kernel: '',
       },
       dataLoaded: dataLoaded,
       selectedRow: null,
@@ -85,11 +93,15 @@ describe('ReportsComponent', () => {
       'setFilteredValuesDateRange',
       'setFilteredValuesDeviceFirmware',
       'setFilteredValuesDeviceInfo',
+      'setFilteredValuesQuickSearch',
       'setFilteredValuesResults',
+      'setFilteredValuesLocation',
+      'setFilteredValuesLinuxEnv',
+      'setFilteredValuesPythonVersion',
+      'setFilteredValuesKernel',
       'setActiveFiler',
       'setFilterOpened',
       'updateSort',
-      'getReports',
       'getReports',
       'fetchReports',
     ]);
@@ -121,11 +133,24 @@ describe('ReportsComponent', () => {
 
         expect(mockReportsStore.fetchReports).toHaveBeenCalled();
       }));
+
+      it('should update sort if sort viewChild is available', () => {
+        const mockSort = new MatSort();
+        spyOn(component, 'sort').and.returnValue(mockSort);
+
+        component.ngOnInit();
+
+        expect(mockReportsStore.updateSort).toHaveBeenCalledWith(mockSort);
+      });
     });
 
-    it('#sortData should call liveAnnouncer with sorted direction message', () => {
+    it('#sortData should call liveAnnouncer with sorted direction message and update sort', () => {
+      const mockSort = new MatSort();
+      spyOn(component, 'sort').and.returnValue(mockSort);
+
       component.sortData({ active: '', direction: 'desc' });
 
+      expect(mockReportsStore.updateSort).toHaveBeenCalledWith(mockSort);
       expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
         'Sorted descending'
       );
@@ -180,6 +205,8 @@ describe('ReportsComponent', () => {
           filter: '',
           title: '',
           trigger: new ElementRef(event.currentTarget),
+          menuRect: undefined,
+          itemRect: undefined,
         },
         autoFocus: true,
         hasBackdrop: true,
@@ -204,12 +231,20 @@ describe('ReportsComponent', () => {
         start: 'Wed Jun 21 2023 00:00:00',
         end: 'Thu Jun 22 2023 00:00:00',
       };
+      const mockFilterLocation = 'mockLocation';
+      const mockFilterLinuxEnv = 'mockLinuxEnv';
+      const mockFilterPythonVersion = 'mockPythonVersion';
+      const mockFilterKernel = 'mockKernel';
 
       const mockFilteredData = {
         results: mockFilterResults,
         deviceInfo: mockFilterDeviceInfo,
         deviceFirmware: mockFilterDeviceFirmware,
         dateRange: mockFilterDateRange,
+        location: mockFilterLocation,
+        linuxEnv: mockFilterLinuxEnv,
+        pythonVersion: mockFilterPythonVersion,
+        kernel: mockFilterKernel,
       };
 
       spyOn(component.dialog, 'open').and.returnValue({
@@ -241,6 +276,30 @@ describe('ReportsComponent', () => {
         title: FilterTitle.DeviceInfo,
         filterOpened: false,
       });
+      component.openFilter({
+        event,
+        filter: FilterName.Location,
+        title: FilterTitle.Location,
+        filterOpened: false,
+      });
+      component.openFilter({
+        event,
+        filter: FilterName.LinuxEnv,
+        title: FilterTitle.LinuxEnv,
+        filterOpened: false,
+      });
+      component.openFilter({
+        event,
+        filter: FilterName.PythonVersion,
+        title: FilterTitle.PythonVersion,
+        filterOpened: false,
+      });
+      component.openFilter({
+        event,
+        filter: FilterName.Kernel,
+        title: FilterTitle.Kernel,
+        filterOpened: false,
+      });
       expect(mockReportsStore.setFilteredValuesResults).toHaveBeenCalledWith(
         mockFilterResults
       );
@@ -252,6 +311,18 @@ describe('ReportsComponent', () => {
       ).toHaveBeenCalledWith(mockFilterDeviceFirmware);
       expect(mockReportsStore.setFilteredValuesDateRange).toHaveBeenCalledWith(
         mockFilterDateRange
+      );
+      expect(mockReportsStore.setFilteredValuesLocation).toHaveBeenCalledWith(
+        mockFilterLocation
+      );
+      expect(mockReportsStore.setFilteredValuesLinuxEnv).toHaveBeenCalledWith(
+        mockFilterLinuxEnv
+      );
+      expect(
+        mockReportsStore.setFilteredValuesPythonVersion
+      ).toHaveBeenCalledWith(mockFilterPythonVersion);
+      expect(mockReportsStore.setFilteredValuesKernel).toHaveBeenCalledWith(
+        mockFilterKernel
       );
     });
 
@@ -267,9 +338,12 @@ describe('ReportsComponent', () => {
       it('should focus next active element if exist', fakeAsync(() => {
         const row = window.document.querySelector('tbody tr') as HTMLElement;
         row.classList.add('report-selected');
-        const nextButton = window.document.querySelector(
-          '.report-selected + tr a'
-        ) as HTMLButtonElement;
+        const nextButton = (window.document.querySelector(
+          '.report-selected + tr + tr a'
+        ) ||
+          window.document.querySelector(
+            '.report-selected + tr a'
+          )) as HTMLButtonElement;
         const buttonFocusSpy = spyOn(nextButton, 'focus');
 
         component.focusNextButton();
@@ -297,6 +371,187 @@ describe('ReportsComponent', () => {
       const data = HISTORY[0];
       component.removeReport(data);
       expect(mockReportsStore.deleteReport).toHaveBeenCalledWith('/report/123');
+    });
+
+    describe('search query methods', () => {
+      it('applySearchQuery should call setFilteredValuesQuickSearch', () => {
+        component.searchQuery = 'testSearch';
+        component.applySearchQuery();
+
+        expect(
+          mockReportsStore.setFilteredValuesQuickSearch
+        ).toHaveBeenCalledWith('testSearch');
+      });
+
+      it('onSearchQueryChanged should update searchQuery and call applySearchQuery', () => {
+        component.onSearchQueryChanged('newQuery');
+
+        expect(component.searchQuery).toBe('newQuery');
+        expect(
+          mockReportsStore.setFilteredValuesQuickSearch
+        ).toHaveBeenCalledWith('newQuery');
+      });
+
+      it('addSearchTag should set searchQuery and call applySearchQuery', () => {
+        component.addSearchTag('tagSearch');
+
+        expect(component.searchQuery).toBe('tagSearch');
+        expect(
+          mockReportsStore.setFilteredValuesQuickSearch
+        ).toHaveBeenCalledWith('tagSearch');
+      });
+
+      it('clearSearchQuery should reset searchQuery and call applySearchQuery', () => {
+        component.searchQuery = 'someQuery';
+        component.clearSearchQuery();
+
+        expect(component.searchQuery).toBe('');
+        expect(
+          mockReportsStore.setFilteredValuesQuickSearch
+        ).toHaveBeenCalledWith('');
+      });
+    });
+
+    describe('Row expansion methods', () => {
+      it('toggleRowExpand should add and delete row from expandedRows and announce to screen reader', () => {
+        const item = FORMATTED_HISTORY[0];
+        expect(component.isExpanded(item)).toBeFalse();
+
+        component.toggleRowExpand(item);
+        expect(component.isExpanded(item)).toBeTrue();
+        expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+          `Metadata expanded for ${item.deviceInfo}`
+        );
+
+        component.toggleRowExpand(item);
+        expect(component.isExpanded(item)).toBeFalse();
+        expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+          `Metadata collapsed for ${item.deviceInfo}`
+        );
+      });
+
+      it('toggleRowExpand should stop event propagation when event is provided', () => {
+        const item = FORMATTED_HISTORY[0];
+        const event = jasmine.createSpyObj<Event>('Event', [
+          'preventDefault',
+          'stopPropagation',
+        ]);
+
+        component.toggleRowExpand(item, event);
+
+        expect(event.preventDefault).toHaveBeenCalled();
+        expect(event.stopPropagation).toHaveBeenCalled();
+        expect(component.isExpanded(item)).toBeTrue();
+      });
+
+      it('getRowId should return sanitized identifier', () => {
+        const item = {
+          ...FORMATTED_HISTORY[0],
+          started: '2023-06-23T10:11:00',
+          deviceInfo: 'Raspberry Pi / 4',
+        };
+        const id = component.getRowId(item);
+        expect(id).toBe('2023-06-23T10_11_00-Raspberry_Pi___4');
+      });
+    });
+
+    describe('filterCleared', () => {
+      it('should update searchQuery and call store.setFilteredValues', () => {
+        const filters: Filters = {
+          deviceInfo: '',
+          deviceFirmware: '',
+          results: [],
+          dateRange: '',
+          quickSearch: 'searchKeyword',
+          location: '',
+          linuxEnv: '',
+          pythonVersion: '',
+          kernel: '',
+        };
+
+        component.filterCleared(filters);
+
+        expect(component.searchQuery).toBe('searchKeyword');
+        expect(mockReportsStore.setFilteredValues).toHaveBeenCalledWith(
+          filters
+        );
+      });
+
+      it('should fallback to empty searchQuery if quickSearch is missing in filters', () => {
+        const filters = {
+          deviceInfo: '',
+          deviceFirmware: '',
+          results: [],
+          dateRange: '',
+        };
+
+        component.filterCleared(filters as unknown as Filters);
+
+        expect(component.searchQuery).toBe('');
+        expect(mockReportsStore.setFilteredValues).toHaveBeenCalledWith(
+          filters as unknown as Filters
+        );
+      });
+    });
+
+    describe('selectRow and trackByStarted', () => {
+      it('selectRow should call store.setSelectedRow', () => {
+        const row = {} as HistoryTestrun;
+        component.selectRow(row);
+        expect(mockReportsStore.setSelectedRow).toHaveBeenCalledWith(row);
+      });
+
+      it('trackByStarted should return started date of item', () => {
+        expect(component.trackByStarted(0, FORMATTED_HISTORY[0])).toBe(
+          FORMATTED_HISTORY[0].started
+        );
+      });
+    });
+
+    describe('Metadata helper methods', () => {
+      it('should return location from host object', () => {
+        expect(component.getLocation(HISTORY[0])).toBe(
+          'Data Center Alpha - Rack 12, Bay B'
+        );
+
+        const itemWithoutHost = {
+          ...HISTORY[0],
+          host: null,
+        } as HistoryTestrun;
+        expect(component.getLocation(itemWithoutHost)).toBeUndefined();
+      });
+
+      it('should return linux_env from host object', () => {
+        expect(component.getLinuxEnv(HISTORY[0])).toBe(
+          'Ubuntu 24.04 LTS (x86_64)'
+        );
+
+        const itemWithoutHost = {
+          ...HISTORY[0],
+          host: null,
+        } as HistoryTestrun;
+        expect(component.getLinuxEnv(itemWithoutHost)).toBeUndefined();
+      });
+
+      it('should return kernel from device object', () => {
+        expect(component.getKernel(HISTORY[0])).toBe('Linux 6.8.0-40-generic');
+
+        const itemWithoutDevice = {
+          ...HISTORY[0],
+          device: null,
+        } as unknown as HistoryTestrun;
+        expect(component.getKernel(itemWithoutDevice)).toBeUndefined();
+      });
+
+      it('should return python_version from host object', () => {
+        expect(component.getPythonVersion(HISTORY[0])).toBe('3.11.2');
+
+        const itemWithoutHost = {
+          ...HISTORY[0],
+          host: null,
+        } as HistoryTestrun;
+        expect(component.getPythonVersion(itemWithoutHost)).toBeUndefined();
+      });
     });
   });
 
@@ -371,10 +626,10 @@ describe('ReportsComponent', () => {
         expect(link).toBeTruthy();
       });
 
-      it('should have filter chips', () => {
-        const chips = compiled.querySelector('app-filter-chips');
+      it('should have search component', () => {
+        const search = compiled.querySelector('app-search');
 
-        expect(chips).toBeTruthy();
+        expect(search).toBeTruthy();
       });
 
       it('should have empty state when no data satisfy filters', () => {
@@ -402,6 +657,67 @@ describe('ReportsComponent', () => {
         row.click();
 
         expect(mockReportsStore.setSelectedRow).toHaveBeenCalled();
+      });
+
+      it('should render detail row with spacer cell and expanded detail cell with accessibility attributes', () => {
+        const detailRow = compiled.querySelector('tr.detail-row');
+        const spacerCell = detailRow?.querySelector(
+          '.expanded-detail-spacer-cell'
+        );
+        const detailCell = detailRow?.querySelector('.expanded-detail-cell');
+        const metadataDetail = detailRow?.querySelector(
+          '.metadata-accordion-detail'
+        );
+        const metadataGrid = detailRow?.querySelector('dl.metadata-grid');
+        const expandButton = compiled.querySelector('.expand-row-button');
+
+        expect(detailRow).toBeTruthy();
+        expect(spacerCell).toBeTruthy();
+        expect(detailCell).toBeTruthy();
+        expect(metadataDetail).toBeTruthy();
+        expect(metadataGrid).toBeTruthy();
+        expect(detailCell?.getAttribute('colspan')).toBe('6');
+        expect(expandButton?.getAttribute('aria-expanded')).toBe('false');
+        expect(metadataDetail?.getAttribute('role')).toBe('region');
+        expect(expandButton?.getAttribute('aria-controls')).toBeTruthy();
+      });
+
+      it('should add expanded-row class to detail row when row is expanded', () => {
+        const detailRow = compiled.querySelector('tr.detail-row');
+        expect(detailRow?.classList).not.toContain('expanded-row');
+
+        component.toggleRowExpand(DATA_SOURCE_INITIAL_VALUE_NOT_EMPTY.data[0]);
+        fixture.detectChanges();
+
+        expect(detailRow?.classList).toContain('expanded-row');
+      });
+
+      it('should render metadata values when present', () => {
+        const detailRow = compiled.querySelector('tr.detail-row');
+        const metaValues = detailRow?.querySelectorAll('.meta-value');
+        expect(metaValues?.length).toBeGreaterThanOrEqual(4);
+      });
+
+      it('should render "Could not fetch details" with error icon when metadata is missing', () => {
+        const itemWithoutMeta = {
+          ...DATA_SOURCE_INITIAL_VALUE_NOT_EMPTY.data[0],
+          host: null,
+          location: null,
+          device: {
+            ...DATA_SOURCE_INITIAL_VALUE_NOT_EMPTY.data[0].device,
+            kernel: undefined,
+            location: undefined,
+            linux_env: undefined,
+          },
+          kernel: null,
+          linux_env: null,
+          python_version: null,
+        } as HistoryTestrun;
+
+        expect(component.getLocation(itemWithoutMeta)).toBeFalsy();
+        expect(component.getLinuxEnv(itemWithoutMeta)).toBeFalsy();
+        expect(component.getKernel(itemWithoutMeta)).toBeFalsy();
+        expect(component.getPythonVersion(itemWithoutMeta)).toBeFalsy();
       });
     });
   });

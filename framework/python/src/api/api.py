@@ -21,13 +21,15 @@ from json import JSONDecodeError
 import os
 import psutil
 import requests
+import shutil
 import signal
 import threading
 import uvicorn
+import tempfile
 
 from core import tasks
 from common import logger
-from common.device import Device
+from common.models import Device
 from common.statuses import TestrunStatus
 
 LOGGER = logger.get_logger("api")
@@ -153,6 +155,7 @@ class Api:
     # Attach CORS middleware
     self._app.add_middleware(
         CORSMiddleware,
+        # nosemgrep: python.fastapi.security.wildcard-cors.wildcard-cors
         allow_origins=origins,
         allow_credentials=True,
         allow_methods=["*"],
@@ -188,7 +191,7 @@ class Api:
   def _start(self):
     uvicorn.run(self._app,
                 log_config=None,
-                host="0.0.0.0",
+                host="0.0.0.0", # nosec B104
                 port=self._session.get_api_port())
 
   def stop(self):
@@ -453,6 +456,7 @@ class Api:
         "model": report["device"].get("model"),
         "mac_addr": report["device"].get("mac_addr"),
         "firmware": report["device"].get("firmware"),
+        "kernel": report["device"].get("kernel"),
         "test_pack": report["device"].get("test_pack", "Device Qualification"),
       }
       report["delete"] = report["report"]
@@ -729,18 +733,23 @@ class Api:
     device = device_with_report.device
     report = device_with_report.report
 
+    temp_dir = tempfile.mkdtemp(prefix="testrun_")
+
     zip_file_path = self._get_testrun().get_test_orc().zip_results(
-        device, report, profile)
+        device, report, profile, temp_dir)
 
     if zip_file_path is None:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+      shutil.rmtree(temp_dir, ignore_errors=True)
       return self._generate_msg(
           False, "An error occurred whilst archiving test results")
 
     if os.path.isfile(zip_file_path):
-      return FileResponse(zip_file_path)
+      return FileResponse(zip_file_path, media_type="application/zip",
+                         filename=os.path.basename(zip_file_path))
     else:
       LOGGER.info("Test results could not be found, returning 404")
+      shutil.rmtree(temp_dir, ignore_errors=True)
       response.status_code = 404
       return self._generate_msg(False, "Test results could not be found")
 

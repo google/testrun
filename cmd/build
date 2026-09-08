@@ -17,7 +17,7 @@
 # Check if Docker is installed
 if [[ $(which docker) && $(docker --version) ]]; then
     # Docker is installed
-    echo Using $(docker --version)
+    echo Using "$(docker --version)"
   else
     # Docker is not installed
     echo Docker is not installed. Please follow the Get Started guide at https://github.com/google/testrun

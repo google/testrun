@@ -153,3 +153,34 @@ def diff_dicts(d1: t.Dict[t.Any, t.Any], d2: t.Dict[t.Any, t.Any]) -> t.Dict:
     if items_added:
       diff['items_added'] = items_added
   return diff
+
+
+def get_device_os_ssh(ip: str) -> str:
+  """Attempts to determine the OS of a device via SSH"""
+  try:
+    cmd = f'timeout 10 docker exec tr-ct-gateway nc -v -w 2 {ip} 22'
+    command_result = run_command(cmd, output=True, timeout=10)
+    if isinstance(command_result, tuple):
+      output, _ = command_result
+      if output:
+        return output.rsplit(' ', maxsplit=1)[-1].strip()
+    return ''
+  except Exception as e:
+    LOGGER.error(f'Error determining device OS via SSH: {e}')
+    return ''
+
+def get_device_os_nmap(ip: str) -> str:
+  """Attempts to determine the OS of a device via Nmap"""
+  try:
+    cmd = f'docker exec tr-ct-gateway nmap -Pn -O -F -T4 --max-retries 1 {ip}'
+    command_result = run_command(cmd, output=True, timeout=10)
+    if isinstance(command_result, tuple):
+      output, _ = command_result
+      if output:
+        for line in output.splitlines():
+          if 'OS details:' in line:
+            return line.split('OS details:')[1].strip()
+    return ''
+  except Exception as e:
+    LOGGER.error(f'Error determining device OS via Nmap: {e}')
+    return ''

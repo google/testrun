@@ -159,6 +159,18 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     );
   });
 
+  setFilteredValuesQuickSearch = this.effect<string>(quickSearch$ => {
+    return quickSearch$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([quickSearch, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          quickSearch,
+        });
+      })
+    );
+  });
+
   setFilteredValuesDeviceInfo = this.effect<string>(deviceInfo$ => {
     return deviceInfo$.pipe(
       withLatestFrom(this.filteredValues$, this.dataSource$),
@@ -190,6 +202,54 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         this.updateFilters(dataSource, {
           ...filteredValues,
           dateRange,
+        });
+      })
+    );
+  });
+
+  setFilteredValuesLocation = this.effect<string>(location$ => {
+    return location$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([location, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          location,
+        });
+      })
+    );
+  });
+
+  setFilteredValuesLinuxEnv = this.effect<string>(linuxEnv$ => {
+    return linuxEnv$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([linuxEnv, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          linuxEnv,
+        });
+      })
+    );
+  });
+
+  setFilteredValuesPythonVersion = this.effect<string>(pythonVersion$ => {
+    return pythonVersion$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([pythonVersion, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          pythonVersion,
+        });
+      })
+    );
+  });
+
+  setFilteredValuesKernel = this.effect<string>(kernel$ => {
+    return kernel$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([kernel, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          kernel,
         });
       })
     );
@@ -243,20 +303,29 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
 
   private formateData(data: TestReportsList): HistoryTestrun[] {
     return data.map(item => {
+      const firmware = item.device?.firmware || '';
+      const manufacturer = item.device?.manufacturer || '';
+      const model = item.device?.model || '';
+      const deviceInfo = manufacturer
+        ? model
+          ? `${manufacturer} ${model}`
+          : manufacturer
+        : model;
+
       return {
         ...item,
-        deviceFirmware: item.device.firmware,
-        deviceInfo: item.device.manufacturer + ' ' + item.device.model,
+        deviceFirmware: firmware,
+        deviceInfo: deviceInfo,
         testResult: this.getTestResult(item),
         duration: this.getDuration(item.started, item.finished),
-        program: item.device.test_pack ?? '',
+        program: item.device?.test_pack ?? '',
       };
     });
   }
 
   private getTestResult(item: TestrunReport): string {
     let result = '';
-    if (item.device.test_pack === TestingType.Qualification) {
+    if (item.device?.test_pack === TestingType.Qualification) {
       if (
         item.status &&
         item.status === StatusOfTestrun.Complete &&
@@ -267,7 +336,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         result = item.status;
       }
     }
-    if (item.device.test_pack === TestingType.Pilot) {
+    if (item.device?.test_pack === TestingType.Pilot) {
       result = item.status;
     }
     return result;
@@ -298,6 +367,10 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         data.deviceInfo,
         searchString.deviceInfo
       );
+      const isIncludeSearchQuery = this.filterSearchQuery(
+        data,
+        searchString.quickSearch
+      );
       const isIncludeDeviceFirmware = this.filterStringData(
         data.deviceFirmware,
         searchString.deviceFirmware
@@ -310,18 +383,87 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         data.started,
         searchString
       );
+      const isIncludeLocation = this.filterStringData(
+        data.host?.location ?? '',
+        searchString.location ?? ''
+      );
+      const isIncludeLinuxEnv = this.filterStringData(
+        data.host?.linux_env ?? '',
+        searchString.linuxEnv ?? ''
+      );
+      const isIncludePythonVersion = this.filterStringData(
+        data.host?.python_version ?? '',
+        searchString.pythonVersion ?? ''
+      );
+      const isIncludeKernel = this.filterStringData(
+        data.device?.kernel ?? '',
+        searchString.kernel ?? ''
+      );
 
       return (
+        isIncludeSearchQuery &&
         isIncludeDeviceInfo &&
         isIncludeDeviceFirmware &&
         isIncludeStatus &&
-        isIncludeStartedDate
+        isIncludeStartedDate &&
+        isIncludeLocation &&
+        isIncludeLinuxEnv &&
+        isIncludePythonVersion &&
+        isIncludeKernel
       );
     };
     return filterPredicate;
   }
 
-  private filterStringData(data: string, searchString: string): boolean {
+  private filterSearchQuery(
+    data: HistoryTestrun,
+    searchQuery: string = ''
+  ): boolean {
+    if (!searchQuery || !searchQuery.trim()) {
+      return true;
+    }
+    const query = searchQuery.trim().toLowerCase();
+
+    const formattedStarted = data.started
+      ? this.datePipe.transform(data.started, 'd MMM y H:mm')
+      : '';
+    const formattedFinished = data.finished
+      ? this.datePipe.transform(data.finished, 'd MMM y H:mm')
+      : '';
+
+    const searchableFields = [
+      data.deviceInfo,
+      data.deviceFirmware,
+      data.device?.manufacturer,
+      data.device?.model,
+      data.device?.mac_addr,
+      data.device?.firmware,
+      data.device?.kernel,
+      data.device?.test_pack,
+      data.device?.created_at,
+      data.program,
+      data.status,
+      data.testResult,
+      data.result,
+      data.started,
+      data.finished,
+      formattedStarted,
+      formattedFinished,
+      data.duration,
+      data.folder_name,
+      data.report,
+      data.export,
+      data.host?.location,
+      data.host?.linux_env,
+      data.host?.python_version,
+    ];
+
+    return searchableFields.some(
+      field => field && field.toString().toLowerCase().includes(query)
+    );
+  }
+
+  private filterStringData(data: string = '', searchString: string): boolean {
     return (
       data
         .toString()
@@ -375,6 +517,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
   constructor() {
     super({
       displayedColumns: [
+        'expand',
         'started',
         'duration',
         'deviceInfo',
@@ -392,6 +535,11 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         deviceFirmware: '',
         results: [],
         dateRange: '',
+        quickSearch: '',
+        location: '',
+        linuxEnv: '',
+        pythonVersion: '',
+        kernel: '',
       },
       dataLoaded: false,
       selectedRow: null,

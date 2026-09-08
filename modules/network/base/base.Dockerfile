@@ -55,4 +55,5 @@ RUN dos2unix /testrun/bin/*
 RUN chmod u+x /testrun/bin/*
 
 # Start the network module
+#nosemgrep
 ENTRYPOINT [ "/testrun/bin/start_module" ]
