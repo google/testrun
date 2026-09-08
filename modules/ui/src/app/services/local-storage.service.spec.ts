@@ -11,6 +11,9 @@ const mock = (() => {
     setItem: (key: string, value: string) => {
       store[key] = value + '';
     },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
     clear: () => {
       store = {};
     },
