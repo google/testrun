@@ -18,6 +18,7 @@ import { SearchComponent } from './search.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   DateRange,
+  FilterItem,
   FilterName,
   FilterTitle,
   Filters,
@@ -87,7 +88,7 @@ describe('SearchComponent', () => {
     it('should format chip labels correctly for all filter types', () => {
       expect(
         component.getFilterChipLabel(FilterName.QuickSearch, 'query')
-      ).toBe('search: "query"');
+      ).toBe('Raw search contains "query"');
       expect(
         component.getFilterChipLabel(FilterName.DeviceInfo, 'Device A')
       ).toBe('Device contains "Device A"');
@@ -155,7 +156,7 @@ describe('SearchComponent', () => {
 
     it('should generate accessible labels', () => {
       expect(component.getChipAriaLabel(FilterName.QuickSearch, 'test')).toBe(
-        'Filter: search: "test". Click to edit.'
+        'Filter: Raw search contains "test". Click to edit.'
       );
       expect(
         component.getRemoveFilterAriaLabel(FilterName.DeviceInfo, 'Pixel')
@@ -290,7 +291,6 @@ describe('SearchComponent', () => {
     it('should clear all filters on clearAll and handle event', () => {
       spyOn(component.filterCleared, 'emit');
       spyOn(component.searchQueryChanged, 'emit');
-      component.inputValue = 'some text';
 
       const event = new MouseEvent('click');
       spyOn(event, 'preventDefault');
@@ -300,7 +300,6 @@ describe('SearchComponent', () => {
 
       expect(event.preventDefault).toHaveBeenCalled();
       expect(event.stopPropagation).toHaveBeenCalled();
-      expect(component.inputValue).toBe('');
       expect(component.filters.deviceInfo).toBe('');
       expect(component.filters.deviceFirmware).toBe('');
       expect(component.filters.results).toEqual([]);
@@ -317,110 +316,15 @@ describe('SearchComponent', () => {
     });
   });
 
-  describe('Input handling', () => {
-    it('should update inputValue on input change', () => {
-      const event = {
-        target: { value: 'my search' },
-      } as unknown as Event;
-
-      component.onInputChange(event);
-      expect(component.inputValue).toBe('my search');
-    });
-
-    it('should add search chip on Enter and clear input', () => {
-      spyOn(component.filterCleared, 'emit');
-      spyOn(component.searchQueryChanged, 'emit');
-      component.inputValue = '  Raspberry Pi  ';
-
-      const event = new KeyboardEvent('keydown', { key: 'Enter' });
-      spyOn(event, 'preventDefault');
-
-      component.onEnter(event);
-
-      expect(event.preventDefault).toHaveBeenCalled();
-      expect(component.filters.quickSearch).toBe('Raspberry Pi');
-      expect(component.searchQueryChanged.emit).toHaveBeenCalledWith(
-        'Raspberry Pi'
-      );
-      expect(component.filterCleared.emit).toHaveBeenCalledWith(
-        component.filters
-      );
-      expect(component.inputValue).toBe('');
-    });
-
-    it('should not add search chip on Enter if input is empty or whitespace', () => {
-      spyOn(component.filterCleared, 'emit');
-      spyOn(component.searchQueryChanged, 'emit');
-      component.inputValue = '   ';
-
-      const event = new KeyboardEvent('keydown', { key: 'Enter' });
-      component.onEnter(event);
-
-      expect(component.searchQueryChanged.emit).not.toHaveBeenCalled();
-      expect(component.filterCleared.emit).not.toHaveBeenCalled();
-    });
-
-    it('should remove last filter on Backspace when input is empty', () => {
-      component.filters = {
-        deviceInfo: 'Pixel',
-        deviceFirmware: '1.0',
-        results: [],
-        dateRange: '',
-        quickSearch: '',
-        location: '',
-        linuxEnv: '',
-        pythonVersion: '',
-        kernel: '',
-      };
-      component.inputValue = '';
-      spyOn(component, 'removeFilter');
-
-      component.onBackspace();
-
-      expect(component.removeFilter).toHaveBeenCalledWith('deviceFirmware');
-    });
-
-    it('should not remove last filter on Backspace when no active filters', () => {
-      component.filters = new Filters();
-      component.inputValue = '';
-      spyOn(component, 'removeFilter');
-
-      component.onBackspace();
-
-      expect(component.removeFilter).not.toHaveBeenCalled();
-    });
-
-    it('should not remove last filter on Backspace if input is not empty', () => {
-      component.filters = {
-        deviceInfo: 'Pixel',
-        deviceFirmware: '',
-        results: [],
-        dateRange: '',
-        quickSearch: '',
-        location: '',
-        linuxEnv: '',
-        pythonVersion: '',
-        kernel: '',
-      };
-      component.inputValue = 'abc';
-      spyOn(component, 'removeFilter');
-
-      component.onBackspace();
-
-      expect(component.removeFilter).not.toHaveBeenCalled();
-    });
-
-    it('should focus search input on focusInput()', () => {
-      const inputEl = component.searchInput()?.nativeElement;
-      if (inputEl) {
-        spyOn(inputEl, 'focus');
-        component.focusInput();
-        expect(inputEl.focus).toHaveBeenCalled();
-      }
-    });
-  });
-
   describe('Filter menu & dialog opening', () => {
+    it('should have Raw search as the first item in filterMenuItems', () => {
+      expect(component.filterMenuItems[0]).toEqual({
+        displayName: FilterItem.QuickSearch,
+        name: FilterName.QuickSearch,
+        title: FilterTitle.QuickSearch,
+      });
+    });
+
     it('should emit emitOpenFilter on openFilterMenu for all menu items', () => {
       spyOn(component.emitOpenFilter, 'emit');
       component.filterMenuItems.forEach(item => {
@@ -467,11 +371,8 @@ describe('SearchComponent', () => {
   });
 
   describe('DOM rendering', () => {
-    it('should render search input and filter button', () => {
-      const input = compiled.querySelector('.search-input');
+    it('should render filter button', () => {
       const filterBtn = compiled.querySelector('.filter-button');
-
-      expect(input).toBeTruthy();
       expect(filterBtn).toBeTruthy();
     });
 
@@ -493,13 +394,12 @@ describe('SearchComponent', () => {
       expect(chips.length).toBe(3);
     });
 
-    it('should render clear button when filters or input value are present', () => {
+    it('should render clear button when filters are present', () => {
       component.filters = new Filters();
-      component.inputValue = '';
       fixture.detectChanges();
       expect(compiled.querySelector('.clear-button')).toBeNull();
 
-      component.inputValue = 'abc';
+      component.filters.quickSearch = 'test';
       fixture.detectChanges();
       const clearBtn = compiled.querySelector('.clear-button');
       expect(clearBtn).toBeTruthy();

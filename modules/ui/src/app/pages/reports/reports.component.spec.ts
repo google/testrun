@@ -224,6 +224,7 @@ describe('ReportsComponent', () => {
         preventDefault: () => undefined,
       } as Event;
 
+      const mockFilterQuickSearch = 'mockQuickSearch';
       const mockFilterResults = ['compliant'];
       const mockFilterDeviceInfo = 'mockDevice';
       const mockFilterDeviceFirmware = 'mockFirmware';
@@ -237,6 +238,7 @@ describe('ReportsComponent', () => {
       const mockFilterKernel = 'mockKernel';
 
       const mockFilteredData = {
+        quickSearch: mockFilterQuickSearch,
         results: mockFilterResults,
         deviceInfo: mockFilterDeviceInfo,
         deviceFirmware: mockFilterDeviceFirmware,
@@ -252,6 +254,12 @@ describe('ReportsComponent', () => {
       } as MatDialogRef<typeof FilterDialogComponent>);
       fixture.detectChanges();
 
+      component.openFilter({
+        event,
+        filter: FilterName.QuickSearch,
+        title: FilterTitle.QuickSearch,
+        filterOpened: false,
+      });
       component.openFilter({
         event,
         filter: FilterName.Started,
@@ -300,6 +308,9 @@ describe('ReportsComponent', () => {
         title: FilterTitle.Kernel,
         filterOpened: false,
       });
+      expect(
+        mockReportsStore.setFilteredValuesQuickSearch
+      ).toHaveBeenCalledWith(mockFilterQuickSearch);
       expect(mockReportsStore.setFilteredValuesResults).toHaveBeenCalledWith(
         mockFilterResults
       );

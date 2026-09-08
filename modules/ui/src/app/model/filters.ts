@@ -37,6 +37,7 @@ export interface FilterMenuItem {
 }
 
 export enum FilterItem {
+  QuickSearch = 'Raw search',
   DeviceInfo = 'Device',
   DeviceFirmware = 'Firmware',
   Results = 'Result',
@@ -61,6 +62,7 @@ export enum FilterName {
 }
 
 export enum FilterTitle {
+  QuickSearch = 'Enter raw search',
   DeviceInfo = 'Enter device name',
   DeviceFirmware = 'Enter firmware name',
   Results = 'Select status',
