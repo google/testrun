@@ -42,7 +42,7 @@ limitations under the License.
     (menuClosed)="isMenuOpened = false"></div>
 
   <div class="search-content">
-    @for (item of getActiveFilters(); track item.key) {
+    @for (item of getActiveFilters(); track getChipTrackId(item)) {
       <div
         class="filter-chip"
         tabindex="0"
@@ -55,9 +55,21 @@ limitations under the License.
           type="button"
           class="filter-chip-remove"
           [attr.aria-label]="getRemoveFilterAriaLabel(item.key, item.value)"
-          (click)="removeFilter(item.key, $event)"
-          (keydown.enter)="removeFilter(item.key, $event)"
-          (keydown.space)="removeFilter(item.key, $event)">
+          (click)="
+            item.key === FilterName.QuickSearch
+              ? removeFilter(item.key, $event, item.value)
+              : removeFilter(item.key, $event)
+          "
+          (keydown.enter)="
+            item.key === FilterName.QuickSearch
+              ? removeFilter(item.key, $event, item.value)
+              : removeFilter(item.key, $event)
+          "
+          (keydown.space)="
+            item.key === FilterName.QuickSearch
+              ? removeFilter(item.key, $event, item.value)
+              : removeFilter(item.key, $event)
+          ">
           <mat-icon class="chip-close-icon" aria-hidden="true">close</mat-icon>
         </button>
       </div>

@@ -93,7 +93,7 @@ export class Filters {
   deviceFirmware = '';
   results: string[] = [];
   dateRange: DateRange | string = '';
-  quickSearch = '';
+  quickSearch: string[] = [];
   location = '';
   linuxEnv = '';
   pythonVersion = '';
