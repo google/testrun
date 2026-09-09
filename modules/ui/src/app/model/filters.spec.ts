@@ -89,7 +89,7 @@ describe('Filters Models', () => {
       expect(filters.deviceFirmware).toBe('');
       expect(filters.results).toEqual([]);
       expect(filters.dateRange).toBe('');
-      expect(filters.quickSearch).toBe('');
+      expect(filters.quickSearch).toEqual([]);
       expect(filters.location).toBe('');
       expect(filters.linuxEnv).toBe('');
       expect(filters.pythonVersion).toBe('');

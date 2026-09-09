@@ -281,7 +281,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   filterCleared(filters: Filters) {
-    this.searchQuery = filters.quickSearch || '';
+    this.searchQuery = Array.isArray(filters.quickSearch)
+      ? (filters.quickSearch[0] ?? '')
+      : filters.quickSearch || '';
     this.store.setFilteredValues(filters);
   }
 

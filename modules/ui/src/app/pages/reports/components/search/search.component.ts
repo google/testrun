@@ -127,11 +127,34 @@ export class SearchComponent {
     this.inputValue = target.value;
   }
 
+  private normalizeQuickSearch(value: FilterValue): string[] {
+    if (Array.isArray(value)) {
+      return value.map(v => String(v).trim()).filter(Boolean);
+    }
+    if (typeof value === 'string' && value.trim()) {
+      return [value.trim()];
+    }
+    return [];
+  }
+
+  getChipTrackId(item: ActiveFilterItem): string {
+    return `${item.key}_${this.getFilterChipLabel(item.key, item.value)}`;
+  }
+
   onEnter(event: Event): void {
     event.preventDefault();
     const query = this.inputValue.trim();
     if (query) {
-      this.filters.quickSearch = query;
+      if (!this.filters) {
+        this.filters = new Filters();
+      }
+      const currentQueries = this.normalizeQuickSearch(
+        this.filters.quickSearch
+      );
+      if (!currentQueries.includes(query)) {
+        currentQueries.push(query);
+      }
+      this.filters.quickSearch = currentQueries;
       this.searchQueryChanged.emit(query);
       this.filterCleared.emit(this.filters);
       this.inputValue = '';
@@ -146,7 +169,11 @@ export class SearchComponent {
       const active = this.getActiveFilters();
       if (active.length > 0) {
         const lastFilter = active[active.length - 1];
-        this.removeFilter(lastFilter.key);
+        if (lastFilter.key === FilterName.QuickSearch) {
+          this.removeFilter(lastFilter.key, undefined, lastFilter.value);
+        } else {
+          this.removeFilter(lastFilter.key);
+        }
       }
     }
   }
@@ -171,7 +198,14 @@ export class SearchComponent {
     for (const key of keys) {
       const value = this.filters[key];
       if (!this.isValueEmpty(value)) {
-        items.push({ key, value });
+        if (key === FilterName.QuickSearch) {
+          const queries = this.normalizeQuickSearch(value);
+          for (const query of queries) {
+            items.push({ key, value: query });
+          }
+        } else {
+          items.push({ key, value });
+        }
       }
     }
 
@@ -248,7 +282,24 @@ export class SearchComponent {
     return `Clear filter: ${this.getFilterChipLabel(key, value)}`;
   }
 
-  removeFilter(key: string, event?: Event): void {
+  removeFilter(
+    key: string,
+    eventOrValue?: Event | FilterValue,
+    valueOrEvent?: FilterValue | Event
+  ): void {
+    let event: Event | undefined;
+    let value: FilterValue | undefined;
+
+    if (eventOrValue instanceof Event) {
+      event = eventOrValue;
+      value = valueOrEvent as FilterValue;
+    } else if (valueOrEvent instanceof Event) {
+      event = valueOrEvent;
+      value = eventOrValue as FilterValue;
+    } else {
+      value = (eventOrValue as FilterValue) ?? (valueOrEvent as FilterValue);
+    }
+
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -268,8 +319,16 @@ export class SearchComponent {
         this.filters.dateRange = '';
         break;
       case FilterName.QuickSearch:
-        this.filters.quickSearch = '';
-        //this.searchQueryChanged.emit('');
+        if (value !== undefined) {
+          const currentQueries = this.normalizeQuickSearch(
+            this.filters.quickSearch
+          );
+          this.filters.quickSearch = currentQueries.filter(
+            q => q !== String(value)
+          );
+        } else {
+          this.filters.quickSearch = [];
+        }
         break;
       case FilterName.Location:
         this.filters.location = '';
@@ -300,7 +359,7 @@ export class SearchComponent {
     this.filters.deviceFirmware = '';
     this.filters.results = [];
     this.filters.dateRange = '';
-    this.filters.quickSearch = '';
+    this.filters.quickSearch = [];
     this.filters.location = '';
     this.filters.linuxEnv = '';
     this.filters.pythonVersion = '';

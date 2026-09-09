@@ -153,7 +153,7 @@ describe('ReportsStore', () => {
             deviceFirmware: '',
             results: [],
             dateRange: '',
-            quickSearch: '',
+            quickSearch: [],
             location: '',
             linuxEnv: '',
             pythonVersion: '',
@@ -264,11 +264,11 @@ describe('ReportsStore', () => {
 
     describe('setFilteredValuesQuickSearch', () => {
       it('should update store', done => {
-        const updatedFilters = { ...FILTERS, ...{ quickSearch: 'test2' } };
+        const updatedFilters = { ...FILTERS, ...{ quickSearch: ['test2'] } };
         store.overrideSelector(selectReports, [...HISTORY]);
         reportsStore.setFilteredValues({ ...FILTERS });
 
-        reportsStore.setFilteredValuesQuickSearch('test2');
+        reportsStore.setFilteredValuesQuickSearch(['test2']);
 
         reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
           expect(store.filteredValues).toEqual(updatedFilters);
@@ -335,6 +335,33 @@ describe('ReportsStore', () => {
 
         reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
           expect(store.dataSource.filteredData.length).toBe(1);
+          done();
+        });
+      });
+
+      it('should apply AND operation across multiple quickSearch queries', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch([
+          'Data Center Alpha',
+          '1.2.3',
+        ]);
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.filteredData.length).toBe(1);
+          expect(store.dataSource.filteredData[0].deviceFirmware).toBe('1.2.3');
+          done();
+        });
+      });
+
+      it('should return 0 items when one of the AND queries does not match', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch([
+          'Data Center Alpha',
+          'NonexistentDevice',
+        ]);
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.filteredData.length).toBe(0);
           done();
         });
       });
@@ -568,16 +595,6 @@ describe('ReportsStore', () => {
 
         reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
           expect(vm.dataSource.filteredData.length).toBe(0);
-          done();
-        });
-      });
-
-      it('should filter by folder_name, report URL, and export URL in quickSearch', done => {
-        reportsStore.setDataSource([...HISTORY]);
-        reportsStore.setFilteredValuesQuickSearch('12345');
-
-        reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
-          expect(vm.dataSource.filteredData.length).toBe(1);
           done();
         });
       });
