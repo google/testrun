@@ -439,9 +439,6 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     const formattedStarted = data.started
       ? this.datePipe.transform(data.started, 'd MMM y H:mm')
       : '';
-    const formattedFinished = data.finished
-      ? this.datePipe.transform(data.finished, 'd MMM y H:mm')
-      : '';
 
     const searchableFields = [
       data.deviceInfo,
@@ -452,19 +449,12 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
       data.device?.firmware,
       data.device?.kernel,
       data.device?.test_pack,
-      data.device?.created_at,
       data.program,
       data.status,
       data.testResult,
       data.result,
-      data.started,
-      data.finished,
       formattedStarted,
-      formattedFinished,
       data.duration,
-      data.folder_name,
-      data.report,
-      data.export,
       data.host?.location,
       data.host?.linux_env,
       data.host?.python_version,

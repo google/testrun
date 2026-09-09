@@ -599,16 +599,6 @@ describe('ReportsStore', () => {
         });
       });
 
-      it('should filter by folder_name, report URL, and export URL in quickSearch', done => {
-        reportsStore.setDataSource([...HISTORY]);
-        reportsStore.setFilteredValuesQuickSearch('12345');
-
-        reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
-          expect(vm.dataSource.filteredData.length).toBe(1);
-          done();
-        });
-      });
-
       it('should return all items when quickSearch is empty or contains only whitespace', done => {
         reportsStore.setDataSource([...HISTORY]);
         reportsStore.setFilteredValuesQuickSearch('   ');
