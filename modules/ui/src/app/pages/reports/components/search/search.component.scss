@@ -59,24 +59,14 @@
   gap: 4px;
   background-color: colors.$secondary-container;
   border-radius: 8px;
-  padding: 4px 6px 4px 10px;
+  padding: 4px 4px 4px 10px;
   font-family: variables.$font-text;
   font-size: 14px;
   font-weight: 500;
   color: colors.$on-secondary-container;
-  cursor: pointer;
-  max-width: 240px;
+  cursor: default;
+  max-width: 100%;
   box-sizing: border-box;
-  transition: background-color 0.15s ease;
-
-  &:hover {
-    background-color: colors.$secondary-fixed-dim;
-  }
-
-  &:focus-visible {
-    outline: 2px solid colors.$primary;
-    outline-offset: 1px;
-  }
 }
 
 .filter-chip-label {
@@ -94,8 +84,10 @@
   cursor: pointer;
   padding: 0;
   border-radius: 50%;
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
   color: colors.$on-secondary-container;
   flex-shrink: 0;
 
@@ -105,13 +97,14 @@
 
   &:focus-visible {
     outline: 2px solid colors.$primary;
+    outline-offset: 1px;
   }
 
   .chip-close-icon {
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
-    line-height: 14px;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
   }
 }
 

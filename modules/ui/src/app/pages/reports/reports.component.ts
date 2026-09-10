@@ -276,6 +276,11 @@ export class ReportsComponent implements OnInit, OnDestroy {
           if (filter === FilterName.Kernel) {
             this.store.setFilteredValuesKernel(filteredData.kernel);
           }
+          if (filter === FilterName.AssessmentType) {
+            this.store.setFilteredValuesAssessmentType(
+              filteredData.assessmentType
+            );
+          }
         }
       });
   }

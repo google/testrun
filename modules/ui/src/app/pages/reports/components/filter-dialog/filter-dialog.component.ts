@@ -64,6 +64,7 @@ import {
   ResultOfTestrun,
   StatusOfTestrun,
 } from '../../../../model/testrun-status';
+import { TestingType } from '../../../../model/device';
 import { DeviceValidators } from '../../../devices/components/device-form/device.validators';
 
 class DateErrorStateMatcher implements ErrorStateMatcher {
@@ -136,6 +137,11 @@ export class FilterDialogComponent
 
   public readonly FilterName = FilterName;
 
+  public readonly testingTypes: TestingType[] = [
+    TestingType.Pilot,
+    TestingType.Qualification,
+  ];
+
   range: LocalDateRange = new LocalDateRange();
 
   topPosition = 0;
@@ -183,6 +189,10 @@ export class FilterDialogComponent
 
   get kernel() {
     return this.filterForm.get('kernel') as AbstractControl;
+  }
+
+  get assessmentType() {
+    return this.filterForm.get('assessmentType') as AbstractControl;
   }
 
   ngOnInit() {
@@ -244,6 +254,7 @@ export class FilterDialogComponent
       linuxEnv: ['', []],
       pythonVersion: ['', []],
       kernel: ['', []],
+      assessmentType: ['', []],
       results: new FormArray(this.resultList.map(() => new FormControl(false))),
     });
   }
@@ -299,6 +310,7 @@ export class FilterDialogComponent
       linuxEnv: formData.linuxEnv?.trim() || '',
       pythonVersion: formData.pythonVersion?.trim() || '',
       kernel: formData.kernel?.trim() || '',
+      assessmentType: formData.assessmentType?.trim() || '',
       results,
       dateRange: this.range,
     };
