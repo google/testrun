@@ -61,6 +61,7 @@ describe('SearchComponent', () => {
       component.filters = {
         deviceInfo: 'Pixel',
         deviceFirmware: '1.0',
+        assessmentType: 'Pilot',
         results: ['Compliant'],
         dateRange: { start: '10/01/2024', end: '10/05/2024' },
         quickSearch: ['test'],
@@ -71,10 +72,11 @@ describe('SearchComponent', () => {
       };
 
       const active = component.getActiveFilters();
-      expect(active.length).toBe(9);
+      expect(active.length).toBe(10);
       expect(component.hasActiveFilters()).toBeTrue();
       expect(component.isFilterActive('deviceInfo')).toBeTrue();
       expect(component.isFilterActive('deviceFirmware')).toBeTrue();
+      expect(component.isFilterActive('assessmentType')).toBeTrue();
       expect(component.isFilterActive('results')).toBeTrue();
       expect(component.isFilterActive('dateRange')).toBeTrue();
       expect(component.isFilterActive('quickSearch')).toBeTrue();
@@ -90,46 +92,52 @@ describe('SearchComponent', () => {
       ).toBe('search: "query"');
       expect(
         component.getFilterChipLabel(FilterName.DeviceInfo, 'Device A')
-      ).toBe('Device contains "Device A"');
+      ).toBe('Device: Device A');
       expect(
         component.getFilterChipLabel(FilterName.DeviceFirmware, 'v2.1')
-      ).toBe('Firmware contains "v2.1"');
+      ).toBe('Firmware: v2.1');
+      expect(
+        component.getFilterChipLabel(
+          FilterName.AssessmentType,
+          'Pilot Assessment'
+        )
+      ).toBe('Assessment type: Pilot Assessment');
       expect(
         component.getFilterChipLabel(FilterName.Location, 'Building 1')
-      ).toBe('Location contains "Building 1"');
+      ).toBe('Location: Building 1');
       expect(component.getFilterChipLabel(FilterName.LinuxEnv, 'Ubuntu')).toBe(
-        'Linux Env contains "Ubuntu"'
+        'Linux Environment: Ubuntu'
       );
       expect(
         component.getFilterChipLabel(FilterName.PythonVersion, '3.11')
-      ).toBe('Python contains "3.11"');
+      ).toBe('Python Version: 3.11');
       expect(component.getFilterChipLabel(FilterName.Kernel, 'Linux 6.8')).toBe(
-        'Kernel contains "Linux 6.8"'
+        'Kernel: Linux 6.8'
       );
       expect(
         component.getFilterChipLabel(FilterName.DateRange, {
           start: '01/01/2024',
           end: '01/10/2024',
         })
-      ).toBe('01/01/2024 - 01/10/2024');
+      ).toBe('Started: 01/01/2024 - 01/10/2024');
       expect(
         component.getFilterChipLabel(FilterName.Started, {
           start: '01/01/2024',
           end: '',
         })
-      ).toBe('01/01/2024 - ');
+      ).toBe('Started: 01/01/2024');
       expect(
         component.getFilterChipLabel(
           FilterName.DateRange,
           '01/01/2024 - 01/10/2024'
         )
-      ).toBe('01/01/2024 - 01/10/2024');
+      ).toBe('Started: 01/01/2024 - 01/10/2024');
       expect(
         component.getFilterChipLabel(FilterName.Results, [
           'Compliant',
           'Non-compliant',
         ])
-      ).toBe('Compliant, Non-compliant');
+      ).toBe('Result: Compliant, Non-compliant');
       expect(component.getFilterChipLabel('unknownKey', 'sampleValue')).toBe(
         'sampleValue'
       );
@@ -155,11 +163,11 @@ describe('SearchComponent', () => {
 
     it('should generate accessible labels', () => {
       expect(component.getChipAriaLabel(FilterName.QuickSearch, 'test')).toBe(
-        'Filter: search: "test". Click to edit.'
+        'Filter: search: "test"'
       );
       expect(
         component.getRemoveFilterAriaLabel(FilterName.DeviceInfo, 'Pixel')
-      ).toBe('Clear filter: Device contains "Pixel"');
+      ).toBe('Clear filter: Device: Pixel');
     });
   });
 
@@ -170,6 +178,7 @@ describe('SearchComponent', () => {
       mockFilters = {
         deviceInfo: 'Pixel',
         deviceFirmware: '1.0',
+        assessmentType: 'Pilot',
         results: ['Compliant'],
         dateRange: { start: '10/01/2024', end: '10/05/2024' },
         quickSearch: ['test'],
@@ -202,6 +211,16 @@ describe('SearchComponent', () => {
       component.removeFilter(FilterName.DeviceFirmware);
 
       expect(component.filters.deviceFirmware).toBe('');
+      expect(component.filterCleared.emit).toHaveBeenCalledWith(
+        component.filters
+      );
+    });
+
+    it('should remove assessmentType filter', () => {
+      spyOn(component.filterCleared, 'emit');
+      component.removeFilter(FilterName.AssessmentType);
+
+      expect(component.filters.assessmentType).toBe('');
       expect(component.filterCleared.emit).toHaveBeenCalledWith(
         component.filters
       );
@@ -315,6 +334,7 @@ describe('SearchComponent', () => {
       expect(component.inputValue).toBe('');
       expect(component.filters.deviceInfo).toBe('');
       expect(component.filters.deviceFirmware).toBe('');
+      expect(component.filters.assessmentType).toBe('');
       expect(component.filters.results).toEqual([]);
       expect(component.filters.dateRange).toBe('');
       expect(component.filters.quickSearch).toEqual([]);
@@ -409,6 +429,7 @@ describe('SearchComponent', () => {
       component.filters = {
         deviceInfo: 'Pixel',
         deviceFirmware: '1.0',
+        assessmentType: '',
         results: [],
         dateRange: '',
         quickSearch: [],
@@ -452,6 +473,7 @@ describe('SearchComponent', () => {
       component.filters = {
         deviceInfo: 'Pixel',
         deviceFirmware: '',
+        assessmentType: '',
         results: [],
         dateRange: '',
         quickSearch: [],
@@ -537,6 +559,7 @@ describe('SearchComponent', () => {
       component.filters = {
         deviceInfo: 'Pixel',
         deviceFirmware: '',
+        assessmentType: '',
         results: ['Compliant'],
         dateRange: '',
         quickSearch: ['test'],
@@ -599,6 +622,7 @@ describe('SearchComponent', () => {
       component.filters = {
         deviceInfo: 'Pixel',
         deviceFirmware: '',
+        assessmentType: '',
         results: [],
         dateRange: '',
         quickSearch: [],

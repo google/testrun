@@ -70,6 +70,7 @@ describe('ReportsComponent', () => {
       filteredValues: {
         deviceInfo: '',
         deviceFirmware: '',
+        assessmentType: '',
         results: ['compliant'],
         dateRange: '',
         quickSearch: [],
@@ -93,6 +94,7 @@ describe('ReportsComponent', () => {
       'setFilteredValuesDateRange',
       'setFilteredValuesDeviceFirmware',
       'setFilteredValuesDeviceInfo',
+      'setFilteredValuesAssessmentType',
       'setFilteredValuesQuickSearch',
       'setFilteredValuesResults',
       'setFilteredValuesLocation',
@@ -227,6 +229,7 @@ describe('ReportsComponent', () => {
       const mockFilterResults = ['compliant'];
       const mockFilterDeviceInfo = 'mockDevice';
       const mockFilterDeviceFirmware = 'mockFirmware';
+      const mockFilterAssessmentType = 'mockAssessmentType';
       const mockFilterDateRange = {
         start: 'Wed Jun 21 2023 00:00:00',
         end: 'Thu Jun 22 2023 00:00:00',
@@ -240,6 +243,7 @@ describe('ReportsComponent', () => {
         results: mockFilterResults,
         deviceInfo: mockFilterDeviceInfo,
         deviceFirmware: mockFilterDeviceFirmware,
+        assessmentType: mockFilterAssessmentType,
         dateRange: mockFilterDateRange,
         location: mockFilterLocation,
         linuxEnv: mockFilterLinuxEnv,
@@ -278,6 +282,12 @@ describe('ReportsComponent', () => {
       });
       component.openFilter({
         event,
+        filter: FilterName.AssessmentType,
+        title: FilterTitle.AssessmentType,
+        filterOpened: false,
+      });
+      component.openFilter({
+        event,
         filter: FilterName.Location,
         title: FilterTitle.Location,
         filterOpened: false,
@@ -309,6 +319,9 @@ describe('ReportsComponent', () => {
       expect(
         mockReportsStore.setFilteredValuesDeviceFirmware
       ).toHaveBeenCalledWith(mockFilterDeviceFirmware);
+      expect(
+        mockReportsStore.setFilteredValuesAssessmentType
+      ).toHaveBeenCalledWith(mockFilterAssessmentType);
       expect(mockReportsStore.setFilteredValuesDateRange).toHaveBeenCalledWith(
         mockFilterDateRange
       );
@@ -460,6 +473,7 @@ describe('ReportsComponent', () => {
         const filters: Filters = {
           deviceInfo: '',
           deviceFirmware: '',
+          assessmentType: '',
           results: [],
           dateRange: '',
           quickSearch: ['searchKeyword'],

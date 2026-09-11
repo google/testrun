@@ -151,6 +151,7 @@ describe('ReportsStore', () => {
           filteredValues: {
             deviceInfo: '',
             deviceFirmware: '',
+            assessmentType: '',
             results: [],
             dateRange: '',
             quickSearch: [],
@@ -385,6 +386,24 @@ describe('ReportsStore', () => {
       });
     });
 
+    describe('setFilteredValuesAssessmentType', () => {
+      it('should update store', done => {
+        const updatedFilters = { ...FILTERS, ...{ assessmentType: 'test2' } };
+        store.overrideSelector(selectReports, [...HISTORY]);
+        reportsStore.setFilteredValues({ ...FILTERS });
+
+        reportsStore.setFilteredValuesAssessmentType('test2');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.filteredValues).toEqual(updatedFilters);
+          expect(store.dataSource.filter).toEqual(
+            JSON.stringify(updatedFilters)
+          );
+          done();
+        });
+      });
+    });
+
     describe('setFilteredValuesDateRange', () => {
       it('should update store', done => {
         const updatedFilters = { ...FILTERS, ...{ dateRange: 'test2' } };
@@ -605,6 +624,29 @@ describe('ReportsStore', () => {
 
         reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
           expect(vm.dataSource.filteredData.length).toBe(3);
+          done();
+        });
+      });
+
+      it('should filter by assessmentType', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesAssessmentType('Qualification');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
+          expect(vm.dataSource.filteredData.length).toBe(3);
+          expect(vm.dataSource.filteredData[0].program).toContain(
+            'Qualification'
+          );
+          done();
+        });
+      });
+
+      it('should filter out items when assessmentType does not match', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesAssessmentType('Pilot');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
+          expect(vm.dataSource.filteredData.length).toBe(0);
           done();
         });
       });

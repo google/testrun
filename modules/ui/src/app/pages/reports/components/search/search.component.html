@@ -45,8 +45,7 @@ limitations under the License.
     @for (item of getActiveFilters(); track getChipTrackId(item)) {
       <div
         class="filter-chip"
-        tabindex="0"
-        role="button"
+        role="group"
         [attr.aria-label]="getChipAriaLabel(item.key, item.value)">
         <span class="filter-chip-label">
           {{ getFilterChipLabel(item.key, item.value) }}

@@ -220,6 +220,7 @@ export const FILTERS = {
   linuxEnv: 'test',
   pythonVersion: 'test',
   kernel: 'test',
+  assessmentType: 'test',
 };
 export const EMPTY_FILTERS = {
   deviceInfo: '',
@@ -231,6 +232,7 @@ export const EMPTY_FILTERS = {
   linuxEnv: '',
   pythonVersion: '',
   kernel: '',
+  assessmentType: '',
 };
 
 export const DATA_SOURCE_INITIAL_VALUE_NOT_EMPTY =

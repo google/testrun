@@ -94,6 +94,7 @@ describe('Filters Models', () => {
       expect(filters.linuxEnv).toBe('');
       expect(filters.pythonVersion).toBe('');
       expect(filters.kernel).toBe('');
+      expect(filters.assessmentType).toBe('');
     });
   });
 
@@ -107,6 +108,7 @@ describe('Filters Models', () => {
       expect(FilterItem.LinuxEnv).toBe('Linux Environment');
       expect(FilterItem.PythonVersion).toBe('Python Version');
       expect(FilterItem.Kernel).toBe('Kernel');
+      expect(FilterItem.AssessmentType).toBe('Assessment type');
     });
 
     it('should define FilterName values correctly', () => {
@@ -120,6 +122,7 @@ describe('Filters Models', () => {
       expect(FilterName.LinuxEnv).toBe('linuxEnv');
       expect(FilterName.PythonVersion).toBe('pythonVersion');
       expect(FilterName.Kernel).toBe('kernel');
+      expect(FilterName.AssessmentType).toBe('assessmentType');
     });
 
     it('should define FilterTitle values correctly', () => {
@@ -131,6 +134,7 @@ describe('Filters Models', () => {
       expect(FilterTitle.LinuxEnv).toBe('Enter Linux environment');
       expect(FilterTitle.PythonVersion).toBe('Enter Python version');
       expect(FilterTitle.Kernel).toBe('Enter kernel');
+      expect(FilterTitle.AssessmentType).toBe('Select assessment type');
     });
   });
 });
