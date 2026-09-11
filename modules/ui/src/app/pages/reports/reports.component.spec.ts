@@ -39,7 +39,10 @@ import {
 } from '../../mocks/reports.mock';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { Breakpoints } from '@angular/cdk/layout';
 import { HistoryTestrun } from '../../model/testrun-status';
+import { SCREEN_SIZE_PAGE_SIZES } from './reports.component';
 
 describe('ReportsComponent', () => {
   let component: ReportsComponent;
@@ -104,6 +107,7 @@ describe('ReportsComponent', () => {
       'setActiveFiler',
       'setFilterOpened',
       'updateSort',
+      'updatePaginator',
       'getReports',
       'fetchReports',
     ]);
@@ -143,6 +147,20 @@ describe('ReportsComponent', () => {
         component.ngOnInit();
 
         expect(mockReportsStore.updateSort).toHaveBeenCalledWith(mockSort);
+      });
+
+      it('should update paginator if paginator viewChild is available', () => {
+        const mockPaginator = {
+          pageIndex: 0,
+          pageSize: 10,
+        } as unknown as MatPaginator;
+        spyOn(component, 'paginator').and.returnValue(mockPaginator);
+
+        component.ngOnInit();
+
+        expect(mockReportsStore.updatePaginator).toHaveBeenCalledWith(
+          mockPaginator
+        );
       });
     });
 
@@ -567,6 +585,147 @@ describe('ReportsComponent', () => {
         expect(component.getPythonVersion(itemWithoutHost)).toBeUndefined();
       });
     });
+
+    describe('Pagination and Responsive Page Size', () => {
+      it('should calculate page size based on width breakpoints', () => {
+        const mockMatched = (query: string): boolean =>
+          query === Breakpoints.XSmall;
+        expect(component.calculatePageSizeFromQueries(mockMatched)).toBe(
+          SCREEN_SIZE_PAGE_SIZES.XSmall
+        );
+
+        const mockSmall = (query: string): boolean =>
+          query === Breakpoints.Small;
+        expect(component.calculatePageSizeFromQueries(mockSmall)).toBe(
+          SCREEN_SIZE_PAGE_SIZES.Small
+        );
+
+        const mockMedium = (query: string): boolean =>
+          query === Breakpoints.Medium;
+        expect(component.calculatePageSizeFromQueries(mockMedium)).toBe(
+          SCREEN_SIZE_PAGE_SIZES.Medium
+        );
+
+        const mockLarge = (query: string): boolean =>
+          query === Breakpoints.Large;
+        expect(component.calculatePageSizeFromQueries(mockLarge)).toBe(
+          SCREEN_SIZE_PAGE_SIZES.Large
+        );
+
+        const mockXLarge = (query: string): boolean =>
+          query === Breakpoints.XLarge;
+        expect(component.calculatePageSizeFromQueries(mockXLarge)).toBe(
+          SCREEN_SIZE_PAGE_SIZES.XLarge
+        );
+      });
+
+      it('should adjust page size based on screen height', () => {
+        const matchLarge = (query: string): boolean =>
+          query === Breakpoints.Large;
+
+        expect(component.calculatePageSizeFromQueries(matchLarge, 500)).toBe(3);
+        expect(component.calculatePageSizeFromQueries(matchLarge, 700)).toBe(5);
+        expect(component.calculatePageSizeFromQueries(matchLarge, 850)).toBe(8);
+        expect(component.calculatePageSizeFromQueries(matchLarge, 1000)).toBe(
+          11
+        );
+        expect(component.calculatePageSizeFromQueries(matchLarge, 1200)).toBe(
+          14
+        );
+      });
+
+      it('should calculate page size based on container height when available', () => {
+        const matchLarge = (query: string): boolean =>
+          query === Breakpoints.Large;
+
+        expect(
+          component.calculatePageSizeFromQueries(matchLarge, 950, 622)
+        ).toBe(9);
+        expect(
+          component.calculatePageSizeFromQueries(matchLarge, 1200, 746)
+        ).toBe(12);
+        expect(
+          component.calculatePageSizeFromQueries(matchLarge, 600, 300)
+        ).toBe(3);
+      });
+
+      it('should return larger size on extra large screen with large height', () => {
+        const matchXLarge = (query: string): boolean =>
+          query === Breakpoints.XLarge;
+        expect(component.calculatePageSizeFromQueries(matchXLarge, 1200)).toBe(
+          15
+        );
+      });
+
+      it('#updatePageSize should update pageSize and call _changePageSize on paginator', () => {
+        const mockPaginator = {
+          pageSize: 10,
+          _changePageSize: jasmine.createSpy('_changePageSize'),
+        } as unknown as MatPaginator;
+        spyOn(component, 'paginator').and.returnValue(mockPaginator);
+
+        component.updatePageSize(20);
+
+        expect(component.pageSize).toBe(20);
+        expect(mockPaginator.pageSize).toBe(20);
+        expect(
+          (mockPaginator as unknown as { _changePageSize: jasmine.Spy })
+            ._changePageSize
+        ).toHaveBeenCalledWith(20);
+      });
+
+      it('#onPageChange should announce results range and page', () => {
+        const pageEvent: PageEvent = {
+          pageIndex: 0,
+          pageSize: 10,
+          length: 485,
+        };
+
+        component.onPageChange(pageEvent);
+
+        expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+          'Showing results 1 to 10 of 485, page 1 of 49',
+          'polite'
+        );
+      });
+
+      it('#onPageChange should announce "No results found" when length is 0', () => {
+        const pageEvent: PageEvent = {
+          pageIndex: 0,
+          pageSize: 10,
+          length: 0,
+        };
+
+        component.onPageChange(pageEvent);
+
+        expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+          'No results found',
+          'polite'
+        );
+      });
+
+      it('#onPageChange should update pageSize and prevent automatic resize override when user selects page size', () => {
+        const pageEvent: PageEvent = {
+          pageIndex: 0,
+          pageSize: 25,
+          length: 100,
+        };
+
+        component.onPageChange(pageEvent);
+
+        expect(component.pageSize).toBe(25);
+
+        // evaluateScreenSize should not override user-selected page size
+        component.evaluateScreenSize();
+        expect(component.pageSize).toBe(25);
+      });
+
+      it('#onWindowResize should invoke evaluateScreenSize', () => {
+        spyOn(component, 'evaluateScreenSize');
+        component.onWindowResize();
+        expect(component.evaluateScreenSize).toHaveBeenCalled();
+      });
+    });
   });
 
   describe('DOM tests', () => {
@@ -732,6 +891,60 @@ describe('ReportsComponent', () => {
         expect(component.getLinuxEnv(itemWithoutMeta)).toBeFalsy();
         expect(component.getKernel(itemWithoutMeta)).toBeFalsy();
         expect(component.getPythonVersion(itemWithoutMeta)).toBeFalsy();
+      });
+
+      it('should render mat-paginator with accessible attributes', () => {
+        const paginator = compiled.querySelector('mat-paginator');
+        expect(paginator).toBeTruthy();
+        expect(paginator?.getAttribute('aria-label')).toBe(
+          'Select page of reports'
+        );
+      });
+
+      it('should hide page size dropdown on mat-paginator', () => {
+        const paginator = component.paginator();
+        expect(paginator?.hidePageSize).toBeTrue();
+        const pageSizeContainer = compiled.querySelector(
+          '.mat-mdc-paginator-page-size'
+        );
+        expect(pageSizeContainer).toBeNull();
+      });
+
+      it('should hide paginator when there is no data', () => {
+        const emptyDataSource = new MatTableDataSource<HistoryTestrun>([]);
+        component.viewModel$ = getViewModel(emptyDataSource, true);
+        fixture.detectChanges();
+
+        const paginator = compiled.querySelector('mat-paginator');
+        expect(paginator?.classList).toContain('hidden');
+      });
+
+      it('should paginate items when results exceed page size', () => {
+        const manyItems: HistoryTestrun[] = Array.from(
+          { length: 25 },
+          (_, i) => ({
+            ...FORMATTED_HISTORY[0],
+            started: `2023-06-${(i + 1).toString().padStart(2, '0')}T10:11:00.123Z`,
+            deviceInfo: `Device ${i + 1}`,
+          })
+        );
+        const manyDataSource = new MatTableDataSource<HistoryTestrun>(
+          manyItems
+        );
+        component.viewModel$ = getViewModel(manyDataSource, true);
+        component.pageSize = 10;
+        fixture.detectChanges();
+
+        const paginator = component.paginator();
+        if (paginator) {
+          manyDataSource.paginator = paginator;
+          fixture.detectChanges();
+        }
+
+        const renderedRows = compiled.querySelectorAll(
+          'tbody tr:not(.detail-row)'
+        );
+        expect(renderedRows.length).toBe(10);
       });
     });
   });
