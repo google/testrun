@@ -336,7 +336,7 @@ limitations under the License.
         #paginator
         [length]="vm.dataSource.filteredData.length"
         [pageSize]="pageSize"
-        [pageSizeOptions]="pageSizeOptions"
+        hidePageSize
         (page)="onPageChange($event)"
         showFirstLastButtons
         aria-label="Select page of reports"

@@ -75,7 +75,6 @@ export const PAGE_VERTICAL_OVERHEAD = 410; // Estimated vertical UI overhead out
 export const DEFAULT_PAGE_SIZE = 10;
 export const MIN_PAGE_SIZE = 3;
 export const MAX_PAGE_SIZE = 50;
-export const PAGE_SIZE_OPTIONS: readonly number[] = [5, 10, 15, 20, 50];
 
 export const SCREEN_SIZE_PAGE_SIZES = {
   XSmall: 3,
@@ -173,12 +172,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
   private resizeObserver?: ResizeObserver;
 
   pageSize: number = DEFAULT_PAGE_SIZE;
-  get pageSizeOptions(): readonly number[] {
-    if (!PAGE_SIZE_OPTIONS.includes(this.pageSize)) {
-      return [...PAGE_SIZE_OPTIONS, this.pageSize].sort((a, b) => a - b);
-    }
-    return PAGE_SIZE_OPTIONS;
-  }
   private isUserSelectedPageSize = false;
 
   private readonly paginatorEffect = effect(() => {

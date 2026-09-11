@@ -901,6 +901,15 @@ describe('ReportsComponent', () => {
         );
       });
 
+      it('should hide page size dropdown on mat-paginator', () => {
+        const paginator = component.paginator();
+        expect(paginator?.hidePageSize).toBeTrue();
+        const pageSizeContainer = compiled.querySelector(
+          '.mat-mdc-paginator-page-size'
+        );
+        expect(pageSizeContainer).toBeNull();
+      });
+
       it('should hide paginator when there is no data', () => {
         const emptyDataSource = new MatTableDataSource<HistoryTestrun>([]);
         component.viewModel$ = getViewModel(emptyDataSource, true);
