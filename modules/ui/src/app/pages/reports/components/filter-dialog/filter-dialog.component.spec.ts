@@ -37,6 +37,7 @@ import { DateRange, FilterName, FilterTitle } from '../../../../model/filters';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { ResultOfTestrun } from '../../../../model/testrun-status';
+import { TestingType } from '../../../../model/device';
 
 describe('FilterDialogComponent', () => {
   let component: FilterDialogComponent;
@@ -120,6 +121,7 @@ describe('FilterDialogComponent', () => {
       linuxEnv: '',
       pythonVersion: '',
       kernel: '',
+      assessmentType: '',
       results: [],
       dateRange: new DateRange(),
     };
@@ -141,6 +143,9 @@ describe('FilterDialogComponent', () => {
     component.filterForm.get('linuxEnv')?.setValue('  Ubuntu 24.04  ');
     component.filterForm.get('pythonVersion')?.setValue('  3.11  ');
     component.filterForm.get('kernel')?.setValue('  6.8.0  ');
+    component.filterForm
+      .get('assessmentType')
+      ?.setValue('  Pilot Assessment  ');
     component.results.controls[0].setValue(true);
 
     const mockFormData = {
@@ -150,6 +155,7 @@ describe('FilterDialogComponent', () => {
       linuxEnv: 'Ubuntu 24.04',
       pythonVersion: '3.11',
       kernel: '6.8.0',
+      assessmentType: 'Pilot Assessment',
       results: [ResultOfTestrun.Compliant],
       dateRange: new DateRange(),
     };
@@ -209,6 +215,9 @@ describe('FilterDialogComponent', () => {
       component.filterForm.get('pythonVersion')!
     );
     expect(component.kernel).toBe(component.filterForm.get('kernel')!);
+    expect(component.assessmentType).toBe(
+      component.filterForm.get('assessmentType')!
+    );
     expect(component.results).toBe(
       component.filterForm.controls[
         'results'
@@ -243,6 +252,33 @@ describe('FilterDialogComponent', () => {
       expect(firmwareError).toContain(
         'The firmware name must be a maximum of 64 characters. Only letters, numbers, and accented letters are permitted.'
       );
+    });
+  });
+
+  describe('assessment type filter', () => {
+    beforeEach(() => {
+      component.data = {
+        trigger: mockClientRest,
+        filter: FilterName.AssessmentType,
+        title: FilterTitle.AssessmentType,
+      };
+      fixture.detectChanges();
+    });
+
+    it('should render mat-select for assessment type with TestingType options', () => {
+      const select = compiled.querySelector('mat-select');
+      expect(select).toBeTruthy();
+      expect(component.testingTypes).toEqual([
+        TestingType.Pilot,
+        TestingType.Qualification,
+      ]);
+    });
+
+    it('should update assessmentType form control on value change', () => {
+      component.filterForm
+        .get('assessmentType')
+        ?.setValue(TestingType.Qualification);
+      expect(component.assessmentType.value).toBe(TestingType.Qualification);
     });
   });
 
