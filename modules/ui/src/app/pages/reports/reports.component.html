@@ -30,6 +30,7 @@ limitations under the License.
       (filterCleared)="filterCleared($event)">
     </app-search>
     <div
+      #historyContent
       class="history-content"
       role="region"
       aria-labelledby="reports-heading"
@@ -331,6 +332,16 @@ limitations under the License.
           class="detail-row"
           [class.expanded-row]="isExpanded(row)"></tr>
       </table>
+      <mat-paginator
+        #paginator
+        [length]="vm.dataSource.filteredData.length"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="pageSizeOptions"
+        (page)="onPageChange($event)"
+        showFirstLastButtons
+        aria-label="Select page of reports"
+        [class.hidden]="vm.dataSource.filteredData.length === 0">
+      </mat-paginator>
     </div>
   }
 }

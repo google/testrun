@@ -15,13 +15,26 @@
  */
 import {
   Component,
+  DestroyRef,
   ElementRef,
+  HostListener,
+  Injector,
   OnDestroy,
   OnInit,
-  viewChild,
+  afterNextRender,
+  effect,
   inject,
+  viewChild,
 } from '@angular/core';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import {
+  MatPaginator,
+  MatPaginatorIntl,
+  MatPaginatorModule,
+  PageEvent,
+} from '@angular/material/paginator';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TestRunService } from '../../services/test-run.service';
 import {
   HistoryTestrun,
@@ -54,6 +67,54 @@ import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.
 import { EmptyMessageComponent } from '../../components/empty-message/empty-message.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { state, style, trigger } from '@angular/animations';
+import { ReportsPaginatorIntl } from './reports-paginator-intl';
+
+export const TABLE_ROW_HEIGHT = 52;
+export const TABLE_OVERHEAD_HEIGHT = 112; // Header row (56px) + Paginator (56px)
+export const PAGE_VERTICAL_OVERHEAD = 410; // Estimated vertical UI overhead outside table data rows
+export const DEFAULT_PAGE_SIZE = 10;
+export const MIN_PAGE_SIZE = 3;
+export const MAX_PAGE_SIZE = 50;
+export const PAGE_SIZE_OPTIONS: readonly number[] = [5, 10, 15, 20, 50];
+
+export const SCREEN_SIZE_PAGE_SIZES = {
+  XSmall: 3,
+  Small: 6,
+  Medium: 9,
+  Large: 14,
+  XLarge: 20,
+} as const;
+
+export interface CalculatePageSizeOptions {
+  containerHeight?: number;
+  windowHeight?: number;
+  maxForBreakpoint?: number;
+}
+
+export function calculatePageSize(
+  options: CalculatePageSizeOptions = {}
+): number {
+  const { containerHeight, windowHeight, maxForBreakpoint } = options;
+
+  let availableHeight: number | undefined;
+  if (containerHeight !== undefined && containerHeight > 0) {
+    availableHeight = containerHeight - TABLE_OVERHEAD_HEIGHT;
+  } else if (windowHeight !== undefined && windowHeight > 0) {
+    availableHeight = windowHeight - PAGE_VERTICAL_OVERHEAD;
+  }
+
+  if (availableHeight === undefined) {
+    return maxForBreakpoint ?? DEFAULT_PAGE_SIZE;
+  }
+
+  let count = Math.floor(availableHeight / TABLE_ROW_HEIGHT);
+
+  if (maxForBreakpoint !== undefined && maxForBreakpoint > 0) {
+    count = Math.min(count, maxForBreakpoint);
+  }
+
+  return Math.max(MIN_PAGE_SIZE, Math.min(MAX_PAGE_SIZE, count));
+}
 
 @Component({
   selector: 'app-history',
@@ -68,6 +129,7 @@ import { state, style, trigger } from '@angular/animations';
     MatSortModule,
     MatButtonModule,
     MatInputModule,
+    MatPaginatorModule,
     SearchComponent,
     DeleteReportComponent,
     DownloadReportZipComponent,
@@ -75,7 +137,11 @@ import { state, style, trigger } from '@angular/animations';
     EmptyMessageComponent,
     MatTooltipModule,
   ],
-  providers: [ReportsStore, DatePipe],
+  providers: [
+    ReportsStore,
+    DatePipe,
+    { provide: MatPaginatorIntl, useClass: ReportsPaginatorIntl },
+  ],
   animations: [
     trigger('detailExpand', [
       state(
@@ -91,6 +157,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
   private testRunService = inject(TestRunService);
   private datePipe = inject(DatePipe);
   private liveAnnouncer = inject(LiveAnnouncer);
+  private breakpointObserver = inject(BreakpointObserver);
+  private destroyRef = inject(DestroyRef);
+  private injector = inject(Injector);
   dialog = inject(MatDialog);
   private store = inject(ReportsStore);
 
@@ -98,7 +167,62 @@ export class ReportsComponent implements OnInit, OnDestroy {
   public readonly FilterTitle = FilterTitle;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   sort = viewChild(MatSort);
+  paginator = viewChild(MatPaginator);
+  historyContent = viewChild<ElementRef<HTMLElement>>('historyContent');
   viewModel$ = this.store.viewModel$;
+  private resizeObserver?: ResizeObserver;
+
+  pageSize: number = DEFAULT_PAGE_SIZE;
+  get pageSizeOptions(): readonly number[] {
+    if (!PAGE_SIZE_OPTIONS.includes(this.pageSize)) {
+      return [...PAGE_SIZE_OPTIONS, this.pageSize].sort((a, b) => a - b);
+    }
+    return PAGE_SIZE_OPTIONS;
+  }
+  private isUserSelectedPageSize = false;
+
+  private readonly paginatorEffect = effect(() => {
+    const paginator = this.paginator();
+    if (paginator) {
+      this.store.updatePaginator(paginator);
+    }
+  });
+
+  private readonly sortEffect = effect(() => {
+    const sort = this.sort();
+    if (sort) {
+      this.store.updateSort(sort);
+    }
+  });
+
+  private readonly historyContentEffect = effect(() => {
+    const historyContent = this.historyContent();
+    if (historyContent?.nativeElement) {
+      this.evaluateScreenSize();
+      this.setupResizeObserver(historyContent.nativeElement);
+    }
+  });
+
+  private setupResizeObserver(element: HTMLElement): void {
+    if (typeof ResizeObserver === 'undefined') {
+      return;
+    }
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = new ResizeObserver(() => {
+      this.evaluateScreenSize();
+    });
+    this.resizeObserver.observe(element);
+  }
+
+  constructor() {
+    this.initResponsivePageSize();
+    afterNextRender(
+      () => {
+        this.evaluateScreenSize();
+      },
+      { injector: this.injector }
+    );
+  }
 
   ngOnInit() {
     this.store.fetchReports();
@@ -106,6 +230,115 @@ export class ReportsComponent implements OnInit, OnDestroy {
     if (sort) {
       this.store.updateSort(sort);
     }
+    const paginator = this.paginator();
+    if (paginator) {
+      this.store.updatePaginator(paginator);
+    }
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.evaluateScreenSize();
+  }
+
+  private initResponsivePageSize(): void {
+    this.breakpointObserver
+      .observe([
+        Breakpoints.XSmall,
+        Breakpoints.Small,
+        Breakpoints.Medium,
+        Breakpoints.Large,
+        Breakpoints.XLarge,
+      ])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.evaluateScreenSize();
+      });
+
+    this.evaluateScreenSize();
+  }
+
+  evaluateScreenSize(): void {
+    if (this.isUserSelectedPageSize) {
+      return;
+    }
+    const isMatched = (query: string): boolean => {
+      return this.breakpointObserver.isMatched(query);
+    };
+    const windowHeight =
+      typeof window !== 'undefined' ? window.innerHeight : undefined;
+    const containerHeight = this.historyContent()?.nativeElement?.clientHeight;
+    const newSize = this.calculatePageSizeFromQueries(
+      isMatched,
+      windowHeight,
+      containerHeight && containerHeight > 0 ? containerHeight : undefined
+    );
+    this.updatePageSize(newSize);
+  }
+
+  calculatePageSizeFromQueries(
+    isMatched: (query: string) => boolean,
+    windowHeight?: number,
+    containerHeight?: number
+  ): number {
+    let widthSize: number = SCREEN_SIZE_PAGE_SIZES.Medium;
+    if (isMatched(Breakpoints.XSmall)) {
+      widthSize = SCREEN_SIZE_PAGE_SIZES.XSmall;
+    } else if (isMatched(Breakpoints.Small)) {
+      widthSize = SCREEN_SIZE_PAGE_SIZES.Small;
+    } else if (isMatched(Breakpoints.Medium)) {
+      widthSize = SCREEN_SIZE_PAGE_SIZES.Medium;
+    } else if (isMatched(Breakpoints.Large)) {
+      widthSize = SCREEN_SIZE_PAGE_SIZES.Large;
+    } else if (isMatched(Breakpoints.XLarge)) {
+      widthSize = SCREEN_SIZE_PAGE_SIZES.XLarge;
+    }
+
+    return calculatePageSize({
+      containerHeight,
+      windowHeight,
+      maxForBreakpoint: widthSize,
+    });
+  }
+
+  updatePageSize(newSize: number): void {
+    if (this.pageSize !== newSize) {
+      this.pageSize = newSize;
+      const paginator = this.paginator();
+      if (paginator) {
+        paginator.pageSize = newSize;
+        if (
+          typeof (paginator as { _changePageSize?: (size: number) => void })
+            ._changePageSize === 'function'
+        ) {
+          (
+            paginator as { _changePageSize: (size: number) => void }
+          )._changePageSize(newSize);
+        }
+      }
+    }
+  }
+
+  onPageChange(event: PageEvent): void {
+    if (this.pageSize !== event.pageSize) {
+      this.pageSize = event.pageSize;
+      this.isUserSelectedPageSize = true;
+    }
+    if (event.length === 0) {
+      this.liveAnnouncer.announce('No results found', 'polite');
+      return;
+    }
+    const totalPages = Math.ceil(event.length / event.pageSize) || 1;
+    const currentPage = event.pageIndex + 1;
+    const startIndex = event.pageIndex * event.pageSize + 1;
+    const endIndex = Math.min(
+      (event.pageIndex + 1) * event.pageSize,
+      event.length
+    );
+    this.liveAnnouncer.announce(
+      `Showing results ${startIndex} to ${endIndex} of ${event.length}, page ${currentPage} of ${totalPages}`,
+      'polite'
+    );
   }
 
   public expandedRows: Set<HistoryTestrun> = new Set<HistoryTestrun>();
@@ -293,6 +526,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.resizeObserver?.disconnect();
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
   }
