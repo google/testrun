@@ -215,22 +215,24 @@ export const FILTERS = {
   deviceFirmware: 'test',
   results: ['test'],
   dateRange: 'test',
-  quickSearch: 'test',
+  quickSearch: ['test'],
   location: 'test',
   linuxEnv: 'test',
   pythonVersion: 'test',
   kernel: 'test',
+  assessmentType: 'test',
 };
 export const EMPTY_FILTERS = {
   deviceInfo: '',
   deviceFirmware: '',
   results: [''],
   dateRange: '',
-  quickSearch: '',
+  quickSearch: [],
   location: '',
   linuxEnv: '',
   pythonVersion: '',
   kernel: '',
+  assessmentType: '',
 };
 
 export const DATA_SOURCE_INITIAL_VALUE_NOT_EMPTY =

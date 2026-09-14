@@ -159,17 +159,24 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     );
   });
 
-  setFilteredValuesQuickSearch = this.effect<string>(quickSearch$ => {
-    return quickSearch$.pipe(
-      withLatestFrom(this.filteredValues$, this.dataSource$),
-      tap(([quickSearch, filteredValues, dataSource]) => {
-        this.updateFilters(dataSource, {
-          ...filteredValues,
-          quickSearch,
-        });
-      })
-    );
-  });
+  setFilteredValuesQuickSearch = this.effect<string[] | string>(
+    quickSearch$ => {
+      return quickSearch$.pipe(
+        withLatestFrom(this.filteredValues$, this.dataSource$),
+        tap(([quickSearch, filteredValues, dataSource]) => {
+          const quickSearchArray = Array.isArray(quickSearch)
+            ? quickSearch
+            : quickSearch && quickSearch.trim()
+              ? [quickSearch.trim()]
+              : [];
+          this.updateFilters(dataSource, {
+            ...filteredValues,
+            quickSearch: quickSearchArray,
+          });
+        })
+      );
+    }
+  );
 
   setFilteredValuesDeviceInfo = this.effect<string>(deviceInfo$ => {
     return deviceInfo$.pipe(
@@ -250,6 +257,18 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         this.updateFilters(dataSource, {
           ...filteredValues,
           kernel,
+        });
+      })
+    );
+  });
+
+  setFilteredValuesAssessmentType = this.effect<string>(assessmentType$ => {
+    return assessmentType$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([assessmentType, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          assessmentType,
         });
       })
     );
@@ -399,6 +418,10 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         data.device?.kernel ?? '',
         searchString.kernel ?? ''
       );
+      const isIncludeAssessmentType = this.filterStringData(
+        data.program ?? '',
+        searchString.assessmentType ?? ''
+      );
 
       return (
         isIncludeSearchQuery &&
@@ -409,7 +432,8 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         isIncludeLocation &&
         isIncludeLinuxEnv &&
         isIncludePythonVersion &&
-        isIncludeKernel
+        isIncludeKernel &&
+        isIncludeAssessmentType
       );
     };
     return filterPredicate;
@@ -417,18 +441,20 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
 
   private filterSearchQuery(
     data: HistoryTestrun,
-    searchQuery: string = ''
+    searchQuery: string[] | string = []
   ): boolean {
-    if (!searchQuery || !searchQuery.trim()) {
+    const queries = Array.isArray(searchQuery)
+      ? searchQuery.map(q => q.trim().toLowerCase()).filter(Boolean)
+      : typeof searchQuery === 'string' && searchQuery.trim()
+        ? [searchQuery.trim().toLowerCase()]
+        : [];
+
+    if (queries.length === 0) {
       return true;
     }
-    const query = searchQuery.trim().toLowerCase();
 
     const formattedStarted = data.started
       ? this.datePipe.transform(data.started, 'd MMM y H:mm')
-      : '';
-    const formattedFinished = data.finished
-      ? this.datePipe.transform(data.finished, 'd MMM y H:mm')
       : '';
 
     const searchableFields = [
@@ -440,26 +466,21 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
       data.device?.firmware,
       data.device?.kernel,
       data.device?.test_pack,
-      data.device?.created_at,
       data.program,
       data.status,
       data.testResult,
       data.result,
-      data.started,
-      data.finished,
       formattedStarted,
-      formattedFinished,
       data.duration,
-      data.folder_name,
-      data.report,
-      data.export,
       data.host?.location,
       data.host?.linux_env,
       data.host?.python_version,
     ];
 
-    return searchableFields.some(
-      field => field && field.toString().toLowerCase().includes(query)
+    return queries.every(query =>
+      searchableFields.some(
+        field => field && field.toString().toLowerCase().includes(query)
+      )
     );
   }
 
@@ -486,12 +507,16 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     const startDate = searchString.dateRange.start
       ? typeof searchString.dateRange.start === 'string'
         ? Date.parse(searchString.dateRange.start)
-        : searchString.dateRange.start.getDate()
+        : typeof (searchString.dateRange.start as Date).getTime === 'function'
+          ? (searchString.dateRange.start as Date).getTime()
+          : new Date(searchString.dateRange.start).getTime()
       : 0;
     const endDate = searchString.dateRange.end
       ? typeof searchString.dateRange.end === 'string'
         ? Date.parse(searchString.dateRange.end)
-        : searchString.dateRange.end.getDate()
+        : typeof (searchString.dateRange.end as Date).getTime === 'function'
+          ? (searchString.dateRange.end as Date).getTime()
+          : new Date(searchString.dateRange.end).getTime()
       : 0;
 
     const startedDateWithoutTime = new Date(startedDate).toDateString();
@@ -508,10 +533,13 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
 
   private isFiltersEmpty(filteredValues: Filters) {
     return Object.values(filteredValues).every(value => {
-      if (value.start === '') {
-        return value.end.length === 0;
+      if (
+        value instanceof DateRange ||
+        (typeof value === 'object' && value !== null && !Array.isArray(value))
+      ) {
+        return !value.start && !value.end;
       }
-      return value.length === 0;
+      return value === null || value === undefined || value.length === 0;
     });
   }
   constructor() {
@@ -535,11 +563,12 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         deviceFirmware: '',
         results: [],
         dateRange: '',
-        quickSearch: '',
+        quickSearch: [],
         location: '',
         linuxEnv: '',
         pythonVersion: '',
         kernel: '',
+        assessmentType: '',
       },
       dataLoaded: false,
       selectedRow: null,

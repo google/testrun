@@ -99,8 +99,24 @@ limitations under the License.
           aria-label="kernel" />
       </mat-form-field>
     }
+    @if (data.filter === FilterName.AssessmentType) {
+      <mat-form-field appearance="outline" class="text-field">
+        <mat-label>Assessment type</mat-label>
+        <mat-select
+          formControlName="assessmentType"
+          aria-label="assessment type">
+          @for (type of testingTypes; track type) {
+            <mat-option [value]="type">{{ type }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
     @if (data.filter === FilterName.Results) {
-      <div class="filter-result" formArrayName="results">
+      <div
+        class="filter-result"
+        formArrayName="results"
+        role="group"
+        aria-label="Result options">
         @for (result of results.controls; track result; let i = $index) {
           <p class="filter-result-item">
             <mat-checkbox [formControlName]="i">

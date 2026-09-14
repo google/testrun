@@ -45,6 +45,7 @@ export enum FilterItem {
   LinuxEnv = 'Linux Environment',
   PythonVersion = 'Python Version',
   Kernel = 'Kernel',
+  AssessmentType = 'Assessment type',
 }
 
 export enum FilterName {
@@ -58,6 +59,7 @@ export enum FilterName {
   LinuxEnv = 'linuxEnv',
   PythonVersion = 'pythonVersion',
   Kernel = 'kernel',
+  AssessmentType = 'assessmentType',
 }
 
 export enum FilterTitle {
@@ -69,6 +71,7 @@ export enum FilterTitle {
   LinuxEnv = 'Enter Linux environment',
   PythonVersion = 'Enter Python version',
   Kernel = 'Enter kernel',
+  AssessmentType = 'Select assessment type',
 }
 
 export class DateRange {
@@ -93,11 +96,12 @@ export class Filters {
   deviceFirmware = '';
   results: string[] = [];
   dateRange: DateRange | string = '';
-  quickSearch = '';
+  quickSearch: string[] = [];
   location = '';
   linuxEnv = '';
   pythonVersion = '';
   kernel = '';
+  assessmentType = '';
 }
 
 function getDateString(date: string | Date) {

@@ -151,9 +151,10 @@ describe('ReportsStore', () => {
           filteredValues: {
             deviceInfo: '',
             deviceFirmware: '',
+            assessmentType: '',
             results: [],
             dateRange: '',
-            quickSearch: '',
+            quickSearch: [],
             location: '',
             linuxEnv: '',
             pythonVersion: '',
@@ -264,11 +265,11 @@ describe('ReportsStore', () => {
 
     describe('setFilteredValuesQuickSearch', () => {
       it('should update store', done => {
-        const updatedFilters = { ...FILTERS, ...{ quickSearch: 'test2' } };
+        const updatedFilters = { ...FILTERS, ...{ quickSearch: ['test2'] } };
         store.overrideSelector(selectReports, [...HISTORY]);
         reportsStore.setFilteredValues({ ...FILTERS });
 
-        reportsStore.setFilteredValuesQuickSearch('test2');
+        reportsStore.setFilteredValuesQuickSearch(['test2']);
 
         reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
           expect(store.filteredValues).toEqual(updatedFilters);
@@ -338,6 +339,33 @@ describe('ReportsStore', () => {
           done();
         });
       });
+
+      it('should apply AND operation across multiple quickSearch queries', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch([
+          'Data Center Alpha',
+          '1.2.3',
+        ]);
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.filteredData.length).toBe(1);
+          expect(store.dataSource.filteredData[0].deviceFirmware).toBe('1.2.3');
+          done();
+        });
+      });
+
+      it('should return 0 items when one of the AND queries does not match', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesQuickSearch([
+          'Data Center Alpha',
+          'NonexistentDevice',
+        ]);
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.filteredData.length).toBe(0);
+          done();
+        });
+      });
     });
 
     describe('setFilteredValuesDeviceFirmware', () => {
@@ -347,6 +375,24 @@ describe('ReportsStore', () => {
         reportsStore.setFilteredValues({ ...FILTERS });
 
         reportsStore.setFilteredValuesDeviceFirmware('test2');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.filteredValues).toEqual(updatedFilters);
+          expect(store.dataSource.filter).toEqual(
+            JSON.stringify(updatedFilters)
+          );
+          done();
+        });
+      });
+    });
+
+    describe('setFilteredValuesAssessmentType', () => {
+      it('should update store', done => {
+        const updatedFilters = { ...FILTERS, ...{ assessmentType: 'test2' } };
+        store.overrideSelector(selectReports, [...HISTORY]);
+        reportsStore.setFilteredValues({ ...FILTERS });
+
+        reportsStore.setFilteredValuesAssessmentType('test2');
 
         reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
           expect(store.filteredValues).toEqual(updatedFilters);
@@ -572,22 +618,35 @@ describe('ReportsStore', () => {
         });
       });
 
-      it('should filter by folder_name, report URL, and export URL in quickSearch', done => {
-        reportsStore.setDataSource([...HISTORY]);
-        reportsStore.setFilteredValuesQuickSearch('12345');
-
-        reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
-          expect(vm.dataSource.filteredData.length).toBe(1);
-          done();
-        });
-      });
-
       it('should return all items when quickSearch is empty or contains only whitespace', done => {
         reportsStore.setDataSource([...HISTORY]);
         reportsStore.setFilteredValuesQuickSearch('   ');
 
         reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
           expect(vm.dataSource.filteredData.length).toBe(3);
+          done();
+        });
+      });
+
+      it('should filter by assessmentType', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesAssessmentType('Qualification');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
+          expect(vm.dataSource.filteredData.length).toBe(3);
+          expect(vm.dataSource.filteredData[0].program).toContain(
+            'Qualification'
+          );
+          done();
+        });
+      });
+
+      it('should filter out items when assessmentType does not match', done => {
+        reportsStore.setDataSource([...HISTORY]);
+        reportsStore.setFilteredValuesAssessmentType('Pilot');
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(vm => {
+          expect(vm.dataSource.filteredData.length).toBe(0);
           done();
         });
       });
