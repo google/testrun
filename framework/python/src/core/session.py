@@ -106,6 +106,7 @@ class TestrunSession():
     # Start time of testing
     self._started = None
     self._finished = None
+    self._monitor_started = None
 
     # Current testing results
     self._results = []
@@ -186,6 +187,12 @@ class TestrunSession():
 
   def start_timer(self):
     self._started = datetime.datetime.now()
+
+  def start_monitor_timer(self):
+    self._monitor_started = datetime.datetime.now()
+
+  def get_monitor_started(self):
+    return self._monitor_started
 
   def get_started(self):
     return self._started
@@ -440,6 +447,8 @@ class TestrunSession():
     return self._status
 
   def set_status(self, status: TestrunStatus):
+    if status == TestrunStatus.MONITORING and self._monitor_started is None:
+      self.start_monitor_timer()
     self._status = status
 
   def get_result(self) -> TestrunResult:
@@ -904,6 +913,7 @@ question {question.get('question')}''')
     self._results = []
     self._started = None
     self._finished = None
+    self._monitor_started = None
     self._ifaces = IPControl.get_sys_interfaces()
 
   def to_json(self):
@@ -923,6 +933,7 @@ question {question.get('question')}''')
         'device': device,
         'started': self.get_started(),
         'finished': self.get_finished(),
+        'monitor_started': self.get_monitor_started(),
         'tests': results
     }
 
