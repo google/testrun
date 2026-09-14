@@ -27,10 +27,12 @@ sudo mkdir -p /var/run/netns
 FILE_PATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # Check if Testrun was installed as a package
-if [ $FILE_PATH == "/usr/bin" ] ; then
-  export TESTRUN_PATH="/usr/local/testrun"
+if [ "$FILE_PATH" = "/usr/bin" ]; then
+    TESTRUN_PATH="/usr/local/testrun"
+    export TESTRUN_PATH
 else
-  export TESTRUN_PATH=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")"/.. && pwd)
+    TESTRUN_PATH=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")"/.. && pwd)
+    export TESTRUN_PATH
 fi
 
 cd $TESTRUN_PATH
@@ -43,6 +45,6 @@ source venv/bin/activate
 
 # Set the PYTHONPATH to include the "src" directory
 export PYTHONPATH="$TESTRUN_PATH/framework/python/src"
-python -u framework/python/src/core/test_runner.py $@ 2>&1 | tee testrun.log
+python -u framework/python/src/core/test_runner.py "$@" 2>&1 | tee testrun.log
 
 deactivate

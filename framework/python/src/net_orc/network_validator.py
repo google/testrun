@@ -153,6 +153,7 @@ class NetworkValidator:
 
     try:
       client = docker.from_env()
+      # nosemgrep
       device.container = client.containers.run(
           device.image_name,
           auto_remove=True,

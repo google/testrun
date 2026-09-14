@@ -21,7 +21,7 @@ from fastapi.encoders import jsonable_encoder
 from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
 from common.statuses import TestrunStatus, TestResult, TestrunResult
-from common.device import Device, DeviceWithReport
+from common.models import Device, DeviceWithReport, Host
 from net_orc.ip_control import IPControl
 
 # Certificate dependencies
@@ -163,6 +163,10 @@ class TestrunSession():
 
     self._certs = []
     self.load_certs()
+
+    # Load host metadata
+    self._host = Host.get_host_metadata()
+    LOGGER.debug(f'Host metadata: {self._host.to_dict()}')
 
     # Fetch the timezone of the host system
     try:
@@ -428,6 +432,10 @@ class TestrunSession():
   def get_ipv6_subnet(self):
     return self._ipv6_subnet
 
+  def set_device_kernel(self, kernel: str):
+    if self._device is not None:
+      self._device.kernel = kernel
+
   def get_status(self) -> TestrunStatus:
     return self._status
 
@@ -479,8 +487,8 @@ class TestrunSession():
         details = result.details
         if isinstance(details, str):
           details = list(filter(lambda s: s!='', details.split('\n')))
-        if isinstance(details, list):
-          details = ' '.join(details)
+        if isinstance(details, list) and details:
+          details = '; '.join(details)
         test_result.details = details
 
         # Add recommendations if provided
@@ -615,8 +623,8 @@ class TestrunSession():
     LOGGER.debug('Loading risk profiles')
 
     try:
-      for risk_profile_file in os.listdir(
-          os.path.join(self._root_dir, PROFILES_DIR)):
+      for risk_profile_file in sorted(os.listdir(
+          os.path.join(self._root_dir, PROFILES_DIR))):
 
         if not risk_profile_file.endswith('.json'):
           continue
@@ -715,7 +723,15 @@ class TestrunSession():
         old_name = profile_json.get('name')
 
         # Delete the original file
-        os.remove(os.path.join(PROFILES_DIR, old_name + '.json'))
+        old_file_path = os.path.join(PROFILES_DIR, old_name + '.json')
+        if os.path.exists(old_file_path):
+          try:
+            os.remove(old_file_path)
+          except OSError as e:
+            LOGGER.error(
+                f'An error occurred whilst deleting old profile file '
+                f'{old_file_path}: {e}'
+            )
 
     # Write file to disk
     with open(os.path.join(PROFILES_DIR, risk_profile.name + '.json'),
@@ -1090,3 +1106,6 @@ question {question.get('question')}''')
 
   def get_ifaces(self):
     return self._ifaces
+
+  def get_host_metadata(self):
+    return self._host

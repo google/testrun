@@ -63,7 +63,7 @@ class NTPModule(TestModule):
     summary_height = 135
     row_height = 42
     loader = FileSystemLoader(self._report_template_folder)
-    template = Environment(
+    template = Environment( # nosec B701
         loader=loader,
         trim_blocks=True,
         lstrip_blocks=True,

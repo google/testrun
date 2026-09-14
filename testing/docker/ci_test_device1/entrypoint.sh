@@ -3,10 +3,10 @@
 ip a
 
 declare -A options
-for option in $*; do
+for option in "$@"; do
     if [[ $option == *"="* ]]; then
-        k=$(echo $option | cut -d'=' -f1)
-        v=$(echo $option | cut -d'=' -f2)
+        k=$(echo "$option" | cut -d'=' -f1)
+        v=$(echo "$option" | cut -d'=' -f2)
         options[$k]=$v
     else
         options[$option]=$option
@@ -15,14 +15,14 @@ done
 
 OUT=/out/testrun_ci.json
 
-NTP_SERVER=10.10.10.5
+export NTP_SERVER=10.10.10.5
 DNS_SERVER=10.10.10.4
 INTF=eth0
 
 function wout(){
     temp=${1//./\".\"}
-    key=${temp:1}\"
-    echo $key
+    key="${temp:1}"
+    echo "$key"
     value=$2
     jq "$key+=\"$value\"" $OUT | sponge $OUT
 }
@@ -34,7 +34,7 @@ dig @8.8.8.8 +short www.google.com
 ip addr flush dev $INTF
 PID_FILE=/var/run/dhclient.pid
 if [ -f $PID_FILE ]; then
-    kill -9 $(cat $PID_FILE) || true
+    kill -9 "$(cat $PID_FILE)" || true
     rm -f $PID_FILE
 fi
 dhclient -v $INTF
@@ -94,12 +94,12 @@ fi
 # still testing - using fixed 
 if [ -n "${options[ntpv4_dhcp]}" ]; then
     (while true; do
-        dhcp_ntp=$(fgrep NTPSERVERS= /run/ntpdate.dhcp)
+        dhcp_ntp=$(grep -F NTPSERVERS= /run/ntpdate.dhcp)
         if [ -n "${dhcp_ntp}" ]; then
-            ntp_server=`echo $dhcp_ntp | cut -d "'" -f 2`
-            echo NTP server from DHCP $ntp_server
+            ntp_server=$(echo "$dhcp_ntp" | cut -d "'" -f 2)
+            echo NTP server from DHCP "$ntp_server"
         fi
-        ntpdate -q -p 1 $ntp_server
+        ntpdate -q -p 1 "$ntp_server"
         sleep 5
      done) &
 fi
@@ -125,7 +125,7 @@ if [ -n "${options[kill_dhcp]}" ]; then
     echo killing DHCP
     ipv4=$(ip a show $INTF | grep "inet " | awk '{print $2}')
     pkill -f dhclient
-    ip addr change $ipv4 dev $INTF valid_lft forever preferred_lft forever
+    ip addr change "$ipv4" dev "$INTF" valid_lft forever preferred_lft forever
 fi
 
 if [ -n "${options[request_fixed]}" ]; then

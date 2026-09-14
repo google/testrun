@@ -8,6 +8,7 @@
       --summary-height: 2.8in;
       --vertical-line-height: calc(var(--summary-height)-.2in);
       --vertical-line-pos-x: 25%;
+      --host-metadata-height: 1.2in;
     }
 
     @font-face {
@@ -330,7 +331,7 @@
       padding-top: 0.2in;
       padding-left: 0.2in;
       background-color: #F8F9FA;
-      width: 250px;
+      width: 340px;
       height: 100.4%;
     }
 
@@ -356,6 +357,14 @@
       color: #202124;
     }
 
+    .summary-item-value.kernel-value{
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: block;
+    }
+
     .summary-item-space {
       position: relative;
       padding-bottom: 15px;
@@ -364,7 +373,7 @@
 
     .summary-device-modules {
       position: absolute;
-      left: 3.2in;
+      left: 3.9in;
       top: .2in;
     }
 
@@ -391,7 +400,7 @@
       position: absolute;
       right: 0;
       top: 0;
-      width: 2.6in;
+      width: 2.2in;
       height: 100%;
     }
 
@@ -420,6 +429,72 @@
       position: relative;
       top: 10px;
       left: 20px;
+    }
+
+    .summary-box-value kernel-value{
+      font-size: 16px;
+    }
+
+    /* Host metadata */
+
+    .host-metadata {
+      position: relative;
+      width: 100%;
+      height: var(--host-metadata-height); /* 2in */
+      margin-top: 0.2in;
+      margin-bottom: 0.25in;
+      box-sizing: border-box;
+    }
+
+    .host-metadata-card {
+      display: flex;
+      flex-direction: column;
+      padding: 16px 24px;
+      gap: 12px;
+      width: 100%;
+      height: 100%;
+      background: #F0F4F8;
+      border-radius: 0;
+      box-sizing: border-box;
+    }
+
+    .host-metadata-title {
+      font-family: 'Google Sans', sans-serif;
+      font-weight: 500;
+      font-size: 18px;
+      line-height: 24px;
+      color: #202124;
+      margin: 0;
+    }
+
+    .host-metadata-row {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 40px;
+      width: 100%;
+    }
+
+    .host-metadata-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 0 0 auto;
+    }
+
+    .host-metadata-item .summary-item-label h4 {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 500;
+      color: #5F6368;
+      white-space: nowrap;
+    }
+
+    .host-metadata-item .summary-item-value {
+      font-size: 16px;
+      font-weight: 500;
+      color: #202124;
+      white-space: nowrap;
     }
 
     .result-list-title {

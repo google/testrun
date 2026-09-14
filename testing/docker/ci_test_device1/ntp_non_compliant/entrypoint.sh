@@ -4,14 +4,14 @@
 ip a
 
 # Set paths and servers
-NTP_SERVER=10.10.10.5
+export NTP_SERVER=10.10.10.5
 INTF=eth0
 
 # DHCP
 ip addr flush dev $INTF
 PID_FILE=/var/run/dhclient.pid
 if [ -f $PID_FILE ]; then
-    kill -9 $(cat $PID_FILE) || true
+    kill -9 "$(cat $PID_FILE)" || true
     rm -f $PID_FILE
 fi
 dhclient -v $INTF

@@ -18,11 +18,11 @@ FROM testrun/base:latest
 ARG MODULE_NAME=host
 ARG MODULE_DIR=modules/network/$MODULE_NAME
 
-#Update and get all additional requirements not contained in the base image
-RUN apt-get update --fix-missing
-
 # Install all necessary packages
-RUN apt-get install -y net-tools ethtool
+RUN apt-get update --fix-missing && \
+    apt-get install -y net-tools \
+    ethtool && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf

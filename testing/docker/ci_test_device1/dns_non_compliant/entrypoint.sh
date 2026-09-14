@@ -14,7 +14,7 @@ ip link show $INTF | grep "state UP" || echo "Warning: $INTF is not up"
 ip addr flush dev $INTF
 PID_FILE=/var/run/dhclient.pid
 if [ -f $PID_FILE ]; then
-    kill -9 $(cat $PID_FILE) || true
+    kill -9 "$(cat $PID_FILE)" || true
     rm -f $PID_FILE
 fi
 dhclient -v $INTF

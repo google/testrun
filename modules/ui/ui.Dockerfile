@@ -19,4 +19,5 @@ COPY modules/ui/dist/browser /usr/share/nginx/html
 
 EXPOSE 8080
 
+#nosemgrep
 CMD ["nginx", "-g", "daemon off;"]

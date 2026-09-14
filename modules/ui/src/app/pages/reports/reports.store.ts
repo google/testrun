@@ -14,6 +14,7 @@ import { exhaustMap } from 'rxjs';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { DatePipe } from '@angular/common';
 import { MatSort } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 import { selectReports, selectRiskProfiles } from '../../store/selectors';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
@@ -81,6 +82,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     dataSource.filterPredicate = this.customFilterPredicate();
     dataSource.filter = JSON.stringify(state.filteredValues);
     dataSource.sort = state.dataSource.sort;
+    dataSource.paginator = state.dataSource.paginator;
 
     return {
       ...state,
@@ -147,6 +149,15 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     );
   });
 
+  updatePaginator = this.effect<MatPaginator>(paginator$ => {
+    return paginator$.pipe(
+      withLatestFrom(this.dataSource$),
+      tap(([paginator, dataSource]) => {
+        dataSource.paginator = paginator;
+      })
+    );
+  });
+
   setFilteredValuesResults = this.effect<string[]>(results$ => {
     return results$.pipe(
       withLatestFrom(this.filteredValues$, this.dataSource$),
@@ -158,6 +169,25 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
       })
     );
   });
+
+  setFilteredValuesQuickSearch = this.effect<string[] | string>(
+    quickSearch$ => {
+      return quickSearch$.pipe(
+        withLatestFrom(this.filteredValues$, this.dataSource$),
+        tap(([quickSearch, filteredValues, dataSource]) => {
+          const quickSearchArray = Array.isArray(quickSearch)
+            ? quickSearch
+            : quickSearch && quickSearch.trim()
+              ? [quickSearch.trim()]
+              : [];
+          this.updateFilters(dataSource, {
+            ...filteredValues,
+            quickSearch: quickSearchArray,
+          });
+        })
+      );
+    }
+  );
 
   setFilteredValuesDeviceInfo = this.effect<string>(deviceInfo$ => {
     return deviceInfo$.pipe(
@@ -190,6 +220,66 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         this.updateFilters(dataSource, {
           ...filteredValues,
           dateRange,
+        });
+      })
+    );
+  });
+
+  setFilteredValuesLocation = this.effect<string>(location$ => {
+    return location$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([location, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          location,
+        });
+      })
+    );
+  });
+
+  setFilteredValuesLinuxEnv = this.effect<string>(linuxEnv$ => {
+    return linuxEnv$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([linuxEnv, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          linuxEnv,
+        });
+      })
+    );
+  });
+
+  setFilteredValuesPythonVersion = this.effect<string>(pythonVersion$ => {
+    return pythonVersion$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([pythonVersion, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          pythonVersion,
+        });
+      })
+    );
+  });
+
+  setFilteredValuesKernel = this.effect<string>(kernel$ => {
+    return kernel$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([kernel, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          kernel,
+        });
+      })
+    );
+  });
+
+  setFilteredValuesAssessmentType = this.effect<string>(assessmentType$ => {
+    return assessmentType$.pipe(
+      withLatestFrom(this.filteredValues$, this.dataSource$),
+      tap(([assessmentType, filteredValues, dataSource]) => {
+        this.updateFilters(dataSource, {
+          ...filteredValues,
+          assessmentType,
         });
       })
     );
@@ -243,20 +333,29 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
 
   private formateData(data: TestReportsList): HistoryTestrun[] {
     return data.map(item => {
+      const firmware = item.device?.firmware || '';
+      const manufacturer = item.device?.manufacturer || '';
+      const model = item.device?.model || '';
+      const deviceInfo = manufacturer
+        ? model
+          ? `${manufacturer} ${model}`
+          : manufacturer
+        : model;
+
       return {
         ...item,
-        deviceFirmware: item.device.firmware,
-        deviceInfo: item.device.manufacturer + ' ' + item.device.model,
+        deviceFirmware: firmware,
+        deviceInfo: deviceInfo,
         testResult: this.getTestResult(item),
         duration: this.getDuration(item.started, item.finished),
-        program: item.device.test_pack ?? '',
+        program: item.device?.test_pack ?? '',
       };
     });
   }
 
   private getTestResult(item: TestrunReport): string {
     let result = '';
-    if (item.device.test_pack === TestingType.Qualification) {
+    if (item.device?.test_pack === TestingType.Qualification) {
       if (
         item.status &&
         item.status === StatusOfTestrun.Complete &&
@@ -267,7 +366,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         result = item.status;
       }
     }
-    if (item.device.test_pack === TestingType.Pilot) {
+    if (item.device?.test_pack === TestingType.Pilot) {
       result = item.status;
     }
     return result;
@@ -298,6 +397,10 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         data.deviceInfo,
         searchString.deviceInfo
       );
+      const isIncludeSearchQuery = this.filterSearchQuery(
+        data,
+        searchString.quickSearch
+      );
       const isIncludeDeviceFirmware = this.filterStringData(
         data.deviceFirmware,
         searchString.deviceFirmware
@@ -310,18 +413,89 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         data.started,
         searchString
       );
+      const isIncludeLocation = this.filterStringData(
+        data.host?.location ?? '',
+        searchString.location ?? ''
+      );
+      const isIncludeLinuxEnv = this.filterStringData(
+        data.host?.linux_env ?? '',
+        searchString.linuxEnv ?? ''
+      );
+      const isIncludePythonVersion = this.filterStringData(
+        data.host?.python_version ?? '',
+        searchString.pythonVersion ?? ''
+      );
+      const isIncludeKernel = this.filterStringData(
+        data.device?.kernel ?? '',
+        searchString.kernel ?? ''
+      );
+      const isIncludeAssessmentType = this.filterStringData(
+        data.program ?? '',
+        searchString.assessmentType ?? ''
+      );
 
       return (
+        isIncludeSearchQuery &&
         isIncludeDeviceInfo &&
         isIncludeDeviceFirmware &&
         isIncludeStatus &&
-        isIncludeStartedDate
+        isIncludeStartedDate &&
+        isIncludeLocation &&
+        isIncludeLinuxEnv &&
+        isIncludePythonVersion &&
+        isIncludeKernel &&
+        isIncludeAssessmentType
       );
     };
     return filterPredicate;
   }
 
-  private filterStringData(data: string, searchString: string): boolean {
+  private filterSearchQuery(
+    data: HistoryTestrun,
+    searchQuery: string[] | string = []
+  ): boolean {
+    const queries = Array.isArray(searchQuery)
+      ? searchQuery.map(q => q.trim().toLowerCase()).filter(Boolean)
+      : typeof searchQuery === 'string' && searchQuery.trim()
+        ? [searchQuery.trim().toLowerCase()]
+        : [];
+
+    if (queries.length === 0) {
+      return true;
+    }
+
+    const formattedStarted = data.started
+      ? this.datePipe.transform(data.started, 'd MMM y H:mm')
+      : '';
+
+    const searchableFields = [
+      data.deviceInfo,
+      data.deviceFirmware,
+      data.device?.manufacturer,
+      data.device?.model,
+      data.device?.mac_addr,
+      data.device?.firmware,
+      data.device?.kernel,
+      data.device?.test_pack,
+      data.program,
+      data.status,
+      data.testResult,
+      data.result,
+      formattedStarted,
+      data.duration,
+      data.host?.location,
+      data.host?.linux_env,
+      data.host?.python_version,
+    ];
+
+    return queries.every(query =>
+      searchableFields.some(
+        field => field && field.toString().toLowerCase().includes(query)
+      )
+    );
+  }
+
+  private filterStringData(data: string = '', searchString: string): boolean {
     return (
       data
         .toString()
@@ -344,12 +518,16 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     const startDate = searchString.dateRange.start
       ? typeof searchString.dateRange.start === 'string'
         ? Date.parse(searchString.dateRange.start)
-        : searchString.dateRange.start.getDate()
+        : typeof (searchString.dateRange.start as Date).getTime === 'function'
+          ? (searchString.dateRange.start as Date).getTime()
+          : new Date(searchString.dateRange.start).getTime()
       : 0;
     const endDate = searchString.dateRange.end
       ? typeof searchString.dateRange.end === 'string'
         ? Date.parse(searchString.dateRange.end)
-        : searchString.dateRange.end.getDate()
+        : typeof (searchString.dateRange.end as Date).getTime === 'function'
+          ? (searchString.dateRange.end as Date).getTime()
+          : new Date(searchString.dateRange.end).getTime()
       : 0;
 
     const startedDateWithoutTime = new Date(startedDate).toDateString();
@@ -366,15 +544,19 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
 
   private isFiltersEmpty(filteredValues: Filters) {
     return Object.values(filteredValues).every(value => {
-      if (value.start === '') {
-        return value.end.length === 0;
+      if (
+        value instanceof DateRange ||
+        (typeof value === 'object' && value !== null && !Array.isArray(value))
+      ) {
+        return !value.start && !value.end;
       }
-      return value.length === 0;
+      return value === null || value === undefined || value.length === 0;
     });
   }
   constructor() {
     super({
       displayedColumns: [
+        'expand',
         'started',
         'duration',
         'deviceInfo',
@@ -392,6 +574,12 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         deviceFirmware: '',
         results: [],
         dateRange: '',
+        quickSearch: [],
+        location: '',
+        linuxEnv: '',
+        pythonVersion: '',
+        kernel: '',
+        assessmentType: '',
       },
       dataLoaded: false,
       selectedRow: null,
