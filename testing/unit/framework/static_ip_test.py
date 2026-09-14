@@ -57,7 +57,7 @@ for mod_name in MOCKED_MODULES:
   sys.modules.setdefault(mod_name, MagicMock())
 
 # pylint: disable=wrong-import-position
-from common.device import Device  # noqa: E402
+from common.models import Device  # noqa: E402
 from common import testreport  # noqa: E402
 from common.statuses import TestrunResult  # noqa: E402
 # pylint: enable=wrong-import-position
