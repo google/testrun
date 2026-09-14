@@ -14,6 +14,7 @@ import { exhaustMap } from 'rxjs';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { DatePipe } from '@angular/common';
 import { MatSort } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 import { selectReports, selectRiskProfiles } from '../../store/selectors';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
@@ -81,6 +82,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     dataSource.filterPredicate = this.customFilterPredicate();
     dataSource.filter = JSON.stringify(state.filteredValues);
     dataSource.sort = state.dataSource.sort;
+    dataSource.paginator = state.dataSource.paginator;
 
     return {
       ...state,
@@ -143,6 +145,15 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
       withLatestFrom(this.dataSource$),
       tap(([sort, dataSource]) => {
         dataSource.sort = sort;
+      })
+    );
+  });
+
+  updatePaginator = this.effect<MatPaginator>(paginator$ => {
+    return paginator$.pipe(
+      withLatestFrom(this.dataSource$),
+      tap(([paginator, dataSource]) => {
+        dataSource.paginator = paginator;
       })
     );
   });

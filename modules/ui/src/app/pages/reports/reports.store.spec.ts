@@ -32,6 +32,7 @@ import {
 import { DatePipe } from '@angular/common';
 import { MatRow } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { selectReports, selectRiskProfiles } from '../../store/selectors';
 import { AppState } from '../../store/state';
@@ -222,6 +223,25 @@ describe('ReportsStore', () => {
 
         reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
           expect(store.dataSource.sort).toEqual(sort);
+          done();
+        });
+      });
+    });
+
+    describe('updatePaginator', () => {
+      it('should update store with paginator', done => {
+        const paginator = {
+          pageIndex: 0,
+          pageSize: 10,
+          page: of(),
+          initialized: of(),
+        } as unknown as MatPaginator;
+        store.overrideSelector(selectReports, [...HISTORY]);
+
+        reportsStore.updatePaginator(paginator);
+
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.paginator).toEqual(paginator);
           done();
         });
       });
