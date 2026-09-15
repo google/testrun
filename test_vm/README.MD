@@ -45,8 +45,16 @@ vagrant plugin install vagrant-libvirt
 ## 5. Remove Old Bridge (enbr99) If It Exists
 
 ```bash
+vagrant halt
+vagrant destroy -f
 ip link show enbr99
 sudo ip link delete enbr99 type bridge
+sudo virsh net-destroy hostonly-noip || true
+sudo virsh net-undefine hostonly-noip || true
+sudo virsh net-define /tmp/hostonly-noip.xml
+sudo virsh net-start hostonly-noip
+sudo virsh net-autostart hostonly-noip
+DEVICE=COMPLIANT vagrant up --provider=libvirt
 ```
 
 ## 6. Create an Isolated libvirt Network Without IP and DHCP

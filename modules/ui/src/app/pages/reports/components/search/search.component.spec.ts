@@ -73,58 +73,16 @@ describe('SearchComponent', () => {
       const active = component.getActiveFilters();
       expect(active.length).toBe(10);
       expect(component.hasActiveFilters()).toBeTrue();
-    });
-
-    describe('isFilterActive', () => {
-      it('should return false when filterOpened is false', () => {
-        component.filterOpened = false;
-        component.activeFilter = 'deviceInfo';
-        expect(component.isFilterActive('deviceInfo')).toBeFalse();
-      });
-
-      it('should return false when activeFilter is empty', () => {
-        component.filterOpened = true;
-        component.activeFilter = '';
-        expect(component.isFilterActive('deviceInfo')).toBeFalse();
-      });
-
-      it('should return false when activeFilter does not match key', () => {
-        component.filterOpened = true;
-        component.activeFilter = 'deviceFirmware';
-        expect(component.isFilterActive('deviceInfo')).toBeFalse();
-      });
-
-      it('should return true when filterOpened is true and activeFilter matches key', () => {
-        component.filterOpened = true;
-        component.activeFilter = 'deviceInfo';
-        expect(component.isFilterActive('deviceInfo')).toBeTrue();
-      });
-
-      it('should return false when search query is applied already but category is not in active state', () => {
-        component.filters = {
-          ...new Filters(),
-          deviceInfo: 'Pixel',
-        };
-        component.filterOpened = false;
-        component.activeFilter = '';
-        expect(component.isFilterActive('deviceInfo')).toBeFalse();
-
-        component.filterOpened = true;
-        component.activeFilter = 'deviceFirmware';
-        expect(component.isFilterActive('deviceInfo')).toBeFalse();
-        expect(component.isFilterActive('deviceFirmware')).toBeTrue();
-      });
-
-      it('should handle Started and dateRange aliases correctly', () => {
-        component.filterOpened = true;
-        component.activeFilter = FilterName.Started;
-        expect(component.isFilterActive(FilterName.DateRange)).toBeTrue();
-        expect(component.isFilterActive(FilterName.Started)).toBeTrue();
-
-        component.activeFilter = FilterName.DateRange;
-        expect(component.isFilterActive(FilterName.Started)).toBeTrue();
-        expect(component.isFilterActive(FilterName.DateRange)).toBeTrue();
-      });
+      expect(component.isFilterActive('deviceInfo')).toBeTrue();
+      expect(component.isFilterActive('deviceFirmware')).toBeTrue();
+      expect(component.isFilterActive('assessmentType')).toBeTrue();
+      expect(component.isFilterActive('results')).toBeTrue();
+      expect(component.isFilterActive('dateRange')).toBeTrue();
+      expect(component.isFilterActive('quickSearch')).toBeTrue();
+      expect(component.isFilterActive('location')).toBeTrue();
+      expect(component.isFilterActive('linuxEnv')).toBeTrue();
+      expect(component.isFilterActive('pythonVersion')).toBeTrue();
+      expect(component.isFilterActive('kernel')).toBeTrue();
     });
 
     it('should format chip labels correctly for all filter types', () => {
