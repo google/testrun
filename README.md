@@ -44,7 +44,7 @@ Testrun requires Docker. Refer to the [installation guide](https://docs.docker.c
 
 ## Device under test (DUT)
 
-The DUT must be able to obtain an IP address via DHCP.
+The DUT must be able to obtain an IP address via DHCP, or be configured with a static IP address in the device configuration file (see [Get started guide](/docs/get_started.md)).
 
 # Get started :arrow_forward:
 
