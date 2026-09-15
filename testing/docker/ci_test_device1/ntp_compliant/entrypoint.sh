@@ -19,8 +19,19 @@ DHCP_TPID=$!
 echo $DHCP_TPID
 
 # NTP MODULE
-# NTP support (ntp.network.ntp_support)
-ntpdate -u -t 10 -q $NTP_SERVER
+# Obtain NTP server from DHCP lease if available
+if grep -q "ntp-servers" /var/lib/dhcp/dhclient.leases; then
+  dhcp_ntp_server=$(grep "option ntp-servers" /var/lib/dhcp/dhclient.leases | tail -1 | awk '{print $3}' | tr -d ';')
+  if [ -n "$dhcp_ntp_server" ]; then
+    NTP_SERVER="$dhcp_ntp_server"
+    echo "NTP server provided by DHCP: $NTP_SERVER"
+  fi
+else
+  echo "No NTP server provided by DHCP, using default: $NTP_SERVER"
+fi
+
+# Send initial NTP request (ntp.network.ntp_support & ntp.network.ntp_dhcp)
+ntpdate -u -t 10 -q "$NTP_SERVER"
 
 # Check if the NTP request was successful
 if [ $? -eq 0 ]; then
@@ -29,21 +40,8 @@ else
   echo "NTP request failed"
 fi
 
-# Obtain NTP server from DHCP and simulate NTP request (ntp.network.ntp_dhcp)
-dhclient -v -sf /usr/sbin/ntpdate eth0
-
-# Check if the DHCP server provided an NTP server and if the NTP request was successful
-if grep -q "ntp-servers" /var/lib/dhcp/dhclient.leases; then
-  grep "option ntp-servers" /var/lib/dhcp/dhclient.leases | awk '{print $3}' | while read ntp_server; do
-    echo "NTP request sent to DHCP-provided server: $ntp_server"
-    sudo ntpdate -q $NTP_SERVER
-    echo "NTP request sent to DHCP-provided server: $NTP_SERVER"
-    done
-else
-  echo "No NTP server provided by DHCP."
-fi
-
-# Keep network monitoring (can refactor later for other network modules)
+# Keep network monitoring and NTP requests running
+(while true; do ntpdate -u -q "$NTP_SERVER"; sleep 5; done) &
 (while true; do arping 10.10.10.1; sleep 10; done) &
 (while true; do ip a | cat; sleep 10; done) &
 
