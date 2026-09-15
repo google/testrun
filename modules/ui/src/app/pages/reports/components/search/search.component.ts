@@ -230,12 +230,17 @@ export class SearchComponent {
   }
 
   isFilterActive(key: string): boolean {
-    if (!this.filters) {
+    if (!this.filterOpened || !this.activeFilter) {
       return false;
     }
-    const filterKey = key as keyof Filters;
-    const val = this.filters[filterKey] as FilterValue;
-    return !this.isValueEmpty(val);
+    if (
+      (this.activeFilter === FilterName.Started ||
+        this.activeFilter === FilterName.DateRange) &&
+      (key === FilterName.Started || key === FilterName.DateRange)
+    ) {
+      return true;
+    }
+    return this.activeFilter === key;
   }
 
   isValueEmpty(value: FilterValue): boolean {

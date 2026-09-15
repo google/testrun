@@ -54,7 +54,6 @@ describe('SearchComponent', () => {
       component.filters = null as unknown as Filters;
       expect(component.getActiveFilters()).toEqual([]);
       expect(component.hasActiveFilters()).toBeFalse();
-      expect(component.isFilterActive('deviceInfo')).toBeFalse();
     });
 
     it('should return active filter items when filters are set', () => {
