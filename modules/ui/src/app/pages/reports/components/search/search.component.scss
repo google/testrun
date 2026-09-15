@@ -218,17 +218,67 @@
 }
 
 ::ng-deep .search-filter-menu {
+  width: 208px;
+  min-width: 208px;
+  max-width: 208px;
+  border-radius: variables.$corner-large;
+  background-color: colors.$surface-container-low;
+
+  @include mat.menu-overrides(
+    (
+      container-color: colors.$surface-container-low,
+      container-shape: variables.$corner-large,
+      item-label-text-color: #1f1f1f,
+      item-label-text-size: 14px,
+      item-label-text-font: variables.$font-text,
+      item-hover-state-layer-color: colors.$secondary-container,
+      item-focus-state-layer-color: colors.$secondary-container,
+      item-leading-spacing: 12px,
+      item-trailing-spacing: 12px,
+      item-with-icon-leading-spacing: 12px,
+      item-with-icon-trailing-spacing: 12px,
+    )
+  );
+
   .filter-menu-item {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    padding-left: 12px;
+    padding-right: 12px;
     font-family: variables.$font-text;
     font-size: 14px;
-    color: colors.$on-surface;
+    color: #1f1f1f;
+
+    .mat-mdc-menu-item-text {
+      order: 1;
+      flex: 1 1 auto;
+    }
+
+    .filter-menu-item-icon {
+      order: 2;
+      margin-right: 0;
+      margin-left: auto;
+      color: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      line-height: 24px;
+    }
 
     &.active-filter-item {
       background-color: colors.$secondary-container;
       color: colors.$on-secondary-container;
       font-weight: 500;
+    }
+
+    &:not(.cdk-keyboard-focused):not(:focus-visible):not(:hover):not(
+        .active-filter-item
+      ) {
+      background-color: transparent !important;
     }
   }
 }
