@@ -653,27 +653,23 @@ class Testrun:  # pylint: disable=too-few-public-methods
       LOGGER.error(ie)
       sys.exit(1)
     except docker.errors.APIError as ae:
-        if ae.status_code == 409:
-            LOGGER.warning('Name conflict detected. Force removing old container and retrying...')
-            # Принудительное удаление старого контейнера при получении 409
-            try:
-                client.containers.get('tr-ws').remove(force=True)
-            except (docker.errors.NotFound, docker.errors.APIError):
-                pass
-            
-            # Повторный запуск
-            client.containers.run(
-                'testrun/ws',
-                auto_remove=True,
-                name='tr-ws',
-                detach=True,
-                ports={
-                    '9001': 9001,
-                    '1883': 1883
-                }
-            )
-        else:
-            raise
+      if ae.status_code == 409:
+        try:
+          client.containers.get('tr-ws').remove(force=True)
+        except (docker.errors.NotFound, docker.errors.APIError):
+          pass
+        client.containers.run(
+            'testrun/ws',
+            auto_remove=True,
+            name='tr-ws',
+            detach=True,
+            ports={
+                '9001': 9001,
+                '1883': 1883
+            }
+        )
+      else:
+        raise
 
   def _stop_ws(self):
     LOGGER.info('Stopping websockets server')
