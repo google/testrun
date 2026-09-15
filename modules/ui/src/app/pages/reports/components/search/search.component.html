@@ -105,13 +105,20 @@ limitations under the License.
   class="search-filter-menu"
   yPosition="below"
   [overlapTrigger]="false">
-  @for (menuItem of filterMenuItems; track menuItem) {
+  @for (menuItem of filterMenuItems; track menuItem.name) {
     <button
       mat-menu-item
       class="filter-menu-item"
       [class.active-filter-item]="isFilterActive(menuItem.name)"
+      [attr.aria-current]="isFilterActive(menuItem.name) ? 'true' : null"
       (click)="openFilterMenu(menuItem.name, menuItem.title, $event)">
       <span>{{ menuItem.displayName }}</span>
+      <mat-icon
+        fontSet="material-symbols-outlined"
+        class="filter-menu-item-icon"
+        aria-hidden="true">
+        arrow_right
+      </mat-icon>
     </button>
   }
 </mat-menu>
