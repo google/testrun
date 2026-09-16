@@ -44,6 +44,8 @@ interface Entity {
       [actions]="actions"
       [itemTemplate]="defaultItemTemplate"
       [emptyContent]="empty"
+      [isOpenEntityForm]="isOpenEntityForm"
+      [initialEntity]="initialEntity"
       (addEntity)="onAddEntity()"
       (menuItemClicked)="onMenuItemClicked($event)"></app-list-layout>
 
@@ -61,6 +63,8 @@ class HostComponent {
   addEntityText = 'Add Entity';
   entities: Entity[] = [];
   actions = [{ label: 'Edit', value: 'edit' }];
+  isOpenEntityForm = false;
+  initialEntity: Entity | null = null;
   onAddEntity = jasmine.createSpy('onAddEntity');
   onMenuItemClicked = jasmine.createSpy('onMenuItemClicked');
 }
@@ -201,5 +205,20 @@ describe('ListLayoutComponent', () => {
       expect(searchIcon).toBeTruthy();
       expect(searchIcon?.textContent?.trim()).toBe('search');
     }));
+  });
+
+  describe('when entity form is open without initial entity', () => {
+    beforeEach(() => {
+      component.isOpenEntityForm = true;
+      component.initialEntity = null;
+      fixture.detectChanges();
+    });
+
+    it('should display fake list item with edit_note icon', () => {
+      const fakeItem = compiled.querySelector('.fake-list-item');
+      expect(fakeItem).toBeTruthy();
+      const icon = fakeItem?.querySelector('mat-icon');
+      expect(icon?.textContent?.trim()).toBe('edit_note');
+    });
   });
 });
