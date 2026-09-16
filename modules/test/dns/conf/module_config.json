@@ -5,7 +5,7 @@
       "display_name": "DNS",
       "description": "DNS test"
     },
-    "network": false,
+    "network": true,
     "docker": {
       "depends_on": "base",
       "enable_container": true,
