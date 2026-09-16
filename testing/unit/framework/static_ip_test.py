@@ -19,6 +19,7 @@ These tests verify:
 2. Device config export (round-trip) preserves ip_addr
 """
 
+import importlib.util
 import ipaddress
 import json
 import os
@@ -36,25 +37,26 @@ FRAMEWORK_SRC = os.path.join(
 sys.path.insert(0, FRAMEWORK_SRC)
 sys.path.insert(0, os.path.join(FRAMEWORK_SRC, 'common'))
 
-# Mock out heavy/Linux-only dependencies before any project imports.
-# Using MagicMock so any attribute access on these modules returns a mock
-# rather than raising ImportError or AttributeError.
-# setdefault keeps already-imported real modules intact: pytest imports every
-# collected test file before running any tests, so replacing modules other
-# test files depend on (e.g. cryptography, pwd) would break their tests.
-MOCKED_MODULES = [
-    'weasyprint', 'docker', 'docker.errors', 'netifaces',
-    'scapy', 'scapy.all', 'scapy.error',
-    'paho', 'paho.mqtt', 'paho.mqtt.client',
-    'jinja2', 'bs4', 'markdown',
-    'pwd', 'grp', 'fcntl',
-    'psutil', 'pytz', 'cryptography',
-    'APScheduler', 'apscheduler',
-    'apscheduler.schedulers', 'apscheduler.schedulers.background',
-    'apscheduler.triggers', 'apscheduler.triggers.interval',
-]
-for mod_name in MOCKED_MODULES:
-  sys.modules.setdefault(mod_name, MagicMock())
+# Heavy/Linux-only modules reached by this file's import chain. Only the ones
+# that are not installed get stubbed: a MagicMock in sys.modules has no
+# __path__, so it would break any later-collected test that imports a real
+# submodule of the same package (e.g. apscheduler.schedulers.asyncio).
+MOCKED_MODULES = ['weasyprint', 'netifaces', 'jinja2', 'bs4', 'pwd']
+
+
+def _stub_missing_modules(names):
+  for name in names:
+    if name in sys.modules:
+      continue
+    try:
+      installed = importlib.util.find_spec(name) is not None
+    except (ImportError, ValueError):
+      installed = False
+    if not installed:
+      sys.modules[name] = MagicMock()
+
+
+_stub_missing_modules(MOCKED_MODULES)
 
 # pylint: disable=wrong-import-position
 from common.models import Device  # noqa: E402
