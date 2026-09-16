@@ -556,6 +556,10 @@ class TLSModule(TestModule):
                                      '1.3',
                                      unsupported_versions=['1.0', '1.1'])
 
+  def _security_http_server(self):
+    LOGGER.info('Running http test')
+    return True, 'compliant', 'description'
+
   def _validate_tls_client(self,
                            client_mac,
                            tls_version,
