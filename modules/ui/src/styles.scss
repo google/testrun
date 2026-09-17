@@ -306,6 +306,8 @@ body:has(app-help-tip) .app-toolbar-button.app-toolbar-button-help-tips {
   border-radius: 200px;
   padding: 0 7px;
   white-space: nowrap;
+  background: colors.$surface-variant;
+  color: colors.$on-surface-variant;
   &.red {
     background: colors.$error-container;
     color: colors.$on-error-container;
