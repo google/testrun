@@ -403,3 +403,23 @@ def test_detect_network_adapters_change(
     # Verify that session_instance updated its local _ifaces state
     assert session_instance.get_ifaces() == {"eth0": "up", "wlan0": "down"}
 
+
+def test_monitor_timer_operations(
+    session_instance: session.TestrunSession,  # pylint: disable=W0621
+):
+  """Test starting, getting, and resetting monitor timer."""
+  assert session_instance.get_monitor_started() is None
+  session_instance.start_monitor_timer()
+  assert session_instance.get_monitor_started() is not None
+
+  # Test setting status to MONITORING automatically starts timer if None
+  session_instance.reset()
+  assert session_instance.get_monitor_started() is None
+  session_instance.set_status(session.TestrunStatus.MONITORING)
+  assert session_instance.get_monitor_started() is not None
+
+  # Verify to_json includes monitor_started
+  json_data = session_instance.to_json()
+  assert "monitor_started" in json_data
+  assert json_data["monitor_started"] == session_instance.get_monitor_started()
+
