@@ -60,27 +60,19 @@
     <div class="host-metadata-card">
       <h2 class="host-metadata-title">Environment Details</h2>
       <div class="host-metadata-row">
-      {% if json_data['host']['location'] %}
         <div class="host-metadata-item">
           <div class="summary-item-label"><h4>Location</h4></div>
-          <div class="summary-item-value">{{ json_data['host']['location'] }}</div>
+          <div class="summary-item-value">{{ (json_data.get('host') or {}).get('location') or 'Could not fetch details' }}</div>
         </div>
-      {% endif %}
-
-      {% if json_data['host']['linux_env'] %}
         <div class="host-metadata-item">
-          <div class="summary-item-label"><h4>Host OS environment</h4></div>
-          <div class="summary-item-value">{{ json_data['host']['linux_env'] }}</div>
+          <div class="summary-item-label"><h4>Linux Environment Details</h4></div>
+          <div class="summary-item-value">{{ (json_data.get('host') or {}).get('linux_env') or 'Could not fetch details' }}</div>
         </div>
-      {% endif %}
-
-      {% if json_data['host']['python_version'] %}
         <div class="host-metadata-item">
-          <div class="summary-item-label"><h4>Python version</h4></div>
-          <div class="summary-item-value">{{ json_data['host']['python_version'] }}</div>
+          <div class="summary-item-label"><h4>Python Version</h4></div>
+          <div class="summary-item-value">{{ (json_data.get('host') or {}).get('python_version') or 'Could not fetch details' }}</div>
         </div>
-      {% endif %}
-    </div>
+      </div>
     </div>
   </div>
 {% endmacro %}

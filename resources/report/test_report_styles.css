@@ -461,8 +461,8 @@
     .host-metadata-title {
       font-family: 'Google Sans', sans-serif;
       font-weight: 500;
-      font-size: 18px;
-      line-height: 24px;
+      font-size: 22px;
+      line-height: 28px;
       color: #202124;
       margin: 0;
     }
@@ -484,13 +484,16 @@
 
     .host-metadata-item .summary-item-label h4 {
       margin: 0;
+      font-family: 'Google Sans Text', sans-serif;
       font-size: 12px;
       font-weight: 500;
       color: #5F6368;
       white-space: nowrap;
+      text-transform: capitalize;
     }
 
     .host-metadata-item .summary-item-value {
+      font-family: 'Google Sans Flex', sans-serif;
       font-size: 16px;
       font-weight: 500;
       color: #202124;
