@@ -19,7 +19,7 @@ limitations under the License.
     mat-icon-button
     #filterButton
     class="filter-button"
-    [class.active]="hasActiveFilters() || filterOpened"
+    [class.active]="isMenuOpened"
     (click)="menuTrigger.toggleMenu()"
     matTooltip="Filter reports"
     aria-label="Filter reports"
@@ -39,7 +39,7 @@ limitations under the License.
     #menuTrigger="matMenuTrigger"
     [matMenuTriggerFor]="filterMenu"
     (menuOpened)="isMenuOpened = true"
-    (menuClosed)="isMenuOpened = false"></div>
+    (menuClosed)="onMenuClosed()"></div>
 
   <div class="search-content">
     @for (item of getActiveFilters(); track getChipTrackId(item)) {
@@ -104,7 +104,8 @@ limitations under the License.
   #filterMenu="matMenu"
   class="search-filter-menu"
   yPosition="below"
-  [overlapTrigger]="false">
+  [overlapTrigger]="false"
+  (closed)="onMenuClosed($event)">
   @for (menuItem of filterMenuItems; track menuItem.name) {
     <button
       mat-menu-item

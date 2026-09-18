@@ -207,11 +207,20 @@
   }
 
   &.active {
-    color: colors.$primary;
-    background-color: colors.$primary-container;
+    color: colors.$on-secondary-container;
+    background-color: colors.$secondary-container;
+
+    .filter-icon {
+      color: colors.$on-secondary-container;
+
+      path {
+        fill: colors.$on-secondary-container;
+      }
+    }
   }
 
-  &:focus-visible {
+  &:focus-visible,
+  &.cdk-keyboard-focused {
     outline: 2px solid colors.$primary;
     outline-offset: 2px;
   }
