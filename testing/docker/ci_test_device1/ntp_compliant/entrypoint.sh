@@ -29,19 +29,18 @@ else
   echo "NTP request failed"
 fi
 
-# Obtain NTP server from DHCP and simulate NTP request (ntp.network.ntp_dhcp)
-dhclient -v -sf /usr/sbin/ntpdate eth0
-
-# Check if the DHCP server provided an NTP server and if the NTP request was successful
+# Query the NTP server provided by DHCP option 42 (ntp.network.ntp_dhcp)
 if grep -q "ntp-servers" /var/lib/dhcp/dhclient.leases; then
-  grep "option ntp-servers" /var/lib/dhcp/dhclient.leases | awk '{print $3}' | while read ntp_server; do
+  grep "option ntp-servers" /var/lib/dhcp/dhclient.leases | awk '{print $3}' | tr -d ';' | while read ntp_server; do
+    ntpdate -u -t 2 -q "$ntp_server"
     echo "NTP request sent to DHCP-provided server: $ntp_server"
-    sudo ntpdate -q $NTP_SERVER
-    echo "NTP request sent to DHCP-provided server: $NTP_SERVER"
     done
 else
   echo "No NTP server provided by DHCP."
 fi
+
+# Keep sending NTP requests so they are captured during the monitor period
+(while true; do ntpdate -u -t 2 -q $NTP_SERVER; sleep 5; done) &
 
 # Keep network monitoring (can refactor later for other network modules)
 (while true; do arping 10.10.10.1; sleep 10; done) &
