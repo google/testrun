@@ -26,9 +26,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule } from '@angular/material/menu';
+import { MatMenuModule, MenuCloseReason } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { FocusMonitor, LiveAnnouncer } from '@angular/cdk/a11y';
 import {
   DateRange,
   FilterName,
@@ -68,9 +68,9 @@ export class SearchComponent {
   @Output() searchQueryChanged = new EventEmitter<string>();
 
   readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
-  readonly filterButton =
-    viewChild<ElementRef<HTMLButtonElement>>('filterButton');
+  readonly filterButton = viewChild('filterButton', { read: ElementRef });
   private readonly liveAnnouncer = inject(LiveAnnouncer, { optional: true });
+  private readonly focusMonitor = inject(FocusMonitor);
 
   public readonly FilterName = FilterName;
   public readonly FilterTitle = FilterTitle;
@@ -78,6 +78,7 @@ export class SearchComponent {
   inputValue: string = '';
   isFocused: boolean = false;
   isMenuOpened: boolean = false;
+  private lastCloseReason?: MenuCloseReason;
   filterMenuItems: FilterMenuItem[] = [
     {
       displayName: FilterItem.Started,
@@ -125,6 +126,22 @@ export class SearchComponent {
       title: FilterTitle.Kernel,
     },
   ];
+
+  onMenuClosed(reason?: MenuCloseReason): void {
+    if (reason !== undefined) {
+      this.lastCloseReason = reason;
+    }
+    this.isMenuOpened = false;
+    if (this.lastCloseReason === 'keydown') {
+      this.lastCloseReason = undefined;
+      setTimeout(() => {
+        const button = this.filterButton();
+        if (button?.nativeElement) {
+          this.focusMonitor.focusVia(button, 'keyboard');
+        }
+      });
+    }
+  }
 
   focusInput(): void {
     this.searchInput()?.nativeElement.focus();

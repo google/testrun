@@ -255,8 +255,17 @@ body:has(app-help-tip) .app-toolbar-button.app-toolbar-button-help-tips {
   }
 }
 
-.filter-button.active .filter-icon path {
-  fill: mat.get-theme-color($light-theme, primary, 35);
+.filter-button.active {
+  background-color: colors.$secondary-container;
+  color: colors.$on-secondary-container;
+
+  .filter-icon {
+    color: colors.$on-secondary-container;
+
+    path {
+      fill: colors.$on-secondary-container;
+    }
+  }
 }
 
 .cell-result-text {
@@ -306,6 +315,8 @@ body:has(app-help-tip) .app-toolbar-button.app-toolbar-button-help-tips {
   border-radius: 200px;
   padding: 0 7px;
   white-space: nowrap;
+  background: colors.$surface-variant;
+  color: colors.$on-surface-variant;
   &.red {
     background: colors.$error-container;
     color: colors.$on-error-container;

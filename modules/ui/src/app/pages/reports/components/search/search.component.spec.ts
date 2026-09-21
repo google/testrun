@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
+import { FocusMonitor } from '@angular/cdk/a11y';
 import { SearchComponent } from './search.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
@@ -587,6 +593,63 @@ describe('SearchComponent', () => {
     });
   });
 
+  describe('Menu close & focus management', () => {
+    it('should set isMenuOpened to false and restore focus to filter button when closed via keydown', fakeAsync(() => {
+      const focusMonitor = TestBed.inject(FocusMonitor);
+      spyOn(focusMonitor, 'focusVia');
+
+      component.isMenuOpened = true;
+      component.onMenuClosed('keydown');
+
+      expect(component.isMenuOpened).toBeFalse();
+      tick();
+
+      const button = component.filterButton();
+      expect(focusMonitor.focusVia).toHaveBeenCalledWith(button!, 'keyboard');
+    }));
+
+    it('should not restore focus to filter button when closed via click', fakeAsync(() => {
+      const focusMonitor = TestBed.inject(FocusMonitor);
+      spyOn(focusMonitor, 'focusVia');
+
+      component.isMenuOpened = true;
+      component.onMenuClosed('click');
+
+      expect(component.isMenuOpened).toBeFalse();
+      tick();
+
+      expect(focusMonitor.focusVia).not.toHaveBeenCalled();
+    }));
+
+    it('should not restore focus to filter button when closed via tab', fakeAsync(() => {
+      const focusMonitor = TestBed.inject(FocusMonitor);
+      spyOn(focusMonitor, 'focusVia');
+
+      component.isMenuOpened = true;
+      component.onMenuClosed('tab');
+
+      expect(component.isMenuOpened).toBeFalse();
+      tick();
+
+      expect(focusMonitor.focusVia).not.toHaveBeenCalled();
+    }));
+
+    it('should handle menuClosed from trigger without overriding keydown reason', fakeAsync(() => {
+      const focusMonitor = TestBed.inject(FocusMonitor);
+      spyOn(focusMonitor, 'focusVia');
+
+      component.isMenuOpened = true;
+      component.onMenuClosed('keydown');
+      component.onMenuClosed();
+
+      expect(component.isMenuOpened).toBeFalse();
+      tick();
+
+      const button = component.filterButton();
+      expect(focusMonitor.focusVia).toHaveBeenCalledWith(button!, 'keyboard');
+    }));
+  });
+
   describe('DOM rendering', () => {
     it('should render search input and filter button', () => {
       const input = compiled.querySelector('.search-input');
@@ -594,6 +657,34 @@ describe('SearchComponent', () => {
 
       expect(input).toBeTruthy();
       expect(filterBtn).toBeTruthy();
+    });
+
+    it('should highlight filter button with active class when menu is opened', () => {
+      component.filters = new Filters();
+      component.filterOpened = false;
+      component.isMenuOpened = false;
+      fixture.detectChanges();
+
+      const filterBtn = compiled.querySelector('.filter-button');
+      expect(filterBtn?.classList.contains('active')).toBeFalse();
+
+      component.isMenuOpened = true;
+      fixture.detectChanges();
+
+      expect(filterBtn?.classList.contains('active')).toBeTrue();
+    });
+
+    it('should not highlight filter button when menu is closed even if filters are active', () => {
+      component.filters = {
+        ...new Filters(),
+        deviceInfo: 'Pixel',
+      };
+      component.filterOpened = true;
+      component.isMenuOpened = false;
+      fixture.detectChanges();
+
+      const filterBtn = compiled.querySelector('.filter-button');
+      expect(filterBtn?.classList.contains('active')).toBeFalse();
     });
 
     it('should render filter chips when filters are present', () => {
