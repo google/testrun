@@ -22,7 +22,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 _MSG_HTTP_NOT_DETECTED = 'No HTTP server detected on the device.'
 _MSG_HTTP_COMPLIANT = 'Device HTTP server is COMPLIANT with the RFC 9110'
-_MSG_HTTP_NON_COMPLIANT = 'Device HTTP server is NON-COMPLIANT with the RFC 9110'
+_MSG_HTTP_NON = 'Device HTTP server is NON-COMPLIANT with the RFC 9110'
 _MSG_HTTP_ERROR = 'Error checking HTTP server.'
 
 
@@ -165,7 +165,7 @@ class HTTPScan():
     if not get_ok or not head_ok:
       LOGGER.info(f'HTTP GET/HEAD method is not supported on {url}')
       result_state = 'Non-Compliant'
-      result_message = _MSG_HTTP_NON_COMPLIANT
+      result_message = _MSG_HTTP_NON
       if not get_ok:
         result_details.append('Server does not support GET')
       if not head_ok:
@@ -190,7 +190,7 @@ class HTTPScan():
             break
       if not head_body_empty or not headers_match:
         result_state = 'Non-Compliant'
-        result_message = _MSG_HTTP_NON_COMPLIANT
+        result_message = _MSG_HTTP_NON
         if not head_body_empty:
           LOGGER.info('HEAD response body is not empty')
           result_details.append('HEAD response body is not empty')
@@ -204,13 +204,13 @@ class HTTPScan():
           'HEAD response body is empty',
           'Headers match between GET and HEAD methods'
         ])
-      if method_resp.status_code == 501 or method_resp.status_code == 405:
+      if method_resp.status_code in (405, 501):
         msg = 'Device server returns 501 or 405 for unsupported methods'
         LOGGER.info(msg)
         result_details.append(msg)
       else:
         result_state = 'Non-Compliant'
-        result_message = _MSG_HTTP_NON_COMPLIANT
+        result_message = _MSG_HTTP_NON
         msg = 'Device server does not return 501 or 405 for unsupported methods'
         LOGGER.info(msg)
         result_details.append(msg)
