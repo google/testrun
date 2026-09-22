@@ -47,9 +47,9 @@ class HTTPScan():
     """Быстро проверяет доступность портов 80 и 443 через чистый TCP."""
     open_ports = []
     for port in (80, 443):
-      LOGGER.info(f"scanning {port}")
+      LOGGER.info(f'scanning {port}')
       with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.settimeout(timeout) 
+        sock.settimeout(timeout)
         result = sock.connect_ex((ip, port))
         LOGGER.info(f'scan result {result}')
         if result == 0:
