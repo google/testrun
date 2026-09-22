@@ -15,6 +15,7 @@
 import nmap
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import socket
 
 
 LOGGER = None
@@ -42,17 +43,20 @@ class HTTPScan():
             http_ports.append(port)
     return http_ports
 
-  def scan_http_ports(self, ip):
-    """Scans HTTP/HTTPS ports."""
-    nm = nmap.PortScanner()
-    nm.scan(hosts=ip, ports='80,443', arguments='--open -sV')
+  def scan_http_ports(self, ip, timeout=5):
+    """Быстро проверяет доступность портов 80 и 443 через чистый TCP."""
+    open_ports = []
+    for port in (80, 443):
+      LOGGER.info(f"scanning {port}")
+      with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.settimeout(timeout) 
+        result = sock.connect_ex((ip, port))
+        LOGGER.info(f'scan result {result}')
+        if result == 0:
+          open_ports.append(port)
+    LOGGER.info(f'open ports {open_ports}')
 
-    http_ports = []
-    if ip in nm.all_hosts():
-      for port in [80, 443]:
-        if port in nm[ip]['tcp'] and nm[ip]['tcp'][port]['state'] == 'open':
-          http_ports.append(port)
-    return http_ports
+    return open_ports
 
   def is_https(self, ip, port):
     """

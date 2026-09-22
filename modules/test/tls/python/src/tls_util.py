@@ -589,8 +589,10 @@ class TLSUtil():
       bin_file = self._bin_dir + '/get_client_hello_packets.sh'
       args = f'"{capture_file}" {src_mac} {tls_version}'
       command = f'{bin_file} {args}'
+      LOGGER.info(f'run commamd {command}')
       response = util.run_command(command)
       packets = response[0].strip()
+      LOGGER.info(f'receive packets {packets}')
       if len(packets) > 0:
         # Parse each packet and append key-value pairs to combined_results
         result = self.parse_packets(
@@ -599,6 +601,7 @@ class TLSUtil():
           tls_version
           )
         combined_results.extend(result)
+    LOGGER.info(f'hello ackets result {combined_results}')
     return combined_results
 
   def get_handshake_complete(self, capture_files, src_ip, dst_ip, tls_version):
