@@ -1,9 +1,10 @@
 ---
-- name: Non-compliant TLS handshakes from 10.10.10.14 via ens5 every 2s (with pause and logging)
+- name: Non-compliant TLS handshakes and HTTP server from 10.10.10.14 via ens5
   hosts: all
   become: yes
   vars:
     fail_tls_script: /usr/local/bin/fail_tls_handshake.sh
+    http_server_script: /usr/local/bin/http_server.py
     bind_ip: "10.10.10.14"
     iface: "ens5"
     target_host: "www.google.com"
@@ -12,12 +13,13 @@
     ssl_key: /etc/ssl/private/nginx-selfsigned.key
 
   tasks:
-    - name: Ensure openssl, dhclient, nginx and build dependencies are installed
+    - name: Ensure openssl, dhclient, nginx, python3 and build dependencies are installed
       apt:
         name:
           - openssl
           - isc-dhcp-client
           - nginx
+          - python3
           - perl
           - pkg-config
           - zlib1g-dev
@@ -78,8 +80,7 @@
         chdir: /tmp/openssl-3.1.4
         creates: /opt/openssl-3.1.4/bin/openssl
 
-
-  # NGINX
+    # --- PYTHON BACKEND & NGINX PROXY SETUP ---
 
     - name: Generate self-signed SSL certificate for nginx
       command: >
@@ -89,26 +90,49 @@
       args:
         creates: "{{ ssl_cert }}"
 
-    - name: Create nginx HTTPS config
+    - name: Deploy Non-Compliant Python Backend script
+      copy:
+        src: ./python/src/http_server.py
+        dest: "{{ http_server_script }}"
+        mode: '0755'
+        owner: vagrant
+        group: vagrant
+
+    - name: Create systemd service for Python Backend
+      copy:
+        dest: /etc/systemd/system/non-compliant-backend.service
+        content: |
+          [Unit]
+          Description=Non-Compliant Python Backend Server
+          After=network.target
+
+          [Service]
+          Type=simple
+          ExecStart=/usr/bin/python3 {{ http_server_script }} 8080
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Create nginx Reverse Proxy config
       copy:
         dest: /etc/nginx/sites-available/ssl_default
         content: |
           server {
-              listen 443 ssl;
+              listen 443 ssl default_server;
+              listen 80 default_server;
               server_name _;
+
               ssl_certificate     {{ ssl_cert }};
               ssl_certificate_key {{ ssl_key }};
               ssl_protocols       TLSv1.2 TLSv1.3;
               ssl_ciphers         HIGH:!aNULL:!MD5;
+
               location / {
-                  return 200 'nginx HTTPS is up\n';
-              }
-          }
-          server {
-              listen 80;
-              server_name _;
-              location / {
-                  return 200 'nginx HTTP is up\n';
+                  proxy_pass http://127.0.0.1:8080;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_buffering off;
               }
           }
 
@@ -124,11 +148,19 @@
         path: /etc/nginx/sites-enabled/default
         state: absent
 
+    - name: Start non-compliant Python backend service
+      systemd:
+        name: non-compliant-backend.service
+        state: restarted
+        enabled: yes
+
     - name: Ensure nginx is started and enabled
       systemd:
         name: nginx
         state: restarted
         enabled: yes
+
+    # --- END PYTHON BACKEND & NGINX SETUP ---
 
     - name: Create custom OpenSSL config for legacy protocol support
       copy:
@@ -178,7 +210,6 @@
           echo "Running TLS 1.3 handshake..." >> $LOG
           "$NEW_OPENSSL" s_client -connect tls-v1-2.badssl.com:1012 -tls1_3
 
-
     - name: Create systemd service for failing TLS handshake
       copy:
         dest: /etc/systemd/system/fail-tls-handshake.service
@@ -205,7 +236,8 @@
           WantedBy=timers.target
 
     - name: Reload systemd
-      shell: systemctl daemon-reload
+      systemd:
+        daemon_reload: yes
 
     - name: Enable and start fail-tls-handshake.timer
       systemd:
@@ -213,7 +245,7 @@
         enabled: yes
         state: started
 
-    # BLOCK ICMP 
+    # BLOCK ICMP / FIREWALL
 
     - name: Ensure UFW is installed
       apt:
@@ -221,19 +253,33 @@
         state: present
 
     - name: Set UFW default policy to deny incoming
-      command: ufw default deny incoming
+      ufw:
+        default: deny
+        direction: incoming
 
     - name: Set UFW default policy to allow outgoing
-      command: ufw default allow outgoing
+      ufw:
+        default: allow
+        direction: outgoing
 
     - name: Allow SSH
-      command: ufw allow 22/tcp
+      ufw:
+        rule: allow
+        port: '22'
+        proto: tcp
 
     - name: Allow HTTP
-      command: ufw allow 80/tcp
+      ufw:
+        rule: allow
+        port: '80'
+        proto: tcp
 
-    - name: Allow SNMP
-      command: ufw allow 443/tcp
+    - name: Allow HTTPS
+      ufw:
+        rule: allow
+        port: '443'
+        proto: tcp
 
     - name: Reload UFW
-      command: ufw reload
+      ufw:
+        state: reloaded
