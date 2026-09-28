@@ -20,6 +20,11 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 LOGGER = None
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+_MSG_HTTP_NOT_DETECTED = 'No HTTP server detected on the device.'
+_MSG_HTTP_COMPLIANT = 'Device HTTP server is COMPLIANT with the RFC 9110'
+_MSG_HTTP_NON = 'Device HTTP server is NON-COMPLIANT with the RFC 9110'
+_MSG_HTTP_ERROR = 'Error checking HTTP server.'
+
 
 class HTTPScan():
   """Helper class to scan for all HTTP/HTTPS services for a device"""
@@ -128,3 +133,125 @@ class HTTPScan():
       for port, service_type in results.items():
         LOGGER.info(f'Port {port}: {service_type}')
     return results
+
+  def _http_make_request(
+      self, method: str,
+      url: str,
+      timeout: int = 20
+  ) -> requests.Response | None:
+    """Sends HTTP request and handles exceptions uniformly.
+    
+    Returns:
+        requests.Response | None
+    """
+
+    try:
+      resp = requests.request(
+          method=method,
+          url=url,
+          timeout=timeout,
+          verify=False  # nosec B501
+      )
+      return resp
+    except requests.exceptions.Timeout as e:
+      msg = f'Timeout during {method.upper()} request to {url}'
+      LOGGER.error(f'{msg}: {e}')
+      return None
+    except requests.exceptions.ConnectionError as e:
+      msg = f'Connection refused during {method.upper()} request to {url}'
+      LOGGER.error(f'{msg}: {e}')
+      return None
+
+  def http_server_compliance(self, ip:str) -> tuple[str, str, list[str]]:
+    """Checks HTTP server comliance to RFC 9110."""
+    result_state = 'Feature Not Detected'
+    result_message = _MSG_HTTP_NOT_DETECTED
+    result_details = []
+    try:
+      ports = self.scan_all_ports(ip)
+      if not ports:
+        msg = f'No HTTP/HTTPS ports found on {ip}'
+        LOGGER.info(msg)
+        return result_state, result_message, result_details
+      if '443' in ports:
+        url = f'https://{ip}'
+      else:
+        url = f'http://{ip}'
+      LOGGER.info(f'Checking HTTP methods on {url}')
+      try:
+        get_resp = self._http_make_request('GET', url)
+        if get_resp is None:
+          get_ok = False
+        else:
+          get_ok = get_resp.status_code == 200
+        head_resp = self._http_make_request('HEAD', url)
+        if head_resp is None:
+          head_ok = False
+        else:
+          head_ok = head_resp.status_code == 200
+        method_resp = self._http_make_request('foobar', url)
+      except requests.exceptions.RequestException as e:
+        LOGGER.error(f'Error checking HTTP methods on {url}: {e}')
+        return 'Error', _MSG_HTTP_ERROR, []
+      if not get_ok or not head_ok:
+        LOGGER.info(f'HTTP GET/HEAD method is not supported on {url}')
+        result_state = 'Non-Compliant'
+        result_message = _MSG_HTTP_NON
+        if not get_ok:
+          result_details.append('Server does not support GET method')
+        else:
+          result_details.append('Server supports GET method')
+        if not head_ok:
+          result_details.append('Server does not support HEAD method')
+        else:
+          result_details.append('Server supports HEAD method')
+      elif get_ok and head_ok:
+        LOGGER.info(f'HTTP GET and HEAD methods are supported on {url}')
+        result_state = 'Compliant'
+        result_message = _MSG_HTTP_COMPLIANT
+        result_details.extend([
+          'Server supports GET method',
+          'Server supports HEAD method'
+        ])
+      if head_resp is not None and get_resp is not None:
+        head_body_len = len(head_resp.content)
+        head_body_empty = head_body_len == 0
+        headers_match = True
+        header_not_match = ''
+        for header in ('Content-Length', 'Content-Type'):
+          if header in get_resp.headers or header in head_resp.headers:
+            if get_resp.headers.get(header) != head_resp.headers.get(header):
+              headers_match = False
+              header_not_match = header
+              break
+        if not head_body_empty or not headers_match:
+          result_state = 'Non-Compliant'
+          result_message = _MSG_HTTP_NON
+          if not head_body_empty:
+            LOGGER.info('HEAD response body is not empty')
+            result_details.append('HEAD response body is not empty')
+          elif not headers_match:
+            msg = f'{header_not_match} does not match between GET and HEAD'
+            LOGGER.info(msg)
+            result_details.append(f'Header {header_not_match} does not match')
+        else:
+          LOGGER.info('HEAD response body is empty.')
+          LOGGER.info('Headers match between GET and HEAD methods.')
+          result_details.extend([
+            'HEAD response body is empty',
+            'Headers match between GET and HEAD methods'
+          ])
+      if method_resp.status_code in (405, 501):
+        msg = 'Device server returns 501 or 405 for unsupported methods'
+        LOGGER.info(msg)
+        result_details.append(msg)
+      else:
+        result_state = 'Non-Compliant'
+        result_message = _MSG_HTTP_NON
+        msg = 'Device server does not return 501 or 405 for unsupported methods'
+        LOGGER.info(msg)
+        result_details.append(msg)
+    except Exception as e:
+      LOGGER.error(f'Unexpected error {e}')
+
+    return result_state, result_message, result_details

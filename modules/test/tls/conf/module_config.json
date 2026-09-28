@@ -58,6 +58,14 @@
           "Disable connections to unsecure services",
           "Ensure any URLs connected to are secure (https)"
         ]
+      },
+      {
+        "name": "security.http.server",
+        "test_description": "HTTP server",
+        "expected_behavior": "HTTP server compliant",
+        "recommendations": [
+          "Implement HEAD method"
+        ]
       }
     ]
   }
