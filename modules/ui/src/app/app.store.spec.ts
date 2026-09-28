@@ -73,6 +73,9 @@ const mock = (() => {
     setObject: (key: string, value: object) => {
       store[key] = JSON.stringify(value);
     },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
     clear: () => {
       store = {};
     },

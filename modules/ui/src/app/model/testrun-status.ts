@@ -53,6 +53,7 @@ export interface TestrunStatus {
   report: string;
   export: string;
   tags: string[] | null;
+  monitor_started?: string | null;
 }
 
 export interface HistoryTestrun extends TestrunReport {
