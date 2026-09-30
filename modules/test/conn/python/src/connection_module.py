@@ -380,8 +380,16 @@ class ConnectionModule(TestModule):
     rpc_error_msg = 'Unable to connect to gRPC server'
     try:
       iface_status = self.host_client.check_interface_status(dev_iface)
-    except Exception:
+    except Exception as e:
       LOGGER.error(rpc_error_msg)
+      LOGGER.error(
+          '%s; interface=%r; exception_type=%s; exception=%r',
+          rpc_error_msg,
+          dev_iface,
+          type(e).__qualname__,
+          e)
+      for traceback_line in traceback.format_exc().rstrip().splitlines():
+        LOGGER.error('%s', traceback_line)
       return 'Error', rpc_error_msg
     if iface_status.code != 200:
       return 'Error', 'Device interface could not be resolved'
@@ -516,8 +524,16 @@ class ConnectionModule(TestModule):
         else:
           result = 'Error'
           description = 'Device interface could not be resolved'
-      except Exception:
+      except Exception  as e:
         LOGGER.error('Unable to connect to gRPC server')
+        LOGGER.error(
+          '%s; interface=%r; exception_type=%s; exception=%r',
+          'Unable to connect to gRPC server',
+          dev_iface,
+          type(e).__qualname__,
+          e)
+        for traceback_line in traceback.format_exc().rstrip().splitlines():
+          LOGGER.error('%s', traceback_line)
         result = 'Error'
         description = (
         'Unable to connect to gRPC server'
