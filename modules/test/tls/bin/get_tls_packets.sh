@@ -19,21 +19,24 @@ CAPTURE_FILE="$1"
 SRC_MAC="$2"
 TLS_VERSION="$3"
 
-TSHARK_OUTPUT="-T json -e eth.src -e tcp.dstport -e ip.dst"
+TSHARK_OUTPUT="-T json -e ip.src -e tcp.dstport -e ip.dst"
 # Handshakes will still report TLS version 1 even for TLS 1.2 connections
 # so we need to filter thes out
-TSHARK_FILTER="eth.src==$SRC_MAC and ssl.handshake.type!=1"
+TSHARK_FILTER="tls.handshake.type==1 and eth.src==$SRC_MAC"
 
-if [ $TLS_VERSION == '1.0' ];then
-	TSHARK_FILTER="$TSHARK_FILTER and ssl.record.version==0x0301"
-elif [ $TLS_VERSION == '1.1' ];then
-	TSHARK_FILTER="$TSHARK_FILTER and ssl.record.version==0x0302"
-elif [ $TLS_VERSION == '1.2' ];then
-	TSHARK_FILTER="$TSHARK_FILTER and ssl.record.version==0x0303"
-elif [ $TLS_VERSION == '1.3' ];then
-	TSHARK_FILTER="$TSHARK_FILTER and ssl.record.version==0x0304"
+if [[ $TLS_VERSION == '1.0' ]]; then
+  TSHARK_FILTER="$TSHARK_FILTER and tls.handshake.version==0x0301"
+elif [[ $TLS_VERSION == '1.1' ]]; then
+  TSHARK_FILTER="$TSHARK_FILTER and tls.handshake.version==0x0302"
+elif [[ $TLS_VERSION == '1.2' || -z $TLS_VERSION ]]; then
+  TSHARK_FILTER="$TSHARK_FILTER and tls.handshake.version==0x0303 and !(tls.handshake.extensions.supported_version==0x0304)"
+elif [[ $TLS_VERSION == '1.3' ]]; then
+  TSHARK_FILTER="$TSHARK_FILTER and (tls.handshake.version==0x0304 or tls.handshake.extensions.supported_version==0x0304)"
+else
+  echo "Unsupported TLS version: $TLS_VERSION"
+  exit 1
 fi
 
-response=$(tshark -r "$CAPTURE_FILE" $TSHARK_OUTPUT $TSHARK_FILTER)
+response=$(tshark -r "$CAPTURE_FILE" $TSHARK_OUTPUT -Y "$TSHARK_FILTER")
 
 echo "$response"
