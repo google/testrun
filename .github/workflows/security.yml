@@ -6,7 +6,6 @@ name: Security
 
 permissions:
   contents: read
-  pull-requests: write
 
 on:
   # For Branch-Protection check. Only the default branch is supported. See
