@@ -161,12 +161,9 @@ jobs:
 
     - name: Run tests
       run: |
-        sudo sysctl -w kernel.unprivileged_userns_clone=1
-        export CHROMIUM_FLAGS="--no-sandbox --disable-setuid-sandbox"
+        sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
         export CHROME_BIN=/usr/bin/chromium
         CI=true npm run test-ci
-      env:
-        CI: true
       working-directory: ./modules/ui
 
   linters_ui:
