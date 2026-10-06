@@ -126,6 +126,7 @@ class ConnectionModule(TestModule):
 
     try:
       leases = self._dhcp_util.get_all_servers_leases()
+      LOGGER.debug(f'Receaved leases from DHCP servers {leases}')
       for lease in leases:
         if lease['ip'] not in ip_addresses:
           ip_addresses.append(lease['ip'])
