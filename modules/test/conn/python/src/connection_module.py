@@ -110,7 +110,6 @@ class ConnectionModule(TestModule):
   def _connection_switch_arp_inspection(self):
     LOGGER.info('Running connection.switch.arp_inspection')
 
-
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is None:
       self._device_ipv4_addr = self._get_device_ipv4()
@@ -126,15 +125,12 @@ class ConnectionModule(TestModule):
                     ]
 
     try:
-      leases = self._dhcp_util.get_all_servers_leases(
-        mac_address=self._device_mac
-      )
+      leases = self._dhcp_util.get_all_servers_leases()
       for lease in leases:
         if lease['ip'] not in ip_addresses:
           ip_addresses.append(lease['ip'])
     except Exception as e:
       LOGGER.error(e)
-
 
     # Read all the pcap files
     packets = rdpcap(self.startup_capture_file) + rdpcap(
