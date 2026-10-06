@@ -19,6 +19,7 @@ from dhcp_server import DHCPServer
 from dhcp_config import DHCPConfig
 from dhcp_leases import DHCPLeases
 
+import json
 import traceback
 from common import logger
 
@@ -164,6 +165,24 @@ class NetworkService(pb2_grpc.NetworkModule):
         return pb2.Response(code=200, message='{}')
     except Exception as e:  # pylint: disable=W0718
       fail_message = 'Failed to get lease: ' + str(e)
+      LOGGER.error(fail_message)
+      LOGGER.error(traceback.format_exc())
+      return pb2.Response(code=500, message=fail_message)
+
+  def GetLeases(self, request, context): # pylint: disable=W0613
+    """ Returns the list of currently active leases. """
+    try:
+      leases = self.dhcp_leases.get_leases()
+      lease_data = [{
+          'hw_addr': lease.hw_addr,
+          'ip': lease.ip,
+          'hostname': lease.hostname,
+          'expires': lease.expires,
+          'manufacturer': getattr(lease, 'manufacturer', None),
+      } for lease in leases]
+      return pb2.Response(code=200, message=json.dumps(lease_data))
+    except Exception as e:  # pylint: disable=W0718
+      fail_message = 'Failed to get leases: ' + str(e)
       LOGGER.error(fail_message)
       LOGGER.error(traceback.format_exc())
       return pb2.Response(code=500, message=fail_message)
