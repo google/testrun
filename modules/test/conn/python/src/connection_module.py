@@ -110,6 +110,7 @@ class ConnectionModule(TestModule):
   def _connection_switch_arp_inspection(self):
     LOGGER.info('Running connection.switch.arp_inspection')
 
+
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is None:
       self._device_ipv4_addr = self._get_device_ipv4()
@@ -119,6 +120,21 @@ class ConnectionModule(TestModule):
       return False, 'Could not resolve device IP address'
 
     no_arp = True
+
+    ip_addresses = [self._device_ipv4_addr,
+                      '0.0.0.0' # nosec B104
+                    ]
+
+    try:
+      leases = self._dhcp_util.get_all_servers_leases(
+        mac_address=self._device_mac
+      )
+      for lease in leases:
+        if lease['ip'] not in ip_addresses:
+          ip_addresses.append(lease['ip'])
+    except Exception as e:
+      LOGGER.error(e)
+
 
     # Read all the pcap files
     packets = rdpcap(self.startup_capture_file) + rdpcap(
@@ -140,10 +156,7 @@ class ConnectionModule(TestModule):
       # Check MAC address matches IP address
       if (arp_packet.hwsrc == self._device_mac
           and (
-              arp_packet.psrc not in (
-                  self._device_ipv4_addr,
-                  '0.0.0.0'  # nosec B104
-              )
+              arp_packet.psrc not in ip_addresses
           )
           and not arp_packet.psrc.startswith('169.254')):
         LOGGER.info(f'Bad ARP packet detected for MAC: {self._device_mac}')
