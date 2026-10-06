@@ -16,6 +16,7 @@ device behaviors"""
 
 import re
 import time
+import json
 from datetime import datetime
 import util
 from dateutil import tz
@@ -151,6 +152,11 @@ class DHCPUtil():
         return lease
       time.sleep(5)
 
+  def get_all_servers_leases(self) -> list[dict]:
+    """Retrieve leases from all DHCP servers."""
+
+    return self._get_leases_from_server()
+
   def _get_cur_lease(self, mac_address):
     """
     Retrieve the current lease for a given MAC address from both
@@ -193,6 +199,26 @@ class DHCPUtil():
         if lease_resp:  # Check if non-empty lease
           lease = lease_resp
     return lease
+
+  def _get_leases_from_server(self) -> list[dict]:
+    leases = []
+    response = self.get_dhcp_client(dhcp_server_primary=True).get_leases()
+    if response.code == 200:
+      lease_resp = json.loads(response.message)
+      if lease_resp:  # Check if non-empty lease
+        leases.extend(lease_resp)
+    else:
+      LOGGER.info(response.code)
+      LOGGER.error(response.message)
+    response = self.get_dhcp_client(dhcp_server_primary=False).get_leases()
+    if response.code == 200:
+      lease_resp = json.loads(response.message)
+      if lease_resp:  # Check if non-empty lease
+        leases.extend(lease_resp)
+    else:
+      LOGGER.info(response.code)
+      LOGGER.error(response.message)
+    return leases
 
   def is_lease_active(self, lease):
     if 'ip' in lease:
