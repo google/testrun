@@ -91,6 +91,15 @@ class Client():
 
     return response
 
+  def get_leases(self):
+    # Create a request message
+    request = pb2.GetLeasesRequest()
+
+    # Make the RPC call
+    response = self._stub.GetLeases(request)
+
+    return response
+  
   def get_status(self):
     # Create a request message
     request = pb2.GetStatusRequest()
