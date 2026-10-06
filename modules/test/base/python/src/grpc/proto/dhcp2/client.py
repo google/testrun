@@ -99,7 +99,7 @@ class Client():
     response = self._stub.GetLeases(request)
 
     return response
-  
+
   def get_status(self):
     # Create a request message
     request = pb2.GetStatusRequest()
