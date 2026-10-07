@@ -120,6 +120,19 @@ class ConnectionModule(TestModule):
 
     no_arp = True
 
+    ip_addresses = [self._device_ipv4_addr,
+                      '0.0.0.0' # nosec B104
+                    ]
+
+    try:
+      leases = self._dhcp_util.get_all_servers_leases()
+      LOGGER.debug(f'Receaved leases from DHCP servers {leases}')
+      for lease in leases:
+        if lease['ip'] not in ip_addresses:
+          ip_addresses.append(lease['ip'])
+    except Exception as e:
+      LOGGER.error(e)
+
     # Read all the pcap files
     packets = rdpcap(self.startup_capture_file) + rdpcap(
         self.monitor_capture_file)
@@ -139,7 +152,9 @@ class ConnectionModule(TestModule):
 
       # Check MAC address matches IP address
       if (arp_packet.hwsrc == self._device_mac
-          and (arp_packet.psrc not in (self._device_ipv4_addr, '0.0.0.0'))
+          and (
+              arp_packet.psrc not in ip_addresses
+          )
           and not arp_packet.psrc.startswith('169.254')):
         LOGGER.info(f'Bad ARP packet detected for MAC: {self._device_mac}')
         LOGGER.info(f'''ARP packet from IP {arp_packet.psrc}

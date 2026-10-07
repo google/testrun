@@ -20,6 +20,8 @@ service NetworkModule {
 
     rpc GetLease(GetLeaseRequest) returns (Response) {};
 
+    rpc GetLeases(GetLeasesRequest) returns (Response) {};
+
     rpc GetStatus(GetStatusRequest) returns (Response) {};
 
     rpc SetDHCPRange(SetDHCPRangeRequest) returns (Response) {};
@@ -50,6 +52,8 @@ message GetDHCPRangeRequest {}
 message GetLeaseRequest {
     string hw_addr = 1;   
 }
+
+message GetLeasesRequest {}
 
 message GetStatusRequest {}
 
