@@ -386,9 +386,6 @@ class NetworkOrchestrator:
         self._ethmac = f.read().strip()
     except OSError:
       self._ethmac = ''
-    self._gateway = subprocess.check_output(
-        'ip route | head -n 1 | awk \'{print $3}\'',
-        shell=True).decode('utf-8').strip()
     self._gateway = ''
     try:
       route_output = subprocess.check_output(['ip', 'route']).decode('utf-8')
