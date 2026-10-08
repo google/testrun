@@ -85,38 +85,50 @@ def testing_devices():
   )
   return get_all_devices()
 
+
 def start_test_device(
     device_name, mac_addr, image_name="test-run/ci_device_1", args=""
 ):
   """ Start test device container with given name """
+  cmd_list = [
+      "docker",
+      "run",
+      "-d",
+      "--network=endev0",
+      f"--mac-address={mac_addr}",
+      "--cap-add=NET_ADMIN",
+      "-v",
+      "/tmp:/out",
+      "--privileged",
+      f"--name={device_name}",
+      image_name,
+      args,
+  ]
+
   cmd = subprocess.run(
-      f"docker run -d --network=endev0 --mac-address={mac_addr}"
-      f" --cap-add=NET_ADMIN -v /tmp:/out --privileged --name={device_name}"
-      f" {image_name} {args}",
-      shell=True,
+      cmd_list,
       check=True,
       capture_output=True,
+      text=True,
   )
   print(cmd.stdout)
+
 
 def stop_test_device(device_name):
   """ Stop docker container with given name """
   cmd = subprocess.run(
-      f"docker stop {device_name}", shell=True, capture_output=True,
-      check=False
-  )
-  print(cmd.stdout)
-  cmd = subprocess.run(
-      f"docker rm {device_name}", shell=True, capture_output=True,
-      check=False
+      ["docker", "stop", device_name],
+      capture_output=True,
+      text=True,  # Декодирует stdout из bytes в str
+      check=False,
   )
   print(cmd.stdout)
 
-def docker_logs(device_name):
-  """ Print docker logs from given docker container name """
   cmd = subprocess.run(
-      f"docker logs {device_name}", shell=True, capture_output=True,
-      check=False
+      ["docker", "rm", device_name],
+      capture_output=True,
+      text=True,
+      check=False,
   )
   print(cmd.stdout)
 
@@ -193,21 +205,36 @@ def testrun(request): # pylint: disable=W0613
 
   print(outs)
 
-  # Stop any remaining Docker containers after the test
-  cmd = subprocess.run(
-      "docker stop $(docker ps -a -q)", shell=True,
-      capture_output=True, check=False
+  # Get the IDs of all containers
+  ps_res = subprocess.run(
+      ["docker", "ps", "-a", "-q"],
+      capture_output=True,
+      text=True,
+      check=False
   )
 
-  print(cmd.stdout)
+  # Split output into individual container IDs
+  container_ids = ps_res.stdout.split()
 
-  # Remove the stopped Docker containers
-  cmd = subprocess.run(
-      "docker rm  $(docker ps -a -q)", shell=True,
-      capture_output=True, check=False
-  )
+  # Execute stop and rm only if containers exist
+  if container_ids:
+    # Stop any remaining Docker containers after the test
+    cmd = subprocess.run(
+        ["docker", "stop"] + container_ids,
+        capture_output=True,
+        text=True,
+        check=False
+    )
+    print(cmd.stdout)
 
-  print(cmd.stdout)
+    # Remove the stopped Docker containers
+    cmd = subprocess.run(
+        ["docker", "rm"] + container_ids,
+        capture_output=True,
+        text=True,
+        check=False
+    )
+    print(cmd.stdout)
 
 def until_true(func: Callable, message: str, timeout: int):
   """ Blocks until given func returns True
