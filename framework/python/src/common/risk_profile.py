@@ -402,7 +402,7 @@ class RiskProfile():
     margin_row = 8
 
     height_first_page = 760
-    height_page = 980
+    height_page = 930
 
     # Average text block width in characters
     # for a 14px font size (average width of one character is 8px).
@@ -444,11 +444,10 @@ class RiskProfile():
           profile_format=self._profile_format)['options']
         options_dict = dict(enumerate(options))
         for answer_index in page_item['answer']:
-          height += 40
           text_answers.append(options_dict[answer_index]['text'])
         page_item['answer'] = text_answers
         # Answer height for list
-        for answer in options:
+        for answer in text_answers:
           answer_height += math.ceil(len(answer)
                                      / letters_in_line_list
                                      ) * block_height
@@ -461,7 +460,7 @@ class RiskProfile():
         or (len(pages) > 0 and row_height + height > height_page)
         ):
         pages.append(current_page)
-        height = 0
+        height = row_height
         current_page = [page_item]
       else:
         height += row_height
