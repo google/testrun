@@ -1,0 +1,108 @@
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@use 'colors';
+@use 'variables';
+
+$timer-size: 254px;
+
+:host {
+  display: inline-block;
+  width: 100%;
+}
+
+.monitoring-timer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  padding-top: 58px;
+
+  .timer-circle-container {
+    position: relative;
+    width: $timer-size;
+    height: $timer-size;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .timer-circle-svg {
+    width: $timer-size;
+    height: $timer-size;
+    transform: rotate(-90deg);
+    display: block;
+  }
+
+  /* Layer 1: Light blue background circle */
+  .timer-circle-layer-bg {
+    stroke: colors.$primary-container;
+    stroke-width: 10;
+  }
+
+  /* Layer 2: Blue progress circle that adds each tick */
+  .timer-circle-layer-progress {
+    stroke: colors.$primary;
+    stroke-width: 10;
+    transition: stroke-dashoffset 0.3s ease-out;
+  }
+
+  .timer-center-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .timer-countdown {
+    font-family: variables.$font-primary;
+    font-size: 57px;
+    line-height: 64px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    color: colors.$primary;
+  }
+
+  .timer-label {
+    position: absolute;
+    top: calc(50% + 36px);
+    font-family: 'Google Sans Flex', sans-serif;
+    font-size: 12px;
+    line-height: 16px;
+    color: colors.$on-surface-variant;
+    text-align: center;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
