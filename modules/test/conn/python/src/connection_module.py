@@ -28,6 +28,10 @@ import json
 
 LOG_NAME = 'test_connection'
 OUI_FILE = '/usr/local/etc/oui.txt'
+MAM_FILE = '/usr/local/etc/mam.txt'
+OUI36_FILE = '/usr/local/etc/oui36.txt'
+IAB_FILE = '/usr/local/etc/iab.txt'
+IEEE_REG_AUTHORITY = 'IEEE Registration Authority'
 DEFAULT_BIN_DIR = '/testrun/bin'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
@@ -550,11 +554,45 @@ class ConnectionModule(TestModule):
     # Do some quick fixes on the format of the mac_address
     # to match the oui file pattern
     mac_address = mac_address.replace(':', '-').upper()
-    with open(OUI_FILE, 'r', encoding='UTF-8') as file:
-      for line in file:
-        if mac_address.startswith(line[:8]):
-          start = line.index('(hex)') + len('(hex)')
-          return line[start:].strip()  # Extract the company name
+    oui_prefix = mac_address[:8]
+    manufacturer = None
+    if os.path.exists(OUI_FILE):
+      with open(OUI_FILE, 'r', encoding='UTF-8') as file:
+        for line in file:
+          if line.startswith(oui_prefix) and '(hex)' in line:
+            start = line.index('(hex)') + len('(hex)')
+            manufacturer = line[start:].strip()  # Extract the company name
+            break
+    if manufacturer is None or manufacturer == IEEE_REG_AUTHORITY:
+      mac_suffix = mac_address[9:].replace('-', '')
+      sub_manufacturer = self._get_sub_oui_manufacturer(oui_prefix, mac_suffix)
+      if sub_manufacturer is not None:
+        return sub_manufacturer
+    return manufacturer
+
+  def _get_sub_oui_manufacturer(self, oui_prefix, mac_suffix):
+    if len(mac_suffix) != 6:
+      return None
+    try:
+      suffix_val = int(mac_suffix, 16)
+    except ValueError:
+      return None
+    for file_path in (MAM_FILE, OUI36_FILE, IAB_FILE):
+      if not os.path.exists(file_path):
+        continue
+      with open(file_path, 'r', encoding='UTF-8') as file:
+        for line in file:
+          if line.startswith(oui_prefix) and '(hex)' in line:
+            range_line = next(file, '')
+            if '(base 16)' not in range_line:
+              continue
+            addr_range = range_line.split('(base 16)')[0].strip()
+            if '-' not in addr_range:
+              continue
+            start_hex, end_hex = addr_range.split('-', 1)
+            if int(start_hex, 16) <= suffix_val <= int(end_hex, 16):
+              start = line.index('(hex)') + len('(hex)')
+              return line[start:].strip()
     return None
 
   def _connection_ipv6_slaac(self):
