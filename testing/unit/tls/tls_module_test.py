@@ -954,6 +954,62 @@ class TLSModuleTest(unittest.TestCase):
                   )
 
 
+  @patch.object(HTTPScan, '_http_make_request')
+  @patch.object(HTTPScan, 'scan_all_ports')
+  def test_http_server_non_compliant_status_codes(
+    self,
+    mock_scan_ports,
+    mock_make_request
+  ):
+    """Test compliance check when GET/HEAD return non-200 status codes."""
+    mock_scan_ports.return_value = ['80']
+
+    get_resp = unittest.mock.MagicMock(status_code=404)
+    head_resp = unittest.mock.MagicMock(status_code=404)
+    method_resp = unittest.mock.MagicMock(status_code=406)
+
+    mock_make_request.side_effect = [get_resp, head_resp, method_resp]
+
+    state, message, details = self.scanner.http_server_compliance('10.10.10.14')
+
+    self.assertEqual(state, 'Non-Compliant')
+    self.assertEqual(message,
+                     'Device HTTP server is NON-COMPLIANT with the RFC 9110'
+                    )
+    self.assertIn('Server does not support GET method', details)
+    self.assertIn('Server does not support HEAD method', details)
+    self.assertIn(
+      'Device server does not return 501 or 405 for unsupported methods',
+      details
+    )
+
+  @patch.object(HTTPScan, '_http_make_request')
+  @patch.object(HTTPScan, 'scan_all_ports')
+  def test_http_server_head_body_not_empty(
+    self,
+    mock_scan_ports,
+    mock_make_request
+  ):
+    """HEAD response contains a non-empty body."""
+    mock_scan_ports.return_value = ['80']
+
+    get_resp = unittest.mock.MagicMock(status_code=200)
+    get_resp.headers = {}
+
+    head_resp = unittest.mock.MagicMock(status_code=200)
+    head_resp.headers = {}
+    head_resp.content = b'unexpected body content'
+
+    method_resp = unittest.mock.MagicMock(status_code=501)
+
+    mock_make_request.side_effect = [get_resp, head_resp, method_resp]
+
+    state, _, details = self.scanner.http_server_compliance('10.10.10.14')
+
+    self.assertEqual(state, 'Non-Compliant')
+    self.assertIn('HEAD response body is not empty', details)
+
+
 if __name__ == '__main__':
   suite = unittest.TestSuite()
   suite.addTest(TLSModuleTest('client_hello_packets_test'))
@@ -1021,6 +1077,8 @@ if __name__ == '__main__':
   # Test HTTP server
   suite.addTest(TLSModuleTest('test_http_server_not_detected'))
   suite.addTest(TLSModuleTest('test_http_server_compliant'))
+  suite.addTest(TLSModuleTest('test_http_server_non_compliant_status_codes'))
+  suite.addTest(TLSModuleTest('test_http_server_head_body_not_empty'))
 
   runner = unittest.TextTestRunner()
   test_result = runner.run(suite)
