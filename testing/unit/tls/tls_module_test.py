@@ -14,6 +14,7 @@
 """Module run all the TLS related unit tests"""
 from tls_module import TLSModule
 from tls_util import TLSUtil
+from http_scan import HTTPScan
 from common import logger
 import os
 import unittest
@@ -76,6 +77,8 @@ class TLSModuleTest(unittest.TestCase):
     self.tls_module = TLSModule(module=MODULE, conf_file=CONF_FILE)
     self.tls_module._device_ipv4_addr = None # pylint: disable=W0212
     self.tls_module._scan_results = None # pylint: disable=W0212
+    self.mock_logger = unittest.mock.MagicMock()
+    self.scanner = HTTPScan(self.mock_logger)
 
   @patch('tls_module.TLSModule._get_device_ipv4')
   def security_tls_v1_2_server_no_ip_test(self, mock_get_device_ipv4):
@@ -907,6 +910,17 @@ class TLSModuleTest(unittest.TestCase):
     with open(cert_path, 'w', encoding='utf-8') as cert_file:
       cert_file.write(pem_cert.decode())
 
+  @patch.object(HTTPScan, 'scan_all_ports')
+  def test_http_server_no_ports(self, mock_scan_ports):
+    """No HTTP ports detected. Feature Not Detected."""
+    mock_scan_ports.return_value = []
+
+    state, message, details = self.scanner.http_server_compliance('10.10.10.14')
+
+    self.assertEqual(state, 'Feature Not Detected')
+    self.assertEqual(message, 'No HTTP server detected on the device.')
+    self.assertEqual(details, [])
+
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
@@ -971,6 +985,9 @@ if __name__ == '__main__':
 
   suite.addTest(TLSModuleTest('outbound_connections_test'))
   suite.addTest(TLSModuleTest('outbound_connections_report_test'))
+
+  # Test HTTP server
+  suite.addTest(TLSModuleTest('test_http_server_no_ports'))
 
   runner = unittest.TextTestRunner()
   test_result = runner.run(suite)
