@@ -241,7 +241,13 @@ class HTTPScan():
             'HEAD response body is empty',
             'Headers match between GET and HEAD methods'
           ])
-      if method_resp.status_code in (405, 501):
+      if method_resp is None:
+        result_state = 'Non-Compliant'
+        result_message = _MSG_HTTP_NON
+        msg = 'Device server does not return 501 or 405 for unsupported methods'
+        LOGGER.info(msg)
+        result_details.append(msg)
+      elif method_resp.status_code in (405, 501):
         msg = 'Device server returns 501 or 405 for unsupported methods'
         LOGGER.info(msg)
         result_details.append(msg)
