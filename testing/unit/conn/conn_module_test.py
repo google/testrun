@@ -200,6 +200,32 @@ class ConnectionModuleTest(unittest.TestCase):
     self.assertEqual(result[2], details_expected)
     #self.assertEqual(result[0], True)
 
+  def connection_mac_oui_test(self):
+    LOGGER.info('connection_mac_oui_test')
+    conn_module = ConnectionModule(module=MODULE,
+                                   results_dir=OUTPUT_DIR,
+                                   startup_capture_file=STARTUP_CAPTURE_FILE,
+                                   monitor_capture_file=MONITOR_CAPTURE_FILE)
+    # MA-L (24-bit OUI)
+    self.assertEqual(
+        conn_module._get_oui_manufacturer('28:6f:b9:00:00:01'),  # pylint: disable=W0212
+        'Nokia Shanghai Bell Co., Ltd.')
+    # MA-M (28-bit OUI, listed as IEEE Registration Authority in oui.txt)
+    self.assertEqual(
+        conn_module._get_oui_manufacturer('b8:4c:87:90:00:01'),  # pylint: disable=W0212
+        'Airgain Inc.')
+    # MA-S / OUI-36 (36-bit OUI, listed as IEEE Registration Authority)
+    self.assertEqual(
+        conn_module._get_oui_manufacturer('8c:1f:64:c1:60:01'),  # pylint: disable=W0212
+        'ALISONIC SRL')
+    # IAB (36-bit IAB, listed as IEEE Registration Authority in oui.txt)
+    self.assertEqual(
+        conn_module._get_oui_manufacturer('00:50:c2:f7:10:01'),  # pylint: disable=W0212
+        'RF Code')
+    # Unregistered MAC address
+    self.assertIsNone(
+        conn_module._get_oui_manufacturer('02:42:aa:00:00:01'))  # pylint: disable=W0212
+
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
@@ -229,6 +255,9 @@ if __name__ == '__main__':
 
   # DHCP Snooping related tests
   suite.addTest(ConnectionModuleTest('communication_network_type_test'))
+
+  # MAC OUI manufacturer lookup tests
+  suite.addTest(ConnectionModuleTest('connection_mac_oui_test'))
 
   runner = unittest.TextTestRunner()
   test_result = runner.run(suite)
