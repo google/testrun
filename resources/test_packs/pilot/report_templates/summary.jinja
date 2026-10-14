@@ -69,7 +69,7 @@
         </div>
         <div class="host-metadata-item">
           <div class="summary-item-label"><h4>Kernel</h4></div>
-          <div class="summary-item-value kernel-value">{{ device['kernel'] or 'Could not fetch details' }}</div>
+          <div class="summary-item-value kernel-value">{{ device.get('kernel') or 'Could not fetch details' }}</div>
         </div>
       </div>
     </div>
