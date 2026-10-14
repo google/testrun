@@ -13,15 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-  inject,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import {
   ResultOfTestrun,
   StatusOfTestResult,
@@ -40,12 +32,6 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { TimerComponent } from '../timer/timer.component';
-import { Store } from '@ngrx/store';
-import { AppState } from '../../../../store/state';
-import { selectSystemConfig } from '../../../../store/selectors';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-testrun-status-card',
@@ -63,38 +49,13 @@ import { takeUntil } from 'rxjs/operators';
     MatExpansionModule,
     ReactiveFormsModule,
     MatTooltipModule,
-    TimerComponent,
   ],
 })
-export class TestrunStatusCardComponent implements OnInit, OnDestroy {
+export class TestrunStatusCardComponent {
   @Input() systemStatus!: TestrunStatus;
-  @Input() monitorPeriod?: number;
-
-  private readonly store = inject(Store<AppState>, { optional: true });
-  private readonly cdr = inject(ChangeDetectorRef);
-  private destroy$ = new Subject<void>();
 
   public readonly StatusOfTestrun = StatusOfTestrun;
   public readonly TestingType = TestingType;
-
-  ngOnInit(): void {
-    if (this.store && this.monitorPeriod === undefined) {
-      this.store
-        .select(selectSystemConfig)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(config => {
-          if (config?.monitor_period) {
-            this.monitorPeriod = Number(config.monitor_period);
-            this.cdr.markForCheck();
-          }
-        });
-    }
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
 
   public getClass(
     status: StatusOfTestrun,

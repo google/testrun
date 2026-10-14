@@ -118,9 +118,13 @@ limitations under the License.
 </ng-template>
 
 <ng-template #Monitoring>
-  @if (monitorPeriod) {
-    <app-timer [duration]="monitorPeriod"> </app-timer>
-  }
+  <ng-container
+    *ngTemplateOutlet="
+      Spinner;
+      context: {
+        text: 'Please wait, this could take a few minutes',
+      }
+    "></ng-container>
 </ng-template>
 
 <ng-template #Spinner let-text="text">

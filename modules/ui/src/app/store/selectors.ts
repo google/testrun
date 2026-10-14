@@ -15,11 +15,12 @@
  */
 
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+import * as fromApp from './reducers';
 import { AppState } from './state';
 
-export const appFeatureKey = 'app';
-
-export const selectAppState = createFeatureSelector<AppState>(appFeatureKey);
+export const selectAppState = createFeatureSelector<AppState>(
+  fromApp.appFeatureKey
+);
 
 export const selectInterfaces = createSelector(
   selectAppState,
