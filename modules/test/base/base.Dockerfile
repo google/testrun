@@ -62,9 +62,15 @@ COPY $NET_MODULE_DIR/host/$NET_MODULE_PROTO_DIR $CONTAINER_PROTO_DIR/host/
 # Copy the cached version of oui.txt incase the download fails
 RUN mkdir -p /usr/local/etc
 COPY $MODULE_DIR/usr/local/etc/oui.txt /usr/local/etc/oui.txt
+COPY $MODULE_DIR/usr/local/etc/mam.txt /usr/local/etc/mam.txt
+COPY $MODULE_DIR/usr/local/etc/oui36.txt /usr/local/etc/oui36.txt
+COPY $MODULE_DIR/usr/local/etc/iab.txt /usr/local/etc/iab.txt
 
 # Update the oui.txt file from ieee
 RUN wget --progress=dot:giga https://standards-oui.ieee.org/oui.txt -O /usr/local/etc/oui.txt || echo "Unable to update the MAC OUI database"
+RUN wget --progress=dot:giga https://standards-oui.ieee.org/oui28/mam.txt -O /usr/local/etc/mam.txt || echo "Unable to update the MAC MA-M database"
+RUN wget --progress=dot:giga https://standards-oui.ieee.org/oui36/oui36.txt -O /usr/local/etc/oui36.txt || echo "Unable to update the MAC MA-S database"
+RUN wget --progress=dot:giga https://standards-oui.ieee.org/iab/iab.txt -O /usr/local/etc/iab.txt || echo "Unable to update the MAC IAB database"
 
 # Operational stage
 FROM python:3.13-slim
@@ -89,6 +95,9 @@ COPY --from=builder /opt/venv /opt/venv
 # Copy over all testrun files from the builder stage
 COPY --from=builder /testrun /testrun
 COPY --from=builder /usr/local/etc/oui.txt /usr/local/etc/oui.txt
+COPY --from=builder /usr/local/etc/mam.txt /usr/local/etc/mam.txt
+COPY --from=builder /usr/local/etc/oui36.txt /usr/local/etc/oui36.txt
+COPY --from=builder /usr/local/etc/iab.txt /usr/local/etc/iab.txt
 
 # Activate the virtual environment by setting the PATH
 ENV PATH="/opt/venv/bin:$PATH"
