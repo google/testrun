@@ -911,7 +911,7 @@ class TLSModuleTest(unittest.TestCase):
       cert_file.write(pem_cert.decode())
 
   @patch.object(HTTPScan, 'scan_all_ports')
-  def test_http_server_no_ports(self, mock_scan_ports):
+  def test_http_server_not_detected(self, mock_scan_ports):
     """No HTTP ports detected. Feature Not Detected."""
     mock_scan_ports.return_value = []
 
@@ -920,6 +920,38 @@ class TLSModuleTest(unittest.TestCase):
     self.assertEqual(state, 'Feature Not Detected')
     self.assertEqual(message, 'No HTTP server detected on the device.')
     self.assertEqual(details, [])
+
+  @patch.object(HTTPScan, '_http_make_request')
+  @patch.object(HTTPScan, 'scan_all_ports')
+  def test_http_server_compliant(self, mock_scan_ports, mock_make_request):
+    """Test when the server fully complies with RFC 9110."""
+    mock_scan_ports.return_value = ['443']
+
+    get_resp = unittest.mock.MagicMock(status_code=200)
+    get_resp.headers = {'Content-Length': '50', 'Content-Type': 'text/html'}
+
+    head_resp = unittest.mock.MagicMock(status_code=200)
+    head_resp.headers = {'Content-Length': '50', 'Content-Type': 'text/html'}
+    head_resp.content = b''
+
+    method_resp = unittest.mock.MagicMock(status_code=405)
+
+    mock_make_request.side_effect = [get_resp, head_resp, method_resp]
+
+    state, message, details = self.scanner.http_server_compliance('10.10.10.14')
+
+    self.assertEqual(state, 'Compliant')
+    self.assertEqual(message,
+                     'Device HTTP server is COMPLIANT with the RFC 9110'
+                    )
+    self.assertIn('Server supports GET method', details)
+    self.assertIn('Server supports HEAD method', details)
+    self.assertIn('Headers match between GET and HEAD methods',
+                  details)
+    self.assertIn('HEAD response body is empty', details)
+    self.assertIn('Device server returns 501 or 405 for unsupported methods',
+                  details
+                  )
 
 
 if __name__ == '__main__':
@@ -987,7 +1019,8 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('outbound_connections_report_test'))
 
   # Test HTTP server
-  suite.addTest(TLSModuleTest('test_http_server_no_ports'))
+  suite.addTest(TLSModuleTest('test_http_server_not_detected'))
+  suite.addTest(TLSModuleTest('test_http_server_compliant'))
 
   runner = unittest.TextTestRunner()
   test_result = runner.run(suite)
