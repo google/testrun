@@ -26,6 +26,7 @@ import netifaces
 import ssl
 import shutil
 import logging
+import requests
 import socket
 import sys
 from cryptography import x509
@@ -1009,6 +1010,21 @@ class TLSModuleTest(unittest.TestCase):
     self.assertEqual(state, 'Non-Compliant')
     self.assertIn('HEAD response body is not empty', details)
 
+  @patch.object(HTTPScan, '_http_make_request')
+  @patch.object(HTTPScan, 'scan_all_ports')
+  def test_https_server_exception(self, mock_scan_ports, mock_make_request):
+    """Test error handling;"""
+    mock_scan_ports.return_value = ['80']
+    mock_make_request.side_effect = requests.exceptions.RequestException(
+      "Network failure"
+    )
+
+    state, message, details = self.scanner.http_server_compliance('10.10.10.14')
+
+    self.assertEqual(state, 'Error')
+    self.assertEqual(message, 'Error checking HTTP server.')
+    self.assertEqual(details, [])
+
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
@@ -1079,6 +1095,7 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('test_http_server_compliant'))
   suite.addTest(TLSModuleTest('test_http_server_non_compliant_status_codes'))
   suite.addTest(TLSModuleTest('test_http_server_head_body_not_empty'))
+  suite.addTest(TLSModuleTest('test_https_server_exception'))
 
   runner = unittest.TextTestRunner()
   test_result = runner.run(suite)
