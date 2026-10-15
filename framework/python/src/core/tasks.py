@@ -51,6 +51,9 @@ class PeriodicTasks:
                 },
         trigger='interval',
         seconds=CHECK_NETWORK_ADAPTERS_PERIOD,
+        misfire_grace_time=None,
+        coalesce=True,
+        max_instances=1,
     )
     # add internet connection cheking job only in single-intf mode
     if 'single_intf' not in self._testrun.get_session().get_runtime_params():
@@ -62,6 +65,9 @@ class PeriodicTasks:
                   },
           trigger='interval',
           seconds=CHECK_INTERNET_PERIOD,
+          misfire_grace_time=None,
+          coalesce=True,
+          max_instances=1,
       )
 
   @asynccontextmanager
