@@ -1016,7 +1016,7 @@ class TLSModuleTest(unittest.TestCase):
     """Test error handling;"""
     mock_scan_ports.return_value = ['80']
     mock_make_request.side_effect = requests.exceptions.RequestException(
-      "Network failure"
+      'Network failure'
     )
 
     state, message, details = self.scanner.http_server_compliance('10.10.10.14')
