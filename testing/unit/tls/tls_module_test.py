@@ -926,7 +926,7 @@ class TLSModuleTest(unittest.TestCase):
   @patch.object(HTTPScan, 'scan_all_ports')
   def test_http_server_compliant(self, mock_scan_ports, mock_make_request):
     """Test when the server fully complies with RFC 9110."""
-    mock_scan_ports.return_value = ['443']
+    mock_scan_ports.return_value = [443]
 
     get_resp = unittest.mock.MagicMock(status_code=200)
     get_resp.headers = {'Content-Length': '50', 'Content-Type': 'text/html'}
