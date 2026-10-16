@@ -14,6 +14,7 @@
 """Module run all the TLS related unit tests"""
 from tls_module import TLSModule
 from tls_util import TLSUtil
+from http_scan import HTTPScan
 from common import logger
 import os
 import unittest
@@ -25,6 +26,7 @@ import netifaces
 import ssl
 import shutil
 import logging
+import requests
 import socket
 import sys
 from cryptography import x509
@@ -76,6 +78,8 @@ class TLSModuleTest(unittest.TestCase):
     self.tls_module = TLSModule(module=MODULE, conf_file=CONF_FILE)
     self.tls_module._device_ipv4_addr = None # pylint: disable=W0212
     self.tls_module._scan_results = None # pylint: disable=W0212
+    self.mock_logger = unittest.mock.MagicMock()
+    self.scanner = HTTPScan(self.mock_logger)
 
   @patch('tls_module.TLSModule._get_device_ipv4')
   def security_tls_v1_2_server_no_ip_test(self, mock_get_device_ipv4):
@@ -907,6 +911,120 @@ class TLSModuleTest(unittest.TestCase):
     with open(cert_path, 'w', encoding='utf-8') as cert_file:
       cert_file.write(pem_cert.decode())
 
+  @patch.object(HTTPScan, 'scan_all_ports')
+  def test_http_server_not_detected(self, mock_scan_ports):
+    """No HTTP ports detected. Feature Not Detected."""
+    mock_scan_ports.return_value = []
+
+    state, message, details = self.scanner.http_server_compliance('10.10.10.14')
+
+    self.assertEqual(state, 'Feature Not Detected')
+    self.assertEqual(message, 'No HTTP server detected on the device.')
+    self.assertEqual(details, [])
+
+  @patch.object(HTTPScan, '_http_make_request')
+  @patch.object(HTTPScan, 'scan_all_ports')
+  def test_http_server_compliant(self, mock_scan_ports, mock_make_request):
+    """Test when the server fully complies with RFC 9110."""
+    mock_scan_ports.return_value = [443]
+
+    get_resp = unittest.mock.MagicMock(status_code=200)
+    get_resp.headers = {'Content-Length': '50', 'Content-Type': 'text/html'}
+
+    head_resp = unittest.mock.MagicMock(status_code=200)
+    head_resp.headers = {'Content-Length': '50', 'Content-Type': 'text/html'}
+    head_resp.content = b''
+
+    method_resp = unittest.mock.MagicMock(status_code=405)
+
+    mock_make_request.side_effect = [get_resp, head_resp, method_resp]
+
+    state, message, details = self.scanner.http_server_compliance('10.10.10.14')
+
+    self.assertEqual(state, 'Compliant')
+    self.assertEqual(message,
+                     'Device HTTP server is COMPLIANT with the RFC 9110'
+                    )
+    self.assertIn('Server supports GET method', details)
+    self.assertIn('Server supports HEAD method', details)
+    self.assertIn('Headers match between GET and HEAD methods',
+                  details)
+    self.assertIn('HEAD response body is empty', details)
+    self.assertIn('Device server returns 501 or 405 for unsupported methods',
+                  details
+                  )
+
+
+  @patch.object(HTTPScan, '_http_make_request')
+  @patch.object(HTTPScan, 'scan_all_ports')
+  def test_http_server_non_compliant_status_codes(
+    self,
+    mock_scan_ports,
+    mock_make_request
+  ):
+    """Test compliance check when GET/HEAD return non-200 status codes."""
+    mock_scan_ports.return_value = ['80']
+
+    get_resp = unittest.mock.MagicMock(status_code=404)
+    head_resp = unittest.mock.MagicMock(status_code=404)
+    method_resp = unittest.mock.MagicMock(status_code=406)
+
+    mock_make_request.side_effect = [get_resp, head_resp, method_resp]
+
+    state, message, details = self.scanner.http_server_compliance('10.10.10.14')
+
+    self.assertEqual(state, 'Non-Compliant')
+    self.assertEqual(message,
+                     'Device HTTP server is NON-COMPLIANT with the RFC 9110'
+                    )
+    self.assertIn('Server does not support GET method', details)
+    self.assertIn('Server does not support HEAD method', details)
+    self.assertIn(
+      'Device server does not return 501 or 405 for unsupported methods',
+      details
+    )
+
+  @patch.object(HTTPScan, '_http_make_request')
+  @patch.object(HTTPScan, 'scan_all_ports')
+  def test_http_server_head_body_not_empty(
+    self,
+    mock_scan_ports,
+    mock_make_request
+  ):
+    """HEAD response contains a non-empty body."""
+    mock_scan_ports.return_value = ['80']
+
+    get_resp = unittest.mock.MagicMock(status_code=200)
+    get_resp.headers = {}
+
+    head_resp = unittest.mock.MagicMock(status_code=200)
+    head_resp.headers = {}
+    head_resp.content = b'unexpected body content'
+
+    method_resp = unittest.mock.MagicMock(status_code=501)
+
+    mock_make_request.side_effect = [get_resp, head_resp, method_resp]
+
+    state, _, details = self.scanner.http_server_compliance('10.10.10.14')
+
+    self.assertEqual(state, 'Non-Compliant')
+    self.assertIn('HEAD response body is not empty', details)
+
+  @patch.object(HTTPScan, '_http_make_request')
+  @patch.object(HTTPScan, 'scan_all_ports')
+  def test_https_server_exception(self, mock_scan_ports, mock_make_request):
+    """Test error handling;"""
+    mock_scan_ports.return_value = ['80']
+    mock_make_request.side_effect = requests.exceptions.RequestException(
+      'Network failure'
+    )
+
+    state, message, details = self.scanner.http_server_compliance('10.10.10.14')
+
+    self.assertEqual(state, 'Error')
+    self.assertEqual(message, 'Error checking HTTP server.')
+    self.assertEqual(details, [])
+
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
@@ -971,6 +1089,13 @@ if __name__ == '__main__':
 
   suite.addTest(TLSModuleTest('outbound_connections_test'))
   suite.addTest(TLSModuleTest('outbound_connections_report_test'))
+
+  # Test HTTP server
+  suite.addTest(TLSModuleTest('test_http_server_not_detected'))
+  suite.addTest(TLSModuleTest('test_http_server_compliant'))
+  suite.addTest(TLSModuleTest('test_http_server_non_compliant_status_codes'))
+  suite.addTest(TLSModuleTest('test_http_server_head_body_not_empty'))
+  suite.addTest(TLSModuleTest('test_https_server_exception'))
 
   runner = unittest.TextTestRunner()
   test_result = runner.run(suite)
