@@ -61,10 +61,13 @@
       },
       {
         "name": "security.http.server",
-        "test_description": "HTTP server",
-        "expected_behavior": "HTTP server compliant",
+        "test_description": "Automated RFC 9110 compliance validation of the device's HTTP/HTTPS server",
+        "expected_behavior": "The server responds with status 200 OK for both GET and HEAD methods with an empty HEAD body and matching critical headers, returns 405 or 501 for unsupported methods",
         "recommendations": [
-          "Implement HEAD method"
+          "Implement the GET and HEAD methods on the web server",
+          "Ensure that the HEAD response is empty",
+          "Ensure that the GET and HEAD response headers (Content-Length, Content-Type) match",
+          "Ensure that unsupported requests return a 405 or 501 status code"
         ]
       }
     ]
