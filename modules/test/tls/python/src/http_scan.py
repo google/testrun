@@ -173,7 +173,7 @@ class HTTPScan():
         msg = f'No HTTP/HTTPS ports found on {ip}'
         LOGGER.info(msg)
         return result_state, result_message, result_details
-      if '443' in ports:
+      if 443 in ports:
         url = f'https://{ip}'
       else:
         url = f'http://{ip}'
