@@ -223,33 +223,37 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
   }
 
   private applyNoneLogic(control: FormGroup, noneKey: string) {
-    Object.keys(control.controls).forEach(key => {
-      control
-        .get(key)
-        ?.valueChanges.pipe(takeUntil(this.destroy$))
-        .subscribe(checked => {
-          if (!checked) {
-            return;
-          }
+    let prevValue = { ...control.value };
 
-          if (key === noneKey) {
-            Object.keys(control.controls).forEach(k => {
-              if (k !== noneKey) {
-                control.get(k)?.setValue(false, { emitEvent: false });
-              }
-            });
-          } else if (control.get(noneKey)?.value === true) {
-            control.get(noneKey)?.setValue(false, { emitEvent: false });
+    control.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(currValue => {
+      const changedKey = Object.keys(currValue).find(
+        key => currValue[key] === true && !prevValue[key]
+      );
+
+      if (changedKey === noneKey) {
+        const newValue = { ...currValue };
+
+        Object.keys(newValue).forEach(key => {
+          if (key !== noneKey) {
+            newValue[key] = false;
           }
         });
+
+        control.setValue(newValue, { emitEvent: false });
+      } else if (changedKey && currValue[noneKey] === true) {
+        control.patchValue({ [noneKey]: false }, { emitEvent: false });
+      }
+
+      prevValue = { ...control.value };
     });
   }
 
   private getNoneOptionIndex(options: OptionType[] | undefined): number | null {
     if (!options) return null;
-    const index = options.findIndex(option =>
-      this.getOptionValue(option)?.toLowerCase().includes('none')
-    );
+    const index = options.findIndex(option => {
+      const value = this.getOptionValue(option);
+      return typeof value === 'string' && value.toLowerCase().includes('none');
+    });
     return index !== -1 ? index : null;
   }
 }

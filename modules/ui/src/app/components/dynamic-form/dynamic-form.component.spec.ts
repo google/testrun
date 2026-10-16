@@ -307,5 +307,17 @@ describe('DynamicFormComponent', () => {
       expect(multiSelect.get('1')?.value).toBeTrue();
       expect(multiSelect.get('2')?.value).toBeFalse();
     });
+
+    it('should handle non-string option values without throwing an error', () => {
+      expect(() =>
+        component.createProfileForm([
+          {
+            question: 'Object options question',
+            type: FormControlType.SELECT_MULTIPLE,
+            options: [{ label: 'Option 1' }, { label: 'None of the above' }],
+          },
+        ])
+      ).not.toThrow();
+    });
   });
 });
