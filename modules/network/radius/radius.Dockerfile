@@ -19,14 +19,18 @@ ARG MODULE_NAME=radius
 ARG MODULE_DIR=modules/network/$MODULE_NAME
 
 # Install radius and git
-RUN apt-get update && apt-get install -y openssl freeradius git
+RUN apt-get update && \
+    apt-get install -y openssl \
+    freeradius \
+    git && \
+    rm -rf /var/lib/apt/lists/*
 
 # Clone chewie from source.
 RUN git clone --branch 0.0.25 https://github.com/faucetsdn/chewie
 
 # Install chewie as Python module
 # --break-system-packages flag used to bypass PEP668
-RUN pip3 install --break-system-packages chewie/
+RUN pip3 install --no-cache-dir --break-system-packages chewie==0.0.25
 
 EXPOSE 1812/udp
 EXPOSE 1813/udp
@@ -42,4 +46,4 @@ COPY $MODULE_DIR/python /testrun/python
 
 # Install all python requirements for the module
 # --break-system-packages flag used to bypass PEP668
-RUN pip3 install --break-system-packages -r /testrun/python/requirements.txt
+RUN pip3 install --no-cache-dir --break-system-packages -r /testrun/python/requirements.txt

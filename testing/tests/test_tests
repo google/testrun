@@ -30,7 +30,7 @@ TEST_CONTAINERS=(
 )
 
 # Remove and recreate results directory
-rm -rf $TEST_DIR/
+rm -rf "${TEST_DIR:?}/"
 mkdir -p $TEST_DIR
 
 # Setup requirements
@@ -50,7 +50,7 @@ sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
 # Build the Test Containers
 for container in "${TEST_CONTAINERS[@]}"; do
-  sudo docker build ./testing/docker/ci_test_device1/$container -t testrun/$container -f ./testing/docker/ci_test_device1/$container/Dockerfile
+  sudo docker build ./testing/docker/ci_test_device1/"$container" -t testrun/"$container" -f ./testing/docker/ci_test_device1/"$container"/Dockerfile
 done
 
 # Copy configuration to testrun
@@ -65,15 +65,15 @@ for tester in $TESTERS; do
 
   # Log file paths
   testrun_log=$TEST_DIR/${tester}_testrun.log
-  device_log=$TEST_DIR/${tester}_device.log
+  export device_log=$TEST_DIR/${tester}_device.log
 
   # Extract details from JSON
-  image=$(jq -r .$tester.image $MATRIX)
-  ethmac=$(jq -r .$tester.ethmac $MATRIX)
+  image=$(jq -r ."$tester".image "$MATRIX")
+  ethmac=$(jq -r ."$tester".ethmac "$MATRIX")
 
   # Start the testrun
-  touch $testrun_log
-  sudo timeout 2400 bin/testrun --single-intf --no-ui --target $ethmac -fw 1.0 > $testrun_log 2>&1 &
+  touch "$testrun_log"
+  sudo timeout 2400 bin/testrun --single-intf --no-ui --target "$ethmac" -fw 1.0 | sudo tee "$testrun_log" 2>&1 &
   TPID=$!
 
   # Time to wait for testrun to be ready

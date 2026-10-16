@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&family=Google+Sans+Flex:wght@400;500;700&display=swap');
+
 /* Set some global variables */
     :root {
       --header-height: .75in;
@@ -8,6 +10,7 @@
       --summary-height: 2.8in;
       --vertical-line-height: calc(var(--summary-height)-.2in);
       --vertical-line-pos-x: 25%;
+      --host-metadata-height: 1.2in;
     }
 
     @font-face {
@@ -15,6 +18,38 @@
       font-style: normal;
       src: url(https://fonts.gstatic.com/s/googlesans/v58/4Ua_rENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iqcsih3SAyH6cAwhX9RFD48TE63OOYKtrwEIJllpyk.woff2) format('woff2');
       unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Google Sans Text';
+      font-style: normal;
+      font-weight: 400;
+      src: url(https://fonts.gstatic.com/s/googlesanstext/v29/5aUu9-KzpRiLCAt4Unrc-xIKmCU5qEp2iw.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Google Sans Text';
+      font-style: normal;
+      font-weight: 500;
+      src: url(https://fonts.gstatic.com/s/googlesanstext/v29/5aUp9-KzpRiLCAt4Unrc-xIKmCU5oLlVnmhjtg.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Google Sans Text';
+      font-style: normal;
+      font-weight: 700;
+      src: url(https://fonts.gstatic.com/s/googlesanstext/v29/5aUp9-KzpRiLCAt4Unrc-xIKmCU5oPFTnmhjtg.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Google Sans Flex';
+      font-style: normal;
+      font-weight: 400 700;
+      src: url(https://fonts.gstatic.com/s/googlesansflex/v22/t5sEIQcYNIWbFgDgAAzZ34auoVyXkJCOvp3SFWJbN5hF8Ju1x6sKCyp0l9sI40swNJwInycYAJzz0m7kJ4qFQOJBOjLvDSndo0SKMpKSTzwliVdHAy4bxTDHg_ugnAakp8ubq8BIo1pdkkXZj4igdvKMDV8.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
     }
 
     @font-face {
@@ -330,7 +365,7 @@
       padding-top: 0.2in;
       padding-left: 0.2in;
       background-color: #F8F9FA;
-      width: 250px;
+      width: 340px;
       height: 100.4%;
     }
 
@@ -356,6 +391,14 @@
       color: #202124;
     }
 
+    .summary-item-value.kernel-value{
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: block;
+    }
+
     .summary-item-space {
       position: relative;
       padding-bottom: 15px;
@@ -364,7 +407,7 @@
 
     .summary-device-modules {
       position: absolute;
-      left: 3.2in;
+      left: 3.9in;
       top: .2in;
     }
 
@@ -391,7 +434,7 @@
       position: absolute;
       right: 0;
       top: 0;
-      width: 2.6in;
+      width: 2.2in;
       height: 100%;
     }
 
@@ -420,6 +463,75 @@
       position: relative;
       top: 10px;
       left: 20px;
+    }
+
+    .summary-box-value kernel-value{
+      font-size: 16px;
+    }
+
+    /* Host metadata */
+
+    .host-metadata {
+      position: relative;
+      width: 100%;
+      height: var(--host-metadata-height); /* 2in */
+      margin-top: 0.2in;
+      margin-bottom: 0.25in;
+      box-sizing: border-box;
+    }
+
+    .host-metadata-card {
+      display: flex;
+      flex-direction: column;
+      padding: 16px 24px;
+      gap: 12px;
+      width: 100%;
+      height: 100%;
+      background: #F0F4F8;
+      border-radius: 0;
+      box-sizing: border-box;
+    }
+
+    .host-metadata-title {
+      font-family: 'Google Sans', sans-serif;
+      font-weight: 500;
+      font-size: 22px;
+      line-height: 28px;
+      color: #202124;
+      margin: 0;
+    }
+
+    .host-metadata-row {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 40px;
+      width: 100%;
+    }
+
+    .host-metadata-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 0 0 auto;
+    }
+
+    .host-metadata-item .summary-item-label h4 {
+      margin: 0;
+      font-family: 'Google Sans Text', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: #5F6368;
+      white-space: nowrap;
+      text-transform: capitalize;
+    }
+
+    .host-metadata-item .summary-item-value {
+      font-family: 'Google Sans Flex', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: #202124;
+      white-space: nowrap;
     }
 
     .result-list-title {

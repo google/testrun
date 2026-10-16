@@ -97,7 +97,7 @@ class TestPack:  # pylint: disable=too-few-public-methods,too-many-instance-attr
                 os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
     test_packs = []
 
-    for test_pack_folder in os.listdir(TEST_PACKS_DIR):
+    for test_pack_folder in sorted(os.listdir(TEST_PACKS_DIR)):
       test_pack_path = os.path.join(
         root_path,
         TEST_PACKS_DIR,

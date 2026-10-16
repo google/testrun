@@ -266,13 +266,13 @@ class TestModule:
       logo = base64.b64encode(f.read()).decode('utf-8')
 
     loader=FileSystemLoader(self._report_template_folder)
-    template = Environment(
+    template = Environment( # nosec B701
         loader=loader,
         trim_blocks=True,
         lstrip_blocks=True
     ).get_template(self._base_template_styled_file)
 
-    module_template = Environment(loader=BaseLoader()
+    module_template = Environment(loader=BaseLoader() # nosec B701
                                   ).from_string(jinja_report).render(
                                     title = 'Testrun report',
                                     logo=logo,

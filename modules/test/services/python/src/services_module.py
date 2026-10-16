@@ -57,7 +57,7 @@ class ServicesModule(TestModule):
   def generate_module_report(self):
     # Load Jinja2 template
     loader=FileSystemLoader(self._report_template_folder)
-    template = Environment(
+    template = Environment( # nosec B701
                           loader=loader,
                           trim_blocks=True,
                           lstrip_blocks=True

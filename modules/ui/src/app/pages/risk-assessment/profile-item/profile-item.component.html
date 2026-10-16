@@ -40,7 +40,9 @@ limitations under the License.
         profile.status === ProfileStatus.DRAFT ||
         profile.status === ProfileStatus.COPY
       ) {
-        <mat-icon svgIcon="draft" class="profile-draft-icon"></mat-icon>
+        <mat-icon class="profile-item-icon" fontSet="material-symbols-outlined">
+          edit_note
+        </mat-icon>
       }
       @if (profile.status === ProfileStatus.EXPIRED) {
         <mat-icon class="profile-item-icon" fontSet="material-symbols-outlined">
@@ -51,6 +53,11 @@ limitations under the License.
     <p class="profile-item-name">
       {{ profile.name }}
     </p>
+    @if (profile.status === ProfileStatus.DRAFT) {
+      <div class="profile-item-risk">
+        {{ ProfileStatus.DRAFT }}
+      </div>
+    }
     @if (profile.risk) {
       <div class="profile-item-risk" [ngClass]="getRiskClass(profile.risk)">
         {{ profile.risk }} risk

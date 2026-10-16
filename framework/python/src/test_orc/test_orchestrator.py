@@ -23,7 +23,7 @@ import docker
 from common import logger, util, risk_profile
 from common.testreport import TestReport
 from common.statuses import TestrunStatus, TestrunResult, TestResult
-from common.device import Device
+from common.models import Device
 from core.testrun import REPORTS_FOLDER, DEVICE_REPORT_NAME_FORMAT
 from core.docker.test_docker_module import TestModule
 from test_orc.test_case import TestCase
@@ -246,6 +246,7 @@ class TestOrchestrator:
   def _generate_report(self):
 
     device = self.get_session().get_target_device()
+    host = self.get_session().get_host_metadata().to_dict()
     test_pack_name = device.test_pack
     test_pack = self.get_test_pack(test_pack_name)
 
@@ -254,6 +255,7 @@ class TestOrchestrator:
 
     report["mac_addr"] = device.mac_addr
     report["device"] = device.to_dict()
+    report["host"] = host
     report["started"] = self.get_session().get_started().strftime(
         "%Y-%m-%d %H:%M:%S")
     report["finished"] = self.get_session().get_finished().strftime(
@@ -336,7 +338,9 @@ class TestOrchestrator:
   def zip_results(
       self, device: Device,
       report: TestReport,
-      profile: risk_profile.RiskProfile) -> str:
+      profile: risk_profile.RiskProfile,
+      tmp_dir: str
+      ) -> str | None:
 
     try:
       LOGGER.debug("Archiving test results")
@@ -344,18 +348,22 @@ class TestOrchestrator:
       src_path = os.path.join(
           LOCAL_DEVICE_REPORTS, report.get_folder_name())
 
+      if not os.path.exists(src_path):
+        LOGGER.error(f"Source path does not exist: {src_path}")
+        return None
+
       # Regenerate the report if the device profile has been updated
       self._regenerate_report_files(device, report)
 
       # Define temp directory to store files before zipping
-      results_dir = os.path.join(f"/tmp/testrun/{time.time()}")
+      results_dir = os.path.join(tmp_dir, f"results_{time.time()}")
 
       # Define where to save the zip file
-      zip_location = os.path.join("/tmp/testrun", report.get_folder_name())
+      zip_location = os.path.join(tmp_dir, report.get_folder_name())
 
       # Delete zip_temp if it already exists
       if os.path.exists(results_dir):
-        os.remove(results_dir)
+        shutil.rmtree(results_dir)
 
       # Delete ZIP if it already exists
       if os.path.exists(zip_location + ".zip"):
@@ -380,15 +388,15 @@ class TestOrchestrator:
 
       # Check that the ZIP was successfully created
       zip_file = zip_location + ".zip"
-      LOGGER.info(f"""Archive {"created at " + zip_file
-                                if os.path.exists(zip_file)
-                                else "creation failed"}""")
-
-      return zip_file
+      if os.path.exists(zip_file):
+        LOGGER.info(f"Archive created at {zip_file}")
+        return zip_file
+      else:
+        LOGGER.error(f"Archive creation failed: {zip_file} was not created")
+        return None
 
     except Exception as error:  # pylint: disable=W0703
-      LOGGER.error("Failed to create zip file")
-      LOGGER.debug(error)
+      LOGGER.error(f"Failed to create zip file: {error}")
       return None
 
   def regenerate_pdf(self, device: Device, report: TestReport) -> str:
@@ -725,7 +733,7 @@ class TestOrchestrator:
     loaded_modules = "Loaded the following test modules: "
     test_modules_dir = os.path.join(self._root_path, TEST_MODULES_DIR)
 
-    module_dirs = os.listdir(test_modules_dir)
+    module_dirs = sorted(os.listdir(test_modules_dir))
     # Check if the directory protocol exists and move it to the beginning
     # protocol should always be run first so BACnet binding doesn't get
     # corrupted during DHCP changes in the conn module
@@ -735,18 +743,20 @@ class TestOrchestrator:
     # so it always runs before connection. Connection may cause too many
     # DHCP changes causing nmap to use wrong IP during scan
     if "services" in module_dirs and "conn" in module_dirs:
-      module_dirs.insert(module_dirs.index("conn"),
-                         module_dirs.pop(module_dirs.index("services")))
+      services_dir = module_dirs.pop(module_dirs.index("services"))
+      conn_index = module_dirs.index("conn")
+      module_dirs.insert(conn_index, services_dir)
 
     for module_dir in module_dirs:
 
       if self._get_test_module(module_dir) is None:
         loaded_module = self._load_test_module(module_dir)
-        loaded_modules += loaded_module.dir_name + " "
+        if loaded_module is not None:
+          loaded_modules += loaded_module.dir_name + " "
 
     LOGGER.info(loaded_modules)
 
-  def _load_test_module(self, module_dir):
+  def _load_test_module(self, module_dir) -> TestModule | None:
     """Import module configuration from module_config.json."""
 
     # Resolve the main docker interface (docker0) for host interaction
@@ -774,6 +784,9 @@ class TestOrchestrator:
       self._test_modules.append(module)
 
       return module
+    else:
+      # Return existing module if already loaded
+      return self._get_test_module(module_dir)
 
   def get_test_packs(self) -> List[TestPack]:
     return self._test_packs

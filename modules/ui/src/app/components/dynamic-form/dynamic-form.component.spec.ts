@@ -239,12 +239,19 @@ describe('DynamicFormComponent', () => {
 
   describe('adjustSubscriptWrapperHeights', () => {
     it('should set height for hint wrapper', () => {
+      const hint = compiled.querySelector(
+        '.mat-mdc-form-field-hint'
+      ) as HTMLElement;
+      const formFieldWithHint = hint.closest('mat-form-field');
+      const wrapper = formFieldWithHint?.querySelector(
+        '.mat-mdc-form-field-subscript-wrapper'
+      ) as HTMLElement;
+
+      expect(hint.offsetHeight).toBeGreaterThan(0);
       component.adjustSubscriptWrapperHeights();
 
-      const wrapper = compiled.querySelector(
-        '.mat-mdc-form-field-subscript-wrapper'
-      );
-      expect(wrapper?.clientHeight).toEqual(20);
+      expect(wrapper?.style.height).toEqual(`${hint.offsetHeight}px`);
+      expect(wrapper?.clientHeight).toEqual(hint.offsetHeight);
     });
   });
 });

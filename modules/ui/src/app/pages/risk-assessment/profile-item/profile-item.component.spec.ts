@@ -19,6 +19,7 @@ import { ProfileItemComponent } from './profile-item.component';
 import { PROFILE_MOCK } from '../../../mocks/profile.mock';
 import { TestRunService } from '../../../services/test-run.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { ProfileStatus } from '../../../model/profile';
 
 describe('ProfileItemComponent', () => {
   let component: ProfileItemComponent;
@@ -84,5 +85,43 @@ describe('ProfileItemComponent', () => {
     component.enterProfileItem(PROFILE_MOCK);
 
     expect(profileClickedSpy).toHaveBeenCalled();
+  });
+
+  it('should display check_circle icon for valid profile', () => {
+    const icon = compiled.querySelector('.profile-item-icon');
+    expect(icon?.textContent?.trim()).toBe('check_circle');
+  });
+
+  it('should display edit_note icon for draft profile', () => {
+    fixture.componentRef.setInput('profile', {
+      ...PROFILE_MOCK,
+      status: ProfileStatus.DRAFT,
+    });
+    fixture.detectChanges();
+
+    const icon = compiled.querySelector('.profile-item-icon');
+    expect(icon?.textContent?.trim()).toBe('edit_note');
+  });
+
+  it('should display edit_note icon for copy profile', () => {
+    fixture.componentRef.setInput('profile', {
+      ...PROFILE_MOCK,
+      status: ProfileStatus.COPY,
+    });
+    fixture.detectChanges();
+
+    const icon = compiled.querySelector('.profile-item-icon');
+    expect(icon?.textContent?.trim()).toBe('edit_note');
+  });
+
+  it('should display error icon for expired profile', () => {
+    fixture.componentRef.setInput('profile', {
+      ...PROFILE_MOCK,
+      status: ProfileStatus.EXPIRED,
+    });
+    fixture.detectChanges();
+
+    const icon = compiled.querySelector('.profile-item-icon');
+    expect(icon?.textContent?.trim()).toBe('error');
   });
 });

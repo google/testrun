@@ -134,7 +134,7 @@ class OVSControl:
     # Remove IP from internet adapter
     if not 'single_intf' in self._session.get_runtime_params():
       self.set_interface_ip(interface=self._session.get_internet_interface(),
-                            ip_addr='0.0.0.0')
+                            ip_addr='0.0.0.0') # nosec B104
       self.add_port(self._session.get_internet_interface(), INTERNET_BRIDGE)
 
     # Enable forwarding of eapol packets

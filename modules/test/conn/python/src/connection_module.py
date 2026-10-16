@@ -28,6 +28,10 @@ import json
 
 LOG_NAME = 'test_connection'
 OUI_FILE = '/usr/local/etc/oui.txt'
+MAM_FILE = '/usr/local/etc/mam.txt'
+OUI36_FILE = '/usr/local/etc/oui36.txt'
+IAB_FILE = '/usr/local/etc/iab.txt'
+IEEE_REG_AUTHORITY = 'IEEE Registration Authority'
 DEFAULT_BIN_DIR = '/testrun/bin'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
@@ -116,7 +120,7 @@ class ConnectionModule(TestModule):
 
     if self._device_ipv4_addr is None:
       LOGGER.error('No device IP could be resolved')
-      return 'Error', 'Could not resolve device IP address'
+      return False, 'Could not resolve device IP address'
 
     no_arp = True
 
@@ -139,7 +143,12 @@ class ConnectionModule(TestModule):
 
       # Check MAC address matches IP address
       if (arp_packet.hwsrc == self._device_mac
-          and (arp_packet.psrc not in (self._device_ipv4_addr, '0.0.0.0'))
+          and (
+              arp_packet.psrc not in (
+                  self._device_ipv4_addr,
+                  '0.0.0.0'  # nosec B104
+              )
+          )
           and not arp_packet.psrc.startswith('169.254')):
         LOGGER.info(f'Bad ARP packet detected for MAC: {self._device_mac}')
         LOGGER.info(f'''ARP packet from IP {arp_packet.psrc}
@@ -391,7 +400,7 @@ class ConnectionModule(TestModule):
     lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
                                             timeout=self._lease_wait_time_sec)
     if lease is None or not self._dhcp_util.is_lease_active(lease):
-      return 'Error', 'No active lease available for device'
+      return False, 'Device does not respond to ping'
     try:
       # Disable the device interface
       iface_down = self.host_client.set_iface_down(dev_iface)
@@ -445,8 +454,12 @@ class ConnectionModule(TestModule):
                 mac_address=self._device_mac, timeout=self._lease_wait_time_sec)
             if lease is not None:
               LOGGER.info('Current device lease resolved')
-              if self._dhcp_util.is_lease_active(lease):
-
+              if not self._dhcp_util.is_lease_active(lease):
+                msg = 'Device does not respond to ping'
+                LOGGER.info(msg)
+                result = False
+                description = msg
+              else:
                 # Add a reserved lease with a different IP
                 ip_address = '10.10.10.30'
                 reserved_lease = self._dhcp_util.add_reserved_lease(
@@ -541,11 +554,45 @@ class ConnectionModule(TestModule):
     # Do some quick fixes on the format of the mac_address
     # to match the oui file pattern
     mac_address = mac_address.replace(':', '-').upper()
-    with open(OUI_FILE, 'r', encoding='UTF-8') as file:
-      for line in file:
-        if mac_address.startswith(line[:8]):
-          start = line.index('(hex)') + len('(hex)')
-          return line[start:].strip()  # Extract the company name
+    oui_prefix = mac_address[:8]
+    manufacturer = None
+    if os.path.exists(OUI_FILE):
+      with open(OUI_FILE, 'r', encoding='UTF-8') as file:
+        for line in file:
+          if line.startswith(oui_prefix) and '(hex)' in line:
+            start = line.index('(hex)') + len('(hex)')
+            manufacturer = line[start:].strip()  # Extract the company name
+            break
+    if manufacturer is None or manufacturer == IEEE_REG_AUTHORITY:
+      mac_suffix = mac_address[9:].replace('-', '')
+      sub_manufacturer = self._get_sub_oui_manufacturer(oui_prefix, mac_suffix)
+      if sub_manufacturer is not None:
+        return sub_manufacturer
+    return manufacturer
+
+  def _get_sub_oui_manufacturer(self, oui_prefix, mac_suffix):
+    if len(mac_suffix) != 6:
+      return None
+    try:
+      suffix_val = int(mac_suffix, 16)
+    except ValueError:
+      return None
+    for file_path in (MAM_FILE, OUI36_FILE, IAB_FILE):
+      if not os.path.exists(file_path):
+        continue
+      with open(file_path, 'r', encoding='UTF-8') as file:
+        for line in file:
+          if line.startswith(oui_prefix) and '(hex)' in line:
+            range_line = next(file, '')
+            if '(base 16)' not in range_line:
+              continue
+            addr_range = range_line.split('(base 16)')[0].strip()
+            if '-' not in addr_range:
+              continue
+            start_hex, end_hex = addr_range.split('-', 1)
+            if int(start_hex, 16) <= suffix_val <= int(end_hex, 16):
+              start = line.index('(hex)') + len('(hex)')
+              return line[start:].strip()
     return None
 
   def _connection_ipv6_slaac(self):
@@ -770,6 +817,10 @@ class ConnectionModule(TestModule):
     # Process and return final results
     final_result = None
     final_result_details = ''
+    if not results:
+      msg = 'Device does not respond to ping'
+      LOGGER.info(msg)
+      return False, msg
     for result in results:
       if final_result is None:
         final_result = result['result']

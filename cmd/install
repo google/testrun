@@ -18,10 +18,14 @@ echo Installing application dependencies
 
 # Collect command line arguments
 while getopts ":l" option; do
-   case $option in
-      l) # Install Testrun in local directory
+  case $option in
+    l) # Install Testrun in local directory
         TESTRUN_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")"/.. && pwd)
-   esac
+        ;;
+    *)
+        echo "Ignored unknown option: -${OPTARG:-$option}" >&2
+        ;;
+  esac
 done
 
 # Check if TESTRUN_DIR has been set, otherwise install in /usr/local/testrun

@@ -22,7 +22,9 @@ ARG COMMON_DIR=framework/python/src/common
 
 # Install additional requirements needed to build python packages
 RUN apt-get update && \
-	apt-get install -y gcc dos2unix
+	apt-get install -y gcc \
+  dos2unix && \
+  rm -rf /var/lib/apt/lists/*
 
 # Create the virtual environment
 RUN python -m venv /opt/venv
@@ -37,7 +39,7 @@ COPY $COMMON_DIR/ /testrun/python/src/common
 COPY $MODULE_DIR/python /testrun/python
 
 # Install all python requirements for the module
-RUN pip install -r /testrun/python/requirements.txt
+RUN pip install --no-cache-dir -r /testrun/python/requirements.txt
 
 # Copy over all binary files
 COPY $MODULE_DIR/bin /testrun/bin
@@ -60,15 +62,32 @@ COPY $NET_MODULE_DIR/host/$NET_MODULE_PROTO_DIR $CONTAINER_PROTO_DIR/host/
 # Copy the cached version of oui.txt incase the download fails
 RUN mkdir -p /usr/local/etc
 COPY $MODULE_DIR/usr/local/etc/oui.txt /usr/local/etc/oui.txt
+COPY $MODULE_DIR/usr/local/etc/mam.txt /usr/local/etc/mam.txt
+COPY $MODULE_DIR/usr/local/etc/oui36.txt /usr/local/etc/oui36.txt
+COPY $MODULE_DIR/usr/local/etc/iab.txt /usr/local/etc/iab.txt
 
 # Update the oui.txt file from ieee
-RUN wget https://standards-oui.ieee.org/oui.txt -O /usr/local/etc/oui.txt || echo "Unable to update the MAC OUI database"
+RUN wget --progress=dot:giga https://standards-oui.ieee.org/oui.txt -O /usr/local/etc/oui.txt || echo "Unable to update the MAC OUI database"
+RUN wget --progress=dot:giga https://standards-oui.ieee.org/oui28/mam.txt -O /usr/local/etc/mam.txt || echo "Unable to update the MAC MA-M database"
+RUN wget --progress=dot:giga https://standards-oui.ieee.org/oui36/oui36.txt -O /usr/local/etc/oui36.txt || echo "Unable to update the MAC MA-S database"
+RUN wget --progress=dot:giga https://standards-oui.ieee.org/iab/iab.txt -O /usr/local/etc/iab.txt || echo "Unable to update the MAC IAB database"
 
 # Operational stage
 FROM python:3.13-slim
 
 # Install common software
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq net-tools iputils-ping tzdata tcpdump iproute2 jq dos2unix nmap wget procps --fix-missing
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get install -yq net-tools \
+    iputils-ping \
+    tzdata \
+    tcpdump \
+    iproute2 \
+    jq \
+    dos2unix \
+    nmap \
+    wget \
+    procps --fix-missing && \
+    rm -rf /var/lib/apt/lists/*
 
 # Get the virtual environment from builder stage
 COPY --from=builder /opt/venv /opt/venv
@@ -76,6 +95,9 @@ COPY --from=builder /opt/venv /opt/venv
 # Copy over all testrun files from the builder stage
 COPY --from=builder /testrun /testrun
 COPY --from=builder /usr/local/etc/oui.txt /usr/local/etc/oui.txt
+COPY --from=builder /usr/local/etc/mam.txt /usr/local/etc/mam.txt
+COPY --from=builder /usr/local/etc/oui36.txt /usr/local/etc/oui36.txt
+COPY --from=builder /usr/local/etc/iab.txt /usr/local/etc/iab.txt
 
 # Activate the virtual environment by setting the PATH
 ENV PATH="/opt/venv/bin:$PATH"
@@ -109,4 +131,5 @@ COPY resources/report/$CSS_FILE $REPORT_TEMPLATE_PATH/
 COPY resources/report/$LOGO_FILE $REPORT_TEMPLATE_PATH/
 
 # Start the test module
+#nosemgrep
 ENTRYPOINT [ "/testrun/bin/start" ]

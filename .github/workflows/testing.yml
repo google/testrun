@@ -152,8 +152,8 @@ jobs:
     - name: Install Chromium Browser
       run: |
         sudo add-apt-repository ppa:xtradeb/apps -y
-        sudo apt-get update
-        sudo apt-get install -y chromium
+        sudo -E DEBIAN_FRONTEND=noninteractive apt-get update
+        sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y chromium
 
     - name: Install dependencies
       run: npm ci
@@ -161,12 +161,9 @@ jobs:
 
     - name: Run tests
       run: |
-        sudo sysctl -w kernel.unprivileged_userns_clone=1
-        export CHROMIUM_FLAGS="--no-sandbox --disable-setuid-sandbox"
+        sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
         export CHROME_BIN=/usr/bin/chromium
         CI=true npm run test-ci
-      env:
-        CI: true
       working-directory: ./modules/ui
 
   linters_ui:

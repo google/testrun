@@ -19,9 +19,16 @@ interface TestRun {
   version: string;
 }
 
+export interface HostInfo {
+  location?: string | null;
+  linux_env?: string | null;
+  python_version?: string | null;
+}
+
 export interface TestrunReport {
   testrun: TestRun;
   device: IDevice;
+  host?: HostInfo | null;
   status: StatusOfTestrun;
   result: ResultOfTestrun;
   started: string;
