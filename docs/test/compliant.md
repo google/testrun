@@ -112,3 +112,8 @@ Strict cryptographic standards apply to all inbound and outbound traffic via web
 * The device's embedded web server must support connections via **TLS 1.2** and/or **TLS 1.3**.
 * **TLS 1.0 and TLS 1.1 must be explicitly disabled** within the web server configuration.
 * The TLS certificate presented by the web server must be valid and signed by a trusted (or test-environment designated) Certificate Authority (CA).
+
+### HTTP Server Compliance (RFC 9110)
+* Basic Method Support: Verification that the server successfully processes standard **GET** and **HEAD** methods, returning a **200 OK** status.
+* **HEAD** Response Semantics: Ensuring that the response body for a **HEAD** request is strictly empty, and critical headers **(Content-Length, Content-Type)** precisely match the **GET** response.
+* Unsupported Method Handling: Verification of correct server response to arbitrary or invalid methods, expecting a status code of **405 Method Not Allowed or 501 Not Implemented**.
