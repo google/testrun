@@ -56,8 +56,6 @@ import { ProfileValidators } from '../../pages/risk-assessment/profile-form/prof
 import { DomSanitizer } from '@angular/platform-browser';
 import { Subject } from 'rxjs/internal/Subject';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
-import { startWith } from 'rxjs/internal/operators/startWith';
-import { pairwise } from 'rxjs/internal/operators/pairwise';
 @Component({
   selector: 'app-dynamic-form',
 
@@ -141,7 +139,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
         const multiSelect = this.getMultiSelectGroup(question);
         this.formGroup.addControl(index.toString(), multiSelect);
         const noneKey = this.getNoneOptionIndex(question.options);
-        if (noneKey) {
+        if (noneKey !== null) {
           this.applyNoneLogic(multiSelect, noneKey.toString());
         }
       } else {
@@ -224,38 +222,38 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  private applyNoneLogic(control: AbstractControl, noneKey: string) {
-    control.valueChanges
-      .pipe(takeUntil(this.destroy$), startWith(control.value), pairwise())
-      .subscribe(([prev, curr]) => {
-        const changedKey = Object.keys(curr).find(
-          key => curr[key] === true && prev[key] === false
-        );
+  private applyNoneLogic(control: FormGroup, noneKey: string) {
+    let prevValue = { ...control.value };
 
-        if (!changedKey) {
-          return;
-        }
+    control.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(currValue => {
+      const changedKey = Object.keys(currValue).find(
+        key => currValue[key] === true && !prevValue[key]
+      );
 
-        if (changedKey == noneKey) {
-          const newValue = { ...curr };
+      if (changedKey === noneKey) {
+        const newValue = { ...currValue };
 
-          Object.keys(newValue).forEach(key => {
-            if (key !== noneKey) {
-              newValue[key] = false;
-            }
-          });
+        Object.keys(newValue).forEach(key => {
+          if (key !== noneKey) {
+            newValue[key] = false;
+          }
+        });
 
-          control.setValue(newValue, { emitEvent: false });
-        } else if (curr[noneKey] === true) {
-          control.patchValue({ [noneKey]: false }, { emitEvent: false });
-        }
-      });
+        control.setValue(newValue, { emitEvent: false });
+      } else if (changedKey && currValue[noneKey] === true) {
+        control.patchValue({ [noneKey]: false }, { emitEvent: false });
+      }
+
+      prevValue = { ...control.value };
+    });
   }
 
   private getNoneOptionIndex(options: OptionType[] | undefined): number | null {
     if (!options) return null;
-    return options.findIndex(option =>
-      this.getOptionValue(option)?.toLowerCase().includes('none')
-    );
+    const index = options.findIndex(option => {
+      const value = this.getOptionValue(option);
+      return typeof value === 'string' && value.toLowerCase().includes('none');
+    });
+    return index !== -1 ? index : null;
   }
 }
