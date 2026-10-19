@@ -254,4 +254,70 @@ describe('DynamicFormComponent', () => {
       expect(wrapper?.clientHeight).toEqual(hint.offsetHeight);
     });
   });
+
+  describe('select multiple with "None of the above" option', () => {
+    const multiSelectIndex = '5';
+
+    beforeEach(() => {
+      component.createProfileForm([
+        ...PROFILE_FORM,
+        {
+          question: 'Which statements are true?',
+          type: FormControlType.SELECT_MULTIPLE,
+          options: ['Option 1', 'Option 2', 'None of the above'],
+          validation: {
+            required: true,
+          },
+        },
+      ]);
+      fixture.detectChanges();
+    });
+
+    it('should unselect "None of the above" when another option is selected after it', () => {
+      const multiSelect = component.getFormGroup(multiSelectIndex);
+
+      multiSelect.get('2')?.setValue(true);
+      expect(multiSelect.value).toEqual({ 0: false, 1: false, 2: true });
+
+      multiSelect.get('1')?.setValue(true);
+      expect(multiSelect.value).toEqual({ 0: false, 1: true, 2: false });
+    });
+
+    it('should unselect other options when "None of the above" is selected, and unselect "None of the above" when another option is selected again', () => {
+      const multiSelect = component.getFormGroup(multiSelectIndex);
+
+      multiSelect.get('0')?.setValue(true);
+      multiSelect.get('1')?.setValue(true);
+      expect(multiSelect.value).toEqual({ 0: true, 1: true, 2: false });
+
+      multiSelect.get('2')?.setValue(true);
+      expect(multiSelect.value).toEqual({ 0: false, 1: false, 2: true });
+
+      multiSelect.get('1')?.setValue(true);
+      expect(multiSelect.value).toEqual({ 0: false, 1: true, 2: false });
+    });
+
+    it('should unselect "None of the above" when another option is selected after form reset', () => {
+      const multiSelect = component.getFormGroup(multiSelectIndex);
+
+      component.formGroup.reset();
+      multiSelect.get('2')?.setValue(true);
+      multiSelect.get('1')?.setValue(true);
+
+      expect(multiSelect.get('1')?.value).toBeTrue();
+      expect(multiSelect.get('2')?.value).toBeFalse();
+    });
+
+    it('should handle non-string option values without throwing an error', () => {
+      expect(() =>
+        component.createProfileForm([
+          {
+            question: 'Object options question',
+            type: FormControlType.SELECT_MULTIPLE,
+            options: [{ label: 'Option 1' }, { label: 'None of the above' }],
+          },
+        ])
+      ).not.toThrow();
+    });
+  });
 });
