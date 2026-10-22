@@ -25,23 +25,25 @@ limitations under the License.
   {{ data.content }}
 </p>
 
-<mat-dialog-actions align="end" class="simple-dialog-actions">
-  <button
-    cdkFocusInitial
-    aria-label="Cancel"
-    (click)="cancel()"
-    class="cancel-button"
-    color="primary"
-    mat-button
-    type="button">
-    Cancel
-  </button>
-  <button
-    (click)="confirm()"
-    class="confirm-button"
-    color="primary"
-    mat-button
-    type="button">
-    {{ data.confirmName ? data.confirmName : 'Confirm' }}
-  </button>
-</mat-dialog-actions>
+@if (!data.isPersistent) {
+  <mat-dialog-actions align="end" class="simple-dialog-actions">
+    <button
+      cdkFocusInitial
+      aria-label="Cancel"
+      (click)="cancel()"
+      class="cancel-button"
+      color="primary"
+      mat-button
+      type="button">
+      Cancel
+    </button>
+    <button
+      (click)="confirm()"
+      class="confirm-button"
+      color="primary"
+      mat-button
+      type="button">
+      {{ data.confirmName ? data.confirmName : 'Confirm' }}
+    </button>
+  </mat-dialog-actions>
+}

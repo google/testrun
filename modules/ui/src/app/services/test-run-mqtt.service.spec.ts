@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 
 import { TestRunMqttService } from './test-run-mqtt.service';
-import { IMqttMessage, MqttService } from 'ngx-mqtt';
+import { IMqttMessage, MqttConnectionState, MqttService } from 'ngx-mqtt';
 import SpyObj = jasmine.SpyObj;
-import { of } from 'rxjs';
+import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
 import { MOCK_ADAPTERS } from '../mocks/settings.mock';
 import { Topic } from '../model/topic';
 import { MOCK_INFO, MOCK_INTERNET } from '../mocks/topic.mock';
@@ -14,9 +14,21 @@ describe('TestRunMqttService', () => {
   let service: TestRunMqttService;
   let mockService: SpyObj<MqttService>;
   let testRunServiceMock: SpyObj<TestRunService>;
+  let stateSubject: BehaviorSubject<MqttConnectionState>;
+  let onOffline: Subject<void>;
+  let onError: Subject<Error>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj(['observe']);
+    stateSubject = new BehaviorSubject<MqttConnectionState>(
+      MqttConnectionState.CONNECTED
+    );
+    onOffline = new Subject<void>();
+    onError = new Subject<Error>();
+    mockService = jasmine.createSpyObj(['observe'], {
+      state: stateSubject,
+      onOffline,
+      onError,
+    });
     testRunServiceMock = jasmine.createSpyObj(['changeReportURL']);
 
     TestBed.configureTestingModule({
@@ -30,6 +42,69 @@ describe('TestRunMqttService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  describe('connection state tracking', () => {
+    let connectionStates: boolean[];
+
+    beforeEach(() => {
+      connectionStates = [];
+      service
+        .getConnectionState()
+        .subscribe(isConnected => connectionStates.push(isConnected));
+    });
+
+    it('should report connected when MqttConnectionState is CONNECTED', () => {
+      stateSubject.next(MqttConnectionState.CONNECTED);
+
+      expect(service.isConnected()).toBeTrue();
+      expect(connectionStates).toEqual([true]);
+    });
+
+    it('should report connection loss when MqttConnectionState is CLOSED', () => {
+      stateSubject.next(MqttConnectionState.CLOSED);
+
+      expect(service.isConnected()).toBeFalse();
+      expect(connectionStates).toEqual([true, false]);
+    });
+
+    it('should not report connection loss while CONNECTING (initial handshake / reconnect)', () => {
+      stateSubject.next(MqttConnectionState.CONNECTING);
+
+      expect(service.isConnected()).toBeFalse();
+      expect(connectionStates).toEqual([true]);
+    });
+
+    it('should report connection loss on offline event', () => {
+      onOffline.next();
+
+      expect(connectionStates).toEqual([true, false]);
+    });
+
+    it('should report connection loss on error event', () => {
+      onError.next(new Error('broker error'));
+
+      expect(connectionStates).toEqual([true, false]);
+    });
+
+    it('should report connection loss when a topic subscription fails', () => {
+      mockService.observe.and.returnValue(
+        throwError(() => new Error('subscription failed'))
+      );
+
+      service.getStatus().subscribe();
+
+      expect(connectionStates).toEqual([true, false]);
+    });
+
+    it('should report connected again once the broker reconnects', () => {
+      stateSubject.next(MqttConnectionState.CLOSED);
+      stateSubject.next(MqttConnectionState.CONNECTING);
+      stateSubject.next(MqttConnectionState.CONNECTED);
+
+      expect(service.isConnected()).toBeTrue();
+      expect(connectionStates).toEqual([true, false, true]);
+    });
   });
 
   describe('getNetworkAdapters', () => {

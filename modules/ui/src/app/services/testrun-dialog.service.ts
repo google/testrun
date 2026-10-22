@@ -47,6 +47,11 @@ export class TestrunDialogService {
 
   handleFocus(delay = 100): void {
     timer(delay).subscribe(() => {
+      // Never steal focus from a dialog that is still open (e.g. the blocking
+      // MQTT error dialog).
+      if (this.dialog.openDialogs.length > 0) {
+        return;
+      }
       this.focusManagerService.focusFirstElementInContainer();
     });
   }

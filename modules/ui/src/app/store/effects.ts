@@ -23,7 +23,9 @@ import * as AppActions from './actions';
 import { AppState } from './state';
 import { TestRunService } from '../services/test-run.service';
 import {
+  asapScheduler,
   filter,
+  observeOn,
   Subject,
   timer,
   take,
@@ -51,6 +53,8 @@ import { NotificationService } from '../services/notification.service';
 import { Profile } from '../model/profile';
 import { DeviceStatus } from '../model/device';
 import { TestRunMqttService } from '../services/test-run-mqtt.service';
+import { MqttErrorDialogService } from '../services/mqtt-error-dialog.service';
+import { LoaderService } from '../services/loader.service';
 import { InternetConnection } from '../model/topic';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
 
@@ -61,12 +65,15 @@ export class AppEffects {
   private actions$ = inject(Actions);
   private testrunService = inject(TestRunService);
   private testrunMqttService = inject(TestRunMqttService);
+  private mqttErrorDialogService = inject(MqttErrorDialogService);
+  private loaderService = inject(LoaderService);
   private store = inject<Store<AppState>>(Store);
   private notificationService = inject(NotificationService);
 
   private isSinglePortMode: boolean | undefined = false;
   private statusSubscription: Subscription | undefined;
   private internetSubscription: Subscription | undefined;
+  private connectionSubscription: Subscription | undefined;
   private destroyWaitDeviceInterval$: Subject<boolean> = new Subject<boolean>();
 
   onFetchSystemConfigSuccess$ = createEffect(() => {
@@ -177,6 +184,7 @@ export class AppEffects {
         tap(() => {
           this.statusSubscription?.unsubscribe();
           this.internetSubscription?.unsubscribe();
+          this.connectionSubscription?.unsubscribe();
         })
       );
     },
@@ -352,6 +360,45 @@ export class AppEffects {
           this.store.dispatch(fetchSystemStatusSuccess({ systemStatus }));
         });
     }
+    if (
+      this.connectionSubscription === undefined ||
+      this.connectionSubscription?.closed
+    ) {
+      // Scenario 2: MQTT drops while a testrun is active. One-shot: the
+      // application has to be restarted to recover. Handled asynchronously so
+      // that an already-lost connection is processed after the current status
+      // update has been fully applied (and can then be cleaned up).
+      this.connectionSubscription = this.testrunMqttService
+        .getConnectionState()
+        .pipe(
+          filter(isConnected => !isConnected),
+          take(1),
+          observeOn(asapScheduler)
+        )
+        .subscribe(() => {
+          this.handleMqttConnectionLoss();
+        });
+    }
+  }
+
+  /**
+   * Stops tracking the testrun immediately (no orphaned subscriptions,
+   * timers, snackbars or spinners), resets the status to idle and surfaces the
+   * blocking MQTT error dialog.
+   */
+  private handleMqttConnectionLoss(): void {
+    this.store.dispatch(stopInterval());
+    this.destroyWaitDeviceInterval$.next(true);
+    this.notificationService.dismissSnackBar();
+    this.loaderService.setLoading(false);
+    this.store.dispatch(
+      setIsTestingComplete({
+        isTestingComplete: false,
+      })
+    );
+    this.store.dispatch(setStatus({ status: StatusOfTestrun.Idle }));
+    this.store.dispatch(setTestrunStatus({ systemStatus: IDLE_STATUS }));
+    this.mqttErrorDialogService.open();
   }
 
   private fetchInternetConnection() {

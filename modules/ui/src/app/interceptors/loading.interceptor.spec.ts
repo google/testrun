@@ -19,6 +19,7 @@ import { LoadingInterceptor } from './loading.interceptor';
 import { of } from 'rxjs/internal/observable/of';
 import { HttpHandler, HttpRequest, HttpResponse } from '@angular/common/http';
 import { LoaderService } from '../services/loader.service';
+import { SYSTEM_START } from '../services/test-run.service';
 
 describe('LoadingInterceptor', () => {
   const loaderServiceMock: jasmine.SpyObj<LoaderService> = jasmine.createSpyObj(
@@ -86,5 +87,22 @@ describe('LoadingInterceptor', () => {
     });
 
     expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(false);
+  });
+
+  it('should bypass loader for SYSTEM_START request', done => {
+    const interceptor: LoadingInterceptor = TestBed.inject(LoadingInterceptor);
+
+    const next: HttpHandler = {
+      handle: () => {
+        return of(new HttpResponse());
+      },
+    };
+
+    const requestMock = new HttpRequest('POST', SYSTEM_START, {});
+
+    interceptor.intercept(requestMock, next).subscribe(() => {
+      expect(loaderServiceMock.setLoading).not.toHaveBeenCalled();
+      done();
+    });
   });
 });
