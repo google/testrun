@@ -20,6 +20,7 @@ import shutil
 import time
 import docker
 from docker.types import Mount
+from docker.errors import APIError
 import getpass
 from common import logger
 from common import util
@@ -287,13 +288,30 @@ class NetworkValidator:
     try:
       container = self._get_device_container(net_device)
       if container is not None:
-        if kill:
-          LOGGER.debug('Killing container:' + net_device.container_name)
-          container.kill()
+        container.reload()
+        if container.status == 'running':
+          if kill:
+            LOGGER.debug('Killing container:' + net_device.container_name)
+            container.kill()
+          else:
+            LOGGER.debug('Stopping container:' + net_device.container_name)
+            container.stop()
+          LOGGER.debug('Container stopped:' + net_device.container_name)
         else:
-          LOGGER.debug('Stopping container:' + net_device.container_name)
-          container.stop()
-        LOGGER.debug('Container stopped:' + net_device.container_name)
+          LOGGER.debug(
+            'Container is already stopped:' + net_device.container_name)      
+    except APIError as e:
+      if (e.response is not None
+          and e.response.status_code == 409
+          and 'is not running' in str(e)
+        ):
+        LOGGER.debug(
+          'Container was already not running:' +
+          net_device.container_name
+        )
+      else:
+        LOGGER.error('Container stop error')
+        LOGGER.error(e)
     except Exception as e:  # pylint: disable=W0703
       LOGGER.error('Container stop error')
       LOGGER.error(e)
