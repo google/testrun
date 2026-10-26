@@ -127,7 +127,6 @@ export class ListLayoutComponent<T extends object> {
       const profile = item as Profile;
       return {
         name: profile.name,
-        risk: profile.risk,
         created: this.getFormattedDateString(profile.created),
       };
     } else {
