@@ -20,7 +20,7 @@ import shutil
 import time
 import docker
 from docker.types import Mount
-from docker.errors import APIError
+from docker import errors as docker_errors
 import getpass
 from common import logger
 from common import util
@@ -85,7 +85,7 @@ class NetworkValidator:
                           forcerm=True,
                           tag='test-run/' + net_device.dir_name)
       LOGGER.debug('Validator device built: ' + net_device.dir_name)
-    except docker.errors.BuildError as error:
+    except docker_errors.BuildError as error:
       LOGGER.error('Container build error')
       LOGGER.error(error)
 
@@ -166,7 +166,7 @@ class NetworkValidator:
           detach=True,
           mounts=device.mounts,
           environment={'HOST_USER': self._get_host_user()})
-    except docker.errors.ContainerError as error:
+    except docker_errors.ContainerError as error:
       LOGGER.error('Container run error')
       LOGGER.error(error)
 
@@ -299,8 +299,10 @@ class NetworkValidator:
           LOGGER.debug('Container stopped:' + net_device.container_name)
         else:
           LOGGER.debug(
-            'Container is already stopped:' + net_device.container_name)      
-    except APIError as e:
+            'Container is already stopped:' + net_device.container_name)
+    except docker_errors.NotFound:
+      LOGGER.debug('Container ' + net_device.container_name + ' not found')  
+    except docker_errors.APIError as e:
       if (e.response is not None
           and e.response.status_code == 409
           and 'is not running' in str(e)
@@ -321,7 +323,7 @@ class NetworkValidator:
     try:
       client = docker.from_env()
       container = client.containers.get(net_device.container_name)
-    except docker.errors.NotFound:
+    except docker_errors.NotFound:
       LOGGER.debug('Container ' + net_device.container_name + ' not found')
     except Exception as e:  # pylint: disable=W0703
       LOGGER.error('Failed to resolve container')
