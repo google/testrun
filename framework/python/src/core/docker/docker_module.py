@@ -14,7 +14,7 @@
 """Represents the base module."""
 import docker
 from docker.models.containers import Container
-from docker.errors import APIError
+from docker import errors as docker_errors
 import os
 from common import logger
 import json
@@ -99,9 +99,9 @@ class Module:
     try:
       client = docker.from_env()
       container = client.containers.get(self.container_name)
-    except docker.errors.NotFound:
+    except docker_errors.NotFound:
       self.logger.debug('Container ' + self.container_name + ' not found')
-    except docker.errors.APIError as error:
+    except docker_errors.APIError as error:
       self.logger.error('Failed to resolve container')
       self.logger.error(error)
     return container
@@ -171,7 +171,7 @@ class Module:
           mounts=self.get_mounts(),
           environment=self.get_environment(device),
           extra_hosts=self.extra_hosts if self.extra_hosts is not None else {})
-    except docker.errors.ContainerError as error:
+    except docker_errors.ContainerError as error:
       self.logger.error('Container run error')
       self.logger.error(error)
 
@@ -189,7 +189,9 @@ class Module:
             self.logger.debug('Stopping container: ' + self.container_name)
             container.stop()
           self.logger.debug('Container stopped: ' + self.container_name)
-    except APIError as error:
+    except docker_errors.NotFound:
+      self.logger.debug('Container not found: ' + self.container_name)
+    except docker_errors.APIError as error:
       if (error.response and
           error.response.status_code == 409
           and 'is not running' in str(error)):
