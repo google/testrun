@@ -28,10 +28,16 @@ import { ListItemComponent } from '../list-item/list-item.component';
 import { Component } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
+import { LayoutType } from '../../model/layout-type';
+import { Profile, ProfileRisk, ProfileStatus } from '../../model/profile';
 
 interface Entity {
-  id: number;
+  id?: number;
   name: string;
+  risk?: string;
+  status?: ProfileStatus;
+  created?: string;
+  questions?: Profile['questions'];
 }
 @Component({
   selector: 'app-host-component',
@@ -220,5 +226,58 @@ describe('ListLayoutComponent', () => {
       const icon = fakeItem?.querySelector('mat-icon');
       expect(icon?.textContent?.trim()).toBe('edit_note');
     });
+  });
+
+  describe('when title is Profile', () => {
+    beforeEach(() => {
+      component.title = LayoutType.Profile;
+      component.entities = [
+        {
+          name: 'Primary profile',
+          risk: ProfileRisk.HIGH,
+          status: ProfileStatus.VALID,
+          created: '2023-06-23',
+          questions: [],
+        },
+        {
+          name: 'High security profile',
+          risk: ProfileRisk.LIMITED,
+          status: ProfileStatus.DRAFT,
+          created: '2023-07-15',
+          questions: [],
+        },
+      ];
+      fixture.detectChanges();
+    });
+
+    it('should filter profiles by name and not by risk or status', fakeAsync(() => {
+      const searchInputElement = compiled.querySelector(
+        '.search-field input'
+      ) as HTMLInputElement;
+
+      searchInputElement.value = 'High';
+      searchInputElement.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      tick();
+
+      const filtered = listLayoutComponentInstance.filtered();
+      expect(filtered.length).toBe(1);
+      expect(filtered[0].name).toBe('High security profile');
+    }));
+
+    it('should filter profiles by formatted created date', fakeAsync(() => {
+      const searchInputElement = compiled.querySelector(
+        '.search-field input'
+      ) as HTMLInputElement;
+
+      searchInputElement.value = '23 Jun 2023';
+      searchInputElement.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      tick();
+
+      const filtered = listLayoutComponentInstance.filtered();
+      expect(filtered.length).toBe(1);
+      expect(filtered[0].name).toBe('Primary profile');
+    }));
   });
 });
