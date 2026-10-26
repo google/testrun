@@ -14,6 +14,7 @@
 """Represents the base module."""
 import docker
 from docker.models.containers import Container
+from docker.errors import APIError
 import os
 from common import logger
 import json
@@ -179,13 +180,25 @@ class Module:
     try:
       container = self.get_container()
       if container is not None:
-        if kill:
-          self.logger.debug('Killing container: ' + self.container_name)
-          container.kill()
-        else:
-          self.logger.debug('Stopping container: ' + self.container_name)
-          container.stop()
-        self.logger.debug('Container stopped: ' + self.container_name)
+        container.reload()
+        if container.status == 'running':
+          if kill:
+            self.logger.debug('Killing container: ' + self.container_name)
+            container.kill()
+          else:
+            self.logger.debug('Stopping container: ' + self.container_name)
+            container.stop()
+          self.logger.debug('Container stopped: ' + self.container_name)
+    except APIError as error:
+      if (error.response and
+          error.response.status_code == 409
+          and 'is not running' in str(error)):
+        self.logger.debug(
+          f'Container was already not running: {self.container_name}'
+        )
+      else:
+        self.logger.error('Container stop error')
+        self.logger.error(error)
     except Exception as error:  # pylint: disable=W0703
       self.logger.error('Container stop error')
       self.logger.error(error)
