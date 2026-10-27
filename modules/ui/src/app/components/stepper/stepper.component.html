@@ -35,12 +35,13 @@ limitations under the License.
       [attr.aria-label]="getNavigationLabel(selectedIndex)">
       <mat-icon fontSet="material-symbols-outlined"> arrow_back </mat-icon>
     </button>
-    <div class="form-steps">
+    <div class="form-steps" role="group" aria-label="Form steps">
       @for (step of steps; track step; let i = $index) {
         <div
           class="form-step"
           [tabindex]="selectedIndex === i ? 0 : -1"
           [class.step-active]="selectedIndex === i"
+          [attr.aria-current]="selectedIndex === i ? 'step' : null"
           [matTooltip]="getStepLabel(selectedIndex === i)"
           [attr.aria-label]="getStepLabel(selectedIndex === i)"></div>
       }

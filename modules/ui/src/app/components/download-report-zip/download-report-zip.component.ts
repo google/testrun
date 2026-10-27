@@ -77,6 +77,16 @@ export class DownloadReportZipComponent
   @HostBinding('tabIndex')
   readonly tabIndex = 0;
 
+  @HostBinding('attr.role')
+  readonly role = 'button';
+
+  @HostBinding('attr.aria-label')
+  get ariaLabel(): string {
+    return this.data
+      ? `Download zip for Testrun # ${this.getTestRunId(this.data)}`
+      : 'Download ZIP file';
+  }
+
   @HostListener('mouseenter')
   @HostListener('keyup')
   onEvent(): void {

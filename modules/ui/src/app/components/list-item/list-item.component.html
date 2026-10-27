@@ -15,6 +15,7 @@ limitations under the License.
 -->
 <div
   class="list-item"
+  role="listitem"
   [class.disabled]="disabled"
   [class.no-actions-menu]="!actions().length">
   <ng-content></ng-content>
@@ -23,8 +24,8 @@ limitations under the License.
       [disabled]="disabled"
       fontSet="material-symbols-outlined"
       mat-icon-button
-      aria-label="Actions"
-      matTooltip="Actions"
+      [attr.aria-label]="actionsLabel"
+      [matTooltip]="actionsLabel"
       [matMenuTriggerFor]="menu">
       <mat-icon>more_vert</mat-icon>
     </button>
