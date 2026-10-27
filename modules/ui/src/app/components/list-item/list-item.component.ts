@@ -64,6 +64,18 @@ export class ListItemComponent<T extends object> implements OnInit {
     return false;
   }
 
+  get actionsLabel(): string {
+    const entity = this.entity() as {
+      name?: string;
+      manufacturer?: string;
+      model?: string;
+    };
+    const itemName =
+      entity?.name ||
+      [entity?.manufacturer, entity?.model].filter(Boolean).join(' ').trim();
+    return itemName ? `Actions for ${itemName}` : 'Actions';
+  }
+
   @HostListener('mouseenter', ['$event'])
   onEvent(event: MouseEvent): void {
     this.zone.run(() => {

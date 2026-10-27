@@ -135,6 +135,7 @@ limitations under the License.
         <input
           [errorStateMatcher]="dateMatcher"
           matStartDate
+          aria-label="Start date"
           placeholder="mm/dd/yyyy"
           [(ngModel)]="range.start"
           #startDate="ngModel"
@@ -142,11 +143,13 @@ limitations under the License.
         <input
           [errorStateMatcher]="dateMatcher"
           matEndDate
+          aria-label="End date"
           placeholder="mm/dd/yyyy"
           [(ngModel)]="range.end"
           #endDate="ngModel"
           (dateChange)="endDateChanged($event)" />
       </mat-date-range-input>
+      <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint>
       @if (startDate.invalid || endDate.invalid) {
         <mat-error role="alert" aria-live="assertive">
           <span

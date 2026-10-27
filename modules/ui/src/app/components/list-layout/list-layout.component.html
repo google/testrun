@@ -60,9 +60,12 @@ limitations under the License.
         </mat-toolbar-row>
       </mat-toolbar>
       <div class="entity-list-container">
-        <section class="entity-list">
+        <section
+          class="entity-list"
+          role="list"
+          [attr.aria-label]="title() + ' list'">
           @if (isOpenEntityForm() && !initialEntity()) {
-            <div class="fake-list-item">
+            <div class="fake-list-item" role="listitem">
               <mat-icon fontSet="material-symbols-outlined">edit_note</mat-icon>
               {{
                 title() === LayoutType.Device
@@ -92,7 +95,7 @@ limitations under the License.
     </mat-drawer>
     <mat-drawer-content>
       @if (content()) {
-        <section class="content">
+        <section class="content" [attr.aria-label]="title() + ' details'">
           <ng-container *ngTemplateOutlet="content()!"></ng-container>
         </section>
       }

@@ -99,7 +99,7 @@
   align-self: stretch;
   border-radius: variables.$corner-extra-large;
   background-color: colors.$surface-container-high;
-  height: 40px;
+  min-height: 40px;
   width: 100%;
   input {
     width: calc(100% - #{variables.$icon-size * 2});
@@ -137,7 +137,7 @@
   font-size: 16px;
   border-radius: 16px;
   width: fit-content;
-  height: 56px;
+  min-height: 56px;
   color: colors.$on-secondary-container;
   background-color: colors.$secondary-container;
 }
@@ -145,7 +145,7 @@
 .fake-list-item {
   border-radius: 16px;
   background-color: colors.$primary-container;
-  height: 92px;
+  min-height: 92px;
   padding: 0 24px 0 32px;
   display: flex;
   gap: 24px;
@@ -155,4 +155,11 @@
   font-family: variables.$font-text;
   font-size: 16px;
   letter-spacing: 0;
+}
+
+@media (max-width: 768px) {
+  .layout-container-left-panel {
+    width: 100%;
+    max-width: 100vw;
+  }
 }
