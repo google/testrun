@@ -28,9 +28,7 @@ limitations under the License.
     (click)="profileClicked.emit(profile)"
     (keydown.enter)="enterProfileItem(profile)"
     (keydown.space)="enterProfileItem(profile)">
-    <span
-      class="profile-item-icon-container"
-      [attr.aria-label]="profile.status">
+    <span class="profile-item-icon-container" aria-hidden="true">
       @if (profile.status === ProfileStatus.VALID) {
         <mat-icon class="profile-item-icon" fontSet="material-symbols-outlined">
           check_circle

@@ -37,7 +37,10 @@ limitations under the License.
   let-description="description"
   let-options="options"
   let-formControlName="formControlName">
-  <label class="field-label" for="{{ formControlName }}-group">
+  <label
+    class="field-label"
+    id="field-label-{{ formControlName }}"
+    for="{{ formControlName }}-group">
     {{ label }}
   </label>
   @switch (type) {
@@ -232,6 +235,8 @@ limitations under the License.
   let-description="description">
   <section
     class="field-select-multiple form-field"
+    role="group"
+    [attr.aria-labelledby]="'field-label-' + formControlName"
     [formGroup]="getFormGroup(formControlName)">
     @for (option of options; track option; let i = $index) {
       <p class="field-select-checkbox">
@@ -280,9 +285,7 @@ limitations under the License.
     }
     @if (getControl(formControlName).hasError('required')) {
       <mat-error>
-        <span role="alert" aria-live="assertive" [attr.aria-label]="label">
-          The field is required
-        </span>
+        <span role="alert" aria-live="assertive"> The field is required </span>
       </mat-error>
     }
   </mat-form-field>

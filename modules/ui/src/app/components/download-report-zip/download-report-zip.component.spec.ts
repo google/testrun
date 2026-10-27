@@ -87,10 +87,15 @@ describe('DownloadReportZipComponent', () => {
       }));
     });
 
-    it('should have title', () => {
+    it('should have title and accessible role and label', () => {
       component.ngOnInit();
+      fixture.detectChanges();
 
       expect(component.tooltip.message).toEqual(
+        'Download zip for Testrun # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20'
+      );
+      expect(compiled.getAttribute('role')).toEqual('button');
+      expect(compiled.getAttribute('aria-label')).toEqual(
         'Download zip for Testrun # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20'
       );
     });

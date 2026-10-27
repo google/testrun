@@ -5,14 +5,15 @@
     for="{{ key }}-group">
     {{ groupLabel }}
   </label>
-  <p class="setting-label-description">
+  <p class="setting-label-description" id="{{ key }}-description">
     {{ description }}
   </p>
 </div>
 
 <mat-form-field appearance="outline" class="setting-field">
   <mat-select
-    aria-labelledby="{{ key }}-group-label"
+    aria-labelledby="{{ key }}-label"
+    aria-describedby="{{ key }}-description"
     id="{{ key }}-group"
     ngDefaultControl
     class="setting-radio-group"

@@ -52,6 +52,11 @@ export class HelpTipComponent implements OnInit {
     this.updateTipPosition(this.target());
   }
 
+  @HostListener('keydown.escape')
+  onEscape() {
+    this.onCLoseTip.emit(true);
+  }
+
   ngOnInit() {
     this.updateTipPosition(this.target());
     this.liveAnnouncer.announce(

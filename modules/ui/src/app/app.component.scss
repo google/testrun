@@ -209,7 +209,7 @@ $nav-width: 96px;
   position: relative;
   display: grid;
   grid-template-rows: auto 0 1fr;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .settings-drawer {

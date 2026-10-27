@@ -133,7 +133,7 @@ export class DownloadOptionsComponent implements AfterViewInit {
     if (this.isOpenDownloadOptions) {
       this.keyManager.onKeydown(event);
 
-      if (event.key === 'Tab') {
+      if (event.key === 'Tab' || event.key === 'Escape') {
         this.isOpenDownloadOptions = false;
       }
     }
