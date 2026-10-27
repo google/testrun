@@ -301,7 +301,7 @@ class NetworkValidator:
           LOGGER.debug(
             'Container is already stopped:' + net_device.container_name)
     except docker_errors.NotFound:
-      LOGGER.debug('Container ' + net_device.container_name + ' not found')  
+      LOGGER.debug('Container ' + net_device.container_name + ' not found')
     except docker_errors.APIError as e:
       if (e.response is not None
           and e.response.status_code == 409
