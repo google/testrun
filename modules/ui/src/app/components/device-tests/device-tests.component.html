@@ -22,7 +22,8 @@ limitations under the License.
     class="device-form-test-modules"
     role="group"
     aria-labelledby="device-tests-title"
-    aria-describedby="device-tests-description"
+    [attr.aria-describedby]="describedBy"
+    [attr.aria-invalid]="hasError ? 'true' : null"
     formArrayName="test_modules">
     @for (test of test_modules.controls; track test; let i = $index) {
       <p [class.disabled]="disabled">

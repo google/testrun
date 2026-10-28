@@ -142,13 +142,22 @@ limitations under the License.
         [class.device-qualification-form-test-modules-container-error]="
           test_modules.touched && test_modules.errors?.['required']
         "
+        [errorId]="
+          test_modules.touched && test_modules.errors?.['required']
+            ? testModulesErrorId
+            : null
+        "
         [deviceForm]="deviceQualificationForm"
         [deviceTestModules]="initialDevice()?.test_modules"
         [testModules]="testModules()">
       </app-device-tests>
     }
     @if (test_modules.touched && test_modules.errors?.['required']) {
-      <mat-error class="device-qualification-form-test-modules-error">
+      <mat-error
+        [id]="testModulesErrorId"
+        role="alert"
+        aria-live="polite"
+        class="device-qualification-form-test-modules-error">
         At least one test has to be selected to save a Device.
       </mat-error>
     }
