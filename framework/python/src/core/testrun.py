@@ -647,13 +647,14 @@ class Testrun:  # pylint: disable=too-few-public-methods
     try:
       container = client.containers.get('tr-ui')
       if container is not None:
-        container.kill()
+        if container.status == 'running':
+          container.kill()
         # If the container has been started without auto-remove flag remove it
         try:
           container.remove()
         except docker.errors.APIError:
           pass
-    except docker.errors.NotFound:
+    except (docker.errors.NotFound, docker.errors.APIError):
       pass
 
   def start_ws(self):
