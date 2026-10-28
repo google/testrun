@@ -13,6 +13,7 @@
 # limitations under the License.
 """Represents the base module."""
 import docker
+import docker.errors
 from docker.models.containers import Container
 from docker import errors as docker_errors
 import os
@@ -189,15 +190,15 @@ class Module:
             self.logger.debug('Stopping container: ' + self.container_name)
             container.stop()
           self.logger.debug('Container stopped: ' + self.container_name)
-    except docker_errors.NotFound:
-      self.logger.debug('Container not found: ' + self.container_name)
-    except docker_errors.APIError as error:
-      if (error.response and
-          error.response.status_code == 409
-          and 'is not running' in str(error)):
+        else:
+          self.logger.debug(
+              f'Container {self.container_name} is not running (status: {container.status})')
+    except docker.errors.NotFound:
+      self.logger.debug(f'Container {self.container_name} not found')
+    except docker.errors.APIError as error:
+      if error.status_code in (304, 409) or 'not running' in str(error).lower():
         self.logger.debug(
-          f'Container was already not running: {self.container_name}'
-        )
+            f'Container {self.container_name} is already stopped: {error}')
       else:
         self.logger.error('Container stop error')
         self.logger.error(error)
