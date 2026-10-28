@@ -19,6 +19,7 @@ import pwd
 import shutil
 import time
 import docker
+import docker.errors
 from docker.types import Mount
 from docker import errors as docker_errors
 import getpass
@@ -299,18 +300,13 @@ class NetworkValidator:
           LOGGER.debug('Container stopped:' + net_device.container_name)
         else:
           LOGGER.debug(
-            'Container is already stopped:' + net_device.container_name)
-    except docker_errors.NotFound:
-      LOGGER.debug('Container ' + net_device.container_name + ' not found')
-    except docker_errors.APIError as e:
-      if (e.response is not None
-          and e.response.status_code == 409
-          and 'is not running' in str(e)
-        ):
+              f'Container {net_device.container_name} is not running (status: {container.status})')
+    except docker.errors.NotFound:
+      LOGGER.debug(f'Container {net_device.container_name} not found')
+    except docker.errors.APIError as e:
+      if e.status_code in (304, 409) or 'not running' in str(e).lower():
         LOGGER.debug(
-          'Container was already not running:' +
-          net_device.container_name
-        )
+            f'Container {net_device.container_name} is already stopped: {e}')
       else:
         LOGGER.error('Container stop error')
         LOGGER.error(e)
