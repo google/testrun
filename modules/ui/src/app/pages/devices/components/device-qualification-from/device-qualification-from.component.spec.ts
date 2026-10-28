@@ -193,11 +193,49 @@ describe('DeviceQualificationFromComponent', () => {
       const error = compiled.querySelector(
         '.device-qualification-form-test-modules-error'
       );
+      const section = compiled.querySelector('.device-form-test-modules');
+      const checkboxInputs =
+        compiled.querySelectorAll<HTMLInputElement>('mat-checkbox input');
 
       expect(modules).toBeTruthy();
       expect(error?.innerHTML.trim()).toEqual(
         'At least one test has to be selected to save a Device.'
       );
+      expect(error?.getAttribute('role')).toEqual('alert');
+      expect(error?.getAttribute('aria-live')).toEqual('polite');
+      expect(error?.id).toBeTruthy();
+      expect(section?.getAttribute('aria-invalid')).toEqual('true');
+      expect(section?.getAttribute('aria-describedby')).toEqual(
+        `device-tests-description ${error?.id}`
+      );
+      checkboxInputs.forEach(input => {
+        expect(input.getAttribute('aria-invalid')).toEqual('true');
+        expect(input.getAttribute('aria-describedby')).toEqual(
+          error?.id || null
+        );
+      });
+    });
+
+    it('should clear error aria attributes when at least one module is selected', () => {
+      component.test_modules.setValue([false, false]);
+      component.test_modules.markAsTouched();
+      fixture.detectChanges();
+
+      component.test_modules.setValue([true, false]);
+      fixture.detectChanges();
+
+      const section = compiled.querySelector('.device-form-test-modules');
+      const checkboxInputs =
+        compiled.querySelectorAll<HTMLInputElement>('mat-checkbox input');
+
+      expect(section?.getAttribute('aria-invalid')).toBeNull();
+      expect(section?.getAttribute('aria-describedby')).toEqual(
+        'device-tests-description'
+      );
+      checkboxInputs.forEach(input => {
+        expect(input.getAttribute('aria-invalid')).toBeNull();
+        expect(input.getAttribute('aria-describedby')).toBeNull();
+      });
     });
   });
 
