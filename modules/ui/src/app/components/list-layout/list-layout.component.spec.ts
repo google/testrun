@@ -30,6 +30,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
 import { LayoutType } from '../../model/layout-type';
 import { Profile, ProfileRisk, ProfileStatus } from '../../model/profile';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 interface Entity {
   id?: number;
@@ -80,8 +81,11 @@ describe('ListLayoutComponent', () => {
   let fixture: ComponentFixture<HostComponent>;
   let compiled: HTMLElement;
   let listLayoutComponentInstance: ListLayoutComponent<Entity>;
+  let mockLiveAnnouncer: jasmine.SpyObj<LiveAnnouncer>;
 
   beforeEach(async () => {
+    mockLiveAnnouncer = jasmine.createSpyObj('LiveAnnouncer', ['announce']);
+
     await TestBed.configureTestingModule({
       imports: [
         HostComponent,
@@ -91,6 +95,7 @@ describe('ListLayoutComponent', () => {
         MatButtonModule,
         NoopAnimationsModule,
       ],
+      providers: [{ provide: LiveAnnouncer, useValue: mockLiveAnnouncer }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(HostComponent);
@@ -211,6 +216,61 @@ describe('ListLayoutComponent', () => {
       expect(searchIcon).toBeTruthy();
       expect(searchIcon?.textContent?.trim()).toBe('search');
     }));
+
+    it('should render visible empty-search message and announce "No devices found" when search returns zero matches', fakeAsync(() => {
+      const searchInputElement = compiled.querySelector(
+        '.search-field input'
+      ) as HTMLInputElement;
+
+      searchInputElement.value = 'zzzzz';
+      searchInputElement.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      tick();
+
+      const emptyMessage = compiled.querySelector(
+        'section.entity-list .empty-search-message'
+      );
+      expect(emptyMessage).toBeTruthy();
+      expect(emptyMessage?.textContent?.trim()).toBe('No devices found');
+      expect(emptyMessage?.getAttribute('role')).toBe('status');
+      expect(emptyMessage?.getAttribute('aria-live')).toBe('polite');
+      expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+        'No devices found',
+        'polite'
+      );
+    }));
+
+    it('should announce matching device count when filtering and when clearing search', fakeAsync(() => {
+      const searchInputElement = compiled.querySelector(
+        '.search-field input'
+      ) as HTMLInputElement;
+
+      searchInputElement.value = 'Entity 1';
+      searchInputElement.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      tick();
+
+      const statusRegion = compiled.querySelector(
+        'section.entity-list [role="status"][aria-live="polite"]'
+      );
+      expect(statusRegion?.textContent?.trim()).toBe('1 device found');
+      expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+        '1 device found',
+        'polite'
+      );
+
+      mockLiveAnnouncer.announce.calls.reset();
+      searchInputElement.value = '';
+      searchInputElement.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      tick();
+
+      expect(listLayoutComponentInstance.searchText()).toBe('');
+      expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+        '2 devices found',
+        'polite'
+      );
+    }));
   });
 
   describe('when entity form is open without initial entity', () => {
@@ -225,6 +285,8 @@ describe('ListLayoutComponent', () => {
       expect(fakeItem).toBeTruthy();
       const icon = fakeItem?.querySelector('mat-icon');
       expect(icon?.textContent?.trim()).toBe('edit_note');
+      const emptyMessage = compiled.querySelector('.empty-search-message');
+      expect(emptyMessage).toBeNull();
     });
   });
 
@@ -263,6 +325,10 @@ describe('ListLayoutComponent', () => {
       const filtered = listLayoutComponentInstance.filtered();
       expect(filtered.length).toBe(1);
       expect(filtered[0].name).toBe('High security profile');
+      expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+        '1 risk profile found',
+        'polite'
+      );
     }));
 
     it('should filter profiles by formatted created date', fakeAsync(() => {
@@ -278,6 +344,26 @@ describe('ListLayoutComponent', () => {
       const filtered = listLayoutComponentInstance.filtered();
       expect(filtered.length).toBe(1);
       expect(filtered[0].name).toBe('Primary profile');
+    }));
+
+    it('should render "No risk profiles found" when profile search returns zero matches', fakeAsync(() => {
+      const searchInputElement = compiled.querySelector(
+        '.search-field input'
+      ) as HTMLInputElement;
+
+      searchInputElement.value = 'zzzzz';
+      searchInputElement.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      tick();
+
+      const emptyMessage = compiled.querySelector(
+        'section.entity-list .empty-search-message'
+      );
+      expect(emptyMessage?.textContent?.trim()).toBe('No risk profiles found');
+      expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+        'No risk profiles found',
+        'polite'
+      );
     }));
   });
 });
