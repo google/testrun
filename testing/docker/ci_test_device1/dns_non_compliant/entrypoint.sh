@@ -23,10 +23,6 @@ echo $DHCP_TPID
 
 # DNS MODULE
 
-# Test DNS resolution
-# echo "Sending DNS reqest to $DNS_SERVER"
-# dig @$DNS_SERVER +short www.google.com || echo "DNS resolution failed"
-
 # Keep network monitoring
 (while true; do arping 10.10.10.1; sleep 10; done) &
 (while true; do ip a | cat; sleep 10; done) &
