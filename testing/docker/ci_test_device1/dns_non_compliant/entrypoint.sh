@@ -4,7 +4,6 @@
 ip a
 
 # Set paths and servers
-DNS_SERVER="nonexistent.dns.server"
 INTF=eth0
 
 # Check if the interface is up
