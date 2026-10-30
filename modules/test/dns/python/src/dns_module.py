@@ -339,7 +339,7 @@ class DNSModule(TestModule):
       result = True, 'DNS traffic detected from device'
     else:
       LOGGER.info('No DNS traffic detected from the device')
-      result = False, 'No DNS traffic detected from the device'
+      result = 'Feature Not Detected', 'No DNS traffic detected from the device'
     return result
 
   def _dns_mdns(self):
