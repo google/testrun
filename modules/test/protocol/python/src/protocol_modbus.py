@@ -13,6 +13,7 @@
 # limitations under the License.
 """Module run all the Modbus related methods for testing"""
 
+from typing import Any
 from pymodbus.client import ModbusTcpClient as ModbusClient
 from pymodbus.exceptions import ModbusIOException
 
@@ -30,6 +31,8 @@ class Modbus():
     # Setup the log
     global LOGGER
     LOGGER = log
+
+    self._device_ip = device_ip
 
     # Setup modbus addressing
     self._port = config['port'] if 'port' in config else DEFAULT_MODBUS_PORT
@@ -103,14 +106,14 @@ class Modbus():
           self._discrete_input_enabled = False
 
     # Initialize the modbus client
-    self.client = ModbusClient(host=device_ip, port=self._port)
+    self.client = ModbusClient(host=self._device_ip, port=self._port)
 
   # Connections created from this method are simple socket connections
   # and aren't indicative of valid modbus
   def connect(self):
     connection = None
     try:
-      LOGGER.info(f'Attempting modbus connection to: {str()}')
+      LOGGER.info(f'Attempting modbus connection to: {self._device_ip}')
       connection = self.client.connect()
       if connection:
         LOGGER.info('Connected to Modbus device')
@@ -122,24 +125,75 @@ class Modbus():
 
   # Read a range of holding registers
   def read_holding_registers(self,
-                             address=DEFAULT_REG_START,
-                             count=DEFAULT_REG_COUNT,
-                             device_id=DEFAULT_DEVICE_ID):
+      address: int=DEFAULT_REG_START,
+      count: int=DEFAULT_REG_COUNT,
+      device_id: int=DEFAULT_DEVICE_ID
+      ) -> tuple[list[Any] | None, int, int]:
     registers = None
+    found_device_id = DEFAULT_DEVICE_ID
+    found_address = DEFAULT_REG_START
+
+    device_id_candidates= set([device_id, 1, 2 , 255])
+    address_candidates = set([address, 0, 1, 10, 100])
+
+    active_device_id = None
+
+    # Attempt to discover device_id
+    for curr_device_id in device_id_candidates:
+      try:
+        test_resp = self.client.read_holding_registers(
+          address,
+          count=count,
+          device_id=curr_device_id)
+        if (not test_resp.isError()
+              or (hasattr(test_resp, 'exception_code')
+                  and test_resp.exception_code in [1, 2, 3, 4])
+            ):
+          active_device_id = curr_device_id
+          found_device_id = curr_device_id
+          LOGGER.debug(
+            f'Successfully found active Device ID: {active_device_id}'
+            )
+          break
+      except ModbusIOException as e:
+        LOGGER.debug('Error reading holding registers:' + e)
+      except Exception as e:
+        LOGGER.debug('Unexpected error occurred:' + e)
+    if active_device_id is None:
+      active_device_id = device_id
+      LOGGER.error('Could not auto-detect Device ID')
+
+
     LOGGER.info(f'Reading holding registers: {address}:{count}')
-    try:
-      response = self.client.read_holding_registers(address,
-                                                    count=count,
-                                                    device_id=device_id)
-      if response.isError():
-        LOGGER.error(f'Failed to read holding registers: {address}:{count}')
-        LOGGER.error('Read Response: ' + str(response))
-      else:
-        registers = response.registers
-        LOGGER.info(f'Holding registers read: {str(registers)}')
-    except ModbusIOException as e:
-      LOGGER.error('Error reading holding registers:' + e)
-    return registers
+    for curr_address in address_candidates:
+      try:
+        response = self.client.read_holding_registers(
+            address,
+            count=count,
+            device_id=active_device_id
+        )
+        if response.isError():
+          if (hasattr(response, 'exception_code')
+              and response.exception_code == 2
+          ):
+            LOGGER.debug(
+              f'Address {curr_address} returned Illegal Data Address'
+            )
+            continue
+          else:
+            LOGGER.debug(
+              f'Address {curr_address} returned exception: {response}'
+              )
+        else:
+          registers = response.registers
+          found_address = curr_address
+          LOGGER.info(f'Holding registers read: {str(registers)}')
+          break
+      except ModbusIOException as e:
+        LOGGER.error('Error reading holding registers:' + e)
+      except Exception as e:
+        LOGGER.error(f'Unexpected error occurred: {e}')
+    return registers, found_device_id, found_address
 
   # Read a range of input registers
   def read_input_registers(self,
@@ -153,8 +207,8 @@ class Modbus():
                                                   count=count,
                                                   device_id=device_id)
       if response.isError():
-        LOGGER.error(f'Failed to read input registers: {address}:{count}')
-        LOGGER.error('Read Response: ' + str(response))
+        LOGGER.debug(f'Failed to read input registers: {address}:{count}')
+        LOGGER.debug('Read Response: ' + str(response))
       else:
         registers = response.registers
         LOGGER.info(f'Input registers read: {str(registers)}')
@@ -176,8 +230,8 @@ class Modbus():
         device_id=device_id
       )
       if response.isError():
-        LOGGER.error(f'Failed to read coil registers: {address}:{count}')
-        LOGGER.error('Read Response: ' + str(response))
+        LOGGER.debug(f'Failed to read coil registers: {address}:{count}')
+        LOGGER.debug('Read Response: ' + str(response))
       else:
         coils = response.bits
         LOGGER.info(f'Coil registers read: {str(coils)}')
@@ -197,8 +251,8 @@ class Modbus():
                                                   count=count,
                                                   device_id=device_id)
       if response.isError():
-        LOGGER.error(f'Failed to read discrete inputs: {address}:{count}')
-        LOGGER.error('Read Response: ' + str(response))
+        LOGGER.debug(f'Failed to read discrete inputs: {address}:{count}')
+        LOGGER.debug('Read Response: ' + str(response))
       else:
         inputs = response.bits
         LOGGER.info(f'Discrete inputs read: {str(inputs)}')
@@ -220,50 +274,59 @@ class Modbus():
       details = f'Established connection to modbus port: {self._port}'
 
       # Validate if the device supports holding registers and can be read
-      holding_reg = self.read_holding_registers(self._holding_reg_start,
-                                                self._holding_reg_count,
-                                                self._device_id)
+      holding_reg, device_id, address = self.read_holding_registers(
+          self._holding_reg_start,
+          self._holding_reg_count,
+          self._device_id
+        )
       if holding_reg:
         details += ('\nHolding registers succesfully read: ' +
-                    f'{self._holding_reg_start}:{self._holding_reg_count}')
+                    f'{address}:{self._holding_reg_count}')
       else:
         details += ('\nHolding registers could not be read: ' +
-                    f'{self._holding_reg_start}:{self._holding_reg_count}')
+                    f'{address}:{self._holding_reg_count}')
 
       # Validate if the device supports input registers and can be read
-      input_reg = self.read_input_registers(self._input_reg_start,
-                                            self._input_reg_count,
-                                            self._device_id)
+      input_reg = self.read_input_registers(
+        address,
+        self._input_reg_count,
+        device_id
+      )
       if input_reg:
         details += ('\nInput registers succesfully read: ' +
-                    f'{self._input_reg_start}:{self._input_reg_count}')
+                    f'{address}:{self._input_reg_count}')
       else:
         details += ('\nInput registers could not be read: ' +
-                    f'{self._input_reg_start}:{self._input_reg_count}')
+                    f'{address}:{self._input_reg_count}')
 
       # Validate if the device supports coils and can be read
-      coils = self.read_coils(self._coil_reg_start, self._coil_reg_count,
-                              self._device_id)
+      coils = self.read_coils(
+        address,
+        self._coil_reg_count,
+        device_id
+      )
       if coils:
         details += ('\nCoil registers succesfully read: ' +
-                    f'{self._coil_reg_start}:{self._coil_reg_count}')
+                    f'{address}:{self._coil_reg_count}')
       else:
         details += ('\nCoil registers could not be read: ' +
-                    f'{self._coil_reg_start}:{self._coil_reg_count}')
+                    f'{address}:{self._coil_reg_count}')
 
       # Validate if the device supports discrete inputs and can be read
       discrete_inputs = self.read_discrete_inputs(
-          self._discrete_input_reg_start, self._discrete_input_reg_count,
-          self._device_id)
+          address,
+          self._discrete_input_reg_count,
+          device_id
+        )
       if discrete_inputs:
         details += (
             '\nDiscrete inputs succesfully read: ' +
-            f'{self._discrete_input_reg_start}:{self._discrete_input_reg_count}'
+            f'{address}:{self._discrete_input_reg_count}'
         )
       else:
         details += (
             '\nDiscrete inputs could not be read: ' +
-            f'{self._discrete_input_reg_start}:{self._discrete_input_reg_count}'
+            f'{address}:{self._discrete_input_reg_count}'
         )
 
       # Since we can't know what data types the device supports
