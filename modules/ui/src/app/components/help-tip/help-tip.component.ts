@@ -26,7 +26,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { TipConfig } from '../../model/tip-config';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { _IdGenerator, LiveAnnouncer } from '@angular/cdk/a11y';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { timer } from 'rxjs/internal/observable/timer';
 
@@ -44,6 +44,10 @@ export class HelpTipComponent implements OnInit {
   onAction = output<void>();
   onCLoseTip = output<boolean>();
   tipPosition = { top: 0, left: 0 };
+  /** Names the dialog via `aria-labelledby`. */
+  readonly titleId = inject(_IdGenerator).getId('app-help-tip-title-');
+  /** Describes the dialog via `aria-describedby`. */
+  readonly contentId = inject(_IdGenerator).getId('app-help-tip-content-');
   private readonly liveAnnouncer = inject(LiveAnnouncer);
   private readonly focusManagerService = inject(FocusManagerService);
 
