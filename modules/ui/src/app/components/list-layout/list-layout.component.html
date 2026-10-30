@@ -89,6 +89,21 @@ limitations under the License.
                   }
                 "></ng-container>
             </app-list-item>
+          } @empty {
+            @if (!isOpenEntityForm() || initialEntity() || searchText()) {
+              <p class="empty-search-message" role="status" aria-live="polite">
+                {{ emptySearchMessage() }}
+              </p>
+            }
+          }
+          @if (searchText() && filtered().length > 0) {
+            <div
+              class="visually-hidden"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true">
+              {{ filterStatusMessage() }}
+            </div>
           }
         </section>
       </div>

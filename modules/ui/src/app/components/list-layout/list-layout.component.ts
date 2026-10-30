@@ -36,6 +36,7 @@ import { Device } from '../../model/device';
 import { LayoutType } from '../../model/layout-type';
 import { Profile } from '../../model/profile';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'app-list-layout',
@@ -55,6 +56,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 })
 export class ListLayoutComponent<T extends object> {
   private datePipe = inject(DatePipe);
+  private readonly liveAnnouncer = inject(LiveAnnouncer);
   readonly LayoutType = LayoutType;
   readonly searchInput = viewChild.required<ElementRef>('searchInput');
   title = input<string>('');
@@ -76,6 +78,22 @@ export class ListLayoutComponent<T extends object> {
   filtered = computed(() => {
     return this.entities().filter(this.filter(this.searchText()));
   });
+  private readonly entityLabel = computed(() =>
+    this.title() === LayoutType.Profile
+      ? { singular: 'risk profile', plural: 'risk profiles' }
+      : { singular: 'device', plural: 'devices' }
+  );
+  readonly emptySearchMessage = computed(
+    () => `No ${this.entityLabel().plural} found`
+  );
+  readonly filterStatusMessage = computed(() => {
+    const count = this.filtered().length;
+    const { singular, plural } = this.entityLabel();
+    if (count === 0) {
+      return `No ${plural} found`;
+    }
+    return `${count} ${count === 1 ? singular : plural} found`;
+  });
   addEntity = output<void>();
   menuItemClicked = output<EntityActionResult<T>>();
 
@@ -89,19 +107,32 @@ export class ListLayoutComponent<T extends object> {
 
   clearSearch(): void {
     this.searchText.set('');
+    this.announceFilterStatus();
     this.searchInput().nativeElement.focus();
   }
 
   updateQuery(e: Event) {
     const input = e.target as HTMLInputElement;
     const value = input.value;
+    const previousSearchText = this.searchText();
     if (value.trim() === '') {
       input.value = '';
+      this.searchText.set('');
+      if (previousSearchText !== '') {
+        this.announceFilterStatus();
+      }
     } else {
       const inputValue = value.trim();
       const searchValue = inputValue.length > 2 ? inputValue : '';
       this.searchText.set(searchValue);
+      if (searchValue !== '' || previousSearchText !== '') {
+        this.announceFilterStatus();
+      }
     }
+  }
+
+  private announceFilterStatus(): void {
+    this.liveAnnouncer.announce(this.filterStatusMessage(), 'polite');
   }
 
   filter(searchText: string) {
