@@ -91,6 +91,8 @@ limitations under the License.
             class="app-toolbar-button app-toolbar-button-help-tips"
             mat-icon-button
             aria-label="Help tips"
+            aria-haspopup="dialog"
+            [attr.aria-expanded]="isHelpTipOpen()"
             matTooltip="Help tips"
             (click)="onCLoseTip(false)">
             <mat-icon>help</mat-icon>

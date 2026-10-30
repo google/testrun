@@ -16,9 +16,12 @@
 import {
   AfterViewInit,
   Component,
+  computed,
   ElementRef,
   inject,
+  linkedSignal,
   ViewChild,
+  viewChild,
   ChangeDetectorRef,
   Renderer2,
   HostListener,
@@ -153,7 +156,16 @@ export class AppComponent implements AfterViewInit {
   deviceTipTarget!: HTMLElement;
   testingTipTarget!: HTMLElement;
   riskAssessmentTipTarget!: HTMLElement;
-  isClosedTip = false;
+  private readonly helpTip = viewChild(HelpTipComponent);
+  /** Whether the user closed the current tip; resets when a new tip renders. */
+  private readonly isClosedTip = linkedSignal({
+    source: this.helpTip,
+    computation: () => false,
+  });
+  /** Reflected by `aria-expanded` on the toolbar "Help tips" button. */
+  readonly isHelpTipOpen = computed(
+    () => !!this.helpTip() && !this.isClosedTip()
+  );
 
   @HostListener('mousedown')
   onMousedown() {
@@ -279,7 +291,7 @@ export class AppComponent implements AfterViewInit {
   }
 
   onCLoseTip(isClosed: boolean): void {
-    this.isClosedTip = isClosed;
+    this.isClosedTip.set(isClosed);
     const helpTipButton = window.document.querySelector(
       '.app-toolbar-button-help-tips'
     ) as HTMLButtonElement;
