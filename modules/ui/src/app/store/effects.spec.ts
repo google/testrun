@@ -16,6 +16,7 @@
 import {
   discardPeriodicTasks,
   fakeAsync,
+  flushMicrotasks,
   TestBed,
   tick,
 } from '@angular/core/testing';
@@ -46,9 +47,11 @@ import { NotificationService } from '../services/notification.service';
 import { PROFILE_MOCK } from '../mocks/profile.mock';
 import { throwError } from 'rxjs/internal/observable/throwError';
 import { HttpErrorResponse } from '@angular/common/http';
-import { IDLE_STATUS } from '../model/testrun-status';
+import { IDLE_STATUS, StatusOfTestrun } from '../model/testrun-status';
 import { HISTORY } from '../mocks/reports.mock';
 import { TestRunMqttService } from '../services/test-run-mqtt.service';
+import { MqttErrorDialogService } from '../services/mqtt-error-dialog.service';
+import { LoaderService } from '../services/loader.service';
 
 describe('Effects', () => {
   let actions$ = new Observable<Action>();
@@ -60,11 +63,20 @@ describe('Effects', () => {
     jasmine.createSpyObj('notificationServiceMock', [
       'dismissWithTimout',
       'openSnackBar',
+      'dismissSnackBar',
     ]);
+  const mqttErrorDialogServiceMock: jasmine.SpyObj<MqttErrorDialogService> =
+    jasmine.createSpyObj('mqttErrorDialogServiceMock', ['open', 'isOpen']);
+  const loaderServiceMock: jasmine.SpyObj<LoaderService> = jasmine.createSpyObj(
+    'loaderServiceMock',
+    ['setLoading']
+  );
   const mockMqttService: jasmine.SpyObj<TestRunMqttService> =
     jasmine.createSpyObj('mockMqttService', [
       'getStatus',
       'getInternetConnection',
+      'getConnectionState',
+      'isConnected',
     ]);
 
   beforeEach(() => {
@@ -93,6 +105,11 @@ describe('Effects', () => {
     mockMqttService.getStatus.and.returnValue(
       of(MOCK_PROGRESS_DATA_IN_PROGRESS)
     );
+    mockMqttService.getConnectionState.and.returnValue(of(true));
+    mockMqttService.isConnected.and.returnValue(true);
+    mqttErrorDialogServiceMock.open.calls.reset();
+    loaderServiceMock.setLoading.calls.reset();
+    notificationServiceMock.dismissSnackBar.calls.reset();
 
     TestBed.configureTestingModule({
       providers: [
@@ -100,6 +117,11 @@ describe('Effects', () => {
         { provide: TestRunService, useValue: testRunServiceMock },
         { provide: NotificationService, useValue: notificationServiceMock },
         { provide: TestRunMqttService, useValue: mockMqttService },
+        {
+          provide: MqttErrorDialogService,
+          useValue: mqttErrorDialogServiceMock,
+        },
+        { provide: LoaderService, useValue: loaderServiceMock },
         provideMockActions(() => actions$),
         provideMockStore({}),
       ],
@@ -291,6 +313,35 @@ describe('Effects', () => {
           expect(mockMqttService.getInternetConnection).toHaveBeenCalled();
         });
       });
+
+      it('should not open MQTT error dialog while the connection is up', fakeAsync(() => {
+        effects.onFetchSystemStatusSuccess$.subscribe();
+        flushMicrotasks();
+
+        expect(mqttErrorDialogServiceMock.open).not.toHaveBeenCalled();
+        expect(dispatchSpy).not.toHaveBeenCalledWith(actions.stopInterval());
+      }));
+
+      it('should stop tracking and open MQTT error dialog when MQTT connection drops mid-test', fakeAsync(() => {
+        mockMqttService.getConnectionState.and.returnValue(of(false));
+
+        effects.onFetchSystemStatusSuccess$.subscribe();
+        flushMicrotasks();
+
+        expect(dispatchSpy).toHaveBeenCalledWith(actions.stopInterval());
+        expect(notificationServiceMock.dismissSnackBar).toHaveBeenCalled();
+        expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(false);
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          actions.setIsTestingComplete({ isTestingComplete: false })
+        );
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          setStatus({ status: StatusOfTestrun.Idle })
+        );
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          actions.setTestrunStatus({ systemStatus: IDLE_STATUS })
+        );
+        expect(mqttErrorDialogServiceMock.open).toHaveBeenCalledTimes(1);
+      }));
     });
 
     describe('with status "waiting for device"', () => {

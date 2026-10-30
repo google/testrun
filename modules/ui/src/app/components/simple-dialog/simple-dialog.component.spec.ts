@@ -105,4 +105,54 @@ describe('DeleteFormComponent', () => {
 
     closeSpy.calls.reset();
   });
+
+  describe('persistent mode', () => {
+    beforeEach(() => {
+      component.data = {
+        icon: 'error',
+        title: 'Connection Error',
+        content: 'content',
+        isPersistent: true,
+      };
+      component.disableEscape = true;
+      fixture.detectChanges();
+    });
+
+    it('should not render cancel and confirm buttons', () => {
+      expect(compiled.querySelector('.cancel-button')).toBeNull();
+      expect(compiled.querySelector('.confirm-button')).toBeNull();
+      expect(compiled.querySelector('mat-dialog-actions')).toBeNull();
+    });
+
+    it('should still render title and content', () => {
+      expect(
+        compiled.querySelector('.simple-dialog-title')?.textContent?.trim()
+      ).toBe('Connection Error');
+      expect(
+        compiled.querySelector('.simple-dialog-content')?.textContent?.trim()
+      ).toBe('content');
+    });
+  });
+
+  it('should set disableEscape from persistent dialog data', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [SimpleDialogComponent, MatDialogModule, MatButtonModule],
+      providers: [
+        {
+          provide: MatDialogRef,
+          useValue: {
+            keydownEvents: () => of(new KeyboardEvent('keydown', { code: '' })),
+            close: () => ({}),
+            afterOpened: () => of(void 0),
+            beforeClosed: () => of(void 0),
+          },
+        },
+        { provide: MAT_DIALOG_DATA, useValue: { isPersistent: true } },
+      ],
+    });
+    const persistentFixture = TestBed.createComponent(SimpleDialogComponent);
+
+    expect(persistentFixture.componentInstance.disableEscape).toBeTrue();
+  });
 });
