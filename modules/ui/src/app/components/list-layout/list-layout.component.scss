@@ -157,6 +157,15 @@
   letter-spacing: 0;
 }
 
+.empty-search-message {
+  padding: 16px 24px 16px 32px;
+  margin: 0;
+  color: colors.$on-surface-variant;
+  font-family: variables.$font-text;
+  font-size: 16px;
+  line-height: 24px;
+}
+
 @media (max-width: 768px) {
   .layout-container-left-panel {
     width: 100%;
