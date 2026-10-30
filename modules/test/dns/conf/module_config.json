@@ -14,7 +14,7 @@
     "tests":[
       {
         "name": "dns.network.hostname_resolution",
-        "test_description": "Verify the device sends DNS requests",
+        "test_description": "Check if device sends DNS requests",
         "expected_behavior": "The device sends DNS requests.",
         "recommendations": [
           "Install a supported DNS client",
