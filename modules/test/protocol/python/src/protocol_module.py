@@ -40,6 +40,7 @@ class ProtocolModule(TestModule):
 
   def _protocol_valid_bacnet(self):
     LOGGER.info('Running protocol.valid_bacnet')
+    LOGGER.info(f'config: {self._advanced_config}')
     result = None
     interface_name = 'veth0'
     # If the ipv4 address wasn't resolved yet, try again

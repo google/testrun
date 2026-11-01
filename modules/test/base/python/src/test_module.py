@@ -57,6 +57,7 @@ class TestModule:
     self._add_logger(log_name=log_name)
     self._config = self._read_config(
         conf_file=conf_file if conf_file is not None else CONF_FILE)
+    self._advanced_config = os.environ.get('TIMEOUT', None)
     self._device_ipv4_addr = None
     self._device_ipv6_addr = None
 
