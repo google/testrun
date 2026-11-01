@@ -122,7 +122,7 @@ class Module:
     return []
 
   def get_environment(self, device=None):  # pylint: disable=W0613
-    return {'TIMEOUT': '123'}
+    return {}
 
   def _get_module_log_level(self, module_json):
     log_level = DEFAULT_LOG_LEVEL

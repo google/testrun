@@ -108,7 +108,8 @@ class TestModule(Module):
         'IPV6_SUBNET': self.get_session().get_ipv6_subnet(),
         'DEV_IFACE': self.get_session().get_device_interface(),
         'DEV_IFACE_MAC': self.get_session().get_device_interface_mac_addr(),
-        'LOG_LEVEL': self.log_level
+        'LOG_LEVEL': self.log_level,
+        'TIMEOUT': '123'
     }
     return environment
 
