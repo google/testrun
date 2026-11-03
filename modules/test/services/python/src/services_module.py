@@ -213,16 +213,15 @@ class ServicesModule(TestModule):
     # Scans TCP ports to detect open ports.
     host = self._device_ipv4_addr
     # Preliminary command for quick open port detection.
-    nmap_command_prelim = f'''nmap --open -sT -Pn -v -n -T5
-                          --version-intensity 0 --min-rate 1000
-                          -p- -oX - {host}'''
+    nmap_command_prelim = f'''nmap --open -sT -Pn -n -v -T3
+                          --scan-delay 2ms -p- -oX - {host}'''
     LOGGER.info(f'Running nmap TCP port scan for {host}')
     nmap_results_prelim = util.run_command(nmap_command_prelim)[0]
     open_ports = self._nmap_open_ports(nmap_results_prelim)
     if open_ports:
       # Command for detecting services using open ports.
-      nmap_command = f'''nmap --open -sT -sV -Pn -v -p {','.join(open_ports)}
-                    --version-intensity 7 -T4 -oX - {host}'''
+      nmap_command = f'''nmap --open -sT -sV -Pn -v -T3 --scan-delay 2ms
+                     -p {','.join(open_ports)} --version-intensity 7 -oX - {host}'''
       LOGGER.info(f'Open TCP ports detected: {open_ports}')
       nmap_results = util.run_command(nmap_command)[0]
       LOGGER.debug(f'TCP Scan results raw: {nmap_results}')
@@ -254,7 +253,8 @@ class ServicesModule(TestModule):
       LOGGER.info(f'Running nmap UDP port scan for {self._device_ipv4_addr}')
       LOGGER.info('UDP ports: ' + str(port_list))
       nmap_results = util.run_command( # pylint: disable=E1120
-          f'nmap -sU -sV -p {port_list} -oX - {self._device_ipv4_addr}')[0]
+          f'''nmap -sU -sV -Pn -n -T3 --scan-delay 2ms
+          -p {port_list} --version-intensity 7 -oX - {self._device_ipv4_addr}''')[0]
       LOGGER.info('UDP port scan complete')
       LOGGER.debug(f'UDP Scan results raw: {nmap_results}')
       nmap_results_json = self._nmap_results_to_json(nmap_results)
