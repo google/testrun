@@ -57,7 +57,20 @@ export class ProfileItemComponent {
     this.profileClicked.emit(profile);
   }
 
-  getProfileItemLabel(profile: Profile) {
-    return `${profile.status} ${profile.risk} risk ${profile.name} ${this.datePipe.transform(profile.created, 'dd MMM yyyy')}`;
+  /**
+   * Builds the accessible name of the profile card, e.g.
+   * "Valid, Limited risk, Limited Risk Profile, 08 Oct 2026" or
+   * "Draft, Draft Profile, 08 Oct 2026".
+   *
+   * Parts without a value (such as the risk level of a draft, which the API
+   * returns as `null`) are omitted so that raw "null"/"undefined" values are
+   * never announced by screen readers.
+   */
+  getProfileItemLabel(profile: Profile): string {
+    const risk = profile.risk ? `${profile.risk} risk` : null;
+    const created = this.datePipe.transform(profile.created, 'dd MMM yyyy');
+    return [profile.status, risk, profile.name, created]
+      .filter(Boolean)
+      .join(', ');
   }
 }
