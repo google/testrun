@@ -19,9 +19,19 @@
 $profile-draft-icon-size: 22px;
 $profile-icon-container-size: 24px;
 $profile-item-container-gap: 8px;
+$profile-item-focus-ring-width: 2px;
+$profile-item-focus-ring-offset: 2px;
+$profile-item-focus-ring-space: $profile-item-focus-ring-width +
+  $profile-item-focus-ring-offset;
 
 .profile-item-container {
-  width: 100%;
+  // Reserve room for the `.profile-item-info` focus ring inside this element:
+  // on narrow viewports `styles.scss` sets `overflow: hidden` here, which would
+  // otherwise clip the ring. The negative margin and the extra width keep the
+  // card content in exactly the same place.
+  width: calc(100% + #{2 * $profile-item-focus-ring-space});
+  margin: -$profile-item-focus-ring-space;
+  padding: $profile-item-focus-ring-space;
   height: 100%;
   display: grid;
   gap: $profile-item-container-gap;
@@ -70,6 +80,21 @@ $profile-item-container-gap: 8px;
     'icon created created';
   column-gap: $profile-item-container-gap;
   align-items: center;
+  border-radius: variables.$corner-small;
+  // Never shrink below the content, so that the focus ring always encloses
+  // the risk badge instead of cutting through it when the grid track is
+  // narrower than the content (narrow viewports, expired profiles).
+  min-width: min-content;
+
+  // Explicit keyboard focus ring. Without it the card falls back to the
+  // browser default ring, whose platform-dependent color (e.g. #a8c7fa) is
+  // below the 3:1 non-text contrast minimum on the card backgrounds. Black
+  // matches the app-wide `.mdc-button:focus-visible` ring and has at least
+  // 16:1 contrast on both selected (#d3e3fd) and unselected (#f0f4f9) cards.
+  &:focus-visible {
+    outline: $profile-item-focus-ring-width solid colors.$black;
+    outline-offset: $profile-item-focus-ring-offset;
+  }
 
   p {
     white-space: nowrap;

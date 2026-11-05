@@ -204,5 +204,49 @@ describe('ProfileItemComponent', () => {
       expect(iconContainer?.getAttribute('aria-hidden')).toBe('true');
       expect(iconContainer?.hasAttribute('aria-label')).toBeFalse();
     });
+
+    it('should show a high-contrast focus ring when focused with the keyboard', () => {
+      const profileButton = getProfileButton();
+
+      profileButton.focus();
+
+      expect(profileButton.matches(':focus-visible'))
+        .withContext(
+          'DIAG ' +
+            JSON.stringify({
+              hasFocus: document.hasFocus(),
+              active: document.activeElement === profileButton,
+              activeTag: document.activeElement?.tagName,
+              focus: profileButton.matches(':focus'),
+              visibility: document.visibilityState,
+              bodyClass: document.body.className,
+              overlays: document.querySelectorAll('.cdk-overlay-pane').length,
+            })
+        )
+        .toBeTrue();
+      const style = getComputedStyle(profileButton);
+      expect(style.outlineStyle).toBe('solid');
+      expect(style.outlineWidth).toBe('2px');
+      expect(style.outlineColor).toBe('rgb(0, 0, 0)');
+    });
+
+    // `.profile-item-container` gets `overflow: hidden` on narrow viewports.
+    it('should keep the focus ring inside the card container so it is never clipped', () => {
+      const profileButton = getProfileButton();
+      profileButton.focus();
+      const style = getComputedStyle(profileButton);
+      const ringExtent =
+        parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset);
+
+      const button = profileButton.getBoundingClientRect();
+      const container = (
+        compiled.querySelector('.profile-item-container') as HTMLElement
+      ).getBoundingClientRect();
+
+      expect(button.left - ringExtent).toBeGreaterThanOrEqual(container.left);
+      expect(button.top - ringExtent).toBeGreaterThanOrEqual(container.top);
+      expect(button.right + ringExtent).toBeLessThanOrEqual(container.right);
+      expect(button.bottom + ringExtent).toBeLessThanOrEqual(container.bottom);
+    });
   });
 });

@@ -271,6 +271,39 @@ describe('ListLayoutComponent', () => {
         'polite'
       );
     }));
+
+    describe('search input focus ring', () => {
+      let searchInputElement: HTMLInputElement;
+
+      beforeEach(() => {
+        searchInputElement = compiled.querySelector(
+          '.search-field input'
+        ) as HTMLInputElement;
+      });
+
+      afterEach(() => {
+        searchInputElement.blur();
+        document.body.classList.remove('using-mouse');
+      });
+
+      it('should show a high-contrast focus ring for keyboard users', () => {
+        searchInputElement.focus();
+
+        const style = getComputedStyle(searchInputElement);
+        expect(style.outlineStyle).toBe('solid');
+        expect(style.outlineWidth).toBe('2px');
+        expect(style.outlineColor).toBe('rgb(0, 0, 0)');
+      });
+
+      it('should not show the focus ring while the mouse is being used', () => {
+        // AppComponent toggles `using-mouse` on <body> on mouse interaction.
+        document.body.classList.add('using-mouse');
+
+        searchInputElement.focus();
+
+        expect(getComputedStyle(searchInputElement).outlineStyle).toBe('none');
+      });
+    });
   });
 
   describe('when entity form is open without initial entity', () => {
