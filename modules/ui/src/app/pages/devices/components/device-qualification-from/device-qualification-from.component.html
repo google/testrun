@@ -26,6 +26,7 @@ limitations under the License.
         formControlName="manufacturer"
         placeholder="Device Manufacturer"
         matInput />
+      <mat-hint>Max 28 characters (letters and numbers)</mat-hint>
       @if (manufacturer.hasError('invalid_format')) {
         <mat-error class="error-multiline" role="alert" aria-live="assertive">
           <span
@@ -51,6 +52,7 @@ limitations under the License.
         formControlName="model"
         placeholder="New Device"
         matInput />
+      <mat-hint>Max 28 characters (letters and numbers)</mat-hint>
       @if (model.hasError('invalid_format')) {
         <mat-error class="error-multiline" role="alert" aria-live="assertive">
           <span
@@ -81,6 +83,7 @@ limitations under the License.
         mask="AA:AA:AA:AA:AA:AA"
         shownMaskExpression="__:__:__:__:__:__"
         type="text" />
+      <mat-hint>Format: XX:XX:XX:XX:XX:XX (12 hex digits)</mat-hint>
       @if (mac_addr.errors?.['required'] && !mac_addr.errors?.['pattern']) {
         <mat-error>
           <span>MAC address is <strong>required</strong></span>
@@ -104,12 +107,14 @@ limitations under the License.
       }
     </mat-form-field>
 
-    <mat-label class="device-qualification-form-journey-label"
+    <mat-label
+      id="testing-journey-label"
+      class="device-qualification-form-journey-label"
       >Please, select the testing journey for device</mat-label
     >
-    <input matInput style="display: none" />
 
     <mat-radio-group
+      aria-labelledby="testing-journey-label"
       formControlName="test_pack"
       class="device-qualification-form-journey">
       <mat-radio-button
@@ -137,13 +142,22 @@ limitations under the License.
         [class.device-qualification-form-test-modules-container-error]="
           test_modules.touched && test_modules.errors?.['required']
         "
+        [errorId]="
+          test_modules.touched && test_modules.errors?.['required']
+            ? testModulesErrorId
+            : null
+        "
         [deviceForm]="deviceQualificationForm"
         [deviceTestModules]="initialDevice()?.test_modules"
         [testModules]="testModules()">
       </app-device-tests>
     }
     @if (test_modules.touched && test_modules.errors?.['required']) {
-      <mat-error class="device-qualification-form-test-modules-error">
+      <mat-error
+        [id]="testModulesErrorId"
+        role="alert"
+        aria-live="polite"
+        class="device-qualification-form-test-modules-error">
         At least one test has to be selected to save a Device.
       </mat-error>
     }

@@ -577,6 +577,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
     self._set_status(TestrunStatus.IN_PROGRESS)
+    self._os_discover(mac_addr)
 
     # Start testrun timer
     self.get_session().start_timer()
@@ -584,6 +585,31 @@ class Testrun:  # pylint: disable=too-few-public-methods
     self._test_orc.run_test_modules()
 
     self._stop_network()
+
+  def _os_discover(self, mac_addr=None):
+    device = self.get_session().get_target_device()
+    if device is None and mac_addr is not None:
+      device = self.get_device(mac_addr)
+
+    if device is None or not device.ip_addr:
+      LOGGER.error('Cannot discover device OS: Device or IP address not found')
+      return
+
+    LOGGER.info(f'Discovering device OS for {device.ip_addr}')
+    device_os_discover_attempts = 3
+    while device_os_discover_attempts > 0:
+      device_os = util.get_device_os_nmap(device.ip_addr)
+      if not device_os:
+        device_os = util.get_device_os_ssh(device.ip_addr)
+      if device_os:
+        self.get_session().set_device_kernel(device_os)
+        LOGGER.info(f'Discovered device OS: {device_os}')
+        break
+      device_os_discover_attempts -= 1
+      if device_os_discover_attempts > 0:
+        time.sleep(1)
+
+  os_discover = _os_discover
 
   def get_session(self):
     return self._session

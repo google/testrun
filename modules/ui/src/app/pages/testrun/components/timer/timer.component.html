@@ -18,7 +18,7 @@ limitations under the License.
     id="monitoring-countdown-timer"
     class="monitoring-timer timer-widget"
     role="timer"
-    aria-live="polite"
+    aria-live="off"
     aria-atomic="true"
     [attr.aria-label]="timerAriaLabel">
     <div class="timer-circle-container">
@@ -52,10 +52,7 @@ limitations under the License.
         <span class="timer-label" aria-hidden="true">time remaining</span>
       </div>
     </div>
-    <span
-      class="cdk-visually-hidden sr-only"
-      aria-live="polite"
-      aria-atomic="true">
+    <span class="cdk-visually-hidden sr-only">
       {{ liveAnnouncementText }}
     </span>
   </div>

@@ -166,7 +166,7 @@ def get_device_os_ssh(ip: str) -> str:
         return output.rsplit(' ', maxsplit=1)[-1].strip()
     return ''
   except Exception as e:
-    LOGGER.error(f'Error determining device OS via SSH: {e}')
+    LOGGER.info(f'Error determining device OS via SSH: {e}')
     return ''
 
 def get_device_os_nmap(ip: str) -> str:
@@ -182,5 +182,5 @@ def get_device_os_nmap(ip: str) -> str:
             return line.split('OS details:')[1].strip()
     return ''
   except Exception as e:
-    LOGGER.error(f'Error determining device OS via Nmap: {e}')
+    LOGGER.info(f'Error determining device OS via Nmap: {e}')
     return ''

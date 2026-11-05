@@ -89,6 +89,7 @@ limitations under the License.
         id="devices-link"
         (click)="confirm(optOut, Routes.Devices)"
         (keydown.enter)="confirm(optOut, Routes.Devices)"
+        (keydown.space)="confirm(optOut, Routes.Devices)"
         tabindex="0"
         role="button"
         class="message-link">
@@ -99,6 +100,7 @@ limitations under the License.
         id="risk-profiles-link"
         (click)="confirm(optOut, Routes.RiskAssessment)"
         (keydown.enter)="confirm(optOut, Routes.RiskAssessment)"
+        (keydown.space)="confirm(optOut, Routes.RiskAssessment)"
         tabindex="0"
         role="button"
         class="message-link">

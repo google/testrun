@@ -32,7 +32,7 @@ limitations under the License.
         *matHeaderCellDef
         mat-header-cell
         mat-sort-header
-        sortActionDescription="Sort by duration time">
+        sortActionDescription="Sort by organisation">
         Organisation
       </th>
       <td *matCellDef="let data" class="text-nowrap" mat-cell>
@@ -44,7 +44,7 @@ limitations under the License.
         *matHeaderCellDef
         mat-header-cell
         mat-sort-header
-        sortActionDescription="Sort by duration time">
+        sortActionDescription="Sort by expiration date">
         Expires
       </th>
       <td *matCellDef="let data" class="text-nowrap" mat-cell>
@@ -82,7 +82,7 @@ limitations under the License.
       </td>
     </ng-container>
     <ng-container matColumnDef="actions">
-      <th *matHeaderCellDef mat-header-cell></th>
+      <th *matHeaderCellDef mat-header-cell aria-label="Actions"></th>
       <td
         *matCellDef="let data"
         class="table-cell-actions"

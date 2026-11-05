@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatTooltip } from '@angular/material/tooltip';
+import { By } from '@angular/platform-browser';
 
 import { ProfileItemComponent } from './profile-item.component';
 import { PROFILE_MOCK } from '../../../mocks/profile.mock';
 import { TestRunService } from '../../../services/test-run.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { ProfileStatus } from '../../../model/profile';
+import { Profile, ProfileRisk, ProfileStatus } from '../../../model/profile';
 
 describe('ProfileItemComponent', () => {
   let component: ProfileItemComponent;
@@ -123,5 +125,84 @@ describe('ProfileItemComponent', () => {
 
     const icon = compiled.querySelector('.profile-item-icon');
     expect(icon?.textContent?.trim()).toBe('error');
+  });
+
+  describe('accessibility', () => {
+    const getProfileButton = (): HTMLElement =>
+      compiled.querySelector('.profile-item-info') as HTMLElement;
+
+    const renderProfile = (overrides: Partial<Profile>): void => {
+      fixture.componentRef.setInput('profile', {
+        ...PROFILE_MOCK,
+        ...overrides,
+      });
+      fixture.detectChanges();
+    };
+
+    it('should label a completed profile with status, risk level, name and date', () => {
+      renderProfile({ risk: ProfileRisk.LIMITED });
+
+      expect(getProfileButton().getAttribute('aria-label')).toBe(
+        'Valid, Limited risk, Primary profile, 23 May 2024'
+      );
+    });
+
+    // The API returns `risk: null` for draft profiles.
+    const missingRiskValues: Array<[string, string | null | undefined]> = [
+      ['null', null],
+      ['undefined', undefined],
+      ['empty', ''],
+    ];
+    missingRiskValues.forEach(([description, risk]) => {
+      it(`should omit the risk level from the label when risk is ${description}`, () => {
+        renderProfile({
+          status: ProfileStatus.DRAFT,
+          risk: risk as string | undefined,
+        });
+
+        const label = getProfileButton().getAttribute('aria-label');
+        expect(label).toBe('Draft, Primary profile, 23 May 2024');
+        expect(label).not.toMatch(/null|undefined/);
+      });
+    });
+
+    it('should omit the date from the label when the profile has no creation date', () => {
+      renderProfile({
+        name: 'Copy of Primary profile',
+        status: ProfileStatus.COPY,
+        created: undefined,
+      });
+
+      expect(getProfileButton().getAttribute('aria-label')).toBe(
+        'Copy, Copy of Primary profile'
+      );
+    });
+
+    it('should not repeat the status in an aria-describedby description', async () => {
+      renderProfile({ status: ProfileStatus.DRAFT });
+      await fixture.whenStable();
+
+      expect(getProfileButton().hasAttribute('aria-describedby')).toBeFalse();
+    });
+
+    it('should keep a visual tooltip that mirrors the accessible name', () => {
+      renderProfile({ status: ProfileStatus.DRAFT });
+
+      const tooltip = fixture.debugElement
+        .query(By.css('.profile-item-info'))
+        .injector.get(MatTooltip);
+      expect(tooltip.message).toBe(
+        getProfileButton().getAttribute('aria-label') as string
+      );
+    });
+
+    it('should hide the decorative status icon from assistive technology', () => {
+      const iconContainer = compiled.querySelector(
+        '.profile-item-icon-container'
+      );
+
+      expect(iconContainer?.getAttribute('aria-hidden')).toBe('true');
+      expect(iconContainer?.hasAttribute('aria-label')).toBeFalse();
+    });
   });
 });

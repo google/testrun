@@ -14,13 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 @if (data.icon) {
-  <span class="simple-dialog-icon"
+  <span class="simple-dialog-icon" aria-hidden="true"
     ><mat-icon fontSet="material-symbols-outlined">{{
       data.icon
     }}</mat-icon></span
   >
 }
-<span class="simple-dialog-title">{{ data.title }}</span>
+<span class="simple-dialog-title" role="heading" aria-level="2">{{
+  data.title
+}}</span>
 <p class="simple-dialog-content">
   {{ data.content }}
 </p>

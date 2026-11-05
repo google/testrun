@@ -83,6 +83,14 @@ describe('DownloadOptionsComponent', () => {
     expect(component.isOpenDownloadOptions).toBeFalse();
   });
 
+  it('#handleKeydown should close download options on Escape key', () => {
+    component.openDownloadOptions();
+    expect(component.isOpenDownloadOptions).toBeTrue();
+
+    component.handleKeydown(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(component.isOpenDownloadOptions).toBeFalse();
+  });
+
   describe('#sendGAEvent', () => {
     it('should send download_report_pdf when type is pdf', () => {
       component.sendGAEvent(MOCK_PROGRESS_DATA_CANCELLED);

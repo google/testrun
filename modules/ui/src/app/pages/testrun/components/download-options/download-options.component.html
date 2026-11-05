@@ -56,6 +56,8 @@ limitations under the License.
       class="download-button"
       [class.download-button-opened]="isOpenDownloadOptions"
       color="primary"
+      aria-haspopup="menu"
+      [attr.aria-expanded]="isOpenDownloadOptions"
       [attr.aria-label]="
         isOpenDownloadOptions
           ? 'Hide download options'

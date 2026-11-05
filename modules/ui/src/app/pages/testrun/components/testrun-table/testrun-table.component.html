@@ -65,10 +65,14 @@ limitations under the License.
       </mat-cell>
     </ng-container>
     <ng-container matColumnDef="clickableIcon">
-      <mat-header-cell mat-header-cell *matHeaderCellDef> </mat-header-cell>
+      <mat-header-cell mat-header-cell *matHeaderCellDef aria-label="Details">
+      </mat-header-cell>
       <mat-cell mat-cell *matCellDef="let element">
         @if (element.recommendations) {
-          <mat-icon class="clickable-icon" fontSet="material-symbols-outlined">
+          <mat-icon
+            class="clickable-icon"
+            fontSet="material-symbols-outlined"
+            aria-hidden="true">
             info
           </mat-icon>
         }

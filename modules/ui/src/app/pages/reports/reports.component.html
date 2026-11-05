@@ -235,9 +235,12 @@ limitations under the License.
                     <dt class="meta-label">Location</dt>
                     <dd class="meta-value-container">
                       @if (getLocation(data)) {
-                        <span class="meta-value" [title]="getLocation(data)">{{
-                          getLocation(data)
-                        }}</span>
+                        <span
+                          class="meta-value"
+                          [matTooltip]="getLocation(data) || ''"
+                          [title]="getLocation(data)"
+                          >{{ getLocation(data) }}</span
+                        >
                       } @else {
                         <ng-container
                           *ngTemplateOutlet="emptyDetails"></ng-container>
@@ -250,6 +253,7 @@ limitations under the License.
                       @if (getLinuxEnv(data)) {
                         <span
                           class="meta-value highlight"
+                          [matTooltip]="getLinuxEnv(data) || ''"
                           [title]="getLinuxEnv(data)"
                           >{{ getLinuxEnv(data) }}</span
                         >
@@ -265,6 +269,7 @@ limitations under the License.
                       @if (getPythonVersion(data)) {
                         <span
                           class="meta-value font-mono"
+                          [matTooltip]="getPythonVersion(data) || ''"
                           [title]="getPythonVersion(data)"
                           >{{ getPythonVersion(data) }}</span
                         >
@@ -280,6 +285,7 @@ limitations under the License.
                       @if (getKernel(data)) {
                         <span
                           class="meta-value font-mono"
+                          [matTooltip]="getKernel(data) || ''"
                           [title]="getKernel(data)"
                           >{{ getKernel(data) }}</span
                         >
@@ -354,7 +360,10 @@ limitations under the License.
 </ng-template>
 
 <ng-template #emptyDetails>
-  <span class="meta-value meta-value-missing" title="{{ EMPTY_DETAIL_TEXT }}">
+  <span
+    class="meta-value meta-value-missing"
+    [matTooltip]="EMPTY_DETAIL_TEXT"
+    title="{{ EMPTY_DETAIL_TEXT }}">
     <mat-icon
       fontSet="material-symbols-outlined"
       class="missing-icon filled"

@@ -52,6 +52,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TextFieldModule } from '@angular/cdk/text-field';
+import { _IdGenerator } from '@angular/cdk/a11y';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import { ProfileValidators } from '../../../risk-assessment/profile-form/profile.validators';
@@ -98,6 +99,7 @@ const MAC_ADDRESS_PATTERN =
 export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
   readonly TestingType = TestingType;
   readonly DeviceView = DeviceView;
+  readonly testModulesErrorId = inject(_IdGenerator).getId('mat-mdc-error-');
 
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);

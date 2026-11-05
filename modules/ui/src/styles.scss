@@ -340,7 +340,7 @@ body:has(app-help-tip) .app-toolbar-button.app-toolbar-button-help-tips {
 
 .message-link {
   color: colors.$blue-700;
-  text-decoration: none;
+  text-decoration: underline;
   cursor: pointer;
   font-weight: 400;
 }

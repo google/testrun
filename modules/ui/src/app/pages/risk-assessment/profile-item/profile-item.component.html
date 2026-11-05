@@ -18,19 +18,22 @@ limitations under the License.
   [class.profile-item-container-expired]="
     profile.status === ProfileStatus.EXPIRED
   ">
+  <!--
+    The tooltip intentionally mirrors the accessible name: MatTooltip does not
+    add an aria-describedby description when its message equals the
+    aria-label, so screen readers do not announce the status twice.
+  -->
   <div
     class="profile-item-info"
     role="button"
     tabindex="0"
     #tooltip="matTooltip"
-    matTooltip="{{ profile.status }}"
+    [matTooltip]="getProfileItemLabel(profile)"
     [attr.aria-label]="getProfileItemLabel(profile)"
     (click)="profileClicked.emit(profile)"
     (keydown.enter)="enterProfileItem(profile)"
     (keydown.space)="enterProfileItem(profile)">
-    <span
-      class="profile-item-icon-container"
-      [attr.aria-label]="profile.status">
+    <span class="profile-item-icon-container" aria-hidden="true">
       @if (profile.status === ProfileStatus.VALID) {
         <mat-icon class="profile-item-icon" fontSet="material-symbols-outlined">
           check_circle

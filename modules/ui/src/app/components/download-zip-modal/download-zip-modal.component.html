@@ -15,7 +15,7 @@ limitations under the License.
 -->
 @if (data.testrunStatus) {
   <div class="testing-result-heading">
-    <p class="testing-result-title">
+    <p class="testing-result-title" role="heading" aria-level="2">
       {{ data.testrunStatus.device.manufacturer }}
       {{ data.testrunStatus.device.model }}
       {{ data.testrunStatus.device.firmware }}
@@ -43,7 +43,9 @@ limitations under the License.
   </div>
 }
 @if (!data.testrunStatus) {
-  <span class="risk-profile-select-form-title">Download ZIP file</span>
+  <span class="risk-profile-select-form-title" role="heading" aria-level="2"
+    >Download ZIP file</span
+  >
 }
 @if (profiles.length === 1) {
   <p class="risk-profile-select-form-content">

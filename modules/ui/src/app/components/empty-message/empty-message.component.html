@@ -17,7 +17,7 @@ limitations under the License.
   class="empty-message"
   [ngClass]="isHorizontal() ? 'horizontal' : 'vertical'">
   <div class="empty-message-img">
-    <img [src]="image()" alt="empty message image" />
+    <img [src]="image()" alt="" />
   </div>
   <span class="empty-message-text" [class.one-line]="!message()">
     <span class="empty-message-header">{{ header() }}</span>
