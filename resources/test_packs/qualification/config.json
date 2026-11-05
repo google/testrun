@@ -26,6 +26,10 @@
           "required_result": "Required"
         },
         {
+          "name": "connection.stp_detection",
+          "required_result": "Informational"
+        },
+        {
           "name": "connection.dhcp_address",
           "required_result": "Required"
         },
