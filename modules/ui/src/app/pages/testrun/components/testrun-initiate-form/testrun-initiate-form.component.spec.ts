@@ -27,6 +27,8 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { TestRunService } from '../../../../services/test-run.service';
+import { TestRunMqttService } from '../../../../services/test-run-mqtt.service';
+import { MqttErrorDialogService } from '../../../../services/mqtt-error-dialog.service';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Device, DeviceStatus } from '../../../../model/device';
 import { DeviceItemComponent } from '../../../../components/device-item/device-item.component';
@@ -35,7 +37,8 @@ import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DeviceTestsComponent } from '../../../../components/device-tests/device-tests.component';
 import { device, MOCK_TEST_MODULES } from '../../../../mocks/device.mock';
-import { of } from 'rxjs';
+import { of, throwError, TimeoutError } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE } from '../../../../mocks/testrun.mock';
 import { SpinnerComponent } from '../../../../components/spinner/spinner.component';
 import { provideMockStore } from '@ngrx/store/testing';
@@ -46,6 +49,8 @@ describe('ProgressInitiateFormComponent', () => {
   let fixture: ComponentFixture<TestrunInitiateFormComponent>;
   let compiled: HTMLElement;
 
+  const testRunMqttServiceMock = jasmine.createSpyObj(['isConnected']);
+  const mqttErrorDialogServiceMock = jasmine.createSpyObj(['open']);
   const testRunServiceMock = jasmine.createSpyObj([
     'getDevices',
     'fetchDevices',
@@ -57,6 +62,7 @@ describe('ProgressInitiateFormComponent', () => {
   testRunServiceMock.getDevices.and.returnValue(
     new BehaviorSubject<Device[] | null>([device, device])
   );
+  testRunMqttServiceMock.isConnected.and.returnValue(true);
   testRunServiceMock.startTestrun.and.returnValue(of(true));
   testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE);
 
@@ -64,6 +70,11 @@ describe('ProgressInitiateFormComponent', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: TestRunService, useValue: testRunServiceMock },
+        { provide: TestRunMqttService, useValue: testRunMqttServiceMock },
+        {
+          provide: MqttErrorDialogService,
+          useValue: mqttErrorDialogServiceMock,
+        },
         {
           provide: MatDialogRef,
           useValue: {
@@ -97,6 +108,11 @@ describe('ProgressInitiateFormComponent', () => {
 
   afterEach(() => {
     testRunServiceMock.getSystemStatus.calls.reset();
+    testRunServiceMock.startTestrun.calls.reset();
+    testRunServiceMock.fetchVersion.calls.reset();
+    mqttErrorDialogServiceMock.open.calls.reset();
+    testRunMqttServiceMock.isConnected.and.returnValue(true);
+    testRunServiceMock.startTestrun.and.returnValue(of(true));
   });
 
   describe('Class tests', () => {
@@ -222,6 +238,71 @@ describe('ProgressInitiateFormComponent', () => {
           component.startTestRun();
 
           expect(testRunServiceMock.fetchVersion).toHaveBeenCalled();
+        });
+
+        it('should not start testrun and should open MQTT error dialog when MQTT is disconnected', () => {
+          testRunMqttServiceMock.isConnected.and.returnValue(false);
+          const cancelSpy = spyOn(component, 'cancel');
+
+          component.startTestRun();
+
+          expect(testRunServiceMock.startTestrun).not.toHaveBeenCalled();
+          expect(testRunServiceMock.fetchVersion).not.toHaveBeenCalled();
+          expect(cancelSpy).toHaveBeenCalledWith(null);
+          expect(mqttErrorDialogServiceMock.open).toHaveBeenCalled();
+        });
+
+        it('should open MQTT error dialog when startTestrun request times out', () => {
+          testRunServiceMock.startTestrun.and.returnValue(
+            throwError(() => new TimeoutError())
+          );
+          const cancelSpy = spyOn(component, 'cancel');
+
+          component.startTestRun();
+
+          expect(cancelSpy).toHaveBeenCalledWith(null);
+          expect(mqttErrorDialogServiceMock.open).toHaveBeenCalled();
+        });
+
+        it('should open MQTT error dialog when Testrun is unreachable', () => {
+          testRunServiceMock.startTestrun.and.returnValue(
+            throwError(() => new HttpErrorResponse({ status: 0 }))
+          );
+          const cancelSpy = spyOn(component, 'cancel');
+
+          component.startTestRun();
+
+          expect(cancelSpy).toHaveBeenCalledWith(null);
+          expect(mqttErrorDialogServiceMock.open).toHaveBeenCalled();
+        });
+
+        it('should open MQTT error dialog when MQTT drops while the start request is in flight', () => {
+          testRunMqttServiceMock.isConnected.and.returnValues(true, false);
+          const cancelSpy = spyOn(component, 'cancel');
+
+          component.startTestRun();
+
+          expect(testRunServiceMock.startTestrun).toHaveBeenCalled();
+          expect(cancelSpy).toHaveBeenCalledWith(null);
+          expect(mqttErrorDialogServiceMock.open).toHaveBeenCalled();
+        });
+
+        it('should keep the dialog open and not show MQTT error dialog on backend validation error', () => {
+          testRunServiceMock.startTestrun.and.returnValue(
+            throwError(
+              () =>
+                new HttpErrorResponse({
+                  status: 409,
+                  error: { error: 'Testrun cannot be started' },
+                })
+            )
+          );
+          const cancelSpy = spyOn(component, 'cancel');
+
+          component.startTestRun();
+
+          expect(cancelSpy).not.toHaveBeenCalled();
+          expect(mqttErrorDialogServiceMock.open).not.toHaveBeenCalled();
         });
       });
     });
