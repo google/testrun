@@ -105,10 +105,20 @@
     width: calc(100% - #{variables.$icon-size * 2});
     height: 100%;
     border: 0;
+    border-radius: variables.$corner-small;
     background: inherit;
     font-size: 16px;
     font-family: variables.$font-text;
     color: colors.$on-surface-variant;
+
+    // Explicit keyboard focus ring. Without it the input falls back to the
+    // browser default ring, whose platform-dependent color (e.g. #a8c7fa) is
+    // below the 3:1 non-text contrast minimum on the search field background.
+    // Black matches the app-wide `.mdc-button:focus-visible` ring and has
+    // 18:1 contrast on #e9eef6.
+    &:focus-visible {
+      outline: 2px solid colors.$black;
+    }
   }
 }
 
@@ -116,7 +126,9 @@
   margin-right: 10px;
 }
 
-::ng-deep .using-mouse .search-field input:focus {
+// Mouse users already see the text caret, so the ring is shown to keyboard
+// users only (`using-mouse` is toggled on <body> by AppComponent).
+:host-context(.using-mouse) .search-field input:focus {
   outline: none;
 }
 
