@@ -28,6 +28,9 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { TestRunService } from '../../../../services/test-run.service';
+import { TestRunMqttService } from '../../../../services/test-run-mqtt.service';
+import { MqttErrorDialogService } from '../../../../services/mqtt-error-dialog.service';
+import { isConnectionFailure } from '../../../../interceptors/error.interceptor';
 import {
   Device,
   TestModule,
@@ -97,6 +100,8 @@ export class TestrunInitiateFormComponent
   override dialogRef: MatDialogRef<TestrunInitiateFormComponent>;
   data = inject<DialogData>(MAT_DIALOG_DATA);
   private readonly testRunService = inject(TestRunService);
+  private readonly testRunMqttService = inject(TestRunMqttService);
+  private readonly mqttErrorDialogService = inject(MqttErrorDialogService);
   private fb = inject(FormBuilder);
   private deviceValidators = inject(DeviceValidators);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
@@ -206,8 +211,14 @@ export class TestrunInitiateFormComponent
     );
 
     if (this.selectedDevice && !this.startRequestSent.value) {
+      // Scenario 1: MQTT is offline/disconnected - do not start the testrun
+      // and do not show any progress; surface the blocking error dialog.
+      if (!this.testRunMqttService.isConnected()) {
+        this.handleConnectionFailure();
+        return;
+      }
+
       this.startRequestSent.next(true);
-      this.testRunService.fetchVersion();
       this.testRunService
         .startTestrun({
           ...this.selectedDevice,
@@ -217,13 +228,38 @@ export class TestrunInitiateFormComponent
         .pipe(take(1))
         .subscribe({
           next: status => {
+            // MQTT dropped while the start request was in flight: status
+            // updates can no longer be tracked.
+            if (!this.testRunMqttService.isConnected()) {
+              this.handleConnectionFailure();
+              return;
+            }
+            // Refresh the version only after a successful start so that a
+            // hanging backend does not trigger a spinner or snackbar from this
+            // secondary request while the start command itself is failing.
+            this.testRunService.fetchVersion();
             this.cancel(status);
           },
-          error: () => {
+          error: error => {
             this.startRequestSent.next(false);
+            // Testrun did not acknowledge the start command (timeout or
+            // unreachable) or MQTT dropped meanwhile. Backend validation
+            // errors (4xx/5xx) are reported via the ErrorInterceptor snackbar
+            // and keep the dialog open so the user can correct and retry.
+            if (
+              isConnectionFailure(error) ||
+              !this.testRunMqttService.isConnected()
+            ) {
+              this.handleConnectionFailure();
+            }
           },
         });
     }
+  }
+
+  private handleConnectionFailure(): void {
+    this.cancel(null);
+    this.mqttErrorDialogService.open();
   }
 
   private createInitiateForm() {

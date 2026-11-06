@@ -31,6 +31,7 @@ interface DialogData {
   title?: string;
   content?: string;
   confirmName?: string;
+  isPersistent?: boolean;
 }
 
 @Component({
@@ -58,6 +59,7 @@ export class SimpleDialogComponent extends ComponentWithAnnouncement(
     super(dialogRef, data.title, liveAnnouncer, focusService);
     this.dialogRef = dialogRef;
     this.data = data;
+    this.disableEscape = !!data?.isPersistent;
     this.liveAnnouncer = liveAnnouncer;
     this.focusService = focusService;
   }

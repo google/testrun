@@ -38,6 +38,7 @@ import {
 import { QuestionFormat } from '../model/question';
 
 const API_URL = `http://${window.location.hostname}:8000`;
+export const SYSTEM_START = '/system/start';
 export const SYSTEM_STOP = '/system/stop';
 export const EXPORT = '/export';
 
@@ -218,7 +219,7 @@ export class TestRunService {
 
   startTestrun(device: Device): Observable<TestrunStatus> {
     return this.http.post<TestrunStatus>(
-      `${API_URL}/system/start`,
+      `${API_URL}${SYSTEM_START}`,
       JSON.stringify({ device })
     );
   }

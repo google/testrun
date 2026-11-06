@@ -69,4 +69,17 @@ describe('EscapableDialogComponent', () => {
 
     closeSpy.calls.reset();
   });
+
+  it('should not close dialog on escape when escape is disabled', () => {
+    const closeSpy = spyOn(component.dialogRef, 'close');
+    component.disableEscape = true;
+
+    keyboardEvent.next(new KeyboardEvent('keydown', { code: 'Escape' }));
+    fixture.detectChanges();
+
+    expect(closeSpy).not.toHaveBeenCalled();
+
+    closeSpy.calls.reset();
+    component.disableEscape = false;
+  });
 });

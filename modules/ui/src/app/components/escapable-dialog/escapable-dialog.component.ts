@@ -26,6 +26,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 })
 export class EscapableDialogComponent {
   dialogRef = inject<MatDialogRef<EscapableDialogComponent>>(MatDialogRef);
+  disableEscape = false;
 
   constructor() {
     const dialogRef = this.dialogRef;
@@ -33,7 +34,9 @@ export class EscapableDialogComponent {
     this.dialogRef
       .keydownEvents()
       .pipe(
-        filter((e: KeyboardEvent) => e.code === 'Escape'),
+        filter(
+          (e: KeyboardEvent) => e.code === 'Escape' && !this.disableEscape
+        ),
         take(1)
       )
       .subscribe(() => {

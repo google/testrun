@@ -1,4 +1,4 @@
-import { TestBed, fakeAsync } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 
 import { TestrunDialogService } from './testrun-dialog.service';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -30,6 +30,7 @@ describe('TestrunDialogService', () => {
     });
     service = TestBed.inject(TestrunDialogService);
     store = TestBed.inject(MockStore);
+    stateServiceMock.focusFirstElementInContainer.calls.reset();
     spyOn(store, 'dispatch').and.callThrough();
   });
 
@@ -71,6 +72,32 @@ describe('TestrunDialogService', () => {
       );
 
       openSpy.calls.reset();
+    }));
+  });
+
+  describe('#handleFocus', () => {
+    it('should focus the first element when no dialog is open', fakeAsync(() => {
+      spyOnProperty(service.dialog, 'openDialogs', 'get').and.returnValue([]);
+
+      service.handleFocus(0);
+      tick(1);
+
+      expect(
+        stateServiceMock.focusFirstElementInContainer
+      ).toHaveBeenCalledTimes(1);
+    }));
+
+    it('should not steal focus while a dialog is open', fakeAsync(() => {
+      spyOnProperty(service.dialog, 'openDialogs', 'get').and.returnValue([
+        {} as MatDialogRef<unknown>,
+      ]);
+
+      service.handleFocus(0);
+      tick(1);
+
+      expect(
+        stateServiceMock.focusFirstElementInContainer
+      ).not.toHaveBeenCalled();
     }));
   });
 });
