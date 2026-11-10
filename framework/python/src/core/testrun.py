@@ -626,12 +626,13 @@ class Testrun:  # pylint: disable=too-few-public-methods
     client = docker.from_env()
 
     try:
+      # Publish the UI on this machine only, like the API
       client.containers.run('testrun/ui',
                             auto_remove=True,
                             name='tr-ui',
                             hostname='testrun.io',
                             detach=True,
-                            ports={'80': 8080})
+                            ports={'80': ('127.0.0.1', 8080)})
     except docker.errors.ImageNotFound as ie:
       LOGGER.error('An error occurred whilst starting the UI. ' +
                    'Please investigate and try again.')
