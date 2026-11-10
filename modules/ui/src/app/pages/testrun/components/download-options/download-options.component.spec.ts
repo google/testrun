@@ -61,10 +61,18 @@ describe('DownloadOptionsComponent', () => {
 
   it('#downloadPdf should call getReportTitle', () => {
     const spyGetReportTitle = spyOn(component, 'getReportTitle');
+    // Use a fake link: clicking a real target="_blank" link opens a new tab,
+    // which takes focus away from the test page and breaks later specs that
+    // check focus styles.
+    const link = jasmine.createSpyObj<HTMLAnchorElement>('a', [
+      'dispatchEvent',
+    ]);
+    spyOn(document, 'createElement').and.returnValue(link);
 
     component.downloadPdf(MOCK_PROGRESS_DATA_COMPLIANT);
 
     expect(spyGetReportTitle).toHaveBeenCalled();
+    expect(link.dispatchEvent).toHaveBeenCalledTimes(1);
   });
 
   it('#getReportTitle should return data for title of link', () => {

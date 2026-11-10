@@ -357,7 +357,7 @@ def test_update_sys_config(testrun, restore_sys_config): # pylint: disable=W0613
 
   # Send the post request to update the system configuration
   r = requests.post(f"{API}/system/config",
-                    data=json.dumps(updated_sys_config),
+                    json=updated_sys_config,
                     timeout=5)
 
   # Check if status code is 200 (OK)
@@ -384,7 +384,7 @@ def test_update_sys_config_invalid_json(testrun): # pylint: disable=W0613
 
   # Send the post request to update the system configuration
   r = requests.post(f"{API}/system/config",
-                    data=json.dumps(updated_system_config),
+                    json=updated_system_config,
                     timeout=5)
 
   # Check if status code is 400 (Invalid config)
@@ -464,7 +464,7 @@ def start_test():
 
   # Send the post request (start test)
   r = requests.post(f"{API}/system/start",
-                    data=json.dumps(payload),
+                    json=payload,
                     timeout=10)
 
   # Exception if status code is not 200
@@ -513,7 +513,7 @@ def test_start_testrun_success(empty_devices_dir, add_devices, testrun): # pylin
   }
 
   # Send the post request
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+  r = requests.post(f"{API}/system/start", json=payload, timeout=10)
 
   # Check if the response status code is 200 (OK)
   assert r.status_code == 200
@@ -550,7 +550,7 @@ def test_start_testrun_invalid_json(testrun): # pylint: disable=W0613
   payload = {}
 
   # Send the post request
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+  r = requests.post(f"{API}/system/start", json=payload, timeout=10)
 
   # Check if the response status code is 400 (bad request)
   assert r.status_code == 400
@@ -587,7 +587,7 @@ def test_start_testrun_already_started(empty_devices_dir, add_devices, # pylint:
   }
 
   # Send the post request (start test)
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+  r = requests.post(f"{API}/system/start", json=payload, timeout=10)
 
   # Parse the json response
   response = r.json()
@@ -609,7 +609,7 @@ def test_start_testrun_device_not_found(empty_devices_dir, testrun): # pylint: d
     }}
 
   # Send the post request
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+  r = requests.post(f"{API}/system/start", json=payload, timeout=10)
 
   # Check if the response status code is 404 (not found)
   assert r.status_code == 404
@@ -646,7 +646,7 @@ def test_start_testrun_error(empty_devices_dir, add_devices, # pylint: disable=W
             }
 
   # Send the post request
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+  r = requests.post(f"{API}/system/start", json=payload, timeout=10)
 
   # Parse the json response
   response = r.json()
@@ -724,6 +724,103 @@ def test_sys_shutdown_in_progress(empty_devices_dir, add_devices, # pylint: disa
 
   # Check if 'error' in response
   assert "error" in response
+
+# Tests for API access control
+
+# Endpoints that change Testrun state and take a JSON body
+JSON_ROUTES = [
+    ("POST", "/system/config"),
+    ("POST", "/system/start"),
+    ("POST", "/device"),
+    ("POST", "/device/edit"),
+    ("DELETE", "/device"),
+    ("POST", "/profiles"),
+    ("DELETE", "/profiles"),
+    ("DELETE", "/system/config/certs"),
+]
+
+LOCAL_UI_ORIGIN = "http://localhost:8080"
+OTHER_SITE_ORIGIN = "https://evil.example"
+
+CORS_PREFLIGHT_HEADERS = {
+    "Access-Control-Request-Method": "POST",
+    "Access-Control-Request-Headers": "content-type",
+}
+
+def test_non_json_body_rejected(testrun, restore_sys_config): # pylint: disable=W0613
+  """ Test that state-changing endpoints reject non-JSON bodies (415) """
+
+  # Load a system configuration that would otherwise be accepted
+  updated_sys_config = load_json("updated_system.json",
+                                 directory=SYS_CONFIG_PATH)
+
+  # Load 'system.json' from 'local' folder before sending the requests
+  local_sys_config = load_json("system.json", directory="local")
+
+  for method, path in JSON_ROUTES:
+
+    # Send the payload as text/plain, which browsers can send to another
+    # website without a CORS preflight
+    r = requests.request(method,
+                         f"{API}{path}",
+                         data=json.dumps(updated_sys_config),
+                         headers={"Content-Type": "text/plain"},
+                         timeout=5)
+
+    # Check if status code is 415 (unsupported media type)
+    assert r.status_code == 415, f"{method} {path}"
+
+  # Check that 'local/system.json' has not been updated
+  assert load_json("system.json", directory="local") == local_sys_config
+
+def test_cross_site_request_rejected(testrun): # pylint: disable=W0613
+  """ Test that requests sent by other websites are rejected (403) """
+
+  # Attempt to shut down Testrun from another website
+  r = requests.post(f"{API}/system/shutdown",
+                    headers={"Origin": OTHER_SITE_ORIGIN},
+                    timeout=5)
+
+  # Check if status code is 403 (forbidden)
+  assert r.status_code == 403
+
+  # Check that Testrun is still running
+  r = requests.get(f"{API}/system/status", timeout=5)
+  assert r.status_code == 200
+
+def test_cors_allows_local_ui_only(testrun): # pylint: disable=W0613
+  """ Test that CORS only allows the local Testrun UI """
+
+  # Send a CORS preflight request from the Testrun UI
+  r = requests.options(f"{API}/system/config",
+                       headers={"Origin": LOCAL_UI_ORIGIN,
+                                **CORS_PREFLIGHT_HEADERS},
+                       timeout=5)
+
+  # Check if the Testrun UI is allowed
+  assert r.status_code == 200
+  assert r.headers.get("access-control-allow-origin") == LOCAL_UI_ORIGIN
+
+  # Send the same preflight request from another website
+  r = requests.options(f"{API}/system/config",
+                       headers={"Origin": OTHER_SITE_ORIGIN,
+                                **CORS_PREFLIGHT_HEADERS},
+                       timeout=5)
+
+  # Check if the other website is rejected
+  assert r.status_code == 400
+  assert "access-control-allow-origin" not in r.headers
+
+def test_unknown_host_rejected(testrun): # pylint: disable=W0613
+  """ Test that requests for other host names are rejected (400) """
+
+  # Send a request for another host name, as a DNS rebinding attack would
+  r = requests.get(f"{API}/system/status",
+                   headers={"Host": "evil.example:8000"},
+                   timeout=5)
+
+  # Check if status code is 400 (invalid host header)
+  assert r.status_code == 400
 
 def test_sys_status_idle(testrun): # pylint: disable=W0613
   """ Test for system status 'Idle' (200) """
@@ -1504,7 +1601,7 @@ def test_create_device(empty_devices_dir, testrun): # pylint: disable=W0613
   mac_addr_1 = device_1["mac_addr"]
 
   # Send the post request to the '/device' endpoint
-  r = requests.post(f"{API}/device", data=json.dumps(device_1), timeout=5)
+  r = requests.post(f"{API}/device", json=device_1, timeout=5)
 
   # Check if status code is 201 (Created)
   assert r.status_code == 201
@@ -1519,7 +1616,7 @@ def test_create_device(empty_devices_dir, testrun): # pylint: disable=W0613
   mac_addr_2 = device_2["mac_addr"]
 
   # Send the post request to the '/device' endpoint
-  r = requests.post(f"{API}/device", data=json.dumps(device_2), timeout=5)
+  r = requests.post(f"{API}/device", json=device_2, timeout=5)
 
   # Check if status code is 201 (Created)
   assert r.status_code == 201
@@ -1557,7 +1654,7 @@ def test_create_device_already_exists(empty_devices_dir, add_devices, # pylint: 
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
   # Send the post request to create the device
-  r = requests.post(f"{API}/device", data=json.dumps(device), timeout=5)
+  r = requests.post(f"{API}/device", json=device, timeout=5)
 
   # Check if status code is 409 (conflict)
   assert r.status_code == 409
@@ -1582,7 +1679,7 @@ def test_create_device_invalid_json(empty_devices_dir, testrun): # pylint: disab
   device = {}
 
   # Send the post request
-  r = requests.post(f"{API}/device", data=json.dumps(device), timeout=5)
+  r = requests.post(f"{API}/device", json=device, timeout=5)
 
   # Check if status code is 400 (bad request)
   assert r.status_code == 400
@@ -1600,7 +1697,10 @@ def test_create_device_invalid_request(empty_devices_dir, testrun): # pylint: di
   """ Test for create device when no payload is added """
 
   # Send the post request with no payload
-  r = requests.post(f"{API}/device", data=None, timeout=5)
+  r = requests.post(f"{API}/device",
+                    data=None,
+                    headers={"Content-Type": "application/json"},
+                    timeout=5)
 
   # Check if status code is 400 (bad request)
   assert r.status_code == 400
@@ -1648,7 +1748,7 @@ def test_edit_device(empty_devices_dir, add_devices, # pylint: disable=W0613
   # Send the post request to update the device
   r = requests.post(
       f"{API}/device/edit",
-      data=json.dumps(updated_device),
+      json=updated_device,
       timeout=5)
 
   # Check if status code is 200 (OK)
@@ -1713,7 +1813,7 @@ def test_edit_device_not_found(empty_devices_dir, testrun): # pylint: disable=W0
   # Send the post request to update the device
   r = requests.post(
       f"{API}/device/edit",
-      data=json.dumps(updated_device),
+      json=updated_device,
       timeout=5)
 
   # Check if status code is 404 (not found)
@@ -1736,7 +1836,7 @@ def test_edit_device_invalid_json(empty_devices_dir, testrun): # pylint: disable
 
   # Send the post request to update the device
   r = requests.post(f"{API}/device/edit",
-                      data=json.dumps(payload),
+                      json=payload,
                       timeout=5)
 
   # Check if status code is 400 (bad request)
@@ -1783,7 +1883,7 @@ def test_edit_device_mac_already_exists( empty_devices_dir, add_devices, # pylin
 
   # Send the post request to update the device
   r = requests.post(f"{API}/device/edit",
-                    data=json.dumps(updated_device),
+                    json=updated_device,
                     timeout=5)
 
   # Check if status code is 409 (conflict)
@@ -1825,7 +1925,7 @@ def test_edit_device_test_in_progress(empty_devices_dir, add_devices, # pylint: 
   # Send the post request to update the device
   r = requests.post(
       f"{API}/device/edit",
-      data=json.dumps(updated_device),
+      json=updated_device,
       timeout=5)
 
   # Check if status code is 403 (forbidden)
@@ -1871,7 +1971,7 @@ def test_edit_device_invalid_manufacturer(empty_devices_dir, add_devices, # pyli
   device["manufacturer"] = "/';disallowed characters"
 
   # Send the post request to update the device
-  r = requests.post(f"{API}/device", data=json.dumps(device),
+  r = requests.post(f"{API}/device", json=device,
                     timeout=5)
 
   # Check if the status code is 400 (bad request)
@@ -1896,7 +1996,7 @@ def test_edit_device_invalid_model(empty_devices_dir, add_devices, testrun): # p
   device["model"] = "/';disallowed characters"
 
   # Send the post request to update the device
-  r = requests.post(f"{API}/device", data=json.dumps(device),
+  r = requests.post(f"{API}/device", json=device,
                     timeout=5)
 
   # Check if the status code is 400 (bad request)
@@ -1918,7 +2018,7 @@ def test_edit_long_chars(empty_devices_dir, testrun): # pylint: disable=W0613
   device["model"] = "a" * 29
 
   # Send the post request to edit the device
-  r = requests.post(f"{API}/device", data=json.dumps(device),
+  r = requests.post(f"{API}/device", json=device,
                     timeout=5)
 
   # Check if the status code is 400 (bad request)
@@ -1947,7 +2047,7 @@ def test_delete_device(empty_devices_dir, add_devices, testrun): # pylint: disab
 
   # Send the delete request
   r = requests.delete(f"{API}/device/",
-              data=json.dumps(payload),
+              json=payload,
                             timeout=5)
 
   # Check if status code is 200 (OK)
@@ -1986,7 +2086,7 @@ def test_delete_device_not_found(empty_devices_dir, testrun): # pylint: disable=
 
   # Test that device_1 is not found
   r = requests.delete(f"{API}/device/",
-                      data=json.dumps(payload),
+                      json=payload,
                       timeout=5)
 
   # Check if status code is 404 (not found)
@@ -2009,7 +2109,7 @@ def test_delete_device_no_mac(empty_devices_dir, add_devices, testrun): # pylint
 
   # Send the delete request
   r = requests.delete(f"{API}/device/",
-                      data=json.dumps(payload),
+                      json=payload,
                       timeout=5)
 
   # Check if status code is 400 (bad request)
@@ -2042,7 +2142,7 @@ def test_delete_device_testrun_in_progress(empty_devices_dir, add_devices, # pyl
 
   # Send the delete request
   r = requests.delete(f"{API}/device/",
-              data=json.dumps(payload),
+              json=payload,
                             timeout=5)
 
   # Check if status code is 403 (forbidden)
@@ -2064,7 +2164,7 @@ def test_create_invalid_manufacturer(empty_devices_dir, testrun): # pylint: disa
   device["manufacturer"] = "/';disallowed characters"
 
   # Send the post request to create the device
-  r = requests.post(f"{API}/device", data=json.dumps(device),
+  r = requests.post(f"{API}/device", json=device,
                     timeout=5)
 
   # Check if the status code is 400 (bad request)
@@ -2086,7 +2186,7 @@ def test_create_invalid_model(empty_devices_dir, testrun): # pylint: disable=W06
   device["model"] = "/';disallowed characters"
 
   # Send the post request to create the device
-  r = requests.post(f"{API}/device", data=json.dumps(device),
+  r = requests.post(f"{API}/device", json=device,
                     timeout=5)
 
   # Check if the status code is 400 (bad request)
@@ -2108,7 +2208,7 @@ def test_create_long_chars(empty_devices_dir, testrun): # pylint: disable=W0613
   device["model"] = "a" * 29
 
   # Send the post request to create the device
-  r = requests.post(f"{API}/device", data=json.dumps(device),
+  r = requests.post(f"{API}/device", json=device,
                     timeout=5)
 
   # Check if the status code is 400 (bad request)
@@ -2427,7 +2527,7 @@ def test_delete_cert_success(reset_certs, add_certs, testrun): # pylint: disable
 
   # Send delete certificate request
   r = requests.delete(f"{API}/system/config/certs",
-                      data=json.dumps(delete_payload),
+                      json=delete_payload,
                       timeout=5)
 
   # Check if status code is 200 (OK)
@@ -2453,7 +2553,7 @@ def test_delete_cert_success(reset_certs, add_certs, testrun): # pylint: disable
 
   # Send delete certificate request
   r = requests.delete(f"{API}/system/config/certs",
-                      data=json.dumps(delete_payload),
+                      json=delete_payload,
                       timeout=5)
 
   # Check if status code is 200 (OK)
@@ -2477,7 +2577,7 @@ def test_delete_cert_bad_request(reset_certs, add_certs, testrun): # pylint: dis
 
   # Send the delete request
   r = requests.delete(f"{API}/system/config/certs",
-                      data=json.dumps(delete_payload),
+                      json=delete_payload,
                       timeout=5)
 
   # Check if status code is 400 (Bad Request)
@@ -2497,7 +2597,7 @@ def test_delete_cert_not_found(reset_certs, testrun): # pylint: disable=W0613
 
   # Send the delete request
   r = requests.delete(f"{API}/system/config/certs",
-                      data=json.dumps(delete_payload),
+                      json=delete_payload,
                       timeout=5)
 
   # Check if status code is 404 (Not Found)
@@ -2712,7 +2812,7 @@ def test_create_profile(testrun): # pylint: disable=W0613
     raise ValueError(f"Profile: {profile_name} exists")
 
   # Send the post request
-  r = requests.post(f"{API}/profiles", data=json.dumps(new_profile), timeout=5)
+  r = requests.post(f"{API}/profiles", json=new_profile, timeout=5)
 
   # Check if status code is 201 (Created)
   assert r.status_code == 201
@@ -2772,7 +2872,7 @@ def test_update_profile(empty_profiles_dir, add_profiles, testrun): # pylint: di
   # Send the post request to update the profile
   r = requests.post(
       f"{API}/profiles",
-      data=json.dumps(updated_profile),
+      json=updated_profile,
       timeout=5)
 
   # Check if status code is 200 (OK)
@@ -2810,7 +2910,7 @@ def test_update_profile_no_profiles_format(empty_profiles_dir, # pylint: disable
 
   # Send a POST request to update the profile
   r = requests.post(f"{API}/profiles",
-                    data=json.dumps(profile_update),
+                    json=profile_update,
                     timeout=5)
 
   # Check if the response status code is 501 (Not Implemented)
@@ -2838,7 +2938,7 @@ def test_update_profile_invalid_json(empty_profiles_dir, add_profiles, # pylint:
   # Send the post request to update the profile
   r = requests.post(
       f"{API}/profiles",
-      data=json.dumps(updated_profile),
+      json=updated_profile,
       timeout=5)
 
   # Parse the response
@@ -2859,7 +2959,7 @@ def test_create_profile_invalid_json(empty_profiles_dir, testrun): # pylint: dis
   # Send the post request to update the profile
   r = requests.post(
       f"{API}/profiles",
-      data=json.dumps(new_profile),
+      json=new_profile,
       timeout=5)
 
   # Parse the response
@@ -2878,7 +2978,7 @@ def test_create_profile_invalid_name(empty_profiles_dir, testrun): # pylint: dis
   new_profile = load_json("invalid_name.json", directory=PROFILES_PATH)
 
   # Send the post request
-  r = requests.post(f"{API}/profiles", data=json.dumps(new_profile), timeout=5)
+  r = requests.post(f"{API}/profiles", json=new_profile, timeout=5)
 
   # Check if status code is 400 (Bad request)
   assert r.status_code == 400
@@ -2921,7 +3021,7 @@ def test_update_profile_invalid_name(empty_profiles_dir, add_profiles, testrun):
   # Send the post request to update the profile
   r = requests.post(
       f"{API}/profiles",
-      data=json.dumps(updated_profile),
+      json=updated_profile,
       timeout=5)
 
   # Check if status code is 400 (Bad request)
@@ -2948,7 +3048,7 @@ def test_delete_profile(empty_profiles_dir, add_profiles, testrun): # pylint: di
   # Send the delete request
   r = requests.delete(
       f"{API}/profiles",
-      data=json.dumps(profile_to_delete),
+      json=profile_to_delete,
       timeout=5)
 
   # Check if status code is 200 (OK)
@@ -2987,7 +3087,7 @@ def test_delete_profile_no_profile(empty_profiles_dir, testrun): # pylint: disab
   # Delete the profile
   r = requests.delete(
       f"{API}/profiles",
-      data=json.dumps(profile_to_delete),
+      json=profile_to_delete,
       timeout=5)
 
   # Check if status code is 404 (Profile does not exist)
@@ -3008,7 +3108,7 @@ def test_delete_profile_invalid_json(empty_profiles_dir, testrun): # pylint: dis
   # Delete the profile
   r = requests.delete(
       f"{API}/profiles",
-      data=json.dumps(profile_to_delete),
+      json=profile_to_delete,
       timeout=5)
 
   # Check if status code is 400 (bad request)
@@ -3026,7 +3126,7 @@ def test_delete_profile_invalid_json(empty_profiles_dir, testrun): # pylint: dis
   # Delete the profile
   r = requests.delete(
       f"{API}/profiles",
-      data=json.dumps(profile_to_delete_2),
+      json=profile_to_delete_2,
       timeout=5)
 
   # Check if status code is 400 (bad request)
@@ -3190,7 +3290,7 @@ def test_export_profile_device_not_found(empty_profiles_dir, add_profiles, # pyl
 def test_delete_device_testrun_running(testing_devices, testrun): # pylint: disable=W0613
 
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+  r = requests.post(f"{API}/system/start", json=payload, timeout=10)
   assert r.status_code == 200
 
   until_true(
@@ -3220,7 +3320,7 @@ def test_delete_device_testrun_running(testing_devices, testrun): # pylint: disa
         },
     }
   r = requests.delete(f"{API}/device/",
-                      data=json.dumps(device_1),
+                      json=device_1,
                       timeout=5)
   assert r.status_code == 403
 
@@ -3247,7 +3347,7 @@ def test_stop_running_test(empty_devices_dir, add_devices, testrun): # pylint: d
               }
             }
 
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload),
+  r = requests.post(f"{API}/system/start", json=payload,
                     timeout=10)
 
   assert r.status_code == 200
@@ -3286,7 +3386,7 @@ def test_stop_running_test(empty_devices_dir, add_devices, testrun): # pylint: d
 def test_status_in_progress(testing_devices, testrun): # pylint: disable=W0613
 
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+  r = requests.post(f"{API}/system/start", json=payload, timeout=10)
   assert r.status_code == 200
 
   until_true(
@@ -3308,7 +3408,7 @@ def test_start_testrun_already_in_progress(
   testing_devices, # pylint: disable=W0613
   testrun): # pylint: disable=W0613
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+  r = requests.post(f"{API}/system/start", json=payload, timeout=10)
 
   until_true(
       lambda: query_system_status().lower() == "waiting for device",
@@ -3323,13 +3423,13 @@ def test_start_testrun_already_in_progress(
       "system status is `in progress`",
       600,
   )
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+  r = requests.post(f"{API}/system/start", json=payload, timeout=10)
   assert r.status_code == 409
 
 @pytest.mark.skip()
 def test_trigger_run(testing_devices, testrun): # pylint: disable=W0613
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+  r = requests.post(f"{API}/system/start", json=payload, timeout=10)
   assert r.status_code == 200
 
   until_true(
@@ -3381,7 +3481,7 @@ def test_trigger_run(testing_devices, testrun): # pylint: disable=W0613
 @pytest.mark.skip()
 def test_multiple_runs(testing_devices, testrun): # pylint: disable=W0613
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload),
+  r = requests.post(f"{API}/system/start", json=payload,
                     timeout=10)
   assert r.status_code == 200
   print(r.text)
@@ -3414,7 +3514,7 @@ def test_multiple_runs(testing_devices, testrun): # pylint: disable=W0613
   assert len(results) == 3
 
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload),
+  r = requests.post(f"{API}/system/start", json=payload,
                     timeout=10)
   # assert r.status_code == 200
   # returns 409
@@ -3447,7 +3547,7 @@ def test_status_non_compliant(testing_devices, testrun): # pylint: disable=W0613
       "firmware": "asd"
     }
   }
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload),
+  r = requests.post(f"{API}/system/start", json=payload,
                     timeout=10)
   assert r.status_code == 200
   print(r.text)
