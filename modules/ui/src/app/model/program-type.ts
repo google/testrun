@@ -16,4 +16,5 @@
 export enum ProgramType {
   Pilot = 'pilot',
   Qualification = 'qualification',
+  Informational = 'informational',
 }

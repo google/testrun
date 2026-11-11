@@ -130,6 +130,15 @@ limitations under the License.
           >
         </span>
       </mat-radio-button>
+      <mat-radio-button
+        [value]="TestingType.Informational"
+        class="device-qualification-form-journey-button">
+        <span class="device-qualification-form-journey-button-info">
+          <span class="device-qualification-form-journey-button-label"
+            >Informational Assessment</span
+          >
+        </span>
+      </mat-radio-button>
     </mat-radio-group>
     @if (testModules().length > 0) {
       <app-device-tests

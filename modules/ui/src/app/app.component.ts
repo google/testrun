@@ -81,6 +81,7 @@ const CLOSE_URL = '/assets/icons/close.svg';
 const DRAFT_URL = '/assets/icons/draft.svg';
 const PILOT_URL = '/assets/icons/pilot.svg';
 const QUALIFICATION_URL = '/assets/icons/qualification.svg';
+const INFORMATIONAL_URL = '/assets/icons/informational.svg';
 
 const navKeys = [
   'Tab',
@@ -241,6 +242,10 @@ export class AppComponent implements AfterViewInit {
     this.matIconRegistry.addSvgIcon(
       'qualification',
       this.domSanitizer.bypassSecurityTrustResourceUrl(QUALIFICATION_URL)
+    );
+    this.matIconRegistry.addSvgIcon(
+      'informational',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(INFORMATIONAL_URL)
     );
   }
 

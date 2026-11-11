@@ -79,6 +79,14 @@ limitations under the License.
       [type]="ProgramType.Pilot"
       matTooltip="This device will be tested for the Pilot program."></app-program-type-icon>
   }
+  @if (
+    device.status !== DeviceStatus.INVALID &&
+    device.test_pack === TestingType.Informational
+  ) {
+    <app-program-type-icon
+      [type]="ProgramType.Informational"
+      matTooltip="This device will be tested for Informational Assessment."></app-program-type-icon>
+  }
   @if (!editable) {
     <p class="item-manufacturer">
       <span>{{ device.manufacturer }}</span>
