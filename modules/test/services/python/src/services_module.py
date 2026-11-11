@@ -170,11 +170,10 @@ class ServicesModule(TestModule):
     self._udp_scan_thread.daemon = True
 
     self._tcp_scan_thread.start()
-    self._udp_scan_thread.start()
+    self._tcp_scan_thread.join()
 
-    while (self._tcp_scan_thread.is_alive()
-           or self._udp_scan_thread.is_alive()):
-      time.sleep(1)
+    self._udp_scan_thread.start()
+    self._udp_scan_thread.join()
 
     LOGGER.debug('TCP scan results: ' + str(self._scan_tcp_results))
     LOGGER.debug('UDP scan results: ' + str(self._scan_udp_results))
