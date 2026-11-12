@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Component } from '@angular/core';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MatButtonHarness } from '@angular/material/button/testing';
 
 import { DownloadReportComponent } from './download-report.component';
 import {
@@ -141,6 +144,75 @@ describe('DownloadReportComponent', () => {
           'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20'
         );
       });
+
+      it('should name the link by its title instead of the report file name', () => {
+        const downloadReportLink = compiled.querySelector(
+          '.download-report-link'
+        ) as HTMLAnchorElement;
+
+        expect(downloadReportLink.getAttribute('aria-label')).toBe(
+          'Download pdf for Testrun # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20'
+        );
+      });
+
+      it('should not repeat the name as a tooltip description', async () => {
+        await fixture.whenStable();
+
+        const downloadReportLink = compiled.querySelector(
+          '.download-report-link'
+        ) as HTMLAnchorElement;
+
+        expect(downloadReportLink.hasAttribute('aria-describedby')).toBeFalse();
+      });
+    });
+  });
+
+  describe('as a text button', () => {
+    let hostFixture: ComponentFixture<TextButtonHostComponent>;
+    let link: HTMLAnchorElement;
+
+    beforeEach(async () => {
+      await TestBed.configureTestingModule({
+        imports: [TextButtonHostComponent],
+      }).compileComponents();
+      hostFixture = TestBed.createComponent(TextButtonHostComponent);
+      hostFixture.detectChanges();
+      await hostFixture.whenStable();
+      link = (hostFixture.nativeElement as HTMLElement).querySelector(
+        'app-download-report a'
+      ) as HTMLAnchorElement;
+    });
+
+    it('should render a focusable link named by its projected text', () => {
+      expect(link.textContent?.trim()).toBe('Download PDF report');
+      expect(link.hasAttribute('aria-label')).toBeFalse();
+      expect(link.hasAttribute('aria-describedby')).toBeFalse();
+      expect(link.tabIndex).toBe(0);
+      expect(link.getAttribute('href')).toBe('/report/123');
+      expect(link.download).toBe(
+        'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20'
+      );
+    });
+
+    it('should style the link itself as a Material text button', async () => {
+      const button = await TestbedHarnessEnvironment.loader(
+        hostFixture
+      ).getHarness(MatButtonHarness.with({ text: 'Download PDF report' }));
+
+      expect(await (await button.host()).getProperty('tagName')).toBe('A');
+      expect(await button.getAppearance()).toBe('text');
     });
   });
 });
+
+@Component({
+  template: `
+    <app-download-report textButton [data]="data" [href]="data.report">
+      Download PDF report
+    </app-download-report>
+  `,
+  imports: [DownloadReportComponent],
+})
+class TextButtonHostComponent {
+  data = MOCK_PROGRESS_DATA_COMPLIANT;
+}

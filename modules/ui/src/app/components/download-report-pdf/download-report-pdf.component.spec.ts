@@ -81,6 +81,16 @@ describe('DownloadReportComponent', () => {
           'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20'
         );
       });
+
+      it('should name the link by the testrun instead of the report file name', () => {
+        const downloadReportLink = compiled.querySelector(
+          '.download-report-link'
+        ) as HTMLAnchorElement;
+
+        expect(downloadReportLink.getAttribute('aria-label')).toBe(
+          'Download pdf for Testrun # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20'
+        );
+      });
     });
   });
 });

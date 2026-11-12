@@ -26,6 +26,7 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Component } from '@angular/core';
 import { device } from '../../mocks/device.mock';
+import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/testrun.mock';
 
 describe('DownloadZipModalComponent', () => {
   // @ts-expect-error data layer should be defined
@@ -305,6 +306,82 @@ describe('DownloadZipModalComponent', () => {
       });
 
       closeSpy.calls.reset();
+    });
+  });
+
+  describe('when testing is complete', () => {
+    let compiled: HTMLElement;
+
+    beforeEach(() => {
+      // Earlier specs leave other close actions in the shared subject.
+      actionBehaviorSubject$.next({ action: DialogCloseAction.Close });
+      TestBed.overrideProvider(MAT_DIALOG_DATA, {
+        useValue: {
+          profiles: [PROFILE_MOCK],
+          testrunStatus: MOCK_PROGRESS_DATA_COMPLIANT,
+          isTestingComplete: true,
+          report: MOCK_PROGRESS_DATA_COMPLIANT.report,
+          export: MOCK_PROGRESS_DATA_COMPLIANT.export,
+          device: MOCK_PROGRESS_DATA_COMPLIANT.device,
+          started: MOCK_PROGRESS_DATA_COMPLIANT.started,
+        },
+      });
+
+      TestBed.compileComponents();
+      fixture = TestBed.createComponent(DownloadZipModalComponent);
+      component = fixture.componentInstance;
+      compiled = fixture.nativeElement as HTMLElement;
+      fixture.detectChanges();
+    });
+
+    const getPdfReportLink = () =>
+      compiled.querySelector('app-download-report a') as HTMLAnchorElement;
+
+    it('should render the PDF report download as one link without nested controls', () => {
+      const link = getPdfReportLink();
+
+      expect(
+        compiled.querySelectorAll(
+          'app-download-report a, app-download-report button'
+        ).length
+      )
+        .withContext('interactive elements in the PDF report control')
+        .toBe(1);
+      expect(link.getAttribute('href')).toBe('/report/123');
+      expect(link.download).toBe(
+        'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20'
+      );
+      expect(
+        link.querySelector('a, button, input, select, textarea, [tabindex]')
+      )
+        .withContext('interactive control nested inside the link')
+        .toBeNull();
+    });
+
+    it('should name the PDF report link by its visible text, not the file name', () => {
+      const link = getPdfReportLink();
+
+      expect(link.textContent?.trim()).toBe('Download PDF report');
+      expect(link.hasAttribute('aria-label')).toBeFalse();
+      expect(link.hasAttribute('aria-labelledby')).toBeFalse();
+    });
+
+    it('should keep the PDF report link in the tab order', () => {
+      expect(getPdfReportLink().tabIndex).toBe(0);
+    });
+
+    it('should close the dialog when the PDF report link is activated', () => {
+      const closeSpy = spyOn(component.dialogRef, 'close');
+      const link = getPdfReportLink();
+      // Stop the browser from opening the report; listeners still run.
+      link.addEventListener('click', event => event.preventDefault());
+
+      // A mouse click and Enter on a link both dispatch `click`.
+      link.click();
+
+      expect(closeSpy).toHaveBeenCalledOnceWith({
+        action: DialogCloseAction.Close,
+      });
     });
   });
 });
