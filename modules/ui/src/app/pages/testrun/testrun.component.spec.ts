@@ -30,7 +30,9 @@ import {
   MOCK_PROGRESS_DATA_IN_PROGRESS,
   MOCK_PROGRESS_DATA_MONITORING,
   MOCK_PROGRESS_DATA_NOT_STARTED,
+  MOCK_PROGRESS_DATA_PROCEED,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
+  TEST_DATA,
 } from '../../mocks/testrun.mock';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -51,6 +53,7 @@ import {
   selectIsAllDevicesOutdated,
   selectIsOpenWaitSnackBar,
   selectRiskProfiles,
+  selectSystemConfig,
   selectSystemStatus,
   selectTestModules,
 } from '../../store/selectors';
@@ -138,6 +141,7 @@ describe('TestrunComponent', () => {
       'fetchSystemStatus',
       'getTestModules',
       'testrunInProgress',
+      'getResultClass',
     ]);
 
   const loaderServiceMock: jasmine.SpyObj<LoaderService> = jasmine.createSpyObj(
@@ -532,9 +536,19 @@ describe('TestrunComponent', () => {
       it('should have tags', () => {
         const tags = fixture.nativeElement.querySelector(
           '.toolbar-tag-container'
-        );
+        ) as HTMLElement;
 
         expect(tags).toBeTruthy();
+        expect(window.getComputedStyle(tags).position).not.toBe('absolute');
+      });
+
+      it('should enable horizontal scrolling on progress-table at narrow viewports', () => {
+        const progressTable = compiled.querySelector(
+          'section.progress-table'
+        ) as HTMLElement;
+
+        expect(progressTable).not.toBeNull();
+        expect(window.getComputedStyle(progressTable).overflowX).toBe('auto');
       });
 
       describe('"Stop" button (WCAG 2.5.3 Label in Name)', () => {
@@ -710,6 +724,147 @@ describe('TestrunComponent', () => {
         expect(emptyContentEl).not.toBeNull();
         expect(toolbarEl).toBeNull();
       });
+    });
+  });
+
+  describe('Zoom & reflow at 200% zoom (640x480)', () => {
+    const proceedStatusWithTableData: TestrunStatus = {
+      ...MOCK_PROGRESS_DATA_PROCEED,
+      tests: TEST_DATA,
+    };
+
+    beforeEach(async () => {
+      testRunServiceMock.stopTestrun.and.returnValue(of(true));
+      testRunServiceMock.testrunInProgress.and.returnValue(false);
+      testRunServiceMock.getResultClass.and.returnValue({
+        green: true,
+        red: false,
+        blue: false,
+        cyan: false,
+        grey: false,
+      });
+      // @ts-expect-error data layer should be defined
+      window.dataLayer = window.dataLayer || [];
+
+      await TestBed.configureTestingModule({
+        providers: [
+          TestrunStore,
+          { provide: TestRunService, useValue: testRunServiceMock },
+          { provide: FocusManagerService, useValue: stateServiceMock },
+          { provide: LoaderService, useValue: loaderServiceMock },
+          { provide: NotificationService, useValue: notificationServiceMock },
+          { provide: TestrunDialogService, useValue: testRunDialogServiceMock },
+          {
+            provide: MatDialogRef,
+            useValue: {},
+          },
+          provideMockStore({
+            selectors: [
+              { selector: selectDevices, value: [] },
+              { selector: selectHasDevices, value: true },
+              { selector: selectIsAllDevicesOutdated, value: false },
+              { selector: selectIsOpenWaitSnackBar, value: false },
+              { selector: selectHasRiskProfiles, value: false },
+              { selector: selectRiskProfiles, value: [] },
+              { selector: selectTestModules, value: [] },
+              { selector: selectSystemConfig, value: { network: {} } },
+              {
+                selector: selectSystemStatus,
+                value: proceedStatusWithTableData,
+              },
+            ],
+          }),
+        ],
+        imports: [
+          TestrunComponent,
+          TestrunStatusCardComponent,
+          TestrunTableComponent,
+          FakeDownloadOptionsComponent,
+          MatButtonModule,
+          MatIconModule,
+          MatToolbarModule,
+          MatDialogModule,
+          SpinnerComponent,
+          BrowserAnimationsModule,
+          MatTooltipModule,
+        ],
+      })
+        .overrideComponent(TestrunComponent, {
+          set: {
+            providers: [
+              { provide: LoaderService, useValue: loaderServiceMock },
+            ],
+          },
+        })
+        .overrideComponent(TestrunComponent, {
+          remove: {
+            imports: [DownloadOptionsComponent],
+          },
+          add: {
+            imports: [FakeDownloadOptionsComponent],
+          },
+        })
+        .compileComponents();
+
+      store = TestBed.inject(MockStore);
+      fixture = TestBed.createComponent(TestrunComponent);
+      compiled = fixture.nativeElement as HTMLElement;
+      compiled.style.width = '543px';
+      compiled.style.boxSizing = 'border-box';
+      testRunServiceMock.fetchSystemStatus.and.returnValue(
+        of(proceedStatusWithTableData)
+      );
+      fixture.detectChanges();
+    });
+
+    it('should not clip status card or VSA tag and should keep Name and Description columns readable inside 543px #main', () => {
+      const hostRect = compiled.getBoundingClientRect();
+      const toolbarEl = compiled.querySelector(
+        '.progress-toolbar'
+      ) as HTMLElement;
+      const toolbarRect = toolbarEl.getBoundingClientRect();
+      const firstTagEl = compiled.querySelector('.toolbar-tag') as HTMLElement;
+      const tagRect = firstTagEl.getBoundingClientRect();
+      const progressCardEl = compiled.querySelector(
+        'app-testrun-status-card .progress-card'
+      ) as HTMLElement;
+      const cardRect = progressCardEl.getBoundingClientRect();
+      const progressTableSection = compiled.querySelector(
+        'section.progress-table'
+      ) as HTMLElement;
+      const matTableEl = compiled.querySelector(
+        'app-testrun-table mat-table'
+      ) as HTMLElement;
+      const nameCell = compiled.querySelector(
+        'app-testrun-table mat-cell.mat-column-name'
+      ) as HTMLElement;
+      const descriptionCell = compiled.querySelector(
+        'app-testrun-table mat-cell.mat-column-description'
+      ) as HTMLElement;
+      const firstRow = compiled.querySelector(
+        'app-testrun-table mat-row'
+      ) as HTMLElement;
+
+      // 1. Status card and VSA tag fit within #main (543px) on both left and right edges
+      expect(cardRect.left).toBeGreaterThanOrEqual(hostRect.left);
+      expect(cardRect.right).toBeLessThanOrEqual(hostRect.right);
+      expect(tagRect.left).toBeGreaterThanOrEqual(toolbarRect.left);
+      expect(tagRect.right).toBeLessThanOrEqual(toolbarRect.right);
+
+      // 2. Table scrolls horizontally inside section.progress-table and preserves readable Name & Description widths
+      expect(window.getComputedStyle(progressTableSection).overflowX).toBe(
+        'auto'
+      );
+      expect(matTableEl.getBoundingClientRect().width).toBeGreaterThanOrEqual(
+        640
+      );
+      expect(nameCell.getBoundingClientRect().width).toBeGreaterThanOrEqual(
+        150
+      );
+      expect(
+        descriptionCell.getBoundingClientRect().width
+      ).toBeGreaterThanOrEqual(180);
+      expect(firstRow.getBoundingClientRect().height).toBeLessThan(150);
     });
   });
 });

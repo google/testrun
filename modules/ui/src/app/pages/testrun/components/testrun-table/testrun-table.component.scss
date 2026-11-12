@@ -16,12 +16,27 @@
 @use 'colors';
 @use 'variables';
 
+:host {
+  display: block;
+  width: 100%;
+}
+
+mat-table {
+  min-width: 640px;
+  width: 100%;
+}
+
 mat-row,
 mat-header-row {
   min-height: 60px;
   display: grid;
   height: auto;
-  grid-template-columns: 1fr 2.2fr 170px 190px 60px;
+  grid-template-columns:
+    minmax(150px, 1fr)
+    minmax(180px, 2.2fr)
+    minmax(125px, 0.65fr)
+    minmax(135px, 0.75fr)
+    50px;
   border-radius: 8px;
 }
 
@@ -46,6 +61,11 @@ mat-header-cell,
   overflow: hidden;
   word-wrap: break-word;
   border-bottom-color: colors.$white;
+}
+
+mat-cell,
+mat-header-cell {
+  padding-inline: 12px;
 }
 
 mat-cell {
