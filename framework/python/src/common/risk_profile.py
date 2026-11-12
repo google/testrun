@@ -15,12 +15,15 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from weasyprint import HTML
+from weasyprint.urls import URLFetcher, URLFetcherResponse
 from io import BytesIO
 import base64
 from common import logger
 import json
 import os
 from jinja2 import Template
+from markupsafe import Markup
+from urllib.parse import urlparse
 from copy import deepcopy
 import math
 
@@ -43,6 +46,19 @@ report_resource_dir = os.path.join(root_dir, RESOURCES_DIR)
 
 test_run_img_file = os.path.join(report_resource_dir, 'testrun.png')
 
+ALLOWED_DOMAINS = ('fonts.googleapis.com', 'fonts.gstatic.com')
+
+
+class CustomURLFetcher(URLFetcher):
+  def fetch(self, url: str, headers=None) -> URLFetcherResponse:
+    if url.startswith('data:'):
+      return super().fetch(url, headers)
+    parsed_url = urlparse(url)
+    if (parsed_url.scheme in ('http', 'https')
+        and parsed_url.netloc  in ALLOWED_DOMAINS):
+      return super().fetch(url, headers)
+    raise ValueError('URL is blocked')
+
 
 class RiskProfile():
   """Python representation of a risk profile"""
@@ -54,7 +70,7 @@ class RiskProfile():
                             'r',
                             encoding='UTF-8'
                             ) as template_file:
-      self._template = Template(template_file.read())
+      self._template = Template(template_file.read(), autoescape=True)
     with open(os.path.join(report_resource_dir,
                            TEMPLATE_STYLES),
                            'r',
@@ -479,7 +495,7 @@ class RiskProfile():
 
     # Convert HTML to PDF in memory using weasyprint
     pdf_bytes = BytesIO()
-    HTML(string=html).write_pdf(pdf_bytes)
+    HTML(string=html, url_fetcher=CustomURLFetcher()).write_pdf(pdf_bytes)
     return pdf_bytes
 
   def to_pdf_no_device(self):
@@ -490,7 +506,7 @@ class RiskProfile():
 
     # Convert HTML to PDF in memory using weasyprint
     pdf_bytes = BytesIO()
-    HTML(string=html).write_pdf(pdf_bytes)
+    HTML(string=html, url_fetcher=CustomURLFetcher()).write_pdf(pdf_bytes)
     return pdf_bytes
 
   # Adding risks to device profile questions
