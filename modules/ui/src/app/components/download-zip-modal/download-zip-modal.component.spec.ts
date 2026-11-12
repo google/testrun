@@ -16,6 +16,7 @@ import {
   PROFILE_MOCK_2,
   PROFILE_MOCK_3,
 } from '../../mocks/profile.mock';
+import { MOCK_PROGRESS_DATA_NON_COMPLIANT } from '../../mocks/testrun.mock';
 import { of } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { TestRunService } from '../../services/test-run.service';
@@ -223,6 +224,60 @@ describe('DownloadZipModalComponent', () => {
     });
   });
 
+  describe('"Download" button (WCAG 2.5.3 Label in Name)', () => {
+    beforeEach(() => {
+      // Other specs leave download or redirect actions in the shared subject,
+      // which the component replays on init.
+      actionBehaviorSubject$.next({ action: DialogCloseAction.Close });
+    });
+
+    function getDownloadButton(dialogData: object): HTMLButtonElement {
+      TestBed.overrideProvider(MAT_DIALOG_DATA, { useValue: dialogData });
+      TestBed.compileComponents();
+      fixture = TestBed.createComponent(DownloadZipModalComponent);
+      fixture.detectChanges();
+      return fixture.nativeElement.querySelector(
+        '.download-button'
+      ) as HTMLButtonElement;
+    }
+
+    it('should start its name with the visible "Download" text when opened from a report', () => {
+      const downloadButton = getDownloadButton({
+        profiles: [PROFILE_MOCK],
+        report: 'localhost:8080',
+        export: 'localhost:8080',
+        device: device,
+        started: '2026-02-02 17:24:52',
+      });
+
+      expect(visibleLabel(downloadButton)).toBe('Download');
+      expect(accessibleName(downloadButton)).toBe('Download ZIP file');
+      expect(downloadButton.hasAttribute('aria-label'))
+        .withContext('an aria-label overrides the visible text')
+        .toBeFalse();
+    });
+
+    it('should be named by its visible "Download ZIP file" text when testing is complete', () => {
+      const downloadButton = getDownloadButton({
+        profiles: [PROFILE_MOCK],
+        testrunStatus: MOCK_PROGRESS_DATA_NON_COMPLIANT,
+        isTestingComplete: true,
+        report: MOCK_PROGRESS_DATA_NON_COMPLIANT.report,
+        export: MOCK_PROGRESS_DATA_NON_COMPLIANT.export,
+        device: MOCK_PROGRESS_DATA_NON_COMPLIANT.device,
+        started: MOCK_PROGRESS_DATA_NON_COMPLIANT.started,
+      });
+
+      expect(visibleLabel(downloadButton)).toBe('Download ZIP file');
+      expect(accessibleName(downloadButton))
+        .withContext('"ZIP file" must not be repeated')
+        .toBe('Download ZIP file');
+      expect(downloadButton.hasAttribute('aria-label'))
+        .withContext('an aria-label overrides the visible text')
+        .toBeFalse();
+    });
+  });
+
   describe('with no profiles', () => {
     beforeEach(() => {
       TestBed.overrideProvider(MAT_DIALOG_DATA, {
@@ -314,3 +369,61 @@ describe('DownloadZipModalComponent', () => {
   template: '',
 })
 class FakeRiskAssessmentComponent {}
+
+/** Collapses whitespace the way the accessible name computation does. */
+function normalizeWhitespace(text: string): string {
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Text of a subtree as assistive technology reads it: skips `aria-hidden` and
+ * CSS-hidden nodes. With `visibleOnly`, it also skips visually hidden text
+ * (clipped to 1 x 1 px), so it returns only what sighted users read.
+ */
+function textOf(node: Node, visibleOnly = false): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent ?? '';
+  }
+  if (
+    !(node instanceof HTMLElement) ||
+    node.getAttribute('aria-hidden') === 'true'
+  ) {
+    return '';
+  }
+  const { display, visibility } = getComputedStyle(node);
+  const { width, height } = node.getBoundingClientRect();
+  if (
+    display === 'none' ||
+    visibility === 'hidden' ||
+    (visibleOnly && width <= 1 && height <= 1)
+  ) {
+    return '';
+  }
+  return Array.from(node.childNodes, child => textOf(child, visibleOnly)).join(
+    ''
+  );
+}
+
+/** Text of the elements referenced by an `aria-labelledby`/`aria-describedby` value. */
+function textOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(id => document.getElementById(id)?.textContent?.trim() ?? '')
+    .join(' ');
+}
+
+/** Accessible name of a control named by ARIA attributes or its content. */
+function accessibleName(element: HTMLElement): string {
+  const labelledBy = element.getAttribute('aria-labelledby');
+  return normalizeWhitespace(
+    labelledBy
+      ? textOfIdRefs(labelledBy)
+      : element.getAttribute('aria-label') || textOf(element)
+  );
+}
+
+/** Text label that sighted users see on a control. */
+function visibleLabel(element: HTMLElement): string {
+  return normalizeWhitespace(textOf(element, true));
+}

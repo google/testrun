@@ -153,9 +153,13 @@ limitations under the License.
         class="download-button"
         color="primary"
         mat-flat-button
-        aria-label="Download ZIP file"
         type="button">
-        {{ data.testrunStatus ? 'Download ZIP file' : 'Download' }}
+        @if (data.testrunStatus) {
+          Download ZIP file
+        } @else {
+          <!-- The name starts with the visible "Download" (WCAG 2.5.3). -->
+          Download<span class="visually-hidden"> ZIP file</span>
+        }
       </button>
     </div>
   </mat-dialog-actions>

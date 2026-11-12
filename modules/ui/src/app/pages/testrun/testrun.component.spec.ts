@@ -65,6 +65,64 @@ import { TestrunTableComponent } from './components/testrun-table/testrun-table.
 import { TestrunStatusCardComponent } from './components/testrun-status-card/testrun-status-card.component';
 import { TestrunDialogService } from '../../services/testrun-dialog.service';
 
+/** Collapses whitespace the way the accessible name computation does. */
+function normalizeWhitespace(text: string): string {
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Text of a subtree as assistive technology reads it: skips `aria-hidden` and
+ * CSS-hidden nodes. With `visibleOnly`, it also skips visually hidden text
+ * (clipped to 1 x 1 px), so it returns only what sighted users read.
+ */
+function textOf(node: Node, visibleOnly = false): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent ?? '';
+  }
+  if (
+    !(node instanceof HTMLElement) ||
+    node.getAttribute('aria-hidden') === 'true'
+  ) {
+    return '';
+  }
+  const { display, visibility } = getComputedStyle(node);
+  const { width, height } = node.getBoundingClientRect();
+  if (
+    display === 'none' ||
+    visibility === 'hidden' ||
+    (visibleOnly && width <= 1 && height <= 1)
+  ) {
+    return '';
+  }
+  return Array.from(node.childNodes, child => textOf(child, visibleOnly)).join(
+    ''
+  );
+}
+
+/** Text of the elements referenced by an `aria-labelledby`/`aria-describedby` value. */
+function textOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(id => document.getElementById(id)?.textContent?.trim() ?? '')
+    .join(' ');
+}
+
+/** Accessible name of a control named by ARIA attributes or its content. */
+function accessibleName(element: HTMLElement): string {
+  const labelledBy = element.getAttribute('aria-labelledby');
+  return normalizeWhitespace(
+    labelledBy
+      ? textOfIdRefs(labelledBy)
+      : element.getAttribute('aria-label') || textOf(element)
+  );
+}
+
+/** Text label that sighted users see on a control. */
+function visibleLabel(element: HTMLElement): string {
+  return normalizeWhitespace(textOf(element, true));
+}
+
 describe('TestrunComponent', () => {
   let component: TestrunComponent;
   let fixture: ComponentFixture<TestrunComponent>;
@@ -372,6 +430,45 @@ describe('TestrunComponent', () => {
 
         testRunDialogServiceMock.openInitiateDialog.calls.reset();
       }));
+
+      describe('"Start Testing" button (WCAG 2.5.3 Label in Name)', () => {
+        let startBtn: HTMLButtonElement;
+
+        beforeEach(() => {
+          startBtn = compiled.querySelector(
+            '.start-button'
+          ) as HTMLButtonElement;
+        });
+
+        it('should be named by its visible text', () => {
+          expect(visibleLabel(startBtn)).toBe('Start Testing');
+          expect(accessibleName(startBtn)).toBe('Start Testing');
+          expect(startBtn.hasAttribute('aria-label'))
+            .withContext('an aria-label overrides the visible text')
+            .toBeFalse();
+          expect(
+            startBtn.querySelector('mat-icon')?.getAttribute('aria-hidden')
+          ).toBe('true');
+        });
+
+        it('should announce that it opens a dialog', () => {
+          expect(startBtn.getAttribute('aria-haspopup')).toBe('dialog');
+        });
+
+        it('should be described by the visible instructions', () => {
+          const instructions = compiled.querySelector(
+            '.empty-content-info'
+          ) as HTMLElement;
+          const describedBy = startBtn.getAttribute('aria-describedby');
+
+          expect(textOfIdRefs(describedBy)).toBe(
+            'Click the button below to configure your testing task'
+          );
+          expect(document.getElementById(describedBy ?? ''))
+            .withContext('the description is the visible instructions text')
+            .toBe(instructions);
+        });
+      });
     });
 
     describe('with available systemStatus$ data, status "In Progress"', () => {
@@ -438,6 +535,29 @@ describe('TestrunComponent', () => {
         );
 
         expect(tags).toBeTruthy();
+      });
+
+      describe('"Stop" button (WCAG 2.5.3 Label in Name)', () => {
+        let stopBtn: HTMLButtonElement;
+
+        beforeEach(() => {
+          stopBtn = compiled.querySelector('.stop-button') as HTMLButtonElement;
+        });
+
+        it('should be named by its visible text', () => {
+          expect(visibleLabel(stopBtn)).toBe('Stop');
+          expect(accessibleName(stopBtn)).toBe('Stop');
+          expect(stopBtn.hasAttribute('aria-label'))
+            .withContext('an aria-label overrides the visible text')
+            .toBeFalse();
+          expect(
+            stopBtn.querySelector('mat-icon')?.getAttribute('aria-hidden')
+          ).toBe('true');
+        });
+
+        it('should announce that it opens a confirmation dialog', () => {
+          expect(stopBtn.getAttribute('aria-haspopup')).toBe('dialog');
+        });
       });
     });
 
