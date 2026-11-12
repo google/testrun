@@ -26,6 +26,8 @@ from bs4 import BeautifulSoup
 from common import logger, util
 from common.statuses import TestrunResult, TestrunStatus
 from jinja2 import BaseLoader, Environment, FileSystemLoader
+from jinja2.sandbox import ImmutableSandboxedEnvironment
+from jinja2.exceptions import SecurityError
 from test_orc import test_pack
 from test_orc.test_case import TestCase
 from weasyprint import HTML
@@ -382,24 +384,28 @@ class TestReport():
     steps_to_resolve_ = logic.get_steps_to_resolve(json_data)
 
     module_reports = self._module_reports
-    # nosemgrep
-    env_module = Environment(loader=BaseLoader()) # nosec B701
+    env_module = ImmutableSandboxedEnvironment(loader=BaseLoader())
     manufacturer_length = len(json_data['device']['manufacturer'])
     device_name_length = len(json_data['device']['model'])
     title_length = manufacturer_length + device_name_length + 1
     results = json_data['tests']['results']
     results_pages = self._generate_result_pages(title_length, results)
 
-    module_templates = [
-        env_module.from_string(s).render(
-          title = 'Testrun report',
-          name=current_test_pack.name,
-          device=json_data['device'],
-          logo=logo,
-          icon=icon,
-          version=self._version,
-      ) for s in self._module_templates
-    ]
+    module_templates = []
+    for s in self._module_templates:
+      try:
+        rendered_template = env_module.from_string(s).render(
+            title = 'Testrun report',
+            name=current_test_pack.name,
+            device=json_data['device'],
+            logo=logo,
+            icon=icon,
+            version=self._version,
+        )
+        module_templates.append(rendered_template)
+      except SecurityError as e:
+        LOGGER.error(f'Error rendering module template: {e}')
+        rendered_template = f'<p>Error rendering module template: {e}</p>'
     # nosemgrep
     return self._add_page_counter(template.render(styles=styles,
                            logo=logo,
