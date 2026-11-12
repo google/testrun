@@ -76,7 +76,7 @@ class RiskProfile():
                            'r',
                            encoding='UTF-8'
                            ) as style_file:
-      self._template_styles = style_file.read()
+      self._template_styles = Markup(style_file.read())
 
     # Device profile format
     self._device_format = []
