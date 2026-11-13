@@ -1097,7 +1097,7 @@ class Api:
 
     return self._session.get_certs()
 
-  async def upload_cert(self, file: UploadFile, response: Response):
+  async def upload_cert(self, file: UploadFile, response: Response) -> Response:
 
     filename = file.filename
     content_type = file.content_type
@@ -1113,10 +1113,17 @@ class Api:
       return self._generate_msg(
           False, "Failed to upload certificate. Is it in the correct format?")
 
-    if len(filename) > 24:
+    if filename is not None and len(filename) > 24:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(
           False, "Invalid filename. Maximum file name length is 24 characters.")
+
+    if (filename is not None
+        and (os.path.basename(filename) != filename
+             or filename.startswith("."))):
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(
+          False, "Invalid filename. Must not contain path separators")
 
     # Check if file already exists
     if not self._session.check_cert_file_name(filename):
@@ -1152,6 +1159,12 @@ class Api:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return self._generate_msg(
           False, "The certificate must contain the common name"
+        )
+
+      # Returned when invalid sertificate filename provided
+      elif str(e) == "Invalid sertificate filename":
+        return self._generate_msg(
+          False, "Invalid filename. Must not contain path separators"
         )
 
       # Returned when unable to load PEM file
