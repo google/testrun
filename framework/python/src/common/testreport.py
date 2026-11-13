@@ -31,6 +31,8 @@ from jinja2.exceptions import SecurityError
 from test_orc import test_pack
 from test_orc.test_case import TestCase
 from weasyprint import HTML
+from weasyprint.urls import URLFetcher, URLFetcherResponse
+from urllib.parse import urlparse
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 RESOURCES_DIR = 'resources/report'
@@ -47,6 +49,19 @@ _REPORTS_FOLDER = 'local/reports'
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 _ROOT_DIR = os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.dirname(_CURRENT_DIR))))
+
+ALLOWED_DOMAINS = ('fonts.googleapis.com', 'fonts.gstatic.com')
+
+
+class CustomURLFetcher(URLFetcher):
+  def fetch(self, url: str, headers=None) -> URLFetcherResponse:
+    if url.startswith('data:'):
+      return super().fetch(url, headers)
+    parsed_url = urlparse(url)
+    if (parsed_url.scheme in ('http', 'https')
+        and parsed_url.netloc  in ALLOWED_DOMAINS):
+      return super().fetch(url, headers)
+    raise ValueError('URL is blocked')
 
 
 LOGGER = logger.get_logger('REPORT')
@@ -321,13 +336,18 @@ class TestReport():
 
     # Convert HTML to PDF in memory using weasyprint
     pdf_bytes = BytesIO()
-    HTML(string=report_html).write_pdf(pdf_bytes)
+    HTML(
+      string=report_html,
+      url_fetcher=CustomURLFetcher()
+      ).write_pdf(pdf_bytes)
     return pdf_bytes
 
   def to_pdf_from_html(self, html_content):
     # Convert HTML to PDF in memory using weasyprint
     pdf_bytes = BytesIO()
-    HTML(string=html_content).write_pdf(pdf_bytes)
+    HTML(string=html_content,
+         url_fetcher=CustomURLFetcher()
+         ).write_pdf(pdf_bytes)
     return pdf_bytes
 
   def to_html(self):
@@ -338,13 +358,12 @@ class TestReport():
     template_folder = os.path.join(current_test_pack.path,
                                   TEMPLATES_FOLDER)
     # Jinja template
-    # nosemgrep
-    template_env = Environment( # nosec B701
-                                loader=FileSystemLoader(
+    template_env = Environment(loader=FileSystemLoader(
                                               template_folder
                                               ),
                                 trim_blocks=True,
-                                lstrip_blocks=True
+                                lstrip_blocks=True,
+                                autoescape=True
                               )
     template = template_env.get_template(TEST_REPORT_TEMPLATE)
 
@@ -384,7 +403,8 @@ class TestReport():
     steps_to_resolve_ = logic.get_steps_to_resolve(json_data)
 
     module_reports = self._module_reports
-    env_module = ImmutableSandboxedEnvironment(loader=BaseLoader())
+    env_module = ImmutableSandboxedEnvironment(
+      loader=BaseLoader(), autoescape=True)
     manufacturer_length = len(json_data['device']['manufacturer'])
     device_name_length = len(json_data['device']['model'])
     title_length = manufacturer_length + device_name_length + 1
