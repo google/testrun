@@ -342,6 +342,29 @@ def test_upload_cert_missing_cn(
     )
 
 
+def test_upload_cert_path_traversal(
+  session_instance: session.TestrunSession #pylint: disable=W0621
+):
+  "Verify that upload_cert raises ValueError for path traversal filenames."
+  with pytest.raises(
+    ValueError,
+    match="Invalid certificate filename"
+  ):
+    session_instance.upload_cert(
+      filename="../evil.pem",
+      content=b"fake_pem_bytes"
+    )
+
+
+def test_check_cert_file_name_path_traversal(
+  session_instance: session.TestrunSession #pylint: disable=W0621
+):
+  "Verify that check_cert_file_name returns False for path traversal filenames."
+  assert session_instance.check_cert_file_name("../evil.pem") is False
+  assert session_instance.check_cert_file_name("etc/shadow") is False
+  assert session_instance.check_cert_file_name(".hidden") is False
+
+
 @patch("session.x509.load_pem_x509_certificate")
 @patch("session.os.listdir", return_value=["existing_root.pem"])
 @patch("builtins.open", new_callable=mock_open)
