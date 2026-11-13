@@ -21,6 +21,8 @@ import util
 from datetime import datetime
 import traceback
 from jinja2 import Environment, FileSystemLoader, BaseLoader
+from jinja2.sandbox import ImmutableSandboxedEnvironment
+from jinja2.exceptions import SecurityError
 
 from common.statuses import TestResult
 
@@ -272,11 +274,15 @@ class TestModule:
         lstrip_blocks=True
     ).get_template(self._base_template_styled_file)
 
-    module_template = Environment(loader=BaseLoader() # nosec B701
-                                  ).from_string(jinja_report).render(
-                                    title = 'Testrun report',
-                                    logo=logo,
-                                  )
+    sandboxed_env = ImmutableSandboxedEnvironment(loader=BaseLoader())
+    try:
+      module_template = sandboxed_env.from_string(jinja_report).render(
+          title = 'Testrun report',
+          logo=logo,
+      )
+    except SecurityError as e:
+      LOGGER.error('Security error while rendering report: ' + str(e))
+      module_template = 'Error: Security error while rendering report'
 
     report_jinja_styled = template.render(
         template=module_template,

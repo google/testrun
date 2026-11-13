@@ -30,7 +30,9 @@ import {
   MOCK_PROGRESS_DATA_IN_PROGRESS,
   MOCK_PROGRESS_DATA_MONITORING,
   MOCK_PROGRESS_DATA_NOT_STARTED,
+  MOCK_PROGRESS_DATA_PROCEED,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
+  TEST_DATA,
 } from '../../mocks/testrun.mock';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -51,6 +53,7 @@ import {
   selectIsAllDevicesOutdated,
   selectIsOpenWaitSnackBar,
   selectRiskProfiles,
+  selectSystemConfig,
   selectSystemStatus,
   selectTestModules,
 } from '../../store/selectors';
@@ -64,6 +67,64 @@ import { DownloadOptionsComponent } from './components/download-options/download
 import { TestrunTableComponent } from './components/testrun-table/testrun-table.component';
 import { TestrunStatusCardComponent } from './components/testrun-status-card/testrun-status-card.component';
 import { TestrunDialogService } from '../../services/testrun-dialog.service';
+
+/** Collapses whitespace the way the accessible name computation does. */
+function normalizeWhitespace(text: string): string {
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Text of a subtree as assistive technology reads it: skips `aria-hidden` and
+ * CSS-hidden nodes. With `visibleOnly`, it also skips visually hidden text
+ * (clipped to 1 x 1 px), so it returns only what sighted users read.
+ */
+function textOf(node: Node, visibleOnly = false): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent ?? '';
+  }
+  if (
+    !(node instanceof HTMLElement) ||
+    node.getAttribute('aria-hidden') === 'true'
+  ) {
+    return '';
+  }
+  const { display, visibility } = getComputedStyle(node);
+  const { width, height } = node.getBoundingClientRect();
+  if (
+    display === 'none' ||
+    visibility === 'hidden' ||
+    (visibleOnly && width <= 1 && height <= 1)
+  ) {
+    return '';
+  }
+  return Array.from(node.childNodes, child => textOf(child, visibleOnly)).join(
+    ''
+  );
+}
+
+/** Text of the elements referenced by an `aria-labelledby`/`aria-describedby` value. */
+function textOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(id => document.getElementById(id)?.textContent?.trim() ?? '')
+    .join(' ');
+}
+
+/** Accessible name of a control named by ARIA attributes or its content. */
+function accessibleName(element: HTMLElement): string {
+  const labelledBy = element.getAttribute('aria-labelledby');
+  return normalizeWhitespace(
+    labelledBy
+      ? textOfIdRefs(labelledBy)
+      : element.getAttribute('aria-label') || textOf(element)
+  );
+}
+
+/** Text label that sighted users see on a control. */
+function visibleLabel(element: HTMLElement): string {
+  return normalizeWhitespace(textOf(element, true));
+}
 
 describe('TestrunComponent', () => {
   let component: TestrunComponent;
@@ -80,6 +141,7 @@ describe('TestrunComponent', () => {
       'fetchSystemStatus',
       'getTestModules',
       'testrunInProgress',
+      'getResultClass',
     ]);
 
   const loaderServiceMock: jasmine.SpyObj<LoaderService> = jasmine.createSpyObj(
@@ -372,6 +434,45 @@ describe('TestrunComponent', () => {
 
         testRunDialogServiceMock.openInitiateDialog.calls.reset();
       }));
+
+      describe('"Start Testing" button (WCAG 2.5.3 Label in Name)', () => {
+        let startBtn: HTMLButtonElement;
+
+        beforeEach(() => {
+          startBtn = compiled.querySelector(
+            '.start-button'
+          ) as HTMLButtonElement;
+        });
+
+        it('should be named by its visible text', () => {
+          expect(visibleLabel(startBtn)).toBe('Start Testing');
+          expect(accessibleName(startBtn)).toBe('Start Testing');
+          expect(startBtn.hasAttribute('aria-label'))
+            .withContext('an aria-label overrides the visible text')
+            .toBeFalse();
+          expect(
+            startBtn.querySelector('mat-icon')?.getAttribute('aria-hidden')
+          ).toBe('true');
+        });
+
+        it('should announce that it opens a dialog', () => {
+          expect(startBtn.getAttribute('aria-haspopup')).toBe('dialog');
+        });
+
+        it('should be described by the visible instructions', () => {
+          const instructions = compiled.querySelector(
+            '.empty-content-info'
+          ) as HTMLElement;
+          const describedBy = startBtn.getAttribute('aria-describedby');
+
+          expect(textOfIdRefs(describedBy)).toBe(
+            'Click the button below to configure your testing task'
+          );
+          expect(document.getElementById(describedBy ?? ''))
+            .withContext('the description is the visible instructions text')
+            .toBe(instructions);
+        });
+      });
     });
 
     describe('with available systemStatus$ data, status "In Progress"', () => {
@@ -435,9 +536,42 @@ describe('TestrunComponent', () => {
       it('should have tags', () => {
         const tags = fixture.nativeElement.querySelector(
           '.toolbar-tag-container'
-        );
+        ) as HTMLElement;
 
         expect(tags).toBeTruthy();
+        expect(window.getComputedStyle(tags).position).not.toBe('absolute');
+      });
+
+      it('should enable horizontal scrolling on progress-table at narrow viewports', () => {
+        const progressTable = compiled.querySelector(
+          'section.progress-table'
+        ) as HTMLElement;
+
+        expect(progressTable).not.toBeNull();
+        expect(window.getComputedStyle(progressTable).overflowX).toBe('auto');
+      });
+
+      describe('"Stop" button (WCAG 2.5.3 Label in Name)', () => {
+        let stopBtn: HTMLButtonElement;
+
+        beforeEach(() => {
+          stopBtn = compiled.querySelector('.stop-button') as HTMLButtonElement;
+        });
+
+        it('should be named by its visible text', () => {
+          expect(visibleLabel(stopBtn)).toBe('Stop');
+          expect(accessibleName(stopBtn)).toBe('Stop');
+          expect(stopBtn.hasAttribute('aria-label'))
+            .withContext('an aria-label overrides the visible text')
+            .toBeFalse();
+          expect(
+            stopBtn.querySelector('mat-icon')?.getAttribute('aria-hidden')
+          ).toBe('true');
+        });
+
+        it('should announce that it opens a confirmation dialog', () => {
+          expect(stopBtn.getAttribute('aria-haspopup')).toBe('dialog');
+        });
       });
     });
 
@@ -590,6 +724,147 @@ describe('TestrunComponent', () => {
         expect(emptyContentEl).not.toBeNull();
         expect(toolbarEl).toBeNull();
       });
+    });
+  });
+
+  describe('Zoom & reflow at 200% zoom (640x480)', () => {
+    const proceedStatusWithTableData: TestrunStatus = {
+      ...MOCK_PROGRESS_DATA_PROCEED,
+      tests: TEST_DATA,
+    };
+
+    beforeEach(async () => {
+      testRunServiceMock.stopTestrun.and.returnValue(of(true));
+      testRunServiceMock.testrunInProgress.and.returnValue(false);
+      testRunServiceMock.getResultClass.and.returnValue({
+        green: true,
+        red: false,
+        blue: false,
+        cyan: false,
+        grey: false,
+      });
+      // @ts-expect-error data layer should be defined
+      window.dataLayer = window.dataLayer || [];
+
+      await TestBed.configureTestingModule({
+        providers: [
+          TestrunStore,
+          { provide: TestRunService, useValue: testRunServiceMock },
+          { provide: FocusManagerService, useValue: stateServiceMock },
+          { provide: LoaderService, useValue: loaderServiceMock },
+          { provide: NotificationService, useValue: notificationServiceMock },
+          { provide: TestrunDialogService, useValue: testRunDialogServiceMock },
+          {
+            provide: MatDialogRef,
+            useValue: {},
+          },
+          provideMockStore({
+            selectors: [
+              { selector: selectDevices, value: [] },
+              { selector: selectHasDevices, value: true },
+              { selector: selectIsAllDevicesOutdated, value: false },
+              { selector: selectIsOpenWaitSnackBar, value: false },
+              { selector: selectHasRiskProfiles, value: false },
+              { selector: selectRiskProfiles, value: [] },
+              { selector: selectTestModules, value: [] },
+              { selector: selectSystemConfig, value: { network: {} } },
+              {
+                selector: selectSystemStatus,
+                value: proceedStatusWithTableData,
+              },
+            ],
+          }),
+        ],
+        imports: [
+          TestrunComponent,
+          TestrunStatusCardComponent,
+          TestrunTableComponent,
+          FakeDownloadOptionsComponent,
+          MatButtonModule,
+          MatIconModule,
+          MatToolbarModule,
+          MatDialogModule,
+          SpinnerComponent,
+          BrowserAnimationsModule,
+          MatTooltipModule,
+        ],
+      })
+        .overrideComponent(TestrunComponent, {
+          set: {
+            providers: [
+              { provide: LoaderService, useValue: loaderServiceMock },
+            ],
+          },
+        })
+        .overrideComponent(TestrunComponent, {
+          remove: {
+            imports: [DownloadOptionsComponent],
+          },
+          add: {
+            imports: [FakeDownloadOptionsComponent],
+          },
+        })
+        .compileComponents();
+
+      store = TestBed.inject(MockStore);
+      fixture = TestBed.createComponent(TestrunComponent);
+      compiled = fixture.nativeElement as HTMLElement;
+      compiled.style.width = '543px';
+      compiled.style.boxSizing = 'border-box';
+      testRunServiceMock.fetchSystemStatus.and.returnValue(
+        of(proceedStatusWithTableData)
+      );
+      fixture.detectChanges();
+    });
+
+    it('should not clip status card or VSA tag and should keep Name and Description columns readable inside 543px #main', () => {
+      const hostRect = compiled.getBoundingClientRect();
+      const toolbarEl = compiled.querySelector(
+        '.progress-toolbar'
+      ) as HTMLElement;
+      const toolbarRect = toolbarEl.getBoundingClientRect();
+      const firstTagEl = compiled.querySelector('.toolbar-tag') as HTMLElement;
+      const tagRect = firstTagEl.getBoundingClientRect();
+      const progressCardEl = compiled.querySelector(
+        'app-testrun-status-card .progress-card'
+      ) as HTMLElement;
+      const cardRect = progressCardEl.getBoundingClientRect();
+      const progressTableSection = compiled.querySelector(
+        'section.progress-table'
+      ) as HTMLElement;
+      const matTableEl = compiled.querySelector(
+        'app-testrun-table mat-table'
+      ) as HTMLElement;
+      const nameCell = compiled.querySelector(
+        'app-testrun-table mat-cell.mat-column-name'
+      ) as HTMLElement;
+      const descriptionCell = compiled.querySelector(
+        'app-testrun-table mat-cell.mat-column-description'
+      ) as HTMLElement;
+      const firstRow = compiled.querySelector(
+        'app-testrun-table mat-row'
+      ) as HTMLElement;
+
+      // 1. Status card and VSA tag fit within #main (543px) on both left and right edges
+      expect(cardRect.left).toBeGreaterThanOrEqual(hostRect.left);
+      expect(cardRect.right).toBeLessThanOrEqual(hostRect.right);
+      expect(tagRect.left).toBeGreaterThanOrEqual(toolbarRect.left);
+      expect(tagRect.right).toBeLessThanOrEqual(toolbarRect.right);
+
+      // 2. Table scrolls horizontally inside section.progress-table and preserves readable Name & Description widths
+      expect(window.getComputedStyle(progressTableSection).overflowX).toBe(
+        'auto'
+      );
+      expect(matTableEl.getBoundingClientRect().width).toBeGreaterThanOrEqual(
+        640
+      );
+      expect(nameCell.getBoundingClientRect().width).toBeGreaterThanOrEqual(
+        150
+      );
+      expect(
+        descriptionCell.getBoundingClientRect().width
+      ).toBeGreaterThanOrEqual(180);
+      expect(firstRow.getBoundingClientRect().height).toBeLessThan(150);
     });
   });
 });
