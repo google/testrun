@@ -358,7 +358,7 @@ class TestReport():
     template_folder = os.path.join(current_test_pack.path,
                                   TEMPLATES_FOLDER)
     # Jinja template
-    template_env = Environment(loader=FileSystemLoader(
+    template_env = Environment(loader=FileSystemLoader( #nosec B701
                                               template_folder
                                               ),
                                 trim_blocks=True,
