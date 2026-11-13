@@ -1102,7 +1102,7 @@ def test_get_report_success(empty_devices_dir, add_devices, # pylint: disable=W0
 @pytest.mark.parametrize("add_devices, add_profiles", [
     (["device_1"], ["valid_profile.json"])
 ], indirect=True)
-def test_export_report_with_profile(empty_devices_dir, add_devices, # pylint: disable=W0613
+def test_export_report_with_profile(empty_devices_dir, add_devices, # pylint: disable=W0613, R0917
                                   empty_profiles_dir, add_profiles, # pylint: disable=W0613
                                     create_report_folder, testrun): # pylint: disable=W0613
   """Test export results with existing profile when report exists (200)"""
@@ -2358,6 +2358,28 @@ def reset_certs():
 
   # Delete after the test
   delete_all_certs()
+
+@pytest.mark.parametrize("malicious_filename", [
+  "../test.pem",
+  "/tmp/evil.pem",
+  ".hidden.pem",
+  "sub/cert.pem",
+  ".."
+])
+def test_upload_cert_path_traversal(malicious_filename, reset_certs, testrun): # pylint: disable=W0613
+  "Test for upload certificate with path traversal characters (400)"
+  cert_file = load_cert_file("crt.pem")
+  r = requests.post(
+    f"{API}/system/config/certs",
+    files={"file": (malicious_filename, cert_file,
+                    "application/x-x509-ca-cert")},
+    timeout=5,
+  )
+  assert r.status_code == 400
+  response = r.json()
+  assert "error" in response
+  assert "Invalid filename" in response["error"]
+
 
 # Use parametrize to create a test suite for 3 scenarios
 @pytest.mark.parametrize("add_certs", [
