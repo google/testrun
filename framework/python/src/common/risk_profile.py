@@ -15,16 +15,16 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from weasyprint import HTML
-from weasyprint.urls import URLFetcher, URLFetcherResponse
 from io import BytesIO
 import base64
 from common import logger
+from common.testreport import CustomURLFetcher
 import json
 import os
 from jinja2 import Template
-from urllib.parse import urlparse
 from copy import deepcopy
 import math
+
 
 PROFILES_PATH = 'local/risk_profiles'
 LOGGER = logger.get_logger('risk_profile')
@@ -45,18 +45,7 @@ report_resource_dir = os.path.join(root_dir, RESOURCES_DIR)
 
 test_run_img_file = os.path.join(report_resource_dir, 'testrun.png')
 
-ALLOWED_DOMAINS = ('fonts.googleapis.com', 'fonts.gstatic.com')
 
-
-class CustomURLFetcher(URLFetcher):
-  def fetch(self, url: str, headers=None) -> URLFetcherResponse:
-    if url.startswith('data:'):
-      return super().fetch(url, headers)
-    parsed_url = urlparse(url)
-    if (parsed_url.scheme in ('http', 'https')
-        and parsed_url.netloc  in ALLOWED_DOMAINS):
-      return super().fetch(url, headers)
-    raise ValueError('URL is blocked')
 
 
 class RiskProfile():
