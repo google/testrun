@@ -219,7 +219,7 @@ describe('TestRunService', () => {
 
       const req = httpTestingController.expectOne(apiUrl);
       expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual(JSON.stringify({ device }));
+      expect(req.request.body).toEqual({ device });
       req.flush(MOCK_PROGRESS_DATA_IN_PROGRESS);
     });
   });
@@ -406,7 +406,7 @@ describe('TestRunService', () => {
 
     const req = httpTestingController.expectOne(apiUrl);
     expect(req.request.method).toBe('DELETE');
-    expect(req.request.body).toEqual(JSON.stringify(device));
+    expect(req.request.body).toEqual(device);
     req.flush({});
   });
 
@@ -492,7 +492,7 @@ describe('TestRunService', () => {
 
     const req = httpTestingController.expectOne(apiUrl);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(JSON.stringify(device));
+    expect(req.request.body).toEqual(device);
     req.flush(true);
   });
 
@@ -505,9 +505,10 @@ describe('TestRunService', () => {
 
     const req = httpTestingController.expectOne(apiUrl);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(
-      JSON.stringify({ mac_addr: '01:01:01:01:01:01', device })
-    );
+    expect(req.request.body).toEqual({
+      mac_addr: '01:01:01:01:01:01',
+      device,
+    });
     req.flush(true);
   });
 
@@ -535,6 +536,7 @@ describe('TestRunService', () => {
     );
 
     expect(req.request.method).toBe('DELETE');
+    expect(req.request.body).toEqual({ name: 'test' });
 
     req.flush(true);
   });
@@ -593,6 +595,7 @@ describe('TestRunService', () => {
     );
 
     expect(req.request.method).toBe('DELETE');
+    expect(req.request.body).toEqual({ name: 'test' });
 
     req.flush(true);
   });
@@ -622,6 +625,7 @@ describe('TestRunService', () => {
     tick();
 
     expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ profile: '' });
 
     expect(document.createElement).toHaveBeenCalledWith('a');
 
@@ -658,7 +662,7 @@ describe('TestRunService', () => {
 
       const req = httpTestingController.expectOne(apiUrl);
       expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual(JSON.stringify(NEW_PROFILE_MOCK));
+      expect(req.request.body).toEqual(NEW_PROFILE_MOCK);
       req.flush(true);
     });
 
@@ -673,7 +677,7 @@ describe('TestRunService', () => {
 
       const req = httpTestingController.expectOne(apiUrl);
       expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual(JSON.stringify(NEW_PROFILE_MOCK));
+      expect(req.request.body).toEqual(NEW_PROFILE_MOCK);
       req.flush(data, mockErrorResponse);
     });
   });

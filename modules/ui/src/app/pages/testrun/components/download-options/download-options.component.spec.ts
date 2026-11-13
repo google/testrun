@@ -27,6 +27,65 @@ import { TestRunService } from '../../../../services/test-run.service';
 interface GAEvent {
   event: string;
 }
+
+/** Collapses whitespace the way the accessible name computation does. */
+function normalizeWhitespace(text: string): string {
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Text of a subtree as assistive technology reads it: skips `aria-hidden` and
+ * CSS-hidden nodes. With `visibleOnly`, it also skips visually hidden text
+ * (clipped to 1 x 1 px), so it returns only what sighted users read.
+ */
+function textOf(node: Node, visibleOnly = false): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent ?? '';
+  }
+  if (
+    !(node instanceof HTMLElement) ||
+    node.getAttribute('aria-hidden') === 'true'
+  ) {
+    return '';
+  }
+  const { display, visibility } = getComputedStyle(node);
+  const { width, height } = node.getBoundingClientRect();
+  if (
+    display === 'none' ||
+    visibility === 'hidden' ||
+    (visibleOnly && width <= 1 && height <= 1)
+  ) {
+    return '';
+  }
+  return Array.from(node.childNodes, child => textOf(child, visibleOnly)).join(
+    ''
+  );
+}
+
+/** Text of the elements referenced by an `aria-labelledby`/`aria-describedby` value. */
+function textOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(id => document.getElementById(id)?.textContent?.trim() ?? '')
+    .join(' ');
+}
+
+/** Accessible name of a control named by ARIA attributes or its content. */
+function accessibleName(element: HTMLElement): string {
+  const labelledBy = element.getAttribute('aria-labelledby');
+  return normalizeWhitespace(
+    labelledBy
+      ? textOfIdRefs(labelledBy)
+      : element.getAttribute('aria-label') || textOf(element)
+  );
+}
+
+/** Text label that sighted users see on a control. */
+function visibleLabel(element: HTMLElement): string {
+  return normalizeWhitespace(textOf(element, true));
+}
+
 describe('DownloadOptionsComponent', () => {
   let component: DownloadOptionsComponent;
   let fixture: ComponentFixture<DownloadOptionsComponent>;
@@ -61,10 +120,18 @@ describe('DownloadOptionsComponent', () => {
 
   it('#downloadPdf should call getReportTitle', () => {
     const spyGetReportTitle = spyOn(component, 'getReportTitle');
+    // Use a fake link: clicking a real target="_blank" link opens a new tab,
+    // which takes focus away from the test page and breaks later specs that
+    // check focus styles.
+    const link = jasmine.createSpyObj<HTMLAnchorElement>('a', [
+      'dispatchEvent',
+    ]);
+    spyOn(document, 'createElement').and.returnValue(link);
 
     component.downloadPdf(MOCK_PROGRESS_DATA_COMPLIANT);
 
     expect(spyGetReportTitle).toHaveBeenCalled();
+    expect(link.dispatchEvent).toHaveBeenCalledTimes(1);
   });
 
   it('#getReportTitle should return data for title of link', () => {
@@ -89,6 +156,55 @@ describe('DownloadOptionsComponent', () => {
 
     component.handleKeydown(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(component.isOpenDownloadOptions).toBeFalse();
+  });
+
+  describe('"Download" button (WCAG 2.5.3 Label in Name)', () => {
+    let downloadButton: HTMLButtonElement;
+
+    beforeEach(() => {
+      downloadButton = fixture.nativeElement.querySelector(
+        '.download-button'
+      ) as HTMLButtonElement;
+    });
+
+    it('should be named by its visible text while the options are closed', () => {
+      expect(visibleLabel(downloadButton)).toBe('Download');
+      expect(accessibleName(downloadButton)).toBe('Download');
+      expect(downloadButton.hasAttribute('aria-label'))
+        .withContext('an aria-label overrides the visible text')
+        .toBeFalse();
+      expect(downloadButton.getAttribute('aria-haspopup')).toBe('menu');
+      expect(downloadButton.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('should keep its name and report the open state when it shows only a close icon', () => {
+      downloadButton.click();
+      fixture.detectChanges();
+
+      expect(visibleLabel(downloadButton))
+        .withContext('the open options show only a close icon')
+        .toBe('');
+      expect(accessibleName(downloadButton)).toBe('Download');
+      expect(downloadButton.hasAttribute('aria-label')).toBeFalse();
+      expect(downloadButton.getAttribute('aria-expanded')).toBe('true');
+      expect(
+        downloadButton.querySelector('mat-icon')?.getAttribute('aria-hidden')
+      ).toBe('true');
+    });
+
+    it('should show its visible text again when Escape closes the options', () => {
+      downloadButton.click();
+      fixture.detectChanges();
+
+      downloadButton.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+      );
+      fixture.detectChanges();
+
+      expect(visibleLabel(downloadButton)).toBe('Download');
+      expect(accessibleName(downloadButton)).toBe('Download');
+      expect(downloadButton.getAttribute('aria-expanded')).toBe('false');
+    });
   });
 
   describe('#sendGAEvent', () => {

@@ -19,8 +19,12 @@
 @use 'variables';
 
 :host {
+  display: flex;
+  justify-content: center;
   height: auto;
   min-height: 152px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 @mixin progress-card-info($background-color, $title-color, $text-color) {
@@ -31,6 +35,9 @@
   align-items: start;
   background-color: $background-color;
   box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
 
   .progress-card-info-title {
     font-family: variables.$font-text;
@@ -38,6 +45,7 @@
     line-height: 20px;
     font-weight: 500;
     color: $title-color;
+    overflow-wrap: break-word;
   }
 
   .progress-card-info-text {
@@ -46,19 +54,19 @@
     line-height: 36px;
     font-weight: 400;
     color: $text-color;
+    overflow-wrap: break-word;
   }
 }
 
 .progress-card {
-  display: grid;
-  grid-template-areas:
-    'tests status'
-    'bar bar';
-  width: fit-content;
+  display: flex;
+  flex-wrap: wrap;
+  width: auto;
+  max-width: 100%;
   box-sizing: border-box;
   gap: 16px;
   padding: 16px 0;
-  grid-template-columns: min-content 1fr;
+  white-space: normal;
 
   p {
     margin: 0;
@@ -137,6 +145,7 @@
     colors.$on-primary
   );
   flex-direction: row;
+  flex-wrap: wrap;
   gap: 32px;
   justify-self: stretch;
 
@@ -156,6 +165,10 @@
   overflow: hidden;
   grid-area: bar;
   white-space: normal;
+  flex: 1 0 100%;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   &-bar {
     width: 100%;
   }
@@ -168,12 +181,19 @@
   color: colors.$on-secondary-container;
   display: flex;
   align-items: center;
+  box-sizing: border-box;
+  max-width: 100%;
+  .spinner-container {
+    flex-shrink: 0;
+  }
   .loader {
     width: 40px;
     height: 40px;
   }
   .progress-card-result-title {
     margin-left: 32px;
+    min-width: 0;
+    overflow-wrap: break-word;
   }
 }
 

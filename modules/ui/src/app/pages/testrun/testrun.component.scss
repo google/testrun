@@ -66,6 +66,8 @@
   height: auto;
   padding: 0;
   background: colors.$white;
+  flex-shrink: 0;
+  white-space: normal;
 
   ::ng-deep .download-report-link {
     display: inline-block;
@@ -79,6 +81,8 @@
     align-items: center;
     flex: 1;
     min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
     padding: 48px 20px 32px 20px;
     gap: 12px;
   }
@@ -86,6 +90,11 @@
   .toolbar-row {
     display: flex;
     align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 
     &.top {
       gap: 15px;
@@ -96,6 +105,7 @@
     }
 
     &.bottom {
+      width: 100%;
       p {
         margin: 0;
       }
@@ -106,21 +116,21 @@
 .progress-title {
   font-size: 45px !important;
   line-height: 52px !important;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: break-word;
+  text-align: center;
   cursor: pointer;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .toolbar-tag-container {
   align-self: flex-start;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  margin-left: 10px;
-  position: absolute;
-  left: 100%;
-  bottom: 30px;
+  max-width: 100%;
 }
 
 .toolbar-tag {
@@ -143,6 +153,13 @@
   &:hover {
     cursor: pointer;
   }
+}
+
+.progress-table {
+  overflow-x: auto;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .stop-button {
