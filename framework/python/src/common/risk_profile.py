@@ -22,7 +22,6 @@ from common import logger
 import json
 import os
 from jinja2 import Template
-from markupsafe import Markup
 from urllib.parse import urlparse
 from copy import deepcopy
 import math
@@ -76,7 +75,7 @@ class RiskProfile():
                            'r',
                            encoding='UTF-8'
                            ) as style_file:
-      self._template_styles = Markup(style_file.read())
+      self._template_styles = style_file.read()
 
     # Device profile format
     self._device_format = []
