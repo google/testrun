@@ -943,6 +943,11 @@ question {question.get('question')}''')
 
   def upload_cert(self, filename, content):
 
+    if (not filename
+      or os.path.basename(filename) != filename
+        or filename.startswith('.')):
+      raise ValueError('Invalid certificate filename')
+
     now = datetime.datetime.now(pytz.utc)
 
     # Parse bytes into x509 object
@@ -994,6 +999,9 @@ question {question.get('question')}''')
     return cert_obj
 
   def check_cert_file_name(self, name):
+
+    if not name or os.path.basename(name) != name or name.startswith('.'):
+      return False
 
     # Check for duplicate file name
     if os.path.exists(os.path.join(CERTS_PATH, name)):
