@@ -12,7 +12,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Testrun Report</title>
-  <style>{{ styles }}</style>
+  <style>{{ styles | safe }}</style>
 </head>
 <body>
   {# Test Results #}
@@ -61,14 +61,14 @@
   {% endif %}
   {# Modules reports Jinja #}
     {% for template in module_templates %}
-      {{ template }}
+      {{ template | safe }}
     {% endfor %}
   {# Modules reports #}
   {% for module in module_reports %}
   <div class="page">
     {{ header.insert(False, device, logo, icon) }}
     <div class="module-page-content">
-      {{ module }}  
+      {{ module | safe }}  
     </div>
   <div class="footer">
     <div class="footer-label">Testrun {{ version }}</div>
