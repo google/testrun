@@ -19,6 +19,7 @@ import {
   OnDestroy,
   OnInit,
   inject,
+  viewChild,
 } from '@angular/core';
 import {
   FormBuilder,
@@ -55,6 +56,7 @@ import { Router } from '@angular/router';
 import { Routes } from '../../model/routes';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { LocalStorageService } from '../../services/local-storage.service';
+import { _IdGenerator } from '@angular/cdk/a11y';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 declare const gtag: Function;
@@ -96,6 +98,13 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   private readonly loaderService = inject(LoaderService);
   private readonly focusManagerService = inject(FocusManagerService);
   private readonly localStorageService = inject(LocalStorageService);
+  private readonly deviceDropdown =
+    viewChild<SettingsDropdownComponent>('deviceDropdown');
+  private readonly internetDropdown =
+    viewChild<SettingsDropdownComponent>('internetDropdown');
+
+  /** ID of the error shown when both ports have the same value. */
+  readonly portsErrorId = inject(_IdGenerator).getId('mat-mdc-error-');
 
   private isSettingsDisable = false;
   get settingsDisable(): boolean {
@@ -185,6 +194,9 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
 
   saveSetting(): void {
     if (this.settingForm.invalid) {
+      // Focus has to be moved before the "Save" button gets disabled,
+      // otherwise keyboard focus is lost.
+      this.focusInvalidPortField();
       this.settingsStore.setIsSubmitting(true);
       this.settingForm.markAllAsTouched();
     } else {
@@ -193,6 +205,17 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
       this.analyticsForm.markAsPristine();
       this.setFocus();
     }
+  }
+
+  /**
+   * Moves keyboard focus to the port that has to be changed: the internet
+   * port or, when it is disabled, the device port.
+   */
+  private focusInvalidPortField(): void {
+    const portDropdown = this.isInternetControlDisabled
+      ? this.deviceDropdown()
+      : this.internetDropdown();
+    portDropdown?.focus();
   }
 
   private setFocus(): void {
