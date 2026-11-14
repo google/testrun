@@ -13,9 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+} from '@angular/core';
 import { ResultOfTestrun, TestrunStatus } from '../../model/testrun-status';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ReportActionComponent } from '../report-action/report-action.component';
 
@@ -24,15 +30,21 @@ import { ReportActionComponent } from '../report-action/report-action.component'
   templateUrl: './download-report.component.html',
   styleUrls: ['./download-report.component.scss'],
 
-  imports: [MatTooltipModule],
+  imports: [MatButtonModule, MatTooltipModule, NgTemplateOutlet],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DownloadReportComponent extends ReportActionComponent {
   @Input() href: string | undefined;
   @Input() class!: string;
+  /** Accessible name and tooltip of the icon link. */
   @Input() title!: string;
   @Input() tabindex = 0;
+  /**
+   * Renders the link itself as a Material text button named by its projected
+   * text (e.g. "Download PDF report") instead of an icon link named by `title`.
+   */
+  @Input({ transform: booleanAttribute }) textButton = false;
 
   getReportTitle(data: TestrunStatus) {
     if (!data.device) {

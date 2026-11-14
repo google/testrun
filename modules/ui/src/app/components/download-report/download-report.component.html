@@ -14,14 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 @if (data) {
-  <a
-    class="download-report-link {{ getClass(data) }}"
-    [download]="getReportTitle(data)"
-    [attr.aria-label]="getReportTitle(data)"
-    [href]="href"
-    [tabIndex]="tabindex"
-    target="_blank"
-    [matTooltip]="title">
-    <ng-content></ng-content>
-  </a>
+  @if (textButton) {
+    <a
+      mat-button
+      color="primary"
+      [download]="getReportTitle(data)"
+      [href]="href"
+      target="_blank">
+      <ng-container *ngTemplateOutlet="content"></ng-container>
+    </a>
+  } @else {
+    <a
+      class="download-report-link {{ getClass(data) }}"
+      [download]="getReportTitle(data)"
+      [attr.aria-label]="title"
+      [href]="href"
+      [tabIndex]="tabindex"
+      target="_blank"
+      [matTooltip]="title">
+      <ng-container *ngTemplateOutlet="content"></ng-container>
+    </a>
+  }
 }
+<ng-template #content><ng-content></ng-content></ng-template>
