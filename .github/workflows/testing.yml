@@ -17,6 +17,10 @@ jobs:
         os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
       fail-fast: false
     steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
       - name: Checkout source
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Install dependencies
@@ -24,8 +28,6 @@ jobs:
         run: cmd/prepare
       - name: Install Testrun
         shell: bash {0}
-        env:
-          PYO3_USE_ABI3_FORWARD_COMPATIBILITY: "1"
         run: TESTRUN_DIR=. cmd/install
         timeout-minutes: 30
       - name: Run tests
