@@ -24,6 +24,8 @@ jobs:
         run: cmd/prepare
       - name: Install Testrun
         shell: bash {0}
+        env:
+          PYO3_USE_ABI3_FORWARD_COMPATIBILITY: "1"
         run: TESTRUN_DIR=. cmd/install
         timeout-minutes: 30
       - name: Run tests
