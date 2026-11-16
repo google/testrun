@@ -497,6 +497,24 @@ describe('ProgressStatusCardComponent', () => {
         );
         expect(textEl.textContent?.trim()).toEqual('Proceed');
       });
+
+      it('should reflow and fit within a narrow container at 200% zoom without horizontal overflow', () => {
+        compiled.style.width = '435px';
+        fixture.detectChanges();
+
+        const progressCardEl = compiled.querySelector(
+          '.progress-card'
+        ) as HTMLElement;
+        const cardStyle = window.getComputedStyle(progressCardEl);
+        const hostRect = compiled.getBoundingClientRect();
+        const cardRect = progressCardEl.getBoundingClientRect();
+
+        expect(cardStyle.flexWrap).toBe('wrap');
+        expect(cardStyle.boxSizing).toBe('border-box');
+        expect(cardRect.width).toBeLessThanOrEqual(hostRect.width);
+        expect(cardRect.left).toBeGreaterThanOrEqual(hostRect.left);
+        expect(cardRect.right).toBeLessThanOrEqual(hostRect.right);
+      });
     });
   });
 });

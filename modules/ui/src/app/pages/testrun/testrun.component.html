@@ -69,7 +69,7 @@ limitations under the License.
         <button
           (click)="openStopTestrunDialog()"
           class="stop-button"
-          aria-label="Stop testrun"
+          aria-haspopup="dialog"
           mat-flat-button>
           <mat-icon fontSet="material-symbols-outlined" class="filled">
             cancel
@@ -92,7 +92,7 @@ limitations under the License.
     <div class="progress-content-empty">
       <div class="empty-content">
         <p class="empty-content-heading">Start device testing</p>
-        <p class="empty-content-info">
+        <p class="empty-content-info" [id]="startTestingInstructionsId">
           Click the button below to configure your testing task
         </p>
         <ng-container
@@ -113,8 +113,9 @@ limitations under the License.
     let-systemStatus="systemStatus">
     <button
       class="start-button"
-      aria-label="Start new testrun"
       color="primary"
+      aria-haspopup="dialog"
+      [attr.aria-describedby]="startTestingInstructionsId"
       [disabled]="
         hasDevices === false ||
         isAllDevicesOutdated === true ||

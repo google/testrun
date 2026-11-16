@@ -47,6 +47,7 @@ import { TestrunTableComponent } from './components/testrun-table/testrun-table.
 import { TestrunStatusCardComponent } from './components/testrun-status-card/testrun-status-card.component';
 import { DownloadOptionsComponent } from './components/download-options/download-options.component';
 import { TestrunDialogService } from '../../services/testrun-dialog.service';
+import { _IdGenerator } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'app-progress',
@@ -85,6 +86,10 @@ export class TestrunComponent implements OnDestroy {
   public readonly StatusOfTestrun = StatusOfTestrun;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   viewModel$ = this.testrunStore.viewModel$;
+  /** Describes the "Start Testing" button by the visible instructions. */
+  readonly startTestingInstructionsId = inject(_IdGenerator).getId(
+    'app-start-testing-instructions-'
+  );
 
   isTestrunInProgress(status?: string) {
     return this.testRunService.testrunInProgress(status);

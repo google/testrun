@@ -151,6 +151,29 @@ describe('ProgressTableComponent', () => {
 
         expect(testsRows.length).toBe(expectedRowsLength);
       });
+
+      it('should maintain readable minimum column widths for Name and Description at 200% zoom (475px container)', () => {
+        compiled.style.width = '475px';
+        fixture.detectChanges();
+
+        const tableEl = compiled.querySelector('mat-table') as HTMLElement;
+        const nameCell = compiled.querySelector(
+          'mat-cell.mat-column-name'
+        ) as HTMLElement;
+        const descriptionCell = compiled.querySelector(
+          'mat-cell.mat-column-description'
+        ) as HTMLElement;
+
+        expect(tableEl.getBoundingClientRect().width).toBeGreaterThanOrEqual(
+          640
+        );
+        expect(nameCell.getBoundingClientRect().width).toBeGreaterThanOrEqual(
+          150
+        );
+        expect(
+          descriptionCell.getBoundingClientRect().width
+        ).toBeGreaterThanOrEqual(180);
+      });
     });
 
     describe('with recommendations', () => {

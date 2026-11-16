@@ -58,11 +58,6 @@ limitations under the License.
       color="primary"
       aria-haspopup="menu"
       [attr.aria-expanded]="isOpenDownloadOptions"
-      [attr.aria-label]="
-        isOpenDownloadOptions
-          ? 'Hide download options'
-          : 'Show download options'
-      "
       mat-flat-button>
       @if (!isOpenDownloadOptions) {
         <mat-icon fontSet="material-symbols-outlined" class="filled">
@@ -74,7 +69,8 @@ limitations under the License.
           close
         </mat-icon>
       }
-      {{ isOpenDownloadOptions ? '' : 'Download' }}
+      <!-- Keeps the name "Download" while only the close icon is visible. -->
+      <span [class.visually-hidden]="isOpenDownloadOptions">Download</span>
     </button>
   </div>
 }
