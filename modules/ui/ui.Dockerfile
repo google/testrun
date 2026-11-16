@@ -15,6 +15,9 @@
 # Image name: testrun/ui
 FROM nginx@sha256:4c0fdaa8b6341bfdeca5f18f7837462c80cff90527ee35ef185571e1c327beac
 
+# Copy the nginx configuration file to the container 
+COPY modules/ui/conf/nginx.conf /etc/nginx/conf.d/default.conf
+
 COPY modules/ui/dist/browser /usr/share/nginx/html
 
 EXPOSE 8080
