@@ -177,6 +177,60 @@ describe('ProfileFormComponent', () => {
           'This Profile name is already used for another profile'
         );
       });
+
+      describe('required state', () => {
+        /** Text of an element as exposed to assistive technology (`aria-hidden` content skipped). */
+        const accessibleText = (element: Element): string => {
+          const clone = element.cloneNode(true) as Element;
+          clone
+            .querySelectorAll('[aria-hidden="true"]')
+            .forEach(node => node.remove());
+          return clone.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+        };
+        /** Text of the elements referenced by an `aria-describedby` value. */
+        const textOfIdRefs = (idRefs: string | null): string =>
+          (idRefs ?? '')
+            .split(/\s+/)
+            .filter(Boolean)
+            .map(id => document.getElementById(id)?.textContent?.trim() ?? '')
+            .join(' ');
+
+        it('should expose the profile name input as required', () => {
+          const name = compiled.querySelector(
+            '#name-field'
+          ) as HTMLInputElement;
+
+          expect(name.required).withContext('native required').toBeTrue();
+          expect(name.getAttribute('aria-required')).toBe('true');
+        });
+
+        it('should mark the label with an asterisk that is not announced as part of its name', () => {
+          const label = compiled.querySelector(
+            'label[for="name-field"]'
+          ) as HTMLLabelElement;
+          const marker = label.querySelector('.field-required-marker');
+
+          expect(marker?.textContent?.trim()).toBe('*');
+          expect(marker?.getAttribute('aria-hidden')).toBe('true');
+          expect(accessibleText(label)).toBe('Profile name');
+        });
+
+        it('should announce an empty name as required and describe it by its error', async () => {
+          const name = compiled.querySelector(
+            '#name-field'
+          ) as HTMLInputElement;
+
+          component.nameControl.markAsTouched();
+          fixture.detectChanges();
+          await fixture.whenStable();
+          fixture.detectChanges(); // Material syncs aria-describedby after content is checked
+
+          expect(name.getAttribute('aria-required')).toBe('true');
+          expect(textOfIdRefs(name.getAttribute('aria-describedby'))).toContain(
+            'The Profile name is required'
+          );
+        });
+      });
     });
 
     describe('Draft button', () => {

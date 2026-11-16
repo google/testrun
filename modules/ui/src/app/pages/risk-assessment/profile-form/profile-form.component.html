@@ -21,9 +21,10 @@ limitations under the License.
   aria-labelledby="form-accessible-title">
   <h2 id="form-accessible-title" class="visually-hidden">{{ formTitle }}</h2>
   <div class="field-container">
-    <label class="field-label name-field-label" for="name-field"
-      >Profile name *</label
-    >
+    <label class="field-label name-field-label" for="name-field">
+      Profile name
+      <span class="field-required-marker" aria-hidden="true">*</span>
+    </label>
     <mat-form-field
       appearance="outline"
       floatLabel="always"

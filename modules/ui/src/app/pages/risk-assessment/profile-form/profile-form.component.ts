@@ -40,6 +40,7 @@ import {
   FormGroup,
   ReactiveFormsModule,
   ValidatorFn,
+  Validators,
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import {
@@ -357,7 +358,11 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
       this.profile
     );
 
+    // Validators.required lets Angular Material expose the required state to
+    // assistive technology (`required`, `aria-required`); textRequired() also
+    // rejects whitespace-only values.
     group['name'] = new FormControl('', [
+      Validators.required,
       this.profileValidators.textRequired(),
       this.profileValidators.profileNameFormat(),
       this.nameValidator,
