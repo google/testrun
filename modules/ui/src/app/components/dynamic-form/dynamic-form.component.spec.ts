@@ -320,4 +320,80 @@ describe('DynamicFormComponent', () => {
       ).not.toThrow();
     });
   });
+
+  describe('required checkbox groups', () => {
+    const OPTIONAL_GROUP = {
+      question: 'Which accessories are included?',
+      type: FormControlType.SELECT_MULTIPLE,
+      options: ['Power supply', 'Mounting kit'],
+      validation: { required: false },
+    };
+    const FORMAT = [...PROFILE_FORM, OPTIONAL_GROUP];
+    const REQUIRED_GROUP_INDEX = FORMAT.findIndex(
+      item =>
+        item.type === FormControlType.SELECT_MULTIPLE &&
+        item.validation?.required
+    );
+
+    /** Accessible name from `aria-labelledby` (`aria-hidden` content skipped). */
+    const nameFromLabelledBy = (element: Element): string =>
+      (element.getAttribute('aria-labelledby') ?? '')
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(id => {
+          const clone = document.getElementById(id)?.cloneNode(true) as
+            Element | undefined;
+          clone
+            ?.querySelectorAll('[aria-hidden="true"]')
+            .forEach(node => node.remove());
+          return clone?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+        })
+        .join(' ');
+    /** The checkbox group of the question at the given index. */
+    const getGroup = (index: number) =>
+      Array.from(compiled.querySelectorAll('[role="group"]')).find(
+        group =>
+          group.getAttribute('aria-labelledby')?.split(/\s+/)[0] ===
+          `field-label-${index}`
+      ) as HTMLElement;
+
+    beforeEach(() => {
+      // Adds the control for the optional group; existing controls are kept.
+      component.createProfileForm(FORMAT);
+      dummy.format = FORMAT;
+      fixture.detectChanges();
+    });
+
+    it('should announce "required" in the name of required checkbox groups only', () => {
+      const groups = FORMAT.map((item, index) => ({ item, index })).filter(
+        ({ item }) => item.type === FormControlType.SELECT_MULTIPLE
+      );
+
+      expect(groups.length).toBe(2);
+      groups.forEach(({ item, index }) => {
+        const expectedName = item.validation?.required
+          ? `${item.question} required`
+          : item.question;
+
+        expect(nameFromLabelledBy(getGroup(index)))
+          .withContext(item.question)
+          .toBe(expectedName);
+      });
+    });
+
+    it('should keep the "required" text out of the visible label and the reading order', () => {
+      const requiredText = compiled.querySelector(
+        `#field-required-${REQUIRED_GROUP_INDEX}`
+      ) as HTMLElement;
+      const label = compiled.querySelector(
+        `#field-label-${REQUIRED_GROUP_INDEX}`
+      ) as HTMLElement;
+
+      expect(requiredText?.hidden)
+        .withContext('hidden from the reading order')
+        .toBeTrue();
+      expect(getComputedStyle(requiredText).display).toBe('none');
+      expect(label.textContent).not.toContain('required');
+    });
+  });
 });

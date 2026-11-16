@@ -94,6 +94,7 @@ limitations under the License.
             formControlName: formControlName,
             options: options,
             description: description,
+            required: required,
           }
         "></ng-container>
     }
@@ -232,12 +233,21 @@ limitations under the License.
   #selectMultiple
   let-formControlName="formControlName"
   let-options="options"
-  let-description="description">
+  let-description="description"
+  let-required="required">
   <section
     class="field-select-multiple form-field"
     role="group"
-    [attr.aria-labelledby]="'field-label-' + formControlName"
+    [attr.aria-labelledby]="
+      'field-label-' +
+      formControlName +
+      (required ? ' field-required-' + formControlName : '')
+    "
     [formGroup]="getFormGroup(formControlName)">
+    <!-- A group cannot take aria-required, so "required" is part of its name. -->
+    @if (required) {
+      <span hidden [id]="'field-required-' + formControlName">required</span>
+    }
     @for (option of options; track option; let i = $index) {
       <p class="field-select-checkbox">
         <mat-checkbox
