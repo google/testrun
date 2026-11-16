@@ -22,7 +22,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { Component, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, Input } from '@angular/core';
 import SpyObj = jasmine.SpyObj;
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -324,6 +324,146 @@ describe('GeneralSettingsComponent', () => {
       ) as HTMLButtonElement;
 
       expect(saveBtn.disabled).toBeFalse();
+    });
+  });
+
+  describe('with the same value in device and internet ports', () => {
+    const MOCK_SAME_PORT = { key: 'mockDeviceKey', value: 'mockDeviceValue' };
+    let saveButton: HTMLButtonElement;
+    let deviceSelect: HTMLElement;
+    let internetSelect: HTMLElement;
+
+    const renderViewModel = (isSubmitting: boolean): void => {
+      component.viewModel$ = of({
+        systemConfig: { network: {} },
+        hasConnectionSettings: false,
+        isSubmitting,
+        isLessThanOneInterface: false,
+        interfaces: MOCK_INTERFACES,
+        deviceOptions: MOCK_INTERFACES,
+        internetOptions: MOCK_INTERFACES,
+        logLevelOptions: {},
+        monitoringPeriodOptions: {},
+      });
+      // The component is OnPush, so it has to be marked for check to render
+      // the new view model.
+      fixture.debugElement.injector.get(ChangeDetectorRef).markForCheck();
+      fixture.detectChanges();
+    };
+
+    beforeEach(() => {
+      renderViewModel(false);
+      component.deviceControl.setValue(MOCK_SAME_PORT);
+      component.internetControl.setValue(MOCK_SAME_PORT);
+      component.settingForm.markAsDirty();
+      fixture.detectChanges();
+
+      saveButton = compiled.querySelector('.save-button') as HTMLButtonElement;
+      deviceSelect = compiled.querySelector('#device-group') as HTMLElement;
+      internetSelect = compiled.querySelector('#internet-group') as HTMLElement;
+    });
+
+    it('should not show error or mark ports as invalid before submitting', () => {
+      expect(compiled.querySelector('.error-message-container')).toBeNull();
+      expect(deviceSelect.getAttribute('aria-invalid')).toEqual('false');
+      expect(internetSelect.getAttribute('aria-invalid')).toEqual('false');
+      expect(deviceSelect.getAttribute('aria-describedby')).toEqual(
+        'device-description'
+      );
+      expect(internetSelect.getAttribute('aria-describedby')).toEqual(
+        'internet-description'
+      );
+    });
+
+    describe('after submitting', () => {
+      beforeEach(() => {
+        renderViewModel(true);
+      });
+
+      it('should announce error to screen readers', () => {
+        const error = compiled.querySelector(
+          'mat-error.error-message-container'
+        ) as HTMLElement;
+
+        expect(error.textContent?.trim()).toEqual(
+          'Both interfaces must have different values'
+        );
+        expect(error.getAttribute('role')).toEqual('alert');
+        expect(error.getAttribute('aria-live')).toEqual('assertive');
+        expect(error.id).toEqual(component.portsErrorId);
+      });
+
+      it('should mark both ports as invalid', () => {
+        expect(deviceSelect.getAttribute('aria-invalid')).toEqual('true');
+        expect(internetSelect.getAttribute('aria-invalid')).toEqual('true');
+      });
+
+      it('should link both ports to the error', () => {
+        expect(deviceSelect.getAttribute('aria-describedby')).toEqual(
+          `device-description ${component.portsErrorId}`
+        );
+        expect(internetSelect.getAttribute('aria-describedby')).toEqual(
+          `internet-description ${component.portsErrorId}`
+        );
+      });
+
+      it('should have disabled "Save" button', () => {
+        expect(saveButton.disabled).toBeTrue();
+      });
+
+      it('should restore ports state when error is hidden', () => {
+        renderViewModel(false);
+
+        expect(compiled.querySelector('.error-message-container')).toBeNull();
+        expect(deviceSelect.getAttribute('aria-invalid')).toEqual('false');
+        expect(internetSelect.getAttribute('aria-invalid')).toEqual('false');
+        expect(deviceSelect.getAttribute('aria-describedby')).toEqual(
+          'device-description'
+        );
+        expect(internetSelect.getAttribute('aria-describedby')).toEqual(
+          'internet-description'
+        );
+      });
+    });
+
+    describe('#saveSetting', () => {
+      it('should move focus to internet port before "Save" button gets disabled', () => {
+        saveButton.focus();
+
+        component.saveSetting();
+
+        expect(document.activeElement).toBe(internetSelect);
+        expect(saveButton.disabled).toBeFalse();
+        expect(mockSettingsStore.setIsSubmitting).toHaveBeenCalledWith(true);
+
+        renderViewModel(true);
+
+        expect(saveButton.disabled).toBeTrue();
+        expect(document.activeElement).toBe(internetSelect);
+      });
+
+      it('should move focus to device port when internet port is disabled', () => {
+        component.internetControl.disable();
+        fixture.detectChanges();
+        saveButton.focus();
+
+        component.saveSetting();
+
+        expect(document.activeElement).toBe(deviceSelect);
+      });
+
+      it('should not move focus to ports when form is valid', () => {
+        component.internetControl.setValue({
+          key: 'mockInternetKey',
+          value: 'mockInternetValue',
+        });
+        fixture.detectChanges();
+        saveButton.focus();
+
+        component.saveSetting();
+
+        expect(document.activeElement).toBe(saveButton);
+      });
     });
   });
 });
