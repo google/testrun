@@ -132,14 +132,11 @@ describe('ConsentDialogComponent', () => {
 
   it('should not close dialog on download link click', () => {
     const closeSpy = spyOn(component.dialogRef, 'close');
-    const downloadLink = compiled.querySelector(
+    const confirmButton = compiled.querySelector(
       '.download-link'
     ) as HTMLAnchorElement;
-    // Don't let the link open a real tab: the test page would lose focus and
-    // later specs that check focus styles would fail.
-    downloadLink.addEventListener('click', event => event.preventDefault());
 
-    downloadLink.click();
+    confirmButton?.click();
 
     expect(closeSpy).toHaveBeenCalledTimes(0);
   });

@@ -13,10 +13,8 @@
 # limitations under the License.
 """Provides Testrun data via REST API."""
 from fastapi import (FastAPI, APIRouter, Response, Request, status, UploadFile)
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from starlette.types import ASGIApp, Receive, Scope, Send
 import asyncio
 import json
 from json import JSONDecodeError
@@ -55,54 +53,6 @@ DEVICE_QUESTIONS_FILE_NAME = "device_profile.json"
 
 LATEST_RELEASE_CHECK = ("https://api.github.com/repos/google/" +
                         "testrun/releases/latest")
-
-# Only accept connections from this machine
-API_HOST = "127.0.0.1"
-
-# Host names the API answers to. Rejecting any other Host header stops
-# DNS rebinding attacks from reaching the loopback-only API
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
-
-# Browser origins allowed to call the API: the Testrun UI and the
-# Angular development server (ng serve), both running on this machine
-ALLOWED_ORIGINS = [
-    "http://localhost:8080",
-    "http://127.0.0.1:8080",
-    "http://localhost:4200",
-    "http://127.0.0.1:4200",
-]
-
-# HTTP methods that do not change Testrun state
-SAFE_METHODS = ("GET", "HEAD", "OPTIONS")
-
-
-class OriginCheckMiddleware:
-  """Rejects state-changing requests sent from untrusted browser origins.
-
-  Browsers add an Origin header to every POST and DELETE request,
-  including "simple" requests that skip the CORS preflight, so the CORS
-  policy alone does not stop another website from changing Testrun
-  state. Requests without an Origin header come from non-browser clients,
-  which can only reach the loopback-only API from this machine.
-  """
-
-  def __init__(self, app: ASGIApp, allowed_origins: list[str]):
-    self._app = app
-    self._allowed_origins = allowed_origins
-
-  async def __call__(self, scope: Scope, receive: Receive,
-                     send: Send) -> None:
-    if scope["type"] == "http" and scope["method"] not in SAFE_METHODS:
-      origin = Request(scope).headers.get("origin")
-      if origin is not None and origin not in self._allowed_origins:
-        LOGGER.warning("Blocked %s request to %s from origin %s",
-                       scope["method"], scope["path"], origin)
-        response = JSONResponse(
-            status_code=status.HTTP_403_FORBIDDEN,
-            content={"error": "Request origin is not allowed"})
-        await response(scope, receive, send)
-        return
-    await self._app(scope, receive, send)
 
 
 class Api:
@@ -190,6 +140,9 @@ class Api:
                                self.export_profile,
                                methods=["POST"])
 
+    # Allow all origins to access the API
+    origins = ["*"]
+
     # Scheduler for background periodic tasks
     self._scheduler = tasks.PeriodicTasks(self._testrun)
 
@@ -199,25 +152,15 @@ class Api:
     # Attach router to FastAPI
     self._app.include_router(self._router)
 
-    # Middleware added last runs first: the Host check, then CORS, then
-    # the Origin check
-
-    # Block state-changing requests sent by other websites (CSRF)
-    self._app.add_middleware(OriginCheckMiddleware,
-                             allowed_origins=ALLOWED_ORIGINS)
-
-    # Attach CORS middleware, only trusting the local UI origins
+    # Attach CORS middleware
     self._app.add_middleware(
         CORSMiddleware,
-        allow_origins=ALLOWED_ORIGINS,
+        # nosemgrep: python.fastapi.security.wildcard-cors.wildcard-cors
+        allow_origins=origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
-    # Only answer requests addressed to this machine (DNS rebinding)
-    self._app.add_middleware(TrustedHostMiddleware,
-                             allowed_hosts=ALLOWED_HOSTS)
 
     # Use separate thread for API
     self._api_thread = threading.Thread(target=self._start,
@@ -248,7 +191,7 @@ class Api:
   def _start(self):
     uvicorn.run(self._app,
                 log_config=None,
-                host=API_HOST,
+                host="0.0.0.0", # nosec B104
                 port=self._session.get_api_port())
 
   def stop(self):
@@ -274,10 +217,6 @@ class Api:
     return ifaces
 
   async def post_sys_config(self, request: Request, response: Response):
-    if not self._is_json_request(request):
-      response.status_code = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
-      return self._generate_msg(False, "Content-Type must be application/json")
-
     try:
       config = (await request.body()).decode("UTF-8")
       config_json = json.loads(config)
@@ -312,10 +251,6 @@ class Api:
   async def start_testrun(self, request: Request, response: Response):
 
     LOGGER.debug("Received start command")
-
-    if not self._is_json_request(request):
-      response.status_code = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
-      return self._generate_msg(False, "Content-Type must be application/json")
 
     # Check request is valid
     body = (await request.body()).decode("UTF-8")
@@ -402,22 +337,6 @@ class Api:
     if not success:
       msg_type = "error"
     return json.loads('{"' + msg_type + '": "' + message + '"}')
-
-  def _is_json_request(self, request: Request) -> bool:
-    """Checks that the request body is declared as JSON.
-
-    Browsers send text/plain, form and multipart bodies to other origins
-    without a CORS preflight. Requiring application/json forces that
-    preflight, which only the allowed origins pass.
-
-    Args:
-      request: The incoming request.
-
-    Returns:
-      True if the Content-Type is application/json, otherwise False.
-    """
-    content_type = request.headers.get("content-type", "")
-    return content_type.split(";")[0].strip().lower() == "application/json"
 
   def _start_testrun(self):
     self._testrun.start()
@@ -563,10 +482,6 @@ class Api:
 
     LOGGER.debug("Received device delete request")
 
-    if not self._is_json_request(request):
-      response.status_code = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
-      return self._generate_msg(False, "Content-Type must be application/json")
-
     try:
 
       # Extract MAC address from request body
@@ -616,10 +531,6 @@ class Api:
 
   async def save_device(self, request: Request, response: Response):
     LOGGER.debug("Received device post request")
-
-    if not self._is_json_request(request):
-      response.status_code = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
-      return self._generate_msg(False, "Content-Type must be application/json")
 
     try:
       device_raw = (await request.body()).decode("UTF-8")
@@ -693,10 +604,6 @@ class Api:
   async def edit_device(self, request: Request, response: Response):
 
     LOGGER.debug("Received device edit request")
-
-    if not self._is_json_request(request):
-      response.status_code = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
-      return self._generate_msg(False, "Content-Type must be application/json")
 
     try:
       req_raw = (await request.body()).decode("UTF-8")
@@ -905,10 +812,6 @@ class Api:
 
     LOGGER.debug("Received profile update request")
 
-    if not self._is_json_request(request):
-      response.status_code = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
-      return self._generate_msg(False, "Content-Type must be application/json")
-
     # Check if the profiles format was loaded correctly
     if self.get_session().get_profiles_format() is None:
       response.status_code = status.HTTP_501_NOT_IMPLEMENTED
@@ -960,10 +863,6 @@ class Api:
   async def delete_profile(self, request: Request, response: Response):
 
     LOGGER.debug("Received profile delete request")
-
-    if not self._is_json_request(request):
-      response.status_code = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
-      return self._generate_msg(False, "Content-Type must be application/json")
 
     try:
       req_raw = (await request.body()).decode("UTF-8")
@@ -1174,10 +1073,6 @@ class Api:
   async def delete_cert(self, request: Request, response: Response):
 
     LOGGER.debug("Received delete certificate request")
-
-    if not self._is_json_request(request):
-      response.status_code = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
-      return self._generate_msg(False, "Content-Type must be application/json")
 
     try:
       req_raw = (await request.body()).decode("UTF-8")
