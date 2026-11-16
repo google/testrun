@@ -13,7 +13,8 @@
 <mat-form-field appearance="outline" class="setting-field">
   <mat-select
     aria-labelledby="{{ key }}-label"
-    aria-describedby="{{ key }}-description"
+    [aria-describedby]="describedBy"
+    [errorStateMatcher]="errorStateMatcher"
     id="{{ key }}-group"
     ngDefaultControl
     class="setting-radio-group"
