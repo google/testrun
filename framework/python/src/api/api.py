@@ -15,6 +15,7 @@
 from fastapi import (FastAPI, APIRouter, Response, Request, status, UploadFile)
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 import asyncio
 import json
 from json import JSONDecodeError
@@ -141,7 +142,10 @@ class Api:
                                methods=["POST"])
 
     # Allow all origins to access the API
-    origins = ["*"]
+    allowed_origins = [
+      "http://localhost:4200",
+      "http://127.0.0.1:4200"
+    ]
 
     # Scheduler for background periodic tasks
     self._scheduler = tasks.PeriodicTasks(self._testrun)
@@ -152,13 +156,18 @@ class Api:
     # Attach router to FastAPI
     self._app.include_router(self._router)
 
+    # Attach TrustedMiddleware
+    self._app.add_middleware(
+      TrustedHostMiddleware,
+      allowed_hosts=["localhost", "127.0.0.1"]
+    )
+
     # Attach CORS middleware
     self._app.add_middleware(
         CORSMiddleware,
-        # nosemgrep: python.fastapi.security.wildcard-cors.wildcard-cors
-        allow_origins=origins,
+        allow_origins=allowed_origins,
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "DELETE", "PUT", "OPTIONS"],
         allow_headers=["*"],
     )
 
@@ -191,7 +200,7 @@ class Api:
   def _start(self):
     uvicorn.run(self._app,
                 log_config=None,
-                host="0.0.0.0", # nosec B104
+                host="127.0.0.1",
                 port=self._session.get_api_port())
 
   def stop(self):
