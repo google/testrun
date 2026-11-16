@@ -345,6 +345,91 @@ describe('ProfileFormComponent', () => {
     }));
   });
 
+  describe('Required fields instruction', () => {
+    type Rgb = [number, number, number];
+
+    /** Parses a computed `rgb()`/`rgba()` color; alpha is ignored. */
+    const parseColor = (value: string): Rgb => {
+      const rgb = /^rgba?\(([\d.]+),?\s*([\d.]+),?\s*([\d.]+)/.exec(value);
+      if (!rgb) {
+        throw new Error(`Unsupported color format: ${value}`);
+      }
+      return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+    };
+    /** WCAG 2.2 relative luminance. */
+    const luminance = ([r, g, b]: Rgb): number => {
+      const [lr, lg, lb] = [r, g, b].map(channel => {
+        const c = channel / 255;
+        return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb;
+    };
+    /** WCAG contrast ratio (1–21) between two computed colors. */
+    const contrastRatio = (foreground: string, background: string): number => {
+      const [light, dark] = [
+        luminance(parseColor(foreground)),
+        luminance(parseColor(background)),
+      ].sort((a, b) => b - a);
+      return (light + 0.05) / (dark + 0.05);
+    };
+    /** First non-transparent background of the element or its ancestors. */
+    const effectiveBackground = (element: Element): string => {
+      for (let el: Element | null = element; el; el = el.parentElement) {
+        const background = getComputedStyle(el).backgroundColor;
+        if (background !== 'rgba(0, 0, 0, 0)' && background !== 'transparent') {
+          return background;
+        }
+      }
+      return 'rgb(255, 255, 255)';
+    };
+    const getInstruction = () =>
+      compiled.querySelector(
+        '.profile-form-required-instruction'
+      ) as HTMLElement;
+
+    it('should explain the asterisk in visible text at the top of the form', () => {
+      const form = compiled.querySelector(
+        'form.profile-form'
+      ) as HTMLFormElement;
+      const instruction = getInstruction();
+      const firstField = form.querySelector(
+        'input, textarea, mat-select'
+      ) as HTMLElement;
+
+      expect(instruction?.textContent?.trim()).toBe(
+        'Fields marked with an asterisk (*) are required.'
+      );
+      expect(form.contains(instruction))
+        .withContext('inside the form')
+        .toBeTrue();
+      expect(
+        instruction.compareDocumentPosition(firstField) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+      )
+        .withContext('the instruction precedes the first field')
+        .toBeTruthy();
+      expect(instruction.getBoundingClientRect().height).toBeGreaterThan(0);
+      expect(instruction.closest('[aria-hidden="true"]')).toBeNull();
+      const ratio = contrastRatio(
+        getComputedStyle(instruction).color,
+        effectiveBackground(instruction)
+      );
+      expect(ratio)
+        .withContext(`contrast ${ratio.toFixed(2)}:1`)
+        .toBeGreaterThanOrEqual(4.5);
+    });
+
+    it('should dim the instruction together with the fields of a read-only profile', fakeAsync(() => {
+      component.selectedProfile = EXPIRED_PROFILE_MOCK;
+      tick(100);
+      fixture.detectChanges();
+
+      const fields = compiled.querySelector('.field-container') as HTMLElement;
+      expect(getComputedStyle(fields).opacity).toBe('0.5');
+      expect(getComputedStyle(getInstruction()).opacity).toBe('0.5');
+    }));
+  });
+
   describe('Class tests', () => {
     describe('with outdated draft profile', () => {
       beforeEach(() => {

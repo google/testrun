@@ -20,6 +20,9 @@ limitations under the License.
   [attr.tabindex]="isReadOnly ? '-1' : null"
   aria-labelledby="form-accessible-title">
   <h2 id="form-accessible-title" class="visually-hidden">{{ formTitle }}</h2>
+  <p class="profile-form-required-instruction">
+    Fields marked with an asterisk (*) are required.
+  </p>
   <div class="field-container">
     <label class="field-label name-field-label" for="name-field"
       >Profile name *</label

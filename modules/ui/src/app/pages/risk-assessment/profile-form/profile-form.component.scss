@@ -42,9 +42,27 @@
   }
 }
 
+// Description text style (as in the device test modules description), aligned
+// with the field labels: 32px container padding + 16px label padding.
+// on-surface-variant on the white surface is 9.4:1 (WCAG 1.4.3: 4.5:1).
+.profile-form-required-instruction {
+  margin: 0;
+  padding: 16px 48px 0;
+  font-family: variables.$font-text;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.2px;
+  color: colors.$on-surface-variant;
+}
+
 .profile-form-outdated .field-container {
   opacity: 0.5;
   pointer-events: none;
+}
+
+// Read-only profiles dim the instruction together with the fields.
+.profile-form-outdated .profile-form-required-instruction {
+  opacity: 0.5;
 }
 
 .profile-form-field ::ng-deep .mat-mdc-form-field-textarea-control {
