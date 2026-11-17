@@ -595,6 +595,103 @@ describe('GeneralSettingsComponent', () => {
       });
     });
   });
+
+  describe('"Save" button keyboard focus ring', () => {
+    let saveButton: HTMLButtonElement;
+
+    beforeEach(() => {
+      component.viewModel$ = of({
+        systemConfig: { network: {} },
+        hasConnectionSettings: false,
+        isSubmitting: false,
+        isLessThanOneInterface: false,
+        interfaces: MOCK_INTERFACES,
+        deviceOptions: MOCK_INTERFACES,
+        internetOptions: MOCK_INTERFACES,
+        logLevelOptions: {},
+        monitoringPeriodOptions: {},
+      });
+      // Changing a setting, e.g. the Google Analytics opt-out, enables "Save".
+      component.analyticsForm.markAsDirty();
+      fixture.debugElement.injector.get(ChangeDetectorRef).markForCheck();
+      fixture.detectChanges();
+
+      saveButton = compiled.querySelector('.save-button') as HTMLButtonElement;
+    });
+
+    afterEach(() => {
+      saveButton.blur();
+    });
+
+    it('should show a high-contrast focus ring when focused with the keyboard', () => {
+      expect(saveButton.disabled).toBeFalse();
+      expect(getComputedStyle(saveButton).outlineStyle)
+        .withContext('no ring before the button is focused')
+        .toBe('none');
+
+      saveButton.focus();
+
+      expect(saveButton.matches(':focus-visible'))
+        .withContext(
+          JSON.stringify({
+            hasFocus: document.hasFocus(),
+            activeTag: document.activeElement?.tagName,
+            focus: saveButton.matches(':focus'),
+          })
+        )
+        .toBeTrue();
+      const style = getComputedStyle(saveButton);
+      expect(style.outlineStyle).toBe('solid');
+      expect(style.outlineWidth).toBe('2px');
+      expect(style.outlineColor).toBe('rgb(0, 0, 0)');
+      expect(style.outlineOffset)
+        .withContext('the ring is separated from the blue button fill')
+        .toBe('2px');
+    });
+
+    // On short viewports (e.g. 1440×900) the settings page scrolls inside the
+    // `app-settings` host and cuts through "Save". Focusing a partially
+    // visible element scrolls it only until its own edge is in view.
+    describe('when focus scrolls the partially visible button into view', () => {
+      let scrollContainer: HTMLElement;
+
+      beforeEach(() => {
+        scrollContainer = document.createElement('div');
+        scrollContainer.style.overflow = 'auto';
+        compiled.before(scrollContainer);
+        scrollContainer.append(compiled);
+        const button = saveButton.getBoundingClientRect();
+        const page = scrollContainer.getBoundingClientRect();
+        scrollContainer.style.height = `${button.top - page.top + button.height / 2}px`;
+      });
+
+      afterEach(() => {
+        scrollContainer.remove();
+      });
+
+      it('should keep the whole focus ring visible', () => {
+        saveButton.focus();
+
+        const style = getComputedStyle(saveButton);
+        const ringExtent =
+          parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset);
+        const button = saveButton.getBoundingClientRect();
+        const visibleTop =
+          scrollContainer.getBoundingClientRect().top +
+          scrollContainer.clientTop;
+        const visibleBottom = visibleTop + scrollContainer.clientHeight;
+
+        expect(scrollContainer.scrollTop)
+          .withContext('focus scrolled the page')
+          .toBeGreaterThan(0);
+        expect(style.outlineStyle).toBe('solid');
+        expect(button.top - ringExtent).toBeGreaterThanOrEqual(visibleTop);
+        expect(button.bottom + ringExtent)
+          .withContext('bottom edge of the focus ring')
+          .toBeLessThanOrEqual(visibleBottom);
+      });
+    });
+  });
 });
 
 @Component({
