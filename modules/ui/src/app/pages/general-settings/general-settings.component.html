@@ -48,6 +48,8 @@ limitations under the License.
             description="Port where IoT device is connected for testing"
             label="Device connection port"
             key="device"
+            [required]="true"
+            [hasInfo]="!settingsDisable"
             [errorId]="hasPortsError ? portsErrorId : null"
             [options]="vm.deviceOptions">
             @if (!settingsDisable) {
@@ -61,6 +63,8 @@ limitations under the License.
             description="Port used for internet connection"
             label="Internet connection port"
             key="internet"
+            [required]="!isInternetControlDisabled"
+            [hasInfo]="!settingsDisable"
             [errorId]="hasPortsError ? portsErrorId : null"
             [options]="vm.internetOptions">
             @if (!settingsDisable) {
@@ -108,6 +112,7 @@ limitations under the License.
               label: 'Google analytics',
               description:
                 'Testrun uses Google Analytics to learn about how our users use the application.',
+              descriptionId: 'analytics-description',
               data: 'analytics',
             }
           "></ng-container>
@@ -143,12 +148,13 @@ limitations under the License.
       #section
       let-label="label"
       let-description="description"
+      let-descriptionId="descriptionId"
       let-data="data"
       let-info="info">
       <div class="section-item">
         <div class="label-column">
           <p class="setting-form-label">{{ label }}</p>
-          <p class="setting-label-description">
+          <p class="setting-label-description" [attr.id]="descriptionId">
             {{ description }}
           </p>
         </div>
@@ -162,7 +168,7 @@ limitations under the License.
         </div>
         <div class="info-column">
           @if (data === 'analytics') {
-            <p class="message">
+            <p class="message" id="analytics-terms-message">
               By installing and running Testrun, you understand and accept the
               <a
                 href="https://policies.google.com/technologies/partner-sites"
@@ -186,7 +192,10 @@ limitations under the License.
     </ng-template>
     <ng-template #analyticsData>
       <p class="setting-data" [formGroup]="analyticsForm">
-        <mat-checkbox class="consent-actions-opt-out" formControlName="optOut">
+        <mat-checkbox
+          class="consent-actions-opt-out"
+          formControlName="optOut"
+          [aria-describedby]="'analytics-description analytics-terms-message'">
           Opt out from Google Analytics
         </mat-checkbox>
       </p>

@@ -6,12 +6,25 @@ import { Component } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { MOCK_INTERFACES } from '../../../../mocks/settings.mock';
 
+/** Text of the elements referenced by an `aria-describedby` value. */
+function textOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(id => document.getElementById(id)?.textContent ?? '')
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 @Component({
   template:
     '<form [formGroup]="testForm">' +
     '<app-settings-dropdown controlName="test" key="test" ' +
     'groupLabel="Test port" description="Test port description" ' +
-    'label="Test port label" [errorId]="errorId" [options]="options">' +
+    'label="Test port label" [errorId]="errorId" [options]="options" ' +
+    '[required]="required" [hasInfo]="hasInfo">' +
+    '<p class="message">Test port instruction</p>' +
     '</app-settings-dropdown></form>',
   imports: [ReactiveFormsModule, SettingsDropdownComponent],
 })
@@ -21,6 +34,8 @@ class TestHostComponent {
   });
   public options = MOCK_INTERFACES;
   public errorId: string | null = null;
+  public required = false;
+  public hasInfo = false;
 }
 
 describe('SettingsDropdownComponent', () => {
@@ -94,6 +109,60 @@ describe('SettingsDropdownComponent', () => {
       );
       expect(select.getAttribute('aria-invalid')).toEqual('false');
       expect(formField?.classList).not.toContain('mat-form-field-invalid');
+    });
+  });
+
+  describe('required', () => {
+    it('should report the required state to assistive technology', () => {
+      expect(select.getAttribute('aria-required')).toEqual('false');
+
+      host.required = true;
+      fixture.detectChanges();
+
+      expect(select.getAttribute('aria-required')).toEqual('true');
+
+      host.required = false;
+      fixture.detectChanges();
+
+      expect(select.getAttribute('aria-required')).toEqual('false');
+    });
+  });
+
+  describe('with info', () => {
+    beforeEach(() => {
+      host.hasInfo = true;
+      fixture.detectChanges();
+    });
+
+    it('should be described by the description and the info column', () => {
+      expect(select.getAttribute('aria-describedby')).toEqual(
+        'test-description test-info'
+      );
+      expect(textOfIdRefs(select.getAttribute('aria-describedby'))).toEqual(
+        'Test port description Test port instruction'
+      );
+    });
+
+    it('should be described by the error after the info column', () => {
+      host.errorId = 'test-error';
+      fixture.detectChanges();
+
+      expect(select.getAttribute('aria-describedby')).toEqual(
+        'test-description test-info test-error'
+      );
+    });
+
+    it('should be described by the description only when hasInfo is cleared', () => {
+      expect(select.getAttribute('aria-describedby'))
+        .withContext('precondition')
+        .toEqual('test-description test-info');
+
+      host.hasInfo = false;
+      fixture.detectChanges();
+
+      expect(select.getAttribute('aria-describedby')).toEqual(
+        'test-description'
+      );
     });
   });
 
