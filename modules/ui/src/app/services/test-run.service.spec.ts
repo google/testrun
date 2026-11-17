@@ -86,9 +86,7 @@ describe('TestRunService', () => {
 
     result = testModules;
     service.getTestModules();
-    const req = httpTestingController.expectOne(
-      '/api/system/modules'
-    );
+    const req = httpTestingController.expectOne('/api/system/modules');
 
     expect(req.request.method).toBe('GET');
 
@@ -105,9 +103,7 @@ describe('TestRunService', () => {
 
     result = deviceArray;
     service.fetchDevices();
-    const req = httpTestingController.expectOne(
-      '/api/devices'
-    );
+    const req = httpTestingController.expectOne('/api/devices');
 
     expect(req.request.method).toBe('GET');
 
@@ -244,9 +240,7 @@ describe('TestRunService', () => {
 
       result = reports;
       service.getReports();
-      const req = httpTestingController.expectOne(
-        '/api/reports'
-      );
+      const req = httpTestingController.expectOne('/api/reports');
 
       expect(req.request.method).toBe('GET');
 
@@ -415,9 +409,7 @@ describe('TestRunService', () => {
       const version = VERSION;
 
       service.fetchVersion();
-      const req = httpTestingController.expectOne(
-        '/api/system/version'
-      );
+      const req = httpTestingController.expectOne('/api/system/version');
       expect(req.request.method).toBe('GET');
       req.flush(version);
 
@@ -432,9 +424,7 @@ describe('TestRunService', () => {
       const data = 'Invalid request parameters';
       service.getVersion().next(version);
       service.fetchVersion();
-      const req = httpTestingController.expectOne(
-        '/api/system/version'
-      );
+      const req = httpTestingController.expectOne('/api/system/version');
       expect(req.request.method).toBe('GET');
       req.flush(data, mockErrorResponse);
 
@@ -447,9 +437,7 @@ describe('TestRunService', () => {
       const mockErrorResponse = { status: 500, statusText: 'Error' };
       const data = 'Invalid request parameters';
       service.fetchVersion();
-      const req = httpTestingController.expectOne(
-        '/api/system/version'
-      );
+      const req = httpTestingController.expectOne('/api/system/version');
       expect(req.request.method).toBe('GET');
       req.flush(data, mockErrorResponse);
 
@@ -516,9 +504,7 @@ describe('TestRunService', () => {
       expect(res).toEqual([COPY_PROFILE_MOCK, PROFILE_MOCK]);
     });
 
-    const req = httpTestingController.expectOne(
-      '/api/profiles'
-    );
+    const req = httpTestingController.expectOne('/api/profiles');
 
     expect(req.request.method).toBe('GET');
 
@@ -530,9 +516,7 @@ describe('TestRunService', () => {
       expect(res).toEqual(true);
     });
 
-    const req = httpTestingController.expectOne(
-      '/api/profiles'
-    );
+    const req = httpTestingController.expectOne('/api/profiles');
 
     expect(req.request.method).toBe('DELETE');
 
@@ -544,9 +528,7 @@ describe('TestRunService', () => {
       expect(res).toEqual(false);
     });
 
-    const req = httpTestingController.expectOne(
-      '/api/profiles'
-    );
+    const req = httpTestingController.expectOne('/api/profiles');
 
     expect(req.request.method).toBe('DELETE');
 
@@ -560,9 +542,7 @@ describe('TestRunService', () => {
       expect(res).toEqual(certificates);
     });
 
-    const req = httpTestingController.expectOne(
-      '/api/system/config/certs'
-    );
+    const req = httpTestingController.expectOne('/api/system/config/certs');
 
     expect(req.request.method).toBe('GET');
 
@@ -574,9 +554,7 @@ describe('TestRunService', () => {
       expect(res).toEqual(true);
     });
 
-    const req = httpTestingController.expectOne(
-      '/api/system/config/certs'
-    );
+    const req = httpTestingController.expectOne('/api/system/config/certs');
 
     expect(req.request.method).toBe('POST');
 
@@ -588,9 +566,7 @@ describe('TestRunService', () => {
       expect(res).toEqual(true);
     });
 
-    const req = httpTestingController.expectOne(
-      '/api/system/config/certs'
-    );
+    const req = httpTestingController.expectOne('/api/system/config/certs');
 
     expect(req.request.method).toBe('DELETE');
 
@@ -602,9 +578,7 @@ describe('TestRunService', () => {
       expect(res).toEqual(false);
     });
 
-    const req = httpTestingController.expectOne(
-      '/api/system/config/certs'
-    );
+    const req = httpTestingController.expectOne('/api/system/config/certs');
 
     expect(req.request.method).toBe('DELETE');
 
@@ -640,9 +614,7 @@ describe('TestRunService', () => {
         expect(res).toEqual(result);
       });
 
-      const req = httpTestingController.expectOne(
-        '/api/profiles/format'
-      );
+      const req = httpTestingController.expectOne('/api/profiles/format');
       expect(req.request.method).toBe('GET');
       req.flush(result);
     });
@@ -686,9 +658,7 @@ describe('TestRunService', () => {
         expect(res).toEqual(result);
       });
 
-      const req = httpTestingController.expectOne(
-        '/api/devices/format'
-      );
+      const req = httpTestingController.expectOne('/api/devices/format');
       expect(req.request.method).toBe('GET');
       req.flush(result);
     });
