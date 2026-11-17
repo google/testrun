@@ -159,7 +159,13 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     const validators: ValidatorFn[] = [];
     if (validation) {
       if (validation.required) {
-        validators.push(this.profileValidators.textRequired());
+        // Validators.required lets Angular Material expose the required state
+        // to assistive technology (`required`, `aria-required`);
+        // textRequired() also rejects whitespace-only answers.
+        validators.push(
+          Validators.required,
+          this.profileValidators.textRequired()
+        );
       }
       if (validation.max) {
         validators.push(Validators.maxLength(Number(validation.max)));

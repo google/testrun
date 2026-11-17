@@ -91,6 +91,18 @@ $form-min-width: 285px;
   padding: 24px 60px 0 60px;
 }
 
+// Same text style as the test modules description, aligned with the field
+// labels. on-surface-variant on the white surface is 9.4:1 (WCAG 1.4.3: 4.5:1).
+.device-qualification-form-required-instruction {
+  margin: 0;
+  padding: 0 16px 8px;
+  font-family: variables.$font-text;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.2px;
+  color: colors.$on-surface-variant;
+}
+
 .device-qualification-form-journey {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

@@ -463,10 +463,14 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
       this.initialDevice()
     );
 
+    // Validators.required lets Angular Material expose the required state to
+    // assistive technology (`required`, `aria-required`); textRequired() also
+    // rejects whitespace-only values.
     this.deviceQualificationForm = this.fb.group({
       model: [
         '',
         [
+          Validators.required,
           this.profileValidators.textRequired(),
           this.deviceValidators.deviceStringFormat(),
         ],
@@ -474,6 +478,7 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
       manufacturer: [
         '',
         [
+          Validators.required,
           this.profileValidators.textRequired(),
           this.deviceValidators.deviceStringFormat(),
         ],
@@ -481,6 +486,7 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
       mac_addr: [
         '',
         [
+          Validators.required,
           this.profileValidators.textRequired(),
           Validators.pattern(MAC_ADDRESS_PATTERN),
           this.macAddressValidator,
