@@ -17,6 +17,11 @@
 @use 'colors';
 @use 'variables';
 
+$save-button-focus-ring-width: 2px;
+$save-button-focus-ring-offset: 2px;
+$save-button-focus-ring-space: $save-button-focus-ring-width +
+  $save-button-focus-ring-offset;
+
 :host {
   display: flex;
   flex-direction: column;
@@ -70,8 +75,22 @@
     font-weight: 500;
     line-height: 20px;
     letter-spacing: 0.25px;
+    // On short viewports the scrollable `app-settings` page cuts through this
+    // button, and focusing it scrolls only until the button's own edge is in
+    // view, which clipped the bottom of the focus ring. Keep the ring and an
+    // equal gap to the edge of the page in view.
+    scroll-margin: 2 * $save-button-focus-ring-space;
     &::ng-deep .mat-focus-indicator {
       display: none;
+    }
+
+    // Explicit keyboard focus ring in place of Material's focus indicator
+    // (hidden above and in styles.scss), so it no longer depends on the
+    // app-wide `.mdc-button:focus-visible` rule. The offset keeps the black
+    // ring off the blue fill, so it only borders the white footer (21:1).
+    &:focus-visible {
+      outline: $save-button-focus-ring-width solid colors.$black;
+      outline-offset: $save-button-focus-ring-offset;
     }
   }
 }
