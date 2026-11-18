@@ -51,7 +51,7 @@ import { EmptyPageComponent } from '../../components/empty-page/empty-page.compo
 import { ListLayoutComponent } from '../../components/list-layout/list-layout.component';
 import { EntityAction, EntityActionResult } from '../../model/entity-action';
 import { NoEntitySelectedComponent } from '../../components/no-entity-selected/no-entity-selected.component';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { _IdGenerator, LiveAnnouncer } from '@angular/cdk/a11y';
 import { CanComponentDeactivate } from '../../guards/can-deactivate.guard';
 import { Observable } from 'rxjs/internal/Observable';
 import { of } from 'rxjs/internal/observable/of';
@@ -91,6 +91,7 @@ export class DevicesComponent
   private readonly route = inject(Router);
   private readonly devicesStore = inject(DevicesStore);
   private readonly testRunDialogService = inject(TestrunDialogService);
+  private readonly idGenerator = inject(_IdGenerator);
   dialog = inject(MatDialog);
   private element = inject(ElementRef);
   private destroy$: Subject<boolean> = new Subject<boolean>();
@@ -193,13 +194,22 @@ export class DevicesComponent
   }
 
   openDeleteDialog(device: Device) {
+    const contentId = this.idGenerator.getId(
+      'app-delete-device-dialog-content-'
+    );
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Delete device',
+      // Screen readers announce the data-loss warning with the dialog name.
+      ariaDescribedBy: contentId,
+      // Exposes the page behind as inert; safe as the dialog has no overlay
+      // panels (e.g. `mat-select`) that `aria-modal` would hide.
+      ariaModal: true,
       data: {
         title: 'Delete device?',
         content: `You are about to delete ${
           device.manufacturer + ' ' + device.model
         }. Are you sure?`,
+        contentId,
       },
       autoFocus: true,
       hasBackdrop: true,

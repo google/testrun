@@ -33,6 +33,7 @@
 
 .simple-dialog-title {
   @include mixins.headline-small();
+  margin: 0;
   padding: 0;
   text-align: center;
   color: colors.$on-surface;
