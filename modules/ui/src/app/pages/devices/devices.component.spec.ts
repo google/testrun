@@ -336,7 +336,7 @@ describe('DevicesComponent', () => {
   });
 
   describe('delete device dialog accessibility', () => {
-    const WARNING = `You are about to delete ${device.manufacturer} ${device.model}. Are you sure?`;
+    const WARNING = `You are about to delete ${device.manufacturer} ${device.model}. Deleting this device configuration will also delete its testing history. Are you sure?`;
 
     beforeEach(() => {
       component.viewModel$ = of({

@@ -208,7 +208,7 @@ export class DevicesComponent
         title: 'Delete device?',
         content: `You are about to delete ${
           device.manufacturer + ' ' + device.model
-        }. Are you sure?`,
+        }. Deleting this device configuration will also delete its testing history. Are you sure?`,
         contentId,
       },
       autoFocus: true,
