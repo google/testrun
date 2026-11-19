@@ -23,6 +23,19 @@ import {
 } from '../../../../mocks/testrun.mock';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { TestRunService } from '../../../../services/test-run.service';
+import {
+  DOWN_ARROW,
+  END,
+  ENTER,
+  ESCAPE,
+  HOME,
+  SPACE,
+  TAB,
+  UP_ARROW,
+} from '@angular/cdk/keycodes';
+import { MatDialogConfig } from '@angular/material/dialog';
+import { By } from '@angular/platform-browser';
+import { DownloadReportZipComponent } from '../../../../components/download-report-zip/download-report-zip.component';
 
 interface GAEvent {
   event: string;
@@ -67,7 +80,10 @@ function textOfIdRefs(idRefs: string | null): string {
   return (idRefs ?? '')
     .split(/\s+/)
     .filter(Boolean)
-    .map(id => document.getElementById(id)?.textContent?.trim() ?? '')
+    .map(id => {
+      const element = document.getElementById(id);
+      return element ? textOf(element) : '';
+    })
     .join(' ');
 }
 
@@ -84,6 +100,38 @@ function accessibleName(element: HTMLElement): string {
 /** Text label that sighted users see on a control. */
 function visibleLabel(element: HTMLElement): string {
   return normalizeWhitespace(textOf(element, true));
+}
+
+/** Dispatches a keydown like the browser does; CDK key managers read `keyCode`. */
+function pressKey(
+  target: Element,
+  key: string,
+  keyCode: number,
+  init: KeyboardEventInit = {}
+): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', {
+    key,
+    keyCode,
+    bubbles: true,
+    cancelable: true,
+    ...init,
+  });
+  target.dispatchEvent(event);
+  return event;
+}
+
+/**
+ * Elements that keyboard users can focus but assistive technology cannot
+ * perceive (axe `aria-hidden-focus`), e.g. CDK focus trap anchors.
+ */
+function focusableHiddenElements(root: HTMLElement): string[] {
+  return Array.from(
+    root.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )
+  )
+    .filter(element => element.closest('[aria-hidden="true"]'))
+    .map(element => element.outerHTML);
 }
 
 describe('DownloadOptionsComponent', () => {
@@ -204,6 +252,202 @@ describe('DownloadOptionsComponent', () => {
       expect(visibleLabel(downloadButton)).toBe('Download');
       expect(accessibleName(downloadButton)).toBe('Download');
       expect(downloadButton.getAttribute('aria-expanded')).toBe('false');
+    });
+  });
+
+  describe('Download menu (WAI-ARIA menu button pattern)', () => {
+    let compiled: HTMLElement;
+    let downloadButton: HTMLButtonElement;
+
+    /** Opens the menu the way users do: by activating "Download". */
+    async function openMenu(): Promise<HTMLElement> {
+      downloadButton.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      return compiled.querySelector('[role="menu"]') as HTMLElement;
+    }
+
+    function menuItems(): HTMLElement[] {
+      return Array.from(
+        compiled.querySelectorAll<HTMLElement>('[role="menu"] > *')
+      );
+    }
+
+    beforeEach(() => {
+      compiled = fixture.nativeElement as HTMLElement;
+      downloadButton = compiled.querySelector(
+        '.download-button'
+      ) as HTMLButtonElement;
+    });
+
+    it('should not render a menu while the options are closed', () => {
+      expect(compiled.querySelector('[role="menu"]')).toBeNull();
+      expect(downloadButton.hasAttribute('aria-controls'))
+        .withContext('no reference to a missing menu')
+        .toBeFalse();
+    });
+
+    it('should keep the "Download" trigger outside the menu it opens', async () => {
+      const menu = await openMenu();
+
+      expect(menu.contains(downloadButton)).toBeFalse();
+      expect(downloadButton.hasAttribute('role'))
+        .withContext('a native button, not a menu item')
+        .toBeFalse();
+      expect(downloadButton.getAttribute('aria-haspopup')).toBe('menu');
+      expect(downloadButton.getAttribute('aria-controls')).toBe(menu.id);
+    });
+
+    it('should name the menu by its "Download" trigger', async () => {
+      const menu = await openMenu();
+
+      expect(menu.getAttribute('aria-labelledby')).toBe(downloadButton.id);
+      expect(accessibleName(menu)).toBe('Download');
+    });
+
+    it('should contain only the "PDF Report" and "ZIP File" menu items', async () => {
+      await openMenu();
+
+      const items = menuItems();
+      expect(items.map(item => item.getAttribute('role'))).toEqual([
+        'menuitem',
+        'menuitem',
+      ]);
+      expect(items.map(item => accessibleName(item))).toEqual([
+        'Download PDF report',
+        'Download ZIP file',
+      ]);
+    });
+
+    it('should not render focusable elements hidden from assistive technology', async () => {
+      await openMenu();
+
+      expect(focusableHiddenElements(compiled)).toEqual([]);
+    });
+
+    it('should move focus to the first menu item when the menu opens', async () => {
+      await openMenu();
+
+      expect(document.activeElement).toBe(menuItems()[0]);
+    });
+
+    it('should move focus between the menu items with the arrow, Home, and End keys', async () => {
+      await openMenu();
+      const [pdfItem, zipItem] = menuItems();
+      pdfItem.focus();
+
+      pressKey(pdfItem, 'ArrowDown', DOWN_ARROW);
+      expect(document.activeElement).toBe(zipItem);
+
+      pressKey(zipItem, 'ArrowDown', DOWN_ARROW);
+      expect(document.activeElement)
+        .withContext('wraps to the first item, skipping "Download"')
+        .toBe(pdfItem);
+
+      pressKey(pdfItem, 'ArrowUp', UP_ARROW);
+      expect(document.activeElement)
+        .withContext('wraps to the last item')
+        .toBe(zipItem);
+
+      pressKey(zipItem, 'Home', HOME);
+      expect(document.activeElement).toBe(pdfItem);
+
+      pressKey(pdfItem, 'End', END);
+      expect(document.activeElement).toBe(zipItem);
+    });
+
+    it('should close the menu on Escape and return focus to "Download"', async () => {
+      await openMenu();
+
+      pressKey(menuItems()[0], 'Escape', ESCAPE);
+      fixture.detectChanges();
+
+      expect(compiled.querySelector('[role="menu"]')).toBeNull();
+      expect(downloadButton.getAttribute('aria-expanded')).toBe('false');
+      expect(document.activeElement).toBe(downloadButton);
+    });
+
+    [false, true].forEach(shiftKey => {
+      const keys = shiftKey ? 'Shift+Tab' : 'Tab';
+
+      it(`should close the menu on ${keys} without trapping focus`, async () => {
+        await openMenu();
+
+        const event = pressKey(menuItems()[1], 'Tab', TAB, { shiftKey });
+        fixture.detectChanges();
+
+        expect(compiled.querySelector('[role="menu"]')).toBeNull();
+        expect(document.activeElement)
+          .withContext('the browser moves focus on from "Download"')
+          .toBe(downloadButton);
+        expect(event.defaultPrevented)
+          .withContext(`${keys} keeps its default action`)
+          .toBeFalse();
+        expect(focusableHiddenElements(compiled)).toEqual([]);
+      });
+    });
+
+    it('should close the menu and return focus to "Download" when "PDF Report" is chosen', async () => {
+      const downloadPdfSpy = spyOn(component, 'downloadPdf');
+      await openMenu();
+
+      menuItems()[0].click();
+      fixture.detectChanges();
+
+      expect(downloadPdfSpy).toHaveBeenCalledOnceWith(
+        MOCK_PROGRESS_DATA_COMPLIANT
+      );
+      expect(compiled.querySelector('[role="menu"]')).toBeNull();
+      expect(document.activeElement).toBe(downloadButton);
+    });
+
+    describe('"ZIP File" menu item', () => {
+      let dialogOpenSpy: jasmine.Spy;
+
+      beforeEach(async () => {
+        await openMenu();
+        const zipItem = fixture.debugElement.query(
+          By.directive(DownloadReportZipComponent)
+        ).componentInstance as DownloadReportZipComponent;
+        dialogOpenSpy = spyOn(zipItem.dialog, 'open');
+      });
+
+      [
+        { name: 'a click', activate: (item: HTMLElement) => item.click() },
+        {
+          name: 'Enter',
+          activate: (item: HTMLElement) => pressKey(item, 'Enter', ENTER),
+        },
+        {
+          name: 'Space',
+          activate: (item: HTMLElement) => pressKey(item, ' ', SPACE),
+        },
+      ].forEach(({ name, activate }) => {
+        it(`should close the menu when ${name} opens the ZIP dialog, leaving no focus trap`, () => {
+          activate(menuItems()[1]);
+          fixture.detectChanges();
+
+          expect(dialogOpenSpy).toHaveBeenCalledTimes(1);
+          expect(compiled.querySelector('[role="menu"]')).toBeNull();
+          expect(downloadButton.getAttribute('aria-expanded')).toBe('false');
+          expect(focusableHiddenElements(compiled)).toEqual([]);
+        });
+      });
+
+      it('should return focus to "Download" when the ZIP dialog closes', () => {
+        menuItems()[1].click();
+        fixture.detectChanges();
+
+        const { restoreFocus } = dialogOpenSpy.calls.mostRecent()
+          .args[1] as MatDialogConfig;
+        expect(
+          typeof restoreFocus === 'string'
+            ? document.querySelector(restoreFocus)
+            : restoreFocus
+        )
+          .withContext('the closed menu item can no longer take focus')
+          .toBe(downloadButton);
+      });
     });
   });
 
