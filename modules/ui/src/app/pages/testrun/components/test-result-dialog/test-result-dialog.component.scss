@@ -97,6 +97,11 @@ mat-dialog-content.content-container {
 
 .details-info {
   margin-top: 16px;
+
+  // Error results have details but no steps to resolve above them.
+  &:first-child {
+    margin-top: 0;
+  }
 }
 
 mat-dialog-actions.actions-container {
