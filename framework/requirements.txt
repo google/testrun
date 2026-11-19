@@ -13,7 +13,7 @@ weasyprint==70.0
 pydyf==0.11.0
 
 # Requirements for the API
-fastapi==0.165.0
+fastapi==0.162.5
 psutil==5.9.8
 uvicorn==0.27.0
 python-multipart==0.0.32
