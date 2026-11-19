@@ -53,7 +53,6 @@ export class TimerComponent implements OnInit, OnDestroy {
   public remainingSeconds = 0;
   public totalDuration = DEFAULT_MONITOR_PERIOD;
   public isExpired = false;
-  public liveAnnouncementText = '';
 
   private timerSubscription?: Subscription;
   private destroy$ = new Subject<void>();
@@ -84,7 +83,11 @@ export class TimerComponent implements OnInit, OnDestroy {
     return `${paddedMinutes}:${paddedSeconds}`;
   }
 
-  get timerAriaLabel(): string {
+  /**
+   * Remaining time that screen readers read on demand inside the timer,
+   * e.g. "Remaining monitoring time: 4 minutes 59 seconds".
+   */
+  get remainingTimeText(): string {
     const minutes = Math.floor(this.remainingSeconds / 60);
     const seconds = this.remainingSeconds % 60;
     let text = 'Remaining monitoring time: ';
@@ -219,8 +222,11 @@ export class TimerComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Announces a milestone once, from the CDK's persistent polite live region
+   * outside the timer, so `aria-live="off"` on the timer cannot mute it.
+   */
   private announceText(text: string): void {
-    this.liveAnnouncementText = text;
     if (this.liveAnnouncer) {
       this.liveAnnouncer.announce(text, 'polite');
     }
