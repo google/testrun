@@ -13,9 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  flushMicrotasks,
+  tick,
+} from '@angular/core/testing';
 
 import { GeneralSettingsComponent } from './general-settings.component';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { of } from 'rxjs';
 import { MatRadioModule } from '@angular/material/radio';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -58,6 +65,7 @@ describe('GeneralSettingsComponent', () => {
   let mockLoaderService: SpyObj<LoaderService>;
   let mockTestRunService: SpyObj<TestRunService>;
   let mockSettingsStore: SpyObj<GeneralSettingsStore>;
+  let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
 
   beforeEach(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,6 +76,7 @@ describe('GeneralSettingsComponent', () => {
     ]);
     mockSettingsStore = jasmine.createSpyObj('SettingsStore', [
       'getInterfaces',
+      'refreshInterfaces',
       'updateSystemConfig',
       'setIsSubmitting',
       'setDefaultFormValues',
@@ -78,12 +87,18 @@ describe('GeneralSettingsComponent', () => {
       'systemStatus$',
     ]);
     mockSettingsStore.systemStatus$ = of(MOCK_PROGRESS_DATA_COMPLIANT);
+    mockLiveAnnouncer = jasmine.createSpyObj<LiveAnnouncer>('LiveAnnouncer', [
+      'announce',
+      'clear',
+    ]);
+    mockLiveAnnouncer.announce.and.resolveTo();
 
     await TestBed.configureTestingModule({
       providers: [
         { provide: LoaderService, useValue: mockLoaderService },
         { provide: TestRunService, useValue: mockTestRunService },
         { provide: GeneralSettingsStore, useValue: mockSettingsStore },
+        { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
         provideMockStore(),
       ],
       imports: [
@@ -690,6 +705,198 @@ describe('GeneralSettingsComponent', () => {
           .withContext('bottom edge of the focus ring')
           .toBeLessThanOrEqual(visibleBottom);
       });
+    });
+  });
+
+  /** Calls back like the store does once it has the refreshed interfaces. */
+  function completeInterfacesRefresh(): void {
+    const refresh = mockSettingsStore.refreshInterfaces.calls.mostRecent()
+      ?.args[0] as { onInterfacesRefresh: () => void } | undefined;
+    refresh?.onInterfacesRefresh();
+  }
+
+  /** Calls back like the store does once the settings are saved. */
+  function completeSave(): void {
+    const save = mockSettingsStore.updateSystemConfig.calls.mostRecent()
+      ?.args[0] as { onSystemConfigUpdate: () => void } | undefined;
+    save?.onSystemConfigUpdate();
+  }
+
+  describe('"Refresh" link', () => {
+    let refreshLink: HTMLElement;
+
+    beforeEach(() => {
+      // Without ports, the link is shown next to the "No ports detected"
+      // warning.
+      refreshLink = compiled.querySelector(
+        'a.message-link[role="button"]'
+      ) as HTMLElement;
+    });
+
+    it('should politely announce that network interfaces were refreshed once they are loaded', () => {
+      refreshLink.click();
+
+      expect(mockLiveAnnouncer.announce)
+        .withContext('the interfaces are still being fetched')
+        .not.toHaveBeenCalled();
+
+      completeInterfacesRefresh();
+
+      expect(mockLiveAnnouncer.announce).toHaveBeenCalledOnceWith(
+        'Network interfaces refreshed.',
+        'polite'
+      );
+    });
+
+    it('should announce refreshes activated with Enter and Space', () => {
+      refreshLink.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+      );
+      completeInterfacesRefresh();
+      refreshLink.dispatchEvent(
+        new KeyboardEvent('keydown', { key: ' ', bubbles: true })
+      );
+      completeInterfacesRefresh();
+
+      expect(mockLiveAnnouncer.announce.calls.allArgs()).toEqual([
+        ['Network interfaces refreshed.', 'polite'],
+        ['Network interfaces refreshed.', 'polite'],
+      ]);
+    });
+  });
+
+  describe('after saving valid settings', () => {
+    let settingsPage: HTMLElement;
+    let pageHeading: HTMLElement;
+    let generalTab: HTMLElement;
+    let saveButton: HTMLButtonElement;
+
+    /** Presses the focused "Save" button, which then gets disabled. */
+    const pressSave = (): void => {
+      saveButton.click();
+      fixture.detectChanges();
+    };
+
+    beforeEach(() => {
+      // As in the app, the page is rendered inside `app-settings`, below the
+      // page heading and the tabs.
+      settingsPage = document.createElement('app-settings');
+      settingsPage.innerHTML =
+        '<h2 class="title" tabindex="-1">Settings</h2>' +
+        '<div role="tab" tabindex="0">General</div>';
+      compiled.before(settingsPage);
+      settingsPage.append(compiled);
+      pageHeading = settingsPage.querySelector('h2') as HTMLElement;
+      generalTab = settingsPage.querySelector('[role="tab"]') as HTMLElement;
+
+      component.viewModel$ = of({
+        systemConfig: { network: {} },
+        hasConnectionSettings: true,
+        isSubmitting: false,
+        isLessThanOneInterface: false,
+        interfaces: MOCK_INTERFACES,
+        deviceOptions: MOCK_INTERFACES,
+        internetOptions: MOCK_INTERFACES,
+        logLevelOptions: {},
+        monitoringPeriodOptions: {},
+      });
+      component.deviceControl.setValue({
+        key: 'mockDeviceKey',
+        value: 'mockDeviceValue',
+      });
+      component.internetControl.setValue({
+        key: 'mockInternetKey',
+        value: 'mockInternetValue',
+      });
+      component.settingForm.markAsDirty();
+      fixture.debugElement.injector.get(ChangeDetectorRef).markForCheck();
+      fixture.detectChanges();
+
+      saveButton = compiled.querySelector('.save-button') as HTMLButtonElement;
+      saveButton.focus();
+    });
+
+    afterEach(() => {
+      settingsPage.remove();
+    });
+
+    it('should politely announce that general settings were saved once the save succeeds', () => {
+      pressSave();
+
+      expect(mockLiveAnnouncer.announce)
+        .withContext('the settings are still being saved')
+        .not.toHaveBeenCalled();
+
+      completeSave();
+
+      expect(mockLiveAnnouncer.announce).toHaveBeenCalledOnceWith(
+        'General settings saved.',
+        'polite'
+      );
+    });
+
+    it('should move focus from the disabled "Save" button to the page heading only after the announcement', fakeAsync(() => {
+      let finishAnnouncement = (): void => {};
+      mockLiveAnnouncer.announce.and.returnValue(
+        new Promise<void>(resolve => (finishAnnouncement = resolve))
+      );
+
+      pressSave();
+      completeSave();
+      tick(200);
+
+      expect(saveButton.disabled).toBeTrue();
+      expect(document.activeElement)
+        .withContext('focus does not jump to the "General" tab')
+        .not.toBe(generalTab);
+      expect(document.activeElement)
+        .withContext('focus waits for the announcement')
+        .not.toBe(pageHeading);
+
+      finishAnnouncement();
+      flushMicrotasks();
+
+      expect(document.activeElement).toBe(pageHeading);
+    }));
+
+    it('should leave focus where the user moved it while the settings were being saved', fakeAsync(() => {
+      const deviceSelect = compiled.querySelector(
+        '#device-group'
+      ) as HTMLElement;
+      pressSave();
+      deviceSelect.focus();
+
+      completeSave();
+      flushMicrotasks();
+      tick(200);
+
+      expect(document.activeElement).toBe(deviceSelect);
+    }));
+
+    describe('while a help tip is open', () => {
+      let helpTip: HTMLElement;
+
+      beforeEach(() => {
+        helpTip = document.createElement('app-help-tip');
+        helpTip.innerHTML = '<button type="button">Close tip</button>';
+        document.body.append(helpTip);
+      });
+
+      afterEach(() => {
+        helpTip.remove();
+      });
+
+      it('should not move focus into the help tip', fakeAsync(() => {
+        pressSave();
+        completeSave();
+        flushMicrotasks();
+        tick(200);
+
+        expect(helpTip.contains(document.activeElement))
+          .withContext('focus moved into the help tip')
+          .toBeFalse();
+        expect(document.activeElement).toBe(pageHeading);
+      }));
     });
   });
 });
