@@ -708,6 +708,43 @@ describe('GeneralSettingsComponent', () => {
     });
   });
 
+  describe('"Google Terms of Service" link', () => {
+    let link: HTMLAnchorElement;
+
+    beforeEach(() => {
+      link = compiled.querySelector(
+        'a.message-link[href="https://policies.google.com/technologies/partner-sites"]'
+      ) as HTMLAnchorElement;
+    });
+
+    // WCAG 2.5.3 Label in Name: speech input users activate the link by
+    // saying its visible text.
+    it('should start its accessible name with the visible link text', () => {
+      const visibleText = link.textContent?.trim() ?? '';
+      const accessibleName = link.getAttribute('aria-label') ?? '';
+
+      expect(visibleText).toBe('Google Terms of Service');
+      expect(link.hasAttribute('aria-labelledby'))
+        .withContext('aria-labelledby would override the aria-label')
+        .toBeFalse();
+      expect(accessibleName.startsWith(visibleText))
+        .withContext(`accessible name "${accessibleName}"`)
+        .toBeTrue();
+    });
+
+    it('should tell screen reader users that it opens in a new tab', () => {
+      expect(link.target).toBe('_blank');
+      expect(link.getAttribute('aria-label')).toBe(
+        'Google Terms of Service (opens in a new tab)'
+      );
+    });
+
+    it('should open in a new tab without access to the Testrun window', () => {
+      expect(link.relList.contains('noopener')).toBeTrue();
+      expect(link.relList.contains('noreferrer')).toBeTrue();
+    });
+  });
+
   /** Calls back like the store does once it has the refreshed interfaces. */
   function completeInterfacesRefresh(): void {
     const refresh = mockSettingsStore.refreshInterfaces.calls.mostRecent()

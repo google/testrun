@@ -44,6 +44,14 @@ import { SpinnerComponent } from '../../../../components/spinner/spinner.compone
 import { provideMockStore } from '@ngrx/store/testing';
 import { selectDevices } from '../../../../store/selectors';
 
+/** Markup of descendants rendered with a different font weight than `element`, e.g. bold emphasis. */
+function descendantsWithDifferentFontWeight(element: Element): string[] {
+  const fontWeight = getComputedStyle(element).fontWeight;
+  return Array.from(element.querySelectorAll('*'))
+    .filter(child => getComputedStyle(child).fontWeight !== fontWeight)
+    .map(child => child.outerHTML);
+}
+
 describe('ProgressInitiateFormComponent', () => {
   let component: TestrunInitiateFormComponent;
   let fixture: ComponentFixture<TestrunInitiateFormComponent>;
@@ -396,6 +404,22 @@ describe('ProgressInitiateFormComponent', () => {
         const firmware = compiled.querySelector('input');
 
         expect(firmware).toBeTruthy();
+      });
+
+      it('should show the firmware required error as plain text, styled like the other errors', () => {
+        component.firmware.setValue('');
+        component.startTestRun();
+        fixture.detectChanges();
+
+        const error = compiled.querySelector(
+          'mat-form-field mat-error'
+        ) as HTMLElement;
+
+        expect(error.textContent?.trim()).toBe('Firmware is required');
+        expect(error.querySelector('strong, b'))
+          .withContext('bold markup inside the error')
+          .toBeNull();
+        expect(descendantsWithDifferentFontWeight(error)).toEqual([]);
       });
 
       it('should display tests if device selected', () => {
