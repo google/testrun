@@ -15,6 +15,7 @@
     aria-labelledby="{{ key }}-label"
     [aria-describedby]="describedBy"
     [errorStateMatcher]="errorStateMatcher"
+    [required]="required()"
     id="{{ key }}-group"
     ngDefaultControl
     class="setting-radio-group"
@@ -43,6 +44,6 @@
     }
   </mat-select>
 </mat-form-field>
-<div class="info-column">
+<div class="info-column" id="{{ key }}-info">
   <ng-content></ng-content>
 </div>

@@ -146,6 +146,59 @@ describe('GeneralSettingsStore', () => {
       });
     });
 
+    describe('refreshInterfaces', () => {
+      let onInterfacesRefresh: jasmine.Spy;
+
+      beforeEach(() => {
+        onInterfacesRefresh = jasmine.createSpy('onInterfacesRefresh');
+      });
+
+      it('should dispatch action fetchInterfaces', () => {
+        settingsStore.refreshInterfaces({ onInterfacesRefresh });
+
+        expect(store.dispatch).toHaveBeenCalledWith(fetchInterfaces());
+      });
+
+      it('should call onInterfacesRefresh once the fetched interfaces are in the store', () => {
+        settingsStore.refreshInterfaces({ onInterfacesRefresh });
+
+        expect(onInterfacesRefresh)
+          .withContext('the interfaces are still being fetched')
+          .not.toHaveBeenCalled();
+
+        store.overrideSelector(selectInterfaces, MOCK_INTERFACES);
+        store.refreshState();
+
+        expect(onInterfacesRefresh).toHaveBeenCalledTimes(1);
+      });
+
+      it('should not call onInterfacesRefresh for later interface updates', () => {
+        settingsStore.refreshInterfaces({ onInterfacesRefresh });
+        store.overrideSelector(selectInterfaces, MOCK_INTERFACES);
+        store.refreshState();
+
+        // E.g. a network adapter is unplugged after the refresh.
+        store.overrideSelector(selectInterfaces, {});
+        store.refreshState();
+
+        expect(onInterfacesRefresh).toHaveBeenCalledTimes(1);
+      });
+
+      it('should only call back for the latest refresh', () => {
+        const onPreviousRefresh = jasmine.createSpy('onPreviousRefresh');
+        settingsStore.refreshInterfaces({
+          onInterfacesRefresh: onPreviousRefresh,
+        });
+        settingsStore.refreshInterfaces({ onInterfacesRefresh });
+
+        store.overrideSelector(selectInterfaces, MOCK_INTERFACES);
+        store.refreshState();
+
+        expect(onPreviousRefresh).not.toHaveBeenCalled();
+        expect(onInterfacesRefresh).toHaveBeenCalledTimes(1);
+      });
+    });
+
     describe('updateSystemConfig', () => {
       beforeEach(() => {
         mockService.createSystemConfig.and.returnValue(of({ network: {} }));
