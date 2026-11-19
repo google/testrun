@@ -48,6 +48,7 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../../store/state';
 import {
   selectDevices,
+  selectHasConnectionSettings,
   selectHasDevices,
   selectHasRiskProfiles,
   selectIsAllDevicesOutdated,
@@ -183,6 +184,7 @@ describe('TestrunComponent', () => {
           },
           provideMockStore({
             selectors: [
+              { selector: selectHasConnectionSettings, value: true },
               { selector: selectHasDevices, value: false },
               { selector: selectIsAllDevicesOutdated, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
@@ -296,6 +298,7 @@ describe('TestrunComponent', () => {
           provideMockStore({
             selectors: [
               { selector: selectDevices, value: [] },
+              { selector: selectHasConnectionSettings, value: true },
               { selector: selectHasDevices, value: false },
               { selector: selectIsAllDevicesOutdated, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
@@ -388,6 +391,54 @@ describe('TestrunComponent', () => {
         ) as HTMLButtonElement;
 
         expect(startBtn.disabled).toBeTrue();
+      });
+    });
+
+    describe('with devices but no network interfaces selected (WCAG 3.2.4 Consistent Identification)', () => {
+      /** Queried on demand, so assertions never hold a stale element. */
+      const startButton = () =>
+        compiled.querySelector('.start-button') as HTMLButtonElement;
+
+      beforeEach(() => {
+        store.overrideSelector(selectSystemStatus, null);
+        store.overrideSelector(selectHasDevices, true);
+        store.overrideSelector(selectHasConnectionSettings, false);
+        fixture.detectChanges();
+      });
+
+      it('should disable "Start Testing" like the sidebar "Start Testing" item', () => {
+        expect(startButton().disabled).toBeTrue();
+      });
+
+      it('should not open the "Start new Testrun" dialog when activated', () => {
+        testRunDialogServiceMock.openInitiateDialog.calls.reset();
+        testRunDialogServiceMock.openInitiateDialog.and.returnValue(
+          of(MOCK_PROGRESS_DATA_IN_PROGRESS)
+        );
+
+        startButton().click();
+
+        expect(
+          testRunDialogServiceMock.openInitiateDialog
+        ).not.toHaveBeenCalled();
+      });
+
+      it('should keep "Start Testing" disabled until the network settings load', () => {
+        store.overrideSelector(selectHasConnectionSettings, null);
+        store.refreshState();
+        fixture.detectChanges();
+
+        expect(startButton().disabled).toBeTrue();
+      });
+
+      it('should enable "Start Testing" once the network interfaces are selected', () => {
+        expect(startButton().disabled).toBeTrue();
+
+        store.overrideSelector(selectHasConnectionSettings, true);
+        store.refreshState();
+        fixture.detectChanges();
+
+        expect(startButton().disabled).toBeFalse();
       });
     });
 
@@ -761,6 +812,7 @@ describe('TestrunComponent', () => {
           provideMockStore({
             selectors: [
               { selector: selectDevices, value: [] },
+              { selector: selectHasConnectionSettings, value: true },
               { selector: selectHasDevices, value: true },
               { selector: selectIsAllDevicesOutdated, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
