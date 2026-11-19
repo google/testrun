@@ -742,6 +742,9 @@ describe('GeneralSettingsComponent', () => {
     it('should open in a new tab without access to the Testrun window', () => {
       expect(link.relList.contains('noopener')).toBeTrue();
       expect(link.relList.contains('noreferrer')).toBeTrue();
+    });
+  });
+
   /** Calls back like the store does once it has the refreshed interfaces. */
   function completeInterfacesRefresh(): void {
     const refresh = mockSettingsStore.refreshInterfaces.calls.mostRecent()
