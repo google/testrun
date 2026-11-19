@@ -168,7 +168,7 @@ class Modbus():
     for curr_address in address_candidates:
       try:
         response = self.client.read_holding_registers(
-            address,
+            curr_address,
             count=count,
             device_id=active_device_id
         )
