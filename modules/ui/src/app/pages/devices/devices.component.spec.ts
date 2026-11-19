@@ -38,7 +38,8 @@ import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { Routes } from '../../model/routes';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { Component, input, output } from '@angular/core';
+import { ApplicationRef, Component, input, output } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../../mocks/testrun.mock';
 import { DeviceQualificationFromComponent } from './components/device-qualification-from/device-qualification-from.component';
 import { TestrunDialogService } from '../../services/testrun-dialog.service';
@@ -334,6 +335,113 @@ describe('DevicesComponent', () => {
     });
   });
 
+  describe('delete device dialog accessibility', () => {
+    const WARNING = `You are about to delete ${device.manufacturer} ${device.model}. Deleting this device configuration will also delete its testing history. Are you sure?`;
+
+    beforeEach(() => {
+      component.viewModel$ = of({
+        devices: [device, updated_device],
+        selectedDevice: device,
+        deviceInProgress: null,
+        testModules: [],
+        actions: [
+          {
+            action: DeviceAction.StartNewTestrun,
+            svgIcon: 'testrun_logo_small',
+          },
+          { action: DeviceAction.Delete, icon: 'delete' },
+        ],
+      });
+      component.isOpenDeviceForm = true;
+      fixture.detectChanges();
+    });
+
+    afterEach(() => {
+      component.dialog.closeAll();
+    });
+
+    /** Returns the `role="dialog"` element of the open delete dialog. */
+    function renderedDeleteDialog(): HTMLElement {
+      // The dialog renders in the CDK overlay, outside the fixture's view.
+      TestBed.inject(ApplicationRef).tick();
+      return document.querySelector(
+        '.delete-dialog mat-dialog-container'
+      ) as HTMLElement;
+    }
+
+    /** Activates Delete in the first device card's Actions menu. */
+    function openFromActionsMenu(): HTMLElement {
+      (
+        compiled.querySelector(
+          'app-list-item .list-item > button'
+        ) as HTMLButtonElement
+      ).click();
+      fixture.detectChanges();
+      (
+        document.querySelector(
+          '.list-item-menu-item[aria-label="Delete"]'
+        ) as HTMLButtonElement
+      ).click();
+      return renderedDeleteDialog();
+    }
+
+    /** Activates Delete at the bottom of the device qualification form. */
+    function openFromDeviceForm(): HTMLElement {
+      const form = fixture.debugElement.query(
+        By.directive(FakeDeviceQualificationComponent)
+      ).componentInstance as FakeDeviceQualificationComponent;
+      form.delete.emit(device);
+      return renderedDeleteDialog();
+    }
+
+    it('should mark the dialog as modal', () => {
+      const dialog = openFromActionsMenu();
+
+      expect(dialog.getAttribute('role')).toBe('dialog');
+      expect(dialog.getAttribute('aria-modal')).toBe('true');
+    });
+
+    it('should describe the dialog by its data-loss warning', () => {
+      const dialog = openFromActionsMenu();
+      const descriptionId = dialog.getAttribute('aria-describedby');
+
+      expect(textOfIdRefs(descriptionId)).toBe(WARNING);
+      // The id is unique and belongs to the warning inside this dialog.
+      expect(document.querySelectorAll(`[id="${descriptionId}"]`).length).toBe(
+        1
+      );
+      expect(dialog.querySelector(`[id="${descriptionId}"]`)).toBe(
+        dialog.querySelector('.simple-dialog-content')
+      );
+    });
+
+    it('should title the dialog with a level 2 heading', () => {
+      const dialog = openFromActionsMenu();
+
+      expect(dialog.querySelector('h2')?.textContent?.trim()).toBe(
+        'Delete device?'
+      );
+      expect(
+        dialog.querySelectorAll('h1, h2, h3, h4, h5, h6, [role="heading"]')
+          .length
+      ).toBe(1);
+      // The heading does not replace the name of the dialog.
+      expect(dialog.getAttribute('aria-label')).toBe('Delete device');
+    });
+
+    it('should open the same accessible dialog from the device form Delete button', () => {
+      const dialog = openFromDeviceForm();
+
+      expect(dialog.getAttribute('aria-modal')).toBe('true');
+      expect(textOfIdRefs(dialog.getAttribute('aria-describedby'))).toBe(
+        WARNING
+      );
+      expect(dialog.querySelector('h2')?.textContent?.trim()).toBe(
+        'Delete device?'
+      );
+    });
+  });
+
   describe('#openStartTestrun', () => {
     it('should open initiate test run modal', fakeAsync(() => {
       testRunDialogServiceMock.openInitiateDialog.and.returnValue(
@@ -399,6 +507,15 @@ class FakeDeviceQualificationComponent {
   save = output<Device>();
   delete = output<Device>();
   cancel = output<void>();
+}
+
+/** Text of the elements referenced by an `aria-labelledby`/`aria-describedby` value. */
+function textOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(id => document.getElementById(id)?.textContent?.trim() ?? '')
+    .join(' ');
 }
 
 type Rgb = [number, number, number];
