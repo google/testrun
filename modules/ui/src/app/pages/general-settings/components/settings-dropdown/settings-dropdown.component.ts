@@ -57,6 +57,16 @@ export class SettingsDropdownComponent implements OnInit {
    * and is described by the error message.
    */
   errorId = input<string | null>(null);
+  /**
+   * Whether a value is required. Reported to assistive technology as
+   * `aria-required` on the select.
+   */
+  required = input(false);
+  /**
+   * Whether instructions, e.g. "This port is required", are projected into
+   * the info column. When set, the select is described by them.
+   */
+  hasInfo = input(false);
   parentContainer = inject(ControlContainer);
 
   /**
@@ -78,9 +88,13 @@ export class SettingsDropdownComponent implements OnInit {
   }
 
   get describedBy(): string {
-    const descriptionId = `${this.key}-description`;
-    const errorId = this.errorId();
-    return errorId ? `${descriptionId} ${errorId}` : descriptionId;
+    return [
+      `${this.key}-description`,
+      this.hasInfo() ? `${this.key}-info` : null,
+      this.errorId(),
+    ]
+      .filter(Boolean)
+      .join(' ');
   }
 
   ngOnInit() {

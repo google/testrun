@@ -40,6 +40,17 @@ import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { TestRunService } from '../../services/test-run.service';
 import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/testrun.mock';
 
+/** Text of the elements referenced by an `aria-describedby` value. */
+function textOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(id => document.getElementById(id)?.textContent ?? '')
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 describe('GeneralSettingsComponent', () => {
   let component: GeneralSettingsComponent;
   let fixture: ComponentFixture<GeneralSettingsComponent>;
@@ -327,6 +338,124 @@ describe('GeneralSettingsComponent', () => {
     });
   });
 
+  describe('port instructions', () => {
+    let deviceSelect: HTMLElement;
+    let internetSelect: HTMLElement;
+
+    const render = (): void => {
+      // The component is OnPush, so it has to be marked for check to render
+      // changes made outside of its template.
+      fixture.debugElement.injector.get(ChangeDetectorRef).markForCheck();
+      fixture.detectChanges();
+    };
+
+    beforeEach(() => {
+      component.viewModel$ = of({
+        systemConfig: { network: {} },
+        hasConnectionSettings: false,
+        isSubmitting: false,
+        isLessThanOneInterface: false,
+        interfaces: MOCK_INTERFACES,
+        deviceOptions: MOCK_INTERFACES,
+        internetOptions: MOCK_INTERFACES,
+        logLevelOptions: {},
+        monitoringPeriodOptions: {},
+      });
+      render();
+
+      deviceSelect = compiled.querySelector('#device-group') as HTMLElement;
+      internetSelect = compiled.querySelector('#internet-group') as HTMLElement;
+    });
+
+    it('should mark the device port as required', () => {
+      expect(deviceSelect.getAttribute('aria-required')).toEqual('true');
+      // Being required does not report the port as invalid before saving.
+      expect(deviceSelect.getAttribute('aria-invalid')).toEqual('false');
+    });
+
+    it('should describe the device port by its instructions', () => {
+      expect(
+        textOfIdRefs(deviceSelect.getAttribute('aria-describedby'))
+      ).toEqual(
+        'Port where IoT device is connected for testing ' +
+          'This port is required ' +
+          'If a port is missing from this list, you can Refresh the System settings'
+      );
+    });
+
+    it('should mark the internet port as required only in two-ports mode', () => {
+      expect(internetSelect.getAttribute('aria-required')).toEqual('true');
+
+      // In single port mode, the store disables the internet port.
+      component.internetControl.disable();
+      render();
+
+      expect(internetSelect.getAttribute('aria-required')).toEqual('false');
+    });
+
+    it('should describe the internet port by its instructions in two-ports mode', () => {
+      expect(
+        textOfIdRefs(internetSelect.getAttribute('aria-describedby'))
+      ).toEqual(
+        'Port used for internet connection ' +
+          'This port is required ' +
+          'If a port is missing from this list, you can Refresh the System settings'
+      );
+    });
+
+    it('should describe the internet port by why it is disabled in single port mode', () => {
+      component.internetControl.disable();
+      render();
+
+      expect(
+        textOfIdRefs(internetSelect.getAttribute('aria-describedby'))
+      ).toEqual(
+        'Port used for internet connection ' +
+          'Internet port is disabled because you selected single port mode'
+      );
+    });
+
+    it('should not describe the ports by instructions hidden while testing', () => {
+      expect(deviceSelect.getAttribute('aria-describedby')).toEqual(
+        'device-description device-info'
+      );
+      expect(internetSelect.getAttribute('aria-describedby')).toEqual(
+        'internet-description internet-info'
+      );
+
+      component.settingsDisable = true;
+      render();
+
+      expect(
+        compiled.querySelector('app-settings-dropdown .message')
+      ).toBeNull();
+      expect(deviceSelect.getAttribute('aria-describedby')).toEqual(
+        'device-description'
+      );
+      expect(internetSelect.getAttribute('aria-describedby')).toEqual(
+        'internet-description'
+      );
+    });
+  });
+
+  describe('Google analytics', () => {
+    it('should describe the opt-out checkbox by the description and the Terms of Service notice', () => {
+      const checkbox = compiled.querySelector(
+        'mat-checkbox.consent-actions-opt-out'
+      ) as HTMLElement;
+      const input = checkbox.querySelector(
+        'input[type="checkbox"]'
+      ) as HTMLInputElement;
+
+      expect(textOfIdRefs(input.getAttribute('aria-describedby'))).toEqual(
+        'Testrun uses Google Analytics to learn about how our users use the application. ' +
+          'By installing and running Testrun, you understand and accept the Google Terms of Service'
+      );
+      // Only the native checkbox is described, not its generic wrapper.
+      expect(checkbox.hasAttribute('aria-describedby')).toBeFalse();
+    });
+  });
+
   describe('with the same value in device and internet ports', () => {
     const MOCK_SAME_PORT = { key: 'mockDeviceKey', value: 'mockDeviceValue' };
     let saveButton: HTMLButtonElement;
@@ -368,10 +497,10 @@ describe('GeneralSettingsComponent', () => {
       expect(deviceSelect.getAttribute('aria-invalid')).toEqual('false');
       expect(internetSelect.getAttribute('aria-invalid')).toEqual('false');
       expect(deviceSelect.getAttribute('aria-describedby')).toEqual(
-        'device-description'
+        'device-description device-info'
       );
       expect(internetSelect.getAttribute('aria-describedby')).toEqual(
-        'internet-description'
+        'internet-description internet-info'
       );
     });
 
@@ -400,10 +529,10 @@ describe('GeneralSettingsComponent', () => {
 
       it('should link both ports to the error', () => {
         expect(deviceSelect.getAttribute('aria-describedby')).toEqual(
-          `device-description ${component.portsErrorId}`
+          `device-description device-info ${component.portsErrorId}`
         );
         expect(internetSelect.getAttribute('aria-describedby')).toEqual(
-          `internet-description ${component.portsErrorId}`
+          `internet-description internet-info ${component.portsErrorId}`
         );
       });
 
@@ -418,10 +547,10 @@ describe('GeneralSettingsComponent', () => {
         expect(deviceSelect.getAttribute('aria-invalid')).toEqual('false');
         expect(internetSelect.getAttribute('aria-invalid')).toEqual('false');
         expect(deviceSelect.getAttribute('aria-describedby')).toEqual(
-          'device-description'
+          'device-description device-info'
         );
         expect(internetSelect.getAttribute('aria-describedby')).toEqual(
-          'internet-description'
+          'internet-description internet-info'
         );
       });
     });
