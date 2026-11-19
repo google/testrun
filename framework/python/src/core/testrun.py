@@ -605,7 +605,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
                             name='tr-ui',
                             hostname='testrun.io',
                             detach=True,
-                            ports={'80': 8080})
+                            network_mode='host')
     except docker.errors.ImageNotFound as ie:
       LOGGER.error('An error occurred whilst starting the UI. ' +
                    'Please investigate and try again.')

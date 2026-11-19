@@ -15,6 +15,7 @@
 from fastapi import (FastAPI, APIRouter, Response, Request, status, UploadFile)
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 import asyncio
 import json
 from json import JSONDecodeError
@@ -141,7 +142,12 @@ class Api:
                                methods=["POST"])
 
     # Allow all origins to access the API
-    origins = ["*"]
+    allowed_origins = [
+      "http://localhost:4200",
+      "http://127.0.0.1:4200",
+      "http://localhost:8080",
+      "http://127.0.0.1:8080",
+    ]
 
     # Scheduler for background periodic tasks
     self._scheduler = tasks.PeriodicTasks(self._testrun)
@@ -152,13 +158,18 @@ class Api:
     # Attach router to FastAPI
     self._app.include_router(self._router)
 
+    # Attach TrustedMiddleware
+    self._app.add_middleware(
+      TrustedHostMiddleware,
+      allowed_hosts=["localhost", "127.0.0.1"]
+    )
+
     # Attach CORS middleware
     self._app.add_middleware(
         CORSMiddleware,
-        # nosemgrep: python.fastapi.security.wildcard-cors.wildcard-cors
-        allow_origins=origins,
+        allow_origins=allowed_origins,
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "DELETE", "PUT", "OPTIONS"],
         allow_headers=["*"],
     )
 
@@ -191,7 +202,7 @@ class Api:
   def _start(self):
     uvicorn.run(self._app,
                 log_config=None,
-                host="0.0.0.0", # nosec B104
+                host="127.0.0.1",
                 port=self._session.get_api_port())
 
   def stop(self):
@@ -996,7 +1007,7 @@ class Api:
 
     return self._session.get_certs()
 
-  async def upload_cert(self, file: UploadFile, response: Response):
+  async def upload_cert(self, file: UploadFile, response: Response) -> Response:
 
     filename = file.filename
     content_type = file.content_type
@@ -1012,10 +1023,17 @@ class Api:
       return self._generate_msg(
           False, "Failed to upload certificate. Is it in the correct format?")
 
-    if len(filename) > 24:
+    if filename is not None and len(filename) > 24:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(
           False, "Invalid filename. Maximum file name length is 24 characters.")
+
+    if (filename is not None
+        and (os.path.basename(filename) != filename
+             or filename.startswith("."))):
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(
+          False, "Invalid filename. Must not contain path separators")
 
     # Check if file already exists
     if not self._session.check_cert_file_name(filename):
@@ -1051,6 +1069,12 @@ class Api:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return self._generate_msg(
           False, "The certificate must contain the common name"
+        )
+
+      # Returned when invalid sertificate filename provided
+      elif str(e) == "Invalid sertificate filename":
+        return self._generate_msg(
+          False, "Invalid filename. Must not contain path separators"
         )
 
       # Returned when unable to load PEM file

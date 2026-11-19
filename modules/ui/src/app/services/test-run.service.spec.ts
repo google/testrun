@@ -86,9 +86,7 @@ describe('TestRunService', () => {
 
     result = testModules;
     service.getTestModules();
-    const req = httpTestingController.expectOne(
-      'http://localhost:8000/system/modules'
-    );
+    const req = httpTestingController.expectOne('/api/system/modules');
 
     expect(req.request.method).toBe('GET');
 
@@ -105,9 +103,7 @@ describe('TestRunService', () => {
 
     result = deviceArray;
     service.fetchDevices();
-    const req = httpTestingController.expectOne(
-      'http://localhost:8000/devices'
-    );
+    const req = httpTestingController.expectOne('/api/devices');
 
     expect(req.request.method).toBe('GET');
 
@@ -115,7 +111,7 @@ describe('TestRunService', () => {
   });
 
   it('getSystemConfig should return systemConfig data', () => {
-    const apiUrl = 'http://localhost:8000/system/config';
+    const apiUrl = '/api/system/config';
 
     service.getSystemConfig().subscribe(res => {
       expect(res).toEqual(MOCK_SYSTEM_CONFIG);
@@ -127,7 +123,7 @@ describe('TestRunService', () => {
   });
 
   it('createSystemConfig should call systemConfig data', () => {
-    const apiUrl = 'http://localhost:8000/system/config';
+    const apiUrl = '/api/system/config';
 
     service.createSystemConfig(MOCK_SYSTEM_CONFIG).subscribe(res => {
       expect(res).toEqual(MOCK_SYSTEM_CONFIG);
@@ -140,7 +136,7 @@ describe('TestRunService', () => {
   });
 
   it('getSystemInterfaces should return array of interfaces', () => {
-    const apiUrl = 'http://localhost:8000/system/interfaces';
+    const apiUrl = '/api/system/interfaces';
     const mockSystemInterfaces: SystemInterfaces = {
       mockValue1: 'mockValue1',
       mockValue2: 'mockValue2',
@@ -156,7 +152,7 @@ describe('TestRunService', () => {
   });
 
   describe('fetchSystemStatus', () => {
-    const systemStatusUrl = 'http://localhost:8000/system/status';
+    const systemStatusUrl = '/api/system/status';
 
     it('should get system status data with no changes', () => {
       const result = { ...MOCK_PROGRESS_DATA_IN_PROGRESS };
@@ -184,7 +180,7 @@ describe('TestRunService', () => {
   });
 
   it('stopTestrun should have necessary request data', () => {
-    const apiUrl = 'http://localhost:8000/system/stop';
+    const apiUrl = '/api/system/stop';
 
     service.stopTestrun().subscribe(res => {
       expect(res).toEqual(true);
@@ -197,7 +193,7 @@ describe('TestRunService', () => {
   });
 
   it('#shutdownTestrun should have necessary request data', () => {
-    const apiUrl = 'http://localhost:8000/system/shutdown';
+    const apiUrl = '/api/system/shutdown';
 
     service.shutdownTestrun().subscribe(res => {
       expect(res).toEqual(true);
@@ -211,7 +207,7 @@ describe('TestRunService', () => {
 
   describe('#startTestRun', () => {
     it('should have necessary request data', () => {
-      const apiUrl = 'http://localhost:8000/system/start';
+      const apiUrl = '/api/system/start';
 
       service.startTestrun(device).subscribe(res => {
         expect(res).toEqual(MOCK_PROGRESS_DATA_IN_PROGRESS);
@@ -244,9 +240,7 @@ describe('TestRunService', () => {
 
       result = reports;
       service.getReports();
-      const req = httpTestingController.expectOne(
-        'http://localhost:8000/reports'
-      );
+      const req = httpTestingController.expectOne('/api/reports');
 
       expect(req.request.method).toBe('GET');
 
@@ -398,7 +392,7 @@ describe('TestRunService', () => {
   });
 
   it('deleteDevice should have necessary request data', () => {
-    const apiUrl = 'http://localhost:8000/device';
+    const apiUrl = '/api/device';
 
     service.deleteDevice(device).subscribe(res => {
       expect(res).toEqual(true);
@@ -415,9 +409,7 @@ describe('TestRunService', () => {
       const version = VERSION;
 
       service.fetchVersion();
-      const req = httpTestingController.expectOne(
-        'http://localhost:8000/system/version'
-      );
+      const req = httpTestingController.expectOne('/api/system/version');
       expect(req.request.method).toBe('GET');
       req.flush(version);
 
@@ -432,9 +424,7 @@ describe('TestRunService', () => {
       const data = 'Invalid request parameters';
       service.getVersion().next(version);
       service.fetchVersion();
-      const req = httpTestingController.expectOne(
-        'http://localhost:8000/system/version'
-      );
+      const req = httpTestingController.expectOne('/api/system/version');
       expect(req.request.method).toBe('GET');
       req.flush(data, mockErrorResponse);
 
@@ -447,9 +437,7 @@ describe('TestRunService', () => {
       const mockErrorResponse = { status: 500, statusText: 'Error' };
       const data = 'Invalid request parameters';
       service.fetchVersion();
-      const req = httpTestingController.expectOne(
-        'http://localhost:8000/system/version'
-      );
+      const req = httpTestingController.expectOne('/api/system/version');
       expect(req.request.method).toBe('GET');
       req.flush(data, mockErrorResponse);
 
@@ -460,7 +448,7 @@ describe('TestRunService', () => {
   });
 
   it('deleteReport should have necessary request data', () => {
-    const apiUrl = 'http://localhost:8000/report';
+    const apiUrl = '/api/report';
 
     service.deleteReport('/report').subscribe(res => {
       expect(res).toEqual(true);
@@ -472,7 +460,7 @@ describe('TestRunService', () => {
   });
 
   it('deleteReport should return false when error happens', () => {
-    const apiUrl = 'http://localhost:8000/report';
+    const apiUrl = '/api/report';
 
     service.deleteReport('/report').subscribe(res => {
       expect(res).toEqual(false);
@@ -484,7 +472,7 @@ describe('TestRunService', () => {
   });
 
   it('#saveDevice should have necessary request data', () => {
-    const apiUrl = 'http://localhost:8000/device';
+    const apiUrl = '/api/device';
 
     service.saveDevice(device).subscribe(res => {
       expect(res).toEqual(true);
@@ -497,7 +485,7 @@ describe('TestRunService', () => {
   });
 
   it('#editDevice should have necessary request data', () => {
-    const apiUrl = 'http://localhost:8000/device/edit';
+    const apiUrl = '/api/device/edit';
 
     service.editDevice(device, '01:01:01:01:01:01').subscribe(res => {
       expect(res).toEqual(true);
@@ -516,9 +504,7 @@ describe('TestRunService', () => {
       expect(res).toEqual([COPY_PROFILE_MOCK, PROFILE_MOCK]);
     });
 
-    const req = httpTestingController.expectOne(
-      'http://localhost:8000/profiles'
-    );
+    const req = httpTestingController.expectOne('/api/profiles');
 
     expect(req.request.method).toBe('GET');
 
@@ -530,9 +516,7 @@ describe('TestRunService', () => {
       expect(res).toEqual(true);
     });
 
-    const req = httpTestingController.expectOne(
-      'http://localhost:8000/profiles'
-    );
+    const req = httpTestingController.expectOne('/api/profiles');
 
     expect(req.request.method).toBe('DELETE');
 
@@ -544,9 +528,7 @@ describe('TestRunService', () => {
       expect(res).toEqual(false);
     });
 
-    const req = httpTestingController.expectOne(
-      'http://localhost:8000/profiles'
-    );
+    const req = httpTestingController.expectOne('/api/profiles');
 
     expect(req.request.method).toBe('DELETE');
 
@@ -560,9 +542,7 @@ describe('TestRunService', () => {
       expect(res).toEqual(certificates);
     });
 
-    const req = httpTestingController.expectOne(
-      'http://localhost:8000/system/config/certs'
-    );
+    const req = httpTestingController.expectOne('/api/system/config/certs');
 
     expect(req.request.method).toBe('GET');
 
@@ -574,9 +554,7 @@ describe('TestRunService', () => {
       expect(res).toEqual(true);
     });
 
-    const req = httpTestingController.expectOne(
-      'http://localhost:8000/system/config/certs'
-    );
+    const req = httpTestingController.expectOne('/api/system/config/certs');
 
     expect(req.request.method).toBe('POST');
 
@@ -588,9 +566,7 @@ describe('TestRunService', () => {
       expect(res).toEqual(true);
     });
 
-    const req = httpTestingController.expectOne(
-      'http://localhost:8000/system/config/certs'
-    );
+    const req = httpTestingController.expectOne('/api/system/config/certs');
 
     expect(req.request.method).toBe('DELETE');
 
@@ -602,9 +578,7 @@ describe('TestRunService', () => {
       expect(res).toEqual(false);
     });
 
-    const req = httpTestingController.expectOne(
-      'http://localhost:8000/system/config/certs'
-    );
+    const req = httpTestingController.expectOne('/api/system/config/certs');
 
     expect(req.request.method).toBe('DELETE');
 
@@ -640,9 +614,7 @@ describe('TestRunService', () => {
         expect(res).toEqual(result);
       });
 
-      const req = httpTestingController.expectOne(
-        'http://localhost:8000/profiles/format'
-      );
+      const req = httpTestingController.expectOne('/api/profiles/format');
       expect(req.request.method).toBe('GET');
       req.flush(result);
     });
@@ -650,7 +622,7 @@ describe('TestRunService', () => {
 
   describe('#saveProfile ', () => {
     it('should have necessary request data', () => {
-      const apiUrl = 'http://localhost:8000/profiles';
+      const apiUrl = '/api/profiles';
 
       service.saveProfile(NEW_PROFILE_MOCK).subscribe(res => {
         expect(res).toEqual(true);
@@ -665,7 +637,7 @@ describe('TestRunService', () => {
     it('should return false if error happens', () => {
       const mockErrorResponse = { status: 500, statusText: 'Error' };
       const data = 'Invalid request parameters';
-      const apiUrl = 'http://localhost:8000/profiles';
+      const apiUrl = '/api/profiles';
 
       service.saveProfile(NEW_PROFILE_MOCK).subscribe(res => {
         expect(res).toEqual(false);
@@ -686,9 +658,7 @@ describe('TestRunService', () => {
         expect(res).toEqual(result);
       });
 
-      const req = httpTestingController.expectOne(
-        'http://localhost:8000/devices/format'
-      );
+      const req = httpTestingController.expectOne('/api/devices/format');
       expect(req.request.method).toBe('GET');
       req.flush(result);
     });
