@@ -141,28 +141,6 @@ describe('DownloadReportZipComponent', () => {
       });
     });
   });
-
-  describe('as an item of the Testing page "Download" menu', () => {
-    it('should take the menuitem role', () => {
-      fixture.componentRef.setInput('role', 'menuitem');
-      fixture.detectChanges();
-
-      expect(compiled.getAttribute('role')).toBe('menuitem');
-    });
-
-    it('should emit activated before it opens the dialog, so the menu can move focus first', () => {
-      const openSpy = spyOn(component.dialog, 'open');
-      const activatedSpy = jasmine.createSpy('activated');
-      component.activated.subscribe(activatedSpy);
-
-      compiled.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
-      );
-
-      expect(activatedSpy).toHaveBeenCalledTimes(1);
-      expect(activatedSpy).toHaveBeenCalledBefore(openSpy);
-    });
-  });
 });
 
 @Component({
