@@ -162,5 +162,43 @@ describe('DeviceItemComponent', () => {
 
       expect(editBtn.getAttribute('disabled')).toBeNull();
     });
+
+    describe('edit button focus ring', () => {
+      let editButton: HTMLButtonElement;
+
+      beforeEach(() => {
+        editButton = compiled.querySelector(
+          '.button-edit'
+        ) as HTMLButtonElement;
+      });
+
+      afterEach(() => {
+        editButton.blur();
+      });
+
+      // The browser default ring (`outline: 1px auto`, e.g. #a8c7fa) is below
+      // the 3:1 non-text contrast minimum on the Devices page card backgrounds.
+      it('should show a high-contrast focus ring only while focused with the keyboard', () => {
+        expect(getComputedStyle(editButton).outlineStyle)
+          .withContext('no ring before the card is focused')
+          .toBe('none');
+
+        editButton.focus();
+
+        expect(editButton.matches(':focus-visible'))
+          .withContext(
+            JSON.stringify({
+              hasFocus: document.hasFocus(),
+              activeTag: document.activeElement?.tagName,
+            })
+          )
+          .toBeTrue();
+        const style = getComputedStyle(editButton);
+        expect(style.outlineStyle).toBe('solid');
+        expect(style.outlineWidth).toBe('2px');
+        expect(style.outlineColor).toBe('rgb(0, 0, 0)');
+        expect(style.outlineOffset).toBe('2px');
+      });
+    });
   });
 });

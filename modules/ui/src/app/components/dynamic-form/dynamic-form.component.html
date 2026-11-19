@@ -42,6 +42,9 @@ limitations under the License.
     id="field-label-{{ formControlName }}"
     for="{{ formControlName }}-group">
     {{ label }}
+    @if (required) {
+      <span class="field-required-marker" aria-hidden="true">*</span>
+    }
   </label>
   @switch (type) {
     @case (FormControlType.TEXT) {

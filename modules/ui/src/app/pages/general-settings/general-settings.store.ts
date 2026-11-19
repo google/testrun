@@ -23,7 +23,7 @@ import {
   SystemConfig,
   SystemInterfaces,
 } from '../../model/setting';
-import { exhaustMap, switchMap, Observable, skip } from 'rxjs';
+import { exhaustMap, switchMap, Observable, skip, take } from 'rxjs';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import * as AppActions from '../../store/actions';
 import { Store } from '@ngrx/store';
@@ -137,6 +137,28 @@ export class GeneralSettingsStore extends ComponentStore<SettingsComponentState>
       })
     );
   });
+
+  /**
+   * Fetches the network interfaces again and calls `onInterfacesRefresh` once
+   * the fetched interfaces are in the store.
+   */
+  refreshInterfaces = this.effect<{ onInterfacesRefresh: () => void }>(
+    trigger$ => {
+      return trigger$.pipe(
+        tap(() => {
+          this.store.dispatch(fetchInterfaces());
+        }),
+        switchMap(({ onInterfacesRefresh }) =>
+          this.interfaces$.pipe(
+            // Skips the interfaces that were in the store before the refresh.
+            skip(1),
+            take(1),
+            tap(() => onInterfacesRefresh())
+          )
+        )
+      );
+    }
+  );
 
   getSystemConfig = this.effect(trigger$ => {
     return trigger$.pipe(

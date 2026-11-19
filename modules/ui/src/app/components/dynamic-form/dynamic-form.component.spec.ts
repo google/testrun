@@ -24,8 +24,15 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { PROFILE_FORM } from '../../mocks/profile.mock';
-import { FormControlType } from '../../model/question';
+import { FormControlType, QuestionFormat } from '../../model/question';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+
+/** Text of an element as exposed to assistive technology (`aria-hidden` content skipped). */
+function accessibleText(element: Element): string {
+  const clone = element.cloneNode(true) as Element;
+  clone.querySelectorAll('[aria-hidden="true"]').forEach(node => node.remove());
+  return clone.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+}
 
 @Component({
   template:
@@ -102,7 +109,7 @@ describe('DynamicFormComponent', () => {
       const labels = compiled.querySelectorAll('.field-label');
 
       const label = item.question;
-      expect(labels[index].textContent?.trim()).toEqual(label);
+      expect(accessibleText(labels[index])).toEqual(label);
     });
 
     it('should have hint', () => {
@@ -252,6 +259,69 @@ describe('DynamicFormComponent', () => {
 
       expect(wrapper?.style.height).toEqual(`${hint.offsetHeight}px`);
       expect(wrapper?.clientHeight).toEqual(hint.offsetHeight);
+    });
+  });
+
+  describe('required questions', () => {
+    const OPTIONAL_QUESTIONS: QuestionFormat[] = [
+      {
+        question: 'Is the device installed outdoors?',
+        type: FormControlType.SELECT,
+        options: ['Yes', 'No'],
+        validation: { required: false },
+      },
+      { question: 'Additional comments', type: FormControlType.TEXTAREA },
+    ];
+    const FORMAT = [...PROFILE_FORM, ...OPTIONAL_QUESTIONS];
+
+    beforeEach(() => {
+      // Adds controls for the optional questions; existing controls are kept.
+      component.createProfileForm(FORMAT);
+      dummy.format = FORMAT;
+      fixture.detectChanges();
+    });
+
+    it('should mark only required questions with an asterisk hidden from assistive technology', () => {
+      const labels = compiled.querySelectorAll('.field-label');
+
+      expect(labels.length).toBe(FORMAT.length);
+      FORMAT.forEach((item, index) => {
+        const marker = labels[index].querySelector('.field-required-marker');
+
+        if (item.validation?.required) {
+          expect(marker?.textContent?.trim())
+            .withContext(item.question)
+            .toBe('*');
+          expect(marker?.getAttribute('aria-hidden'))
+            .withContext(item.question)
+            .toBe('true');
+        } else {
+          expect(marker).withContext(item.question).toBeNull();
+        }
+        expect(accessibleText(labels[index])).toBe(item.question);
+      });
+    });
+
+    it('should expose only required inputs and dropdowns as required', () => {
+      FORMAT.forEach((item, index) => {
+        if (item.type === FormControlType.SELECT_MULTIPLE) {
+          return; // A checkbox group has no required state; its label has the marker.
+        }
+        const control = compiled.querySelector(
+          `[id="${index}-group"]`
+        ) as HTMLElement;
+        const required = !!item.validation?.required;
+
+        expect(control.getAttribute('aria-required'))
+          .withContext(item.question)
+          .toBe(String(required));
+        if (
+          control instanceof HTMLInputElement ||
+          control instanceof HTMLTextAreaElement
+        ) {
+          expect(control.required).withContext(item.question).toBe(required);
+        }
+      });
     });
   });
 
