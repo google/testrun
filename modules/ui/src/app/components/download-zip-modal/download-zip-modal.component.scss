@@ -63,15 +63,6 @@
   &:has(app-download-report) {
     justify-content: space-between;
   }
-
-  ::ng-deep .download-report-link {
-    width: fit-content;
-    text-decoration: none;
-
-    &:hover:before {
-      content: none;
-    }
-  }
 }
 
 .profile-select {

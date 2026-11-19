@@ -37,10 +37,8 @@ import {
 } from '../model/profile';
 import { QuestionFormat } from '../model/question';
 
-// API endpoints that take a JSON body reject any other Content-Type. Pass
-// request bodies as objects, not JSON strings: HttpClient sends strings as
-// text/plain.
-const API_URL = `http://${window.location.hostname}:8000`;
+const isDevServer = window.location.port === '4200';
+const API_URL = isDevServer ? 'http://localhost:8000' : '/api';
 export const SYSTEM_START = '/system/start';
 export const SYSTEM_STOP = '/system/stop';
 export const EXPORT = '/export';
@@ -65,7 +63,7 @@ export class TestRunService {
       return '';
     }
     // replace url part before '/report' from static to dynamic API URL
-    return url.replace(/^.*(?=\/report|\/export)/, `${API_URL}`);
+    return url.replace(/^.*(?=\/report|\/export)/, API_URL);
   }
 
   fetchDevices(): Observable<Device[]> {
@@ -131,10 +129,12 @@ export class TestRunService {
   }
 
   saveDevice(device: Device): Observable<boolean> {
-    return this.http.post<boolean>(`${API_URL}/device`, device).pipe(
-      map(() => true),
-      catchError(() => of(false))
-    );
+    return this.http
+      .post<boolean>(`${API_URL}/device`, JSON.stringify(device))
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
   }
 
   editDevice(device: Device, mac_addr: string): Observable<boolean> {
@@ -147,16 +147,18 @@ export class TestRunService {
       device,
     };
 
-    return this.http.post<boolean>(`${API_URL}/device/edit`, request).pipe(
-      map(() => true),
-      catchError(() => of(false))
-    );
+    return this.http
+      .post<boolean>(`${API_URL}/device/edit`, JSON.stringify(request))
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
   }
 
   deleteDevice(device: Device): Observable<boolean> {
     return this.http
       .delete<boolean>(`${API_URL}/device`, {
-        body: device,
+        body: JSON.stringify(device),
       })
       .pipe(
         map(() => true),
@@ -217,9 +219,10 @@ export class TestRunService {
   }
 
   startTestrun(device: Device): Observable<TestrunStatus> {
-    return this.http.post<TestrunStatus>(`${API_URL}${SYSTEM_START}`, {
-      device,
-    });
+    return this.http.post<TestrunStatus>(
+      `${API_URL}${SYSTEM_START}`,
+      JSON.stringify({ device })
+    );
   }
 
   getVersion(): BehaviorSubject<Version | null> {
@@ -269,7 +272,7 @@ export class TestRunService {
   deleteProfile(name: string): Observable<boolean> {
     return this.http
       .delete<boolean>(`${API_URL}/profiles`, {
-        body: { name },
+        body: JSON.stringify({ name }),
       })
       .pipe(
         catchError(() => of(false)),
@@ -284,7 +287,7 @@ export class TestRunService {
   deleteCertificate(name: string): Observable<boolean> {
     return this.http
       .delete<boolean>(`${API_URL}/system/config/certs`, {
-        body: { name },
+        body: JSON.stringify({ name }),
       })
       .pipe(
         catchError(() => of(false)),
@@ -302,14 +305,10 @@ export class TestRunService {
 
   downloadZip(url: string, profile: string, name: string) {
     this.http
-      .post(
-        url,
-        { profile },
-        {
-          responseType: 'blob',
-          observe: 'response',
-        }
-      )
+      .post(url, JSON.stringify({ profile }), {
+        responseType: 'blob',
+        observe: 'response',
+      })
       .subscribe(response => {
         const contentDisposition = response.headers.get('Content-Disposition');
         let fileName = contentDisposition?.split(';')[1].trim().split('=')[1];
@@ -336,9 +335,11 @@ export class TestRunService {
   }
 
   saveProfile(profile: Profile): Observable<boolean> {
-    return this.http.post<boolean>(`${API_URL}/profiles`, profile).pipe(
-      catchError(() => of(false)),
-      map(res => !!res)
-    );
+    return this.http
+      .post<boolean>(`${API_URL}/profiles`, JSON.stringify(profile))
+      .pipe(
+        catchError(() => of(false)),
+        map(res => !!res)
+      );
   }
 }

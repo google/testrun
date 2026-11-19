@@ -13,16 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  flushMicrotasks,
+  tick,
+} from '@angular/core/testing';
 
 import { GeneralSettingsComponent } from './general-settings.component';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { of } from 'rxjs';
 import { MatRadioModule } from '@angular/material/radio';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { Component, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, Input } from '@angular/core';
 import SpyObj = jasmine.SpyObj;
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -40,6 +47,17 @@ import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { TestRunService } from '../../services/test-run.service';
 import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/testrun.mock';
 
+/** Text of the elements referenced by an `aria-describedby` value. */
+function textOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(id => document.getElementById(id)?.textContent ?? '')
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 describe('GeneralSettingsComponent', () => {
   let component: GeneralSettingsComponent;
   let fixture: ComponentFixture<GeneralSettingsComponent>;
@@ -47,6 +65,7 @@ describe('GeneralSettingsComponent', () => {
   let mockLoaderService: SpyObj<LoaderService>;
   let mockTestRunService: SpyObj<TestRunService>;
   let mockSettingsStore: SpyObj<GeneralSettingsStore>;
+  let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
 
   beforeEach(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,6 +76,7 @@ describe('GeneralSettingsComponent', () => {
     ]);
     mockSettingsStore = jasmine.createSpyObj('SettingsStore', [
       'getInterfaces',
+      'refreshInterfaces',
       'updateSystemConfig',
       'setIsSubmitting',
       'setDefaultFormValues',
@@ -67,12 +87,18 @@ describe('GeneralSettingsComponent', () => {
       'systemStatus$',
     ]);
     mockSettingsStore.systemStatus$ = of(MOCK_PROGRESS_DATA_COMPLIANT);
+    mockLiveAnnouncer = jasmine.createSpyObj<LiveAnnouncer>('LiveAnnouncer', [
+      'announce',
+      'clear',
+    ]);
+    mockLiveAnnouncer.announce.and.resolveTo();
 
     await TestBed.configureTestingModule({
       providers: [
         { provide: LoaderService, useValue: mockLoaderService },
         { provide: TestRunService, useValue: mockTestRunService },
         { provide: GeneralSettingsStore, useValue: mockSettingsStore },
+        { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
         provideMockStore(),
       ],
       imports: [
@@ -324,6 +350,590 @@ describe('GeneralSettingsComponent', () => {
       ) as HTMLButtonElement;
 
       expect(saveBtn.disabled).toBeFalse();
+    });
+  });
+
+  describe('port instructions', () => {
+    let deviceSelect: HTMLElement;
+    let internetSelect: HTMLElement;
+
+    const render = (): void => {
+      // The component is OnPush, so it has to be marked for check to render
+      // changes made outside of its template.
+      fixture.debugElement.injector.get(ChangeDetectorRef).markForCheck();
+      fixture.detectChanges();
+    };
+
+    beforeEach(() => {
+      component.viewModel$ = of({
+        systemConfig: { network: {} },
+        hasConnectionSettings: false,
+        isSubmitting: false,
+        isLessThanOneInterface: false,
+        interfaces: MOCK_INTERFACES,
+        deviceOptions: MOCK_INTERFACES,
+        internetOptions: MOCK_INTERFACES,
+        logLevelOptions: {},
+        monitoringPeriodOptions: {},
+      });
+      render();
+
+      deviceSelect = compiled.querySelector('#device-group') as HTMLElement;
+      internetSelect = compiled.querySelector('#internet-group') as HTMLElement;
+    });
+
+    it('should mark the device port as required', () => {
+      expect(deviceSelect.getAttribute('aria-required')).toEqual('true');
+      // Being required does not report the port as invalid before saving.
+      expect(deviceSelect.getAttribute('aria-invalid')).toEqual('false');
+    });
+
+    it('should describe the device port by its instructions', () => {
+      expect(
+        textOfIdRefs(deviceSelect.getAttribute('aria-describedby'))
+      ).toEqual(
+        'Port where IoT device is connected for testing ' +
+          'This port is required ' +
+          'If a port is missing from this list, you can Refresh the System settings'
+      );
+    });
+
+    it('should mark the internet port as required only in two-ports mode', () => {
+      expect(internetSelect.getAttribute('aria-required')).toEqual('true');
+
+      // In single port mode, the store disables the internet port.
+      component.internetControl.disable();
+      render();
+
+      expect(internetSelect.getAttribute('aria-required')).toEqual('false');
+    });
+
+    it('should describe the internet port by its instructions in two-ports mode', () => {
+      expect(
+        textOfIdRefs(internetSelect.getAttribute('aria-describedby'))
+      ).toEqual(
+        'Port used for internet connection ' +
+          'This port is required ' +
+          'If a port is missing from this list, you can Refresh the System settings'
+      );
+    });
+
+    it('should describe the internet port by why it is disabled in single port mode', () => {
+      component.internetControl.disable();
+      render();
+
+      expect(
+        textOfIdRefs(internetSelect.getAttribute('aria-describedby'))
+      ).toEqual(
+        'Port used for internet connection ' +
+          'Internet port is disabled because you selected single port mode'
+      );
+    });
+
+    it('should not describe the ports by instructions hidden while testing', () => {
+      expect(deviceSelect.getAttribute('aria-describedby')).toEqual(
+        'device-description device-info'
+      );
+      expect(internetSelect.getAttribute('aria-describedby')).toEqual(
+        'internet-description internet-info'
+      );
+
+      component.settingsDisable = true;
+      render();
+
+      expect(
+        compiled.querySelector('app-settings-dropdown .message')
+      ).toBeNull();
+      expect(deviceSelect.getAttribute('aria-describedby')).toEqual(
+        'device-description'
+      );
+      expect(internetSelect.getAttribute('aria-describedby')).toEqual(
+        'internet-description'
+      );
+    });
+  });
+
+  describe('Google analytics', () => {
+    it('should describe the opt-out checkbox by the description and the Terms of Service notice', () => {
+      const checkbox = compiled.querySelector(
+        'mat-checkbox.consent-actions-opt-out'
+      ) as HTMLElement;
+      const input = checkbox.querySelector(
+        'input[type="checkbox"]'
+      ) as HTMLInputElement;
+
+      expect(textOfIdRefs(input.getAttribute('aria-describedby'))).toEqual(
+        'Testrun uses Google Analytics to learn about how our users use the application. ' +
+          'By installing and running Testrun, you understand and accept the Google Terms of Service'
+      );
+      // Only the native checkbox is described, not its generic wrapper.
+      expect(checkbox.hasAttribute('aria-describedby')).toBeFalse();
+    });
+  });
+
+  describe('with the same value in device and internet ports', () => {
+    const MOCK_SAME_PORT = { key: 'mockDeviceKey', value: 'mockDeviceValue' };
+    let saveButton: HTMLButtonElement;
+    let deviceSelect: HTMLElement;
+    let internetSelect: HTMLElement;
+
+    const renderViewModel = (isSubmitting: boolean): void => {
+      component.viewModel$ = of({
+        systemConfig: { network: {} },
+        hasConnectionSettings: false,
+        isSubmitting,
+        isLessThanOneInterface: false,
+        interfaces: MOCK_INTERFACES,
+        deviceOptions: MOCK_INTERFACES,
+        internetOptions: MOCK_INTERFACES,
+        logLevelOptions: {},
+        monitoringPeriodOptions: {},
+      });
+      // The component is OnPush, so it has to be marked for check to render
+      // the new view model.
+      fixture.debugElement.injector.get(ChangeDetectorRef).markForCheck();
+      fixture.detectChanges();
+    };
+
+    beforeEach(() => {
+      renderViewModel(false);
+      component.deviceControl.setValue(MOCK_SAME_PORT);
+      component.internetControl.setValue(MOCK_SAME_PORT);
+      component.settingForm.markAsDirty();
+      fixture.detectChanges();
+
+      saveButton = compiled.querySelector('.save-button') as HTMLButtonElement;
+      deviceSelect = compiled.querySelector('#device-group') as HTMLElement;
+      internetSelect = compiled.querySelector('#internet-group') as HTMLElement;
+    });
+
+    it('should not show error or mark ports as invalid before submitting', () => {
+      expect(compiled.querySelector('.error-message-container')).toBeNull();
+      expect(deviceSelect.getAttribute('aria-invalid')).toEqual('false');
+      expect(internetSelect.getAttribute('aria-invalid')).toEqual('false');
+      expect(deviceSelect.getAttribute('aria-describedby')).toEqual(
+        'device-description device-info'
+      );
+      expect(internetSelect.getAttribute('aria-describedby')).toEqual(
+        'internet-description internet-info'
+      );
+    });
+
+    describe('after submitting', () => {
+      beforeEach(() => {
+        renderViewModel(true);
+      });
+
+      it('should announce error to screen readers', () => {
+        const error = compiled.querySelector(
+          'mat-error.error-message-container'
+        ) as HTMLElement;
+
+        expect(error.textContent?.trim()).toEqual(
+          'Both interfaces must have different values'
+        );
+        expect(error.getAttribute('role')).toEqual('alert');
+        expect(error.getAttribute('aria-live')).toEqual('assertive');
+        expect(error.id).toEqual(component.portsErrorId);
+      });
+
+      it('should mark both ports as invalid', () => {
+        expect(deviceSelect.getAttribute('aria-invalid')).toEqual('true');
+        expect(internetSelect.getAttribute('aria-invalid')).toEqual('true');
+      });
+
+      it('should link both ports to the error', () => {
+        expect(deviceSelect.getAttribute('aria-describedby')).toEqual(
+          `device-description device-info ${component.portsErrorId}`
+        );
+        expect(internetSelect.getAttribute('aria-describedby')).toEqual(
+          `internet-description internet-info ${component.portsErrorId}`
+        );
+      });
+
+      it('should have disabled "Save" button', () => {
+        expect(saveButton.disabled).toBeTrue();
+      });
+
+      it('should restore ports state when error is hidden', () => {
+        renderViewModel(false);
+
+        expect(compiled.querySelector('.error-message-container')).toBeNull();
+        expect(deviceSelect.getAttribute('aria-invalid')).toEqual('false');
+        expect(internetSelect.getAttribute('aria-invalid')).toEqual('false');
+        expect(deviceSelect.getAttribute('aria-describedby')).toEqual(
+          'device-description device-info'
+        );
+        expect(internetSelect.getAttribute('aria-describedby')).toEqual(
+          'internet-description internet-info'
+        );
+      });
+    });
+
+    describe('#saveSetting', () => {
+      it('should move focus to internet port before "Save" button gets disabled', () => {
+        saveButton.focus();
+
+        component.saveSetting();
+
+        expect(document.activeElement).toBe(internetSelect);
+        expect(saveButton.disabled).toBeFalse();
+        expect(mockSettingsStore.setIsSubmitting).toHaveBeenCalledWith(true);
+
+        renderViewModel(true);
+
+        expect(saveButton.disabled).toBeTrue();
+        expect(document.activeElement).toBe(internetSelect);
+      });
+
+      it('should move focus to device port when internet port is disabled', () => {
+        component.internetControl.disable();
+        fixture.detectChanges();
+        saveButton.focus();
+
+        component.saveSetting();
+
+        expect(document.activeElement).toBe(deviceSelect);
+      });
+
+      it('should not move focus to ports when form is valid', () => {
+        component.internetControl.setValue({
+          key: 'mockInternetKey',
+          value: 'mockInternetValue',
+        });
+        fixture.detectChanges();
+        saveButton.focus();
+
+        component.saveSetting();
+
+        expect(document.activeElement).toBe(saveButton);
+      });
+    });
+  });
+
+  describe('"Save" button keyboard focus ring', () => {
+    let saveButton: HTMLButtonElement;
+
+    beforeEach(() => {
+      component.viewModel$ = of({
+        systemConfig: { network: {} },
+        hasConnectionSettings: false,
+        isSubmitting: false,
+        isLessThanOneInterface: false,
+        interfaces: MOCK_INTERFACES,
+        deviceOptions: MOCK_INTERFACES,
+        internetOptions: MOCK_INTERFACES,
+        logLevelOptions: {},
+        monitoringPeriodOptions: {},
+      });
+      // Changing a setting, e.g. the Google Analytics opt-out, enables "Save".
+      component.analyticsForm.markAsDirty();
+      fixture.debugElement.injector.get(ChangeDetectorRef).markForCheck();
+      fixture.detectChanges();
+
+      saveButton = compiled.querySelector('.save-button') as HTMLButtonElement;
+    });
+
+    afterEach(() => {
+      saveButton.blur();
+    });
+
+    it('should show a high-contrast focus ring when focused with the keyboard', () => {
+      expect(saveButton.disabled).toBeFalse();
+      expect(getComputedStyle(saveButton).outlineStyle)
+        .withContext('no ring before the button is focused')
+        .toBe('none');
+
+      saveButton.focus();
+
+      expect(saveButton.matches(':focus-visible'))
+        .withContext(
+          JSON.stringify({
+            hasFocus: document.hasFocus(),
+            activeTag: document.activeElement?.tagName,
+            focus: saveButton.matches(':focus'),
+          })
+        )
+        .toBeTrue();
+      const style = getComputedStyle(saveButton);
+      expect(style.outlineStyle).toBe('solid');
+      expect(style.outlineWidth).toBe('2px');
+      expect(style.outlineColor).toBe('rgb(0, 0, 0)');
+      expect(style.outlineOffset)
+        .withContext('the ring is separated from the blue button fill')
+        .toBe('2px');
+    });
+
+    // On short viewports (e.g. 1440×900) the settings page scrolls inside the
+    // `app-settings` host and cuts through "Save". Focusing a partially
+    // visible element scrolls it only until its own edge is in view.
+    describe('when focus scrolls the partially visible button into view', () => {
+      let scrollContainer: HTMLElement;
+
+      beforeEach(() => {
+        scrollContainer = document.createElement('div');
+        scrollContainer.style.overflow = 'auto';
+        compiled.before(scrollContainer);
+        scrollContainer.append(compiled);
+        const button = saveButton.getBoundingClientRect();
+        const page = scrollContainer.getBoundingClientRect();
+        scrollContainer.style.height = `${button.top - page.top + button.height / 2}px`;
+      });
+
+      afterEach(() => {
+        scrollContainer.remove();
+      });
+
+      it('should keep the whole focus ring visible', () => {
+        saveButton.focus();
+
+        const style = getComputedStyle(saveButton);
+        const ringExtent =
+          parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset);
+        const button = saveButton.getBoundingClientRect();
+        const visibleTop =
+          scrollContainer.getBoundingClientRect().top +
+          scrollContainer.clientTop;
+        const visibleBottom = visibleTop + scrollContainer.clientHeight;
+
+        expect(scrollContainer.scrollTop)
+          .withContext('focus scrolled the page')
+          .toBeGreaterThan(0);
+        expect(style.outlineStyle).toBe('solid');
+        expect(button.top - ringExtent).toBeGreaterThanOrEqual(visibleTop);
+        expect(button.bottom + ringExtent)
+          .withContext('bottom edge of the focus ring')
+          .toBeLessThanOrEqual(visibleBottom);
+      });
+    });
+  });
+
+  describe('"Google Terms of Service" link', () => {
+    let link: HTMLAnchorElement;
+
+    beforeEach(() => {
+      link = compiled.querySelector(
+        'a.message-link[href="https://policies.google.com/technologies/partner-sites"]'
+      ) as HTMLAnchorElement;
+    });
+
+    // WCAG 2.5.3 Label in Name: speech input users activate the link by
+    // saying its visible text.
+    it('should start its accessible name with the visible link text', () => {
+      const visibleText = link.textContent?.trim() ?? '';
+      const accessibleName = link.getAttribute('aria-label') ?? '';
+
+      expect(visibleText).toBe('Google Terms of Service');
+      expect(link.hasAttribute('aria-labelledby'))
+        .withContext('aria-labelledby would override the aria-label')
+        .toBeFalse();
+      expect(accessibleName.startsWith(visibleText))
+        .withContext(`accessible name "${accessibleName}"`)
+        .toBeTrue();
+    });
+
+    it('should tell screen reader users that it opens in a new tab', () => {
+      expect(link.target).toBe('_blank');
+      expect(link.getAttribute('aria-label')).toBe(
+        'Google Terms of Service (opens in a new tab)'
+      );
+    });
+
+    it('should open in a new tab without access to the Testrun window', () => {
+      expect(link.relList.contains('noopener')).toBeTrue();
+      expect(link.relList.contains('noreferrer')).toBeTrue();
+    });
+  });
+
+  /** Calls back like the store does once it has the refreshed interfaces. */
+  function completeInterfacesRefresh(): void {
+    const refresh = mockSettingsStore.refreshInterfaces.calls.mostRecent()
+      ?.args[0] as { onInterfacesRefresh: () => void } | undefined;
+    refresh?.onInterfacesRefresh();
+  }
+
+  /** Calls back like the store does once the settings are saved. */
+  function completeSave(): void {
+    const save = mockSettingsStore.updateSystemConfig.calls.mostRecent()
+      ?.args[0] as { onSystemConfigUpdate: () => void } | undefined;
+    save?.onSystemConfigUpdate();
+  }
+
+  describe('"Refresh" link', () => {
+    let refreshLink: HTMLElement;
+
+    beforeEach(() => {
+      // Without ports, the link is shown next to the "No ports detected"
+      // warning.
+      refreshLink = compiled.querySelector(
+        'a.message-link[role="button"]'
+      ) as HTMLElement;
+    });
+
+    it('should politely announce that network interfaces were refreshed once they are loaded', () => {
+      refreshLink.click();
+
+      expect(mockLiveAnnouncer.announce)
+        .withContext('the interfaces are still being fetched')
+        .not.toHaveBeenCalled();
+
+      completeInterfacesRefresh();
+
+      expect(mockLiveAnnouncer.announce).toHaveBeenCalledOnceWith(
+        'Network interfaces refreshed.',
+        'polite'
+      );
+    });
+
+    it('should announce refreshes activated with Enter and Space', () => {
+      refreshLink.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+      );
+      completeInterfacesRefresh();
+      refreshLink.dispatchEvent(
+        new KeyboardEvent('keydown', { key: ' ', bubbles: true })
+      );
+      completeInterfacesRefresh();
+
+      expect(mockLiveAnnouncer.announce.calls.allArgs()).toEqual([
+        ['Network interfaces refreshed.', 'polite'],
+        ['Network interfaces refreshed.', 'polite'],
+      ]);
+    });
+  });
+
+  describe('after saving valid settings', () => {
+    let settingsPage: HTMLElement;
+    let pageHeading: HTMLElement;
+    let generalTab: HTMLElement;
+    let saveButton: HTMLButtonElement;
+
+    /** Presses the focused "Save" button, which then gets disabled. */
+    const pressSave = (): void => {
+      saveButton.click();
+      fixture.detectChanges();
+    };
+
+    beforeEach(() => {
+      // As in the app, the page is rendered inside `app-settings`, below the
+      // page heading and the tabs.
+      settingsPage = document.createElement('app-settings');
+      settingsPage.innerHTML =
+        '<h2 class="title" tabindex="-1">Settings</h2>' +
+        '<div role="tab" tabindex="0">General</div>';
+      compiled.before(settingsPage);
+      settingsPage.append(compiled);
+      pageHeading = settingsPage.querySelector('h2') as HTMLElement;
+      generalTab = settingsPage.querySelector('[role="tab"]') as HTMLElement;
+
+      component.viewModel$ = of({
+        systemConfig: { network: {} },
+        hasConnectionSettings: true,
+        isSubmitting: false,
+        isLessThanOneInterface: false,
+        interfaces: MOCK_INTERFACES,
+        deviceOptions: MOCK_INTERFACES,
+        internetOptions: MOCK_INTERFACES,
+        logLevelOptions: {},
+        monitoringPeriodOptions: {},
+      });
+      component.deviceControl.setValue({
+        key: 'mockDeviceKey',
+        value: 'mockDeviceValue',
+      });
+      component.internetControl.setValue({
+        key: 'mockInternetKey',
+        value: 'mockInternetValue',
+      });
+      component.settingForm.markAsDirty();
+      fixture.debugElement.injector.get(ChangeDetectorRef).markForCheck();
+      fixture.detectChanges();
+
+      saveButton = compiled.querySelector('.save-button') as HTMLButtonElement;
+      saveButton.focus();
+    });
+
+    afterEach(() => {
+      settingsPage.remove();
+    });
+
+    it('should politely announce that general settings were saved once the save succeeds', () => {
+      pressSave();
+
+      expect(mockLiveAnnouncer.announce)
+        .withContext('the settings are still being saved')
+        .not.toHaveBeenCalled();
+
+      completeSave();
+
+      expect(mockLiveAnnouncer.announce).toHaveBeenCalledOnceWith(
+        'General settings saved.',
+        'polite'
+      );
+    });
+
+    it('should move focus from the disabled "Save" button to the page heading only after the announcement', fakeAsync(() => {
+      let finishAnnouncement = (): void => {};
+      mockLiveAnnouncer.announce.and.returnValue(
+        new Promise<void>(resolve => (finishAnnouncement = resolve))
+      );
+
+      pressSave();
+      completeSave();
+      tick(200);
+
+      expect(saveButton.disabled).toBeTrue();
+      expect(document.activeElement)
+        .withContext('focus does not jump to the "General" tab')
+        .not.toBe(generalTab);
+      expect(document.activeElement)
+        .withContext('focus waits for the announcement')
+        .not.toBe(pageHeading);
+
+      finishAnnouncement();
+      flushMicrotasks();
+
+      expect(document.activeElement).toBe(pageHeading);
+    }));
+
+    it('should leave focus where the user moved it while the settings were being saved', fakeAsync(() => {
+      const deviceSelect = compiled.querySelector(
+        '#device-group'
+      ) as HTMLElement;
+      pressSave();
+      deviceSelect.focus();
+
+      completeSave();
+      flushMicrotasks();
+      tick(200);
+
+      expect(document.activeElement).toBe(deviceSelect);
+    }));
+
+    describe('while a help tip is open', () => {
+      let helpTip: HTMLElement;
+
+      beforeEach(() => {
+        helpTip = document.createElement('app-help-tip');
+        helpTip.innerHTML = '<button type="button">Close tip</button>';
+        document.body.append(helpTip);
+      });
+
+      afterEach(() => {
+        helpTip.remove();
+      });
+
+      it('should not move focus into the help tip', fakeAsync(() => {
+        pressSave();
+        completeSave();
+        flushMicrotasks();
+        tick(200);
+
+        expect(helpTip.contains(document.activeElement))
+          .withContext('focus moved into the help tip')
+          .toBeFalse();
+        expect(document.activeElement).toBe(pageHeading);
+      }));
     });
   });
 });

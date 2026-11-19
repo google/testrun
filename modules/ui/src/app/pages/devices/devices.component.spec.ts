@@ -25,7 +25,11 @@ import { Device, DeviceAction, TestModule } from '../../model/device';
 import { DevicesComponent } from './devices.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialogRef } from '@angular/material/dialog';
-import { device, MOCK_TEST_MODULES } from '../../mocks/device.mock';
+import {
+  device,
+  MOCK_TEST_MODULES,
+  updated_device,
+} from '../../mocks/device.mock';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import SpyObj = jasmine.SpyObj;
 import { FocusManagerService } from '../../services/focus-manager.service';
@@ -181,6 +185,98 @@ describe('DevicesComponent', () => {
     });
   });
 
+  describe('device card focus ring', () => {
+    beforeEach(() => {
+      component.viewModel$ = of({
+        devices: [device, updated_device],
+        selectedDevice: device,
+        deviceInProgress: null,
+        testModules: [],
+        actions: [
+          {
+            action: DeviceAction.StartNewTestrun,
+            svgIcon: 'testrun_logo_small',
+          },
+          { action: DeviceAction.Delete, icon: 'delete' },
+        ],
+      });
+      fixture.detectChanges();
+    });
+
+    afterEach(() => {
+      (document.activeElement as HTMLElement | null)?.blur();
+    });
+
+    /**
+     * Focuses the card as a keyboard user would, then checks that the ring is
+     * a solid outline with at least 3:1 contrast against the card and the
+     * drawer around it (WCAG 1.4.11, 2.4.7), drawn fully inside the
+     * `overflow: hidden` device list so that it is never clipped.
+     */
+    function expectHighContrastFocusRing(card: HTMLButtonElement): void {
+      card.focus();
+
+      expect(card.matches(':focus-visible'))
+        .withContext(
+          JSON.stringify({
+            hasFocus: document.hasFocus(),
+            activeTag: document.activeElement?.tagName,
+          })
+        )
+        .toBeTrue();
+      const style = getComputedStyle(card);
+      // Not the browser default `auto` ring, whose platform-dependent color
+      // (e.g. #a8c7fa) is only 1.38:1 to 1.69:1 on these backgrounds.
+      expect(style.outlineStyle).toBe('solid');
+      expect(parseFloat(style.outlineWidth)).toBeGreaterThanOrEqual(2);
+
+      const drawer = compiled.querySelector(
+        '.layout-container-left-panel'
+      ) as HTMLElement;
+      const backgrounds = {
+        card: effectiveBackground(card),
+        drawer: getComputedStyle(drawer).backgroundColor,
+      };
+      for (const [name, background] of Object.entries(backgrounds)) {
+        const ratio = contrastRatio(style.outlineColor, background);
+        expect(ratio)
+          .withContext(`${name} ${background}: ${ratio.toFixed(2)}:1`)
+          .toBeGreaterThanOrEqual(3);
+      }
+
+      const ringExtent =
+        parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset);
+      const box = card.getBoundingClientRect();
+      const list = (
+        compiled.querySelector('.entity-list') as HTMLElement
+      ).getBoundingClientRect();
+      expect(box.left - ringExtent).toBeGreaterThanOrEqual(list.left);
+      expect(box.top - ringExtent).toBeGreaterThanOrEqual(list.top);
+      expect(box.right + ringExtent).toBeLessThanOrEqual(list.right);
+      expect(box.bottom + ringExtent).toBeLessThanOrEqual(list.bottom);
+    }
+
+    it('should show a high-contrast focus ring on the selected device card', () => {
+      const card = compiled.querySelector(
+        'app-device-item.selected .button-edit'
+      ) as HTMLButtonElement;
+      // #d3e3fd, as in the report.
+      expect(effectiveBackground(card)).toBe('rgb(211, 227, 253)');
+
+      expectHighContrastFocusRing(card);
+    });
+
+    it('should show a high-contrast focus ring on an unselected device card', () => {
+      const card = compiled.querySelector(
+        'app-device-item:not(.selected) .button-edit'
+      ) as HTMLButtonElement;
+      // #f0f4f9 card on the #f8fafd drawer.
+      expect(effectiveBackground(card)).toBe('rgb(240, 244, 249)');
+
+      expectHighContrastFocusRing(card);
+    });
+  });
+
   describe('close dialog', () => {
     beforeEach(() => {
       component.viewModel$ = of({
@@ -303,4 +399,52 @@ class FakeDeviceQualificationComponent {
   save = output<Device>();
   delete = output<Device>();
   cancel = output<void>();
+}
+
+type Rgb = [number, number, number];
+
+/** Parses a computed `rgb()`/`rgba()` or `color(srgb …)` value; alpha is ignored. */
+function parseColor(value: string): Rgb {
+  const srgb = /^color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)/.exec(value);
+  if (srgb) {
+    return [
+      Number(srgb[1]) * 255,
+      Number(srgb[2]) * 255,
+      Number(srgb[3]) * 255,
+    ];
+  }
+  const rgb = /^rgba?\(([\d.]+),?\s*([\d.]+),?\s*([\d.]+)/.exec(value);
+  if (!rgb) {
+    throw new Error(`Unsupported color format: ${value}`);
+  }
+  return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+}
+
+/** WCAG 2.2 relative luminance. */
+function luminance([r, g, b]: Rgb): number {
+  const [lr, lg, lb] = [r, g, b].map(channel => {
+    const c = channel / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb;
+}
+
+/** WCAG contrast ratio (1–21) between two computed colors. */
+function contrastRatio(foreground: string, background: string): number {
+  const [light, dark] = [
+    luminance(parseColor(foreground)),
+    luminance(parseColor(background)),
+  ].sort((a, b) => b - a);
+  return (light + 0.05) / (dark + 0.05);
+}
+
+/** First non-transparent background of the element or its ancestors. */
+function effectiveBackground(element: Element): string {
+  for (let el: Element | null = element; el; el = el.parentElement) {
+    const background = getComputedStyle(el).backgroundColor;
+    if (background !== 'rgba(0, 0, 0, 0)' && background !== 'transparent') {
+      return background;
+    }
+  }
+  return 'rgb(255, 255, 255)';
 }

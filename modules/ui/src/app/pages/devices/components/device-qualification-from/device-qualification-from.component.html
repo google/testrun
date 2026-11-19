@@ -16,8 +16,12 @@ limitations under the License.
 <form class="device-qualification-form" [formGroup]="deviceQualificationForm">
   <section
     class="device-qualification-form-page device-qualification-form-step-content">
+    <p class="device-qualification-form-required-instruction">
+      Fields marked with an asterisk (*) are required.
+    </p>
     <label class="field-label" for="device-qualification-form-manufacturer">
       Device manufacturer
+      <span class="field-required-marker" aria-hidden="true">*</span>
     </label>
     <mat-form-field appearance="outline" class="manufacturer-field">
       <input
@@ -38,12 +42,13 @@ limitations under the License.
       }
       @if (manufacturer.errors?.['required']) {
         <mat-error>
-          <span>Device Manufacturer is <strong>required</strong></span>
+          <span>Device Manufacturer is required</span>
         </mat-error>
       }
     </mat-form-field>
     <label class="field-label" for="device-qualification-form-model">
       Device model
+      <span class="field-required-marker" aria-hidden="true">*</span>
     </label>
     <mat-form-field appearance="outline" class="model-field">
       <input
@@ -64,12 +69,13 @@ limitations under the License.
       }
       @if (model.errors?.['required']) {
         <mat-error>
-          <span>Device Model is <strong>required</strong></span>
+          <span>Device Model is required</span>
         </mat-error>
       }
     </mat-form-field>
     <label class="field-label" for="device-qualification-form-mac-address">
       MAC address
+      <span class="field-required-marker" aria-hidden="true">*</span>
     </label>
     <mat-form-field appearance="outline">
       <input
@@ -86,7 +92,7 @@ limitations under the License.
       <mat-hint>Format: XX:XX:XX:XX:XX:XX (12 hex digits)</mat-hint>
       @if (mac_addr.errors?.['required'] && !mac_addr.errors?.['pattern']) {
         <mat-error>
-          <span>MAC address is <strong>required</strong></span>
+          <span>MAC address is required</span>
         </mat-error>
       }
       @if (mac_addr.errors?.['pattern']) {

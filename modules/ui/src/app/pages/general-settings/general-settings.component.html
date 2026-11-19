@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 @if (viewModel$ | async; as vm) {
+  @let hasPortsError = vm.isSubmitting && isFormError;
   <div class="setting-drawer-content">
     @if (settingsDisable) {
       <app-callout
@@ -41,22 +42,30 @@ limitations under the License.
         <mat-divider></mat-divider>
         @if ((vm.interfaces | keyvalue).length > 0) {
           <app-settings-dropdown
+            #deviceDropdown
             [controlName]="FormKey.DEVICE"
             groupLabel="Device port"
             description="Port where IoT device is connected for testing"
             label="Device connection port"
             key="device"
+            [required]="true"
+            [hasInfo]="!settingsDisable"
+            [errorId]="hasPortsError ? portsErrorId : null"
             [options]="vm.deviceOptions">
             @if (!settingsDisable) {
               <ng-container *ngTemplateOutlet="message"></ng-container>
             }
           </app-settings-dropdown>
           <app-settings-dropdown
+            #internetDropdown
             [controlName]="FormKey.INTERNET"
             groupLabel="Internet port"
             description="Port used for internet connection"
             label="Internet connection port"
             key="internet"
+            [required]="!isInternetControlDisabled"
+            [hasInfo]="!settingsDisable"
+            [errorId]="hasPortsError ? portsErrorId : null"
             [options]="vm.internetOptions">
             @if (!settingsDisable) {
               <ng-container
@@ -103,14 +112,19 @@ limitations under the License.
               label: 'Google analytics',
               description:
                 'Testrun uses Google Analytics to learn about how our users use the application.',
+              descriptionId: 'analytics-description',
               data: 'analytics',
             }
           "></ng-container>
         <mat-divider></mat-divider>
       </section>
       <div class="section-item error-message-section">
-        @if (vm.isSubmitting && isFormError) {
-          <mat-error class="error-message-container">
+        @if (hasPortsError) {
+          <mat-error
+            class="error-message-container"
+            [id]="portsErrorId"
+            role="alert"
+            aria-live="assertive">
             <span>Both interfaces must have different values</span>
           </mat-error>
         }
@@ -123,7 +137,7 @@ limitations under the License.
           (click)="saveSetting()"
           [disabled]="
             settingsDisable ||
-            (vm.isSubmitting && isFormError) ||
+            hasPortsError ||
             (settingForm.pristine && analyticsForm.pristine)
           ">
           Save
@@ -134,12 +148,13 @@ limitations under the License.
       #section
       let-label="label"
       let-description="description"
+      let-descriptionId="descriptionId"
       let-data="data"
       let-info="info">
       <div class="section-item">
         <div class="label-column">
           <p class="setting-form-label">{{ label }}</p>
-          <p class="setting-label-description">
+          <p class="setting-label-description" [attr.id]="descriptionId">
             {{ description }}
           </p>
         </div>
@@ -153,13 +168,14 @@ limitations under the License.
         </div>
         <div class="info-column">
           @if (data === 'analytics') {
-            <p class="message">
+            <p class="message" id="analytics-terms-message">
               By installing and running Testrun, you understand and accept the
               <a
                 href="https://policies.google.com/technologies/partner-sites"
                 target="_blank"
+                rel="noopener noreferrer"
                 class="message-link"
-                aria-label="Google Privacy and Terms of Service"
+                aria-label="Google Terms of Service (opens in a new tab)"
                 >Google Terms of Service</a
               >
             </p>
@@ -177,7 +193,10 @@ limitations under the License.
     </ng-template>
     <ng-template #analyticsData>
       <p class="setting-data" [formGroup]="analyticsForm">
-        <mat-checkbox class="consent-actions-opt-out" formControlName="optOut">
+        <mat-checkbox
+          class="consent-actions-opt-out"
+          formControlName="optOut"
+          [aria-describedby]="'analytics-description analytics-terms-message'">
           Opt out from Google Analytics
         </mat-checkbox>
       </p>

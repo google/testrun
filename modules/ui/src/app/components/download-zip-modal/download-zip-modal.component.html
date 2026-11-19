@@ -125,18 +125,11 @@ limitations under the License.
   <mat-dialog-actions class="risk-profile-select-form-actions">
     @if (data.testrunStatus) {
       <app-download-report
+        textButton
         [data]="data.testrunStatus"
-        [tabindex]="-1"
-        [href]="data.testrunStatus.report">
-        <button
-          (click)="cancel(undefined)"
-          class="download-pdf-button"
-          color="primary"
-          aria-label="Download PDF report"
-          mat-button
-          type="button">
-          Download PDF report
-        </button>
+        [href]="data.testrunStatus.report"
+        (click)="cancel(undefined)">
+        Download PDF report
       </app-download-report>
     }
     <div>
