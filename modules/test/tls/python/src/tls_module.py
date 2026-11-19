@@ -369,11 +369,11 @@ class TLSModule(TestModule):
               check=False
               )
         stderr_cleaned = '\n'.join(
-          line for line in result.stderr.splitlines() 
+          line for line in result.stderr.splitlines()
           if 'Running as user \"root\"' not in line
         ).strip()
         if result.returncode != 0 or stderr_cleaned:
-          LOGGER.error(f'tshark failed on {pcap_file}: {stderr_cleaned or result.stderr}')
+          LOGGER.error(f'tshark failed on {pcap_file}')
           continue
         for line in result.stdout.splitlines():
           parts = line.strip().split('\t')
