@@ -42,7 +42,7 @@ limitations under the License.
       }
       @if (manufacturer.errors?.['required']) {
         <mat-error>
-          <span>Device Manufacturer is <strong>required</strong></span>
+          <span>Device Manufacturer is required</span>
         </mat-error>
       }
     </mat-form-field>
@@ -69,7 +69,7 @@ limitations under the License.
       }
       @if (model.errors?.['required']) {
         <mat-error>
-          <span>Device Model is <strong>required</strong></span>
+          <span>Device Model is required</span>
         </mat-error>
       }
     </mat-form-field>
@@ -92,7 +92,7 @@ limitations under the License.
       <mat-hint>Format: XX:XX:XX:XX:XX:XX (12 hex digits)</mat-hint>
       @if (mac_addr.errors?.['required'] && !mac_addr.errors?.['pattern']) {
         <mat-error>
-          <span>MAC address is <strong>required</strong></span>
+          <span>MAC address is required</span>
         </mat-error>
       }
       @if (mac_addr.errors?.['pattern']) {

@@ -68,6 +68,14 @@ function textOfIdRefs(idRefs: string | null): string {
     .join(' ');
 }
 
+/** Markup of descendants rendered with a different font weight than `element`, e.g. bold emphasis. */
+function descendantsWithDifferentFontWeight(element: Element): string[] {
+  const fontWeight = getComputedStyle(element).fontWeight;
+  return Array.from(element.querySelectorAll('*'))
+    .filter(child => getComputedStyle(child).fontWeight !== fontWeight)
+    .map(child => child.outerHTML);
+}
+
 type Rgb = [number, number, number];
 
 /** Parses a computed `rgb()`/`rgba()` color; alpha is ignored. */
@@ -470,9 +478,21 @@ describe('DeviceQualificationFromComponent', () => {
       {
         id: 'device-qualification-form-manufacturer',
         label: 'Device manufacturer',
+        controlName: 'manufacturer',
+        requiredError: 'Device Manufacturer is required',
       },
-      { id: 'device-qualification-form-model', label: 'Device model' },
-      { id: 'device-qualification-form-mac-address', label: 'MAC address' },
+      {
+        id: 'device-qualification-form-model',
+        label: 'Device model',
+        controlName: 'model',
+        requiredError: 'Device Model is required',
+      },
+      {
+        id: 'device-qualification-form-mac-address',
+        label: 'MAC address',
+        controlName: 'mac_addr',
+        requiredError: 'MAC address is required',
+      },
     ];
     // Every question of the device questionnaire is required.
     const REQUIRED_QUESTIONNAIRE: QuestionFormat[] = DEVICES_FORM.map(
@@ -532,6 +552,24 @@ describe('DeviceQualificationFromComponent', () => {
         expect(marker?.textContent?.trim()).toBe('*');
         expect(marker?.getAttribute('aria-hidden')).toBe('true');
         expect(accessibleText(fieldLabel)).toBe(label);
+      });
+    });
+
+    REQUIRED_TEXT_FIELDS.forEach(({ id, controlName, requiredError }) => {
+      it(`should show "${requiredError}" as plain text, styled like the other errors`, () => {
+        component.deviceQualificationForm.get(controlName)?.markAsTouched();
+        fixture.detectChanges();
+
+        const error = compiled
+          .querySelector(`#${id}`)
+          ?.closest('mat-form-field')
+          ?.querySelector('mat-error') as HTMLElement;
+
+        expect(error.textContent?.trim()).toBe(requiredError);
+        expect(error.querySelector('strong, b'))
+          .withContext('bold markup inside the error')
+          .toBeNull();
+        expect(descendantsWithDifferentFontWeight(error)).toEqual([]);
       });
     });
 
