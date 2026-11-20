@@ -9,10 +9,18 @@ on:
 jobs:
   testrun_tests:
     permissions: {}
-    name:  Tests
-    runs-on: ubuntu-22.04
+    name: Tests (Ubuntu ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 60
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
+      fail-fast: false
     steps:
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # 7.1.0
+        with:
+          python-version: '3.13'
       - name: Checkout source
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Install dependencies
@@ -28,10 +36,18 @@ jobs:
 
   testrun_baseline:
     permissions: {}
-    name:  Baseline
-    runs-on: ubuntu-22.04
+    name: Baseline (Ubuntu ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
+      fail-fast: false
     steps:
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # 7.1.0
+        with:
+          python-version: '3.13'
       - name: Checkout source
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Install dependencies
@@ -44,7 +60,7 @@ jobs:
       - name: Run baseline tests
         shell: bash {0}
         run: testing/baseline/test_baseline
-
+    
   testrun_api:
     permissions: {}
     name:  API
