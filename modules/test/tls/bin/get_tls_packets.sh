@@ -37,6 +37,6 @@ else
   exit 1
 fi
 
-response=$(tshark -r "$CAPTURE_FILE" $TSHARK_OUTPUT -Y "$TSHARK_FILTER")
+response=$(cat "$CAPTURE_FILE" | tshark -r - $TSHARK_OUTPUT -Y "$TSHARK_FILTER")
 
 echo "$response"

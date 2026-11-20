@@ -61,13 +61,18 @@ limitations under the License.
           }
         </mat-form-field>
         <app-device-tests
+          [errorId]="(error$ | async) ? testModulesErrorId : null"
           [deviceForm]="initiateForm"
           [deviceTestModules]="selectedDevice.test_modules"
           [testModules]="testModules">
         </app-device-tests>
       }
       @if (error$ | async) {
-        <mat-error class="device-tests-error">
+        <mat-error
+          [id]="testModulesErrorId"
+          role="alert"
+          aria-live="polite"
+          class="device-tests-error">
           <span>{{ error$ | async }}</span>
         </mat-error>
       }

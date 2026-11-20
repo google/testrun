@@ -352,22 +352,28 @@ class TLSModule(TestModule):
           continue
         # Build tshark filter expression with MAC filter
         filter_expr = f'tls.handshake.certificate && eth.src=={mac_colon}'
-        cmd = [
-          'tshark',
-          '-r', pcap_file,
-          '-Y', filter_expr,
-          '-T', 'fields',
-          '-e', 'ip.src',
-          '-e', 'tcp.srcport',
-          '-e', 'tls.handshake.certificate',
-        ]
-        result = subprocess.run(cmd,
-                                capture_output=True,
-                                text=True,
-                                check=False
-                                )
-        if result.returncode != 0:
-          LOGGER.error(f'tshark failed on {pcap_file}: {result.stderr}')
+        with open(pcap_file, 'rb') as f:
+          cmd = [
+            'tshark',
+            '-r', '-',
+            '-Y', filter_expr,
+            '-T', 'fields',
+            '-e', 'ip.src',
+            '-e', 'tcp.srcport',
+            '-e', 'tls.handshake.certificate',
+          ]
+          result = subprocess.run(cmd,
+              stdin=f,
+              capture_output=True,
+              text=True,
+              check=False
+              )
+        stderr_cleaned = '\n'.join(
+          line for line in result.stderr.splitlines()
+          if 'Running as user \"root\"' not in line
+        ).strip()
+        if result.returncode != 0 or stderr_cleaned:
+          LOGGER.error(f'tshark failed on {pcap_file}')
           continue
         for line in result.stdout.splitlines():
           parts = line.strip().split('\t')
