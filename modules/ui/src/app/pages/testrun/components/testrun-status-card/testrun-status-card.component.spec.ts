@@ -457,6 +457,23 @@ describe('ProgressStatusCardComponent', () => {
         expect(timerEl).not.toBeNull();
       });
 
+      it('should keep the per-second countdown silent inside the polite status card', () => {
+        const card = compiled.querySelector('.progress-card') as HTMLElement;
+        const timer = card.querySelector('[role="timer"]') as HTMLElement;
+        const remainingTime = Array.from(timer.querySelectorAll('span')).find(
+          span => span.textContent?.includes('Remaining monitoring time')
+        );
+
+        expect(card.getAttribute('role')).toBe('status');
+        expect(card.getAttribute('aria-live')).toBe('polite');
+        expect(timer.getAttribute('aria-live')).toBe('off');
+        expect(timer.hasAttribute('aria-label')).toBeFalse();
+        expect(remainingTime?.textContent?.trim()).toBe(
+          'Remaining monitoring time: 5 minutes 0 seconds'
+        );
+        expect(remainingTime?.closest('[aria-live]')).toBe(timer);
+      });
+
       it('should not render timer component when monitorPeriod is not defined', () => {
         fixture.componentRef.setInput('monitorPeriod', undefined);
         fixture.detectChanges();

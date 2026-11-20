@@ -15,6 +15,7 @@
  */
 import {
   ComponentFixture,
+  discardPeriodicTasks,
   fakeAsync,
   TestBed,
   tick,
@@ -25,6 +26,44 @@ import {
   MONITORING_TIMER_STORAGE_KEY,
   TimerSessionData,
 } from './timer.component';
+
+/** Text a screen reader reads inside `element`, skipping `aria-hidden` subtrees. */
+function readableText(element: Element): string {
+  const parts: string[] = [];
+  element.childNodes.forEach(node => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      parts.push(node.textContent ?? '');
+    } else if (
+      node instanceof Element &&
+      node.getAttribute('aria-hidden') !== 'true'
+    ) {
+      parts.push(readableText(node));
+    }
+  });
+  return parts.join(' ').replace(/\s+/g, ' ').trim();
+}
+
+/** Elements under `root` whose own text includes `text`, skipping scripts and styles. */
+function elementsWithText(root: Element, text: string): Element[] {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const elements: Element[] = [];
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const parent = node.parentElement;
+    if (
+      parent &&
+      !['SCRIPT', 'STYLE'].includes(parent.tagName) &&
+      node.textContent?.includes(text)
+    ) {
+      elements.push(parent);
+    }
+  }
+  return elements;
+}
+
+function clearStoredTimerSession(): void {
+  localStorage.removeItem(MONITORING_TIMER_STORAGE_KEY);
+  sessionStorage.removeItem(MONITORING_TIMER_STORAGE_KEY);
+}
 
 describe('TimerComponent', () => {
   let component: TimerComponent;
@@ -102,19 +141,19 @@ describe('TimerComponent', () => {
       expect(component.formattedTime).toBe('00:00');
     });
 
-    it('should format timerAriaLabel correctly for singular and plural', () => {
+    it('should format remainingTimeText correctly for singular and plural', () => {
       component.remainingSeconds = 61;
-      expect(component.timerAriaLabel).toBe(
+      expect(component.remainingTimeText).toBe(
         'Remaining monitoring time: 1 minute 1 second'
       );
 
       component.remainingSeconds = 122;
-      expect(component.timerAriaLabel).toBe(
+      expect(component.remainingTimeText).toBe(
         'Remaining monitoring time: 2 minutes 2 seconds'
       );
 
       component.remainingSeconds = 45;
-      expect(component.timerAriaLabel).toBe(
+      expect(component.remainingTimeText).toBe(
         'Remaining monitoring time: 45 seconds'
       );
     });
@@ -237,7 +276,6 @@ describe('TimerComponent', () => {
       expect(() =>
         component['announceText']('test announcement')
       ).not.toThrow();
-      expect(component.liveAnnouncementText).toBe('test announcement');
     });
   });
 
@@ -376,4 +414,94 @@ describe('TimerComponent', () => {
       expect(compiled.querySelector('#monitoring-countdown-timer')).toBeNull();
     }));
   });
+
+  describe('Screen reader semantics', () => {
+    beforeEach(() => {
+      clearStoredTimerSession();
+      fixture.componentRef.setInput('duration', 300);
+    });
+
+    /** Starts monitoring (call inside `fakeAsync`) and returns the timer. */
+    function startMonitoring(): HTMLElement {
+      fixture.detectChanges();
+      return compiled.querySelector('[role="timer"]') as HTMLElement;
+    }
+
+    it('should not mask the timer content with a per-second aria-label', fakeAsync(() => {
+      const timer = startMonitoring();
+      expect(timer.hasAttribute('aria-label')).toBeFalse();
+
+      tick(1000);
+      fixture.detectChanges();
+
+      expect(timer.hasAttribute('aria-label')).toBeFalse();
+      discardPeriodicTasks();
+    }));
+
+    it('should expose the remaining time as text read on demand, not announced each second', fakeAsync(() => {
+      const timer = startMonitoring();
+      const [remainingTime] = elementsWithText(
+        timer,
+        'Remaining monitoring time'
+      );
+
+      expect(readableText(timer)).toBe(
+        'Remaining monitoring time: 5 minutes 0 seconds'
+      );
+      expect(remainingTime?.closest('[aria-live]')).toBe(timer);
+      expect(timer.getAttribute('aria-live')).toBe('off');
+
+      tick(1000);
+      fixture.detectChanges();
+
+      expect(readableText(timer)).toBe(
+        'Remaining monitoring time: 4 minutes 59 seconds'
+      );
+      discardPeriodicTasks();
+    }));
+  });
+});
+
+describe('TimerComponent milestone announcements', () => {
+  let fixture: ComponentFixture<TimerComponent>;
+
+  beforeEach(() => {
+    clearStoredTimerSession();
+    // Real CDK LiveAnnouncer: its persistent live region is appended to <body>.
+    TestBed.configureTestingModule({ imports: [TimerComponent] });
+    fixture = TestBed.createComponent(TimerComponent);
+    fixture.componentRef.setInput('duration', 120);
+  });
+
+  /** Expects one element in the page to hold `message`: a polite live region outside the timer. */
+  function expectAnnouncedOnce(message: string): void {
+    const holders = elementsWithText(document.body, message);
+
+    expect(holders.length).withContext(`elements holding "${message}"`).toBe(1);
+    expect(holders[0]?.closest('[aria-live]')?.getAttribute('aria-live'))
+      .withContext(`politeness of "${message}"`)
+      .toBe('polite');
+    expect(holders[0]?.closest('[role="timer"]'))
+      .withContext(`timer holding "${message}"`)
+      .toBeNull();
+  }
+
+  it('should announce each milestone once from a polite live region outside the timer', fakeAsync(() => {
+    fixture.detectChanges();
+    tick(100); // LiveAnnouncer sets its message after 100 ms.
+    expectAnnouncedOnce('Monitoring started. 2 minutes remaining.');
+
+    const milestones: Array<[number, string]> = [
+      [60_000, '1 minute remaining'],
+      [30_000, '30 seconds remaining'],
+      [20_000, '10 seconds remaining'],
+      [10_000, 'Monitoring period completed'],
+    ];
+    for (const [elapsedMs, message] of milestones) {
+      tick(elapsedMs);
+      fixture.detectChanges();
+      expectAnnouncedOnce(message);
+    }
+    discardPeriodicTasks();
+  }));
 });

@@ -52,6 +52,15 @@ function descendantsWithDifferentFontWeight(element: Element): string[] {
     .map(child => child.outerHTML);
 }
 
+/** Text of the elements referenced by an `aria-labelledby`/`aria-describedby` value. */
+function textOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(id => document.getElementById(id)?.textContent?.trim() ?? '')
+    .join(' ');
+}
+
 describe('ProgressInitiateFormComponent', () => {
   let component: TestrunInitiateFormComponent;
   let fixture: ComponentFixture<TestrunInitiateFormComponent>;
@@ -449,6 +458,130 @@ describe('ProgressInitiateFormComponent', () => {
         button.click();
 
         expect(component.startTestRun).toHaveBeenCalled();
+      });
+
+      describe('test modules error', () => {
+        const TEST_MODULES_ERROR =
+          'At least one test has to be selected to start test run.';
+
+        const getError = () =>
+          compiled.querySelector<HTMLElement>('mat-error.device-tests-error');
+        const getGroup = () =>
+          compiled.querySelector(
+            'app-device-tests [role="group"]'
+          ) as HTMLElement;
+        const getCheckboxes = () =>
+          Array.from(
+            compiled.querySelectorAll<HTMLInputElement>(
+              'app-device-tests input[type="checkbox"]'
+            )
+          );
+        const clickChangeDevice = () => {
+          (
+            compiled.querySelector(
+              '.progress-initiate-form-actions-change-device'
+            ) as HTMLButtonElement
+          ).click();
+          fixture.detectChanges();
+        };
+
+        beforeEach(() => {
+          component.firmware.setValue('firmware');
+          component.test_modules.setValue([false, false]);
+          (
+            compiled.querySelector(
+              '.progress-initiate-form-actions-start'
+            ) as HTMLButtonElement
+          ).click();
+          fixture.detectChanges();
+        });
+
+        it('should mark the test modules invalid and describe them by the error', () => {
+          const error = getError() as HTMLElement;
+          expect(error.textContent?.trim()).toBe(TEST_MODULES_ERROR);
+          expect(error.id).toBeTruthy();
+          expect(document.querySelectorAll(`[id="${error.id}"]`).length)
+            .withContext('the error id is unique')
+            .toBe(1);
+
+          const group = getGroup();
+          expect(group.getAttribute('aria-invalid')).toBe('true');
+          expect(
+            textOfIdRefs(group.getAttribute('aria-describedby'))
+          ).toContain(TEST_MODULES_ERROR);
+
+          const checkboxes = getCheckboxes();
+          expect(checkboxes.length).toBe(2);
+          checkboxes.forEach(checkbox => {
+            expect(checkbox.getAttribute('aria-invalid')).toBe('true');
+            expect(
+              textOfIdRefs(checkbox.getAttribute('aria-describedby'))
+            ).toBe(TEST_MODULES_ERROR);
+          });
+        });
+
+        it('should announce the error when it appears', () => {
+          const error = getError() as HTMLElement;
+
+          expect(error.getAttribute('role')).toBe('alert');
+          expect(error.getAttribute('aria-live')).toBe('polite');
+        });
+
+        it('should clear the error and the invalid state once a test module is selected', () => {
+          getCheckboxes()[0].click();
+          fixture.detectChanges();
+
+          expect(getError()).toBeNull();
+          const group = getGroup();
+          expect(group.hasAttribute('aria-invalid')).toBeFalse();
+          expect(
+            textOfIdRefs(group.getAttribute('aria-describedby'))
+          ).not.toContain(TEST_MODULES_ERROR);
+          getCheckboxes().forEach(checkbox => {
+            expect(checkbox.hasAttribute('aria-invalid')).toBeFalse();
+            expect(checkbox.hasAttribute('aria-describedby')).toBeFalse();
+          });
+        });
+
+        it('should not flag the test modules again before the next Start', async () => {
+          const checkbox = getCheckboxes()[0];
+          checkbox.click(); // Selecting a test module clears the error.
+          fixture.detectChanges();
+          checkbox.click(); // No test module is selected again.
+          fixture.detectChanges();
+          // Tabbing away marks the test modules as touched.
+          checkbox.dispatchEvent(new Event('blur'));
+          await fixture.whenStable();
+          fixture.detectChanges();
+
+          expect(getError()).toBeNull();
+          expect(getGroup().hasAttribute('aria-invalid')).toBeFalse();
+          getCheckboxes().forEach(input => {
+            expect(input.hasAttribute('aria-invalid')).toBeFalse();
+          });
+        });
+
+        it('should clear the error when going back to change the device', () => {
+          clickChangeDevice();
+
+          expect(compiled.querySelectorAll('app-device-item').length)
+            .withContext('device list of step 1')
+            .toBe(2);
+          expect(getError()).toBeNull();
+        });
+
+        it('should not carry the error over to the next selected device', () => {
+          clickChangeDevice();
+          component.selectedDevice = device;
+          fixture.detectChanges();
+
+          expect(getError()).toBeNull();
+          expect(getGroup().hasAttribute('aria-invalid')).toBeFalse();
+          getCheckboxes().forEach(checkbox => {
+            expect(checkbox.hasAttribute('aria-invalid')).toBeFalse();
+            expect(checkbox.hasAttribute('aria-describedby')).toBeFalse();
+          });
+        });
       });
     });
 
