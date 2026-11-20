@@ -30,6 +30,11 @@ interface DialogData {
   icon?: string;
   title?: string;
   content?: string;
+  /**
+   * Id for the content, so that the opener can describe the dialog by it via
+   * `MatDialogConfig.ariaDescribedBy`.
+   */
+  contentId?: string;
   confirmName?: string;
   isPersistent?: boolean;
 }
