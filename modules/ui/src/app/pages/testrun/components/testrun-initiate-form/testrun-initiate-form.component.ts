@@ -17,11 +17,14 @@ import {
   AfterViewChecked,
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   ElementRef,
   OnInit,
   viewChild,
   inject,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { _IdGenerator } from '@angular/cdk/a11y';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
@@ -106,6 +109,7 @@ export class TestrunInitiateFormComponent
   private deviceValidators = inject(DeviceValidators);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
   private store = inject<Store<AppState>>(Store);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly firmwareInput = viewChild<ElementRef>('firmwareInput');
   initiateForm!: FormGroup;
@@ -120,6 +124,8 @@ export class TestrunInitiateFormComponent
   error$: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(
     null
   );
+  /** Id of the test modules error; the test modules refer to it while shown. */
+  readonly testModulesErrorId = inject(_IdGenerator).getId('mat-mdc-error-');
 
   constructor() {
     const dialogRef =
@@ -143,6 +149,7 @@ export class TestrunInitiateFormComponent
 
   ngOnInit() {
     this.createInitiateForm();
+    this.clearTestModulesErrorOnSelection();
     this.testModules = this.data?.testModules;
 
     if (this.data?.device) {
@@ -159,6 +166,7 @@ export class TestrunInitiateFormComponent
   changeDevice() {
     this.selectedDevice = null;
     this.firmware.setValue('');
+    this.error$.next(null);
   }
 
   ngAfterViewChecked() {
@@ -265,8 +273,22 @@ export class TestrunInitiateFormComponent
   private createInitiateForm() {
     this.initiateForm = this.fb.group({
       firmware: ['', [this.deviceValidators.firmwareStringFormat()]],
+      // No testModulesRequired() validator: DeviceTestsComponent would then
+      // mark the modules aria-invalid on blur, before the error is shown.
       test_modules: new FormArray([]),
     });
+  }
+
+  /** Clears the test modules error as soon as a test module is selected. */
+  private clearTestModulesErrorOnSelection(): void {
+    this.test_modules.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((enabled: boolean[]) => {
+        // Use the emitted value: `initiateForm.value` is updated after this.
+        if (enabled.some(Boolean)) {
+          this.error$.next(null);
+        }
+      });
   }
 
   private isAllTestsDisabled(): boolean {
