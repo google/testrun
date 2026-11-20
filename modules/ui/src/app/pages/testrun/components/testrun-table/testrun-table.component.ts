@@ -19,6 +19,7 @@ import {
   Input,
   inject,
 } from '@angular/core';
+import { _IdGenerator } from '@angular/cdk/a11y';
 import {
   IResult,
   StatusOfTestResult,
@@ -63,6 +64,10 @@ export class TestrunTableComponent {
   public readonly CalloutType = CalloutType;
   @Input() dataSource!: IResult[] | undefined;
   dialog = inject(MatDialog);
+  /** Describes the table by the visible instructions above it. */
+  readonly instructionsId = inject(_IdGenerator).getId(
+    'app-testrun-table-instructions-'
+  );
 
   displayedColumns: string[] = [
     'name',
@@ -85,7 +90,26 @@ export class TestrunTableComponent {
     });
   }
 
-  isClickableRow = (i: number, row: IResult) => row.recommendations;
+  /**
+   * Whether the test result dialog has more to show for the result: steps to
+   * resolve, or the details of an error. Details of other results are already
+   * shown in full under the description.
+   */
+  hasResultDetails(testResult: IResult): boolean {
+    return (
+      !!testResult.recommendations?.length ||
+      (testResult.result === StatusOfTestResult.Error && !!testResult.details)
+    );
+  }
+
+  /** Unique accessible name, also shown as the tooltip, of a details button. */
+  getDetailsButtonLabel(testResult: IResult): string {
+    return testResult.recommendations?.length
+      ? `View test details and steps to resolve for ${testResult.name}`
+      : `View test details for ${testResult.name}`;
+  }
+
+  isClickableRow = (i: number, row: IResult) => this.hasResultDetails(row);
 
   public getResultClass(result: string): StatusResultClassName {
     return this.testRunService.getResultClass(result);

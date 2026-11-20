@@ -21,6 +21,16 @@
   width: 100%;
 }
 
+.table-instructions {
+  margin: 0 0 8px;
+  // Lines up with the Name column text: Material pads first cells by 24px.
+  padding-inline: 24px;
+  font-family: variables.$font-text;
+  font-size: 14px;
+  line-height: 20px;
+  color: colors.$on-surface-variant;
+}
+
 mat-table {
   min-width: 640px;
   width: 100%;
@@ -73,6 +83,14 @@ mat-cell {
   padding-bottom: 10px;
 }
 
+// Centers the 40px details button in its 50px column without padding, so it
+// fits the 60px minimum row height and `overflow: hidden` clips neither the
+// button nor its focus ring.
+mat-cell.mat-column-clickableIcon {
+  padding: 0;
+  justify-content: center;
+}
+
 mat-header-cell {
   font-weight: 700;
 }
@@ -92,9 +110,9 @@ mat-header-cell {
   }
 }
 
-.clickable-icon {
-  display: flex;
-  flex-shrink: 0;
+.details-button {
+  // Keep the info icon in the cell text color, as before it became a button.
+  color: inherit;
 }
 
 .tests-item-cell-required-result {
