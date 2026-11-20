@@ -29,12 +29,14 @@ limitations under the License.
     </div>
   </section>
   <section class="result-info-steps">
-    <p class="info-label steps">Steps to resolve</p>
-    <ul class="info-steps-list">
-      @for (point of data.testResult.recommendations; track point) {
-        <li>{{ point }}</li>
-      }
-    </ul>
+    @if (data.testResult.recommendations?.length) {
+      <p class="info-label steps">Steps to resolve</p>
+      <ul class="info-steps-list">
+        @for (point of data.testResult.recommendations; track point) {
+          <li>{{ point }}</li>
+        }
+      </ul>
+    }
     @if (data.testResult.details) {
       <div class="details-info">
         <p class="info-label">Details</p>

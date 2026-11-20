@@ -80,6 +80,52 @@ describe('DeleteFormComponent', () => {
     expect(content.innerHTML.trim()).toEqual('content');
   });
 
+  describe('title heading', () => {
+    it('should render the title as a native level 2 heading', () => {
+      const title = compiled.querySelector('h2.simple-dialog-title');
+
+      expect(title?.textContent?.trim()).toBe('title?');
+      // Native semantics leave no ARIA heading role to keep in sync.
+      expect(title?.hasAttribute('role')).toBeFalse();
+      expect(title?.hasAttribute('aria-level')).toBeFalse();
+    });
+
+    it('should keep the title text style of the dialog', () => {
+      const title = compiled.querySelector(
+        'h2.simple-dialog-title'
+      ) as HTMLElement;
+      expect(title).withContext('title heading').not.toBeNull();
+      const style = getComputedStyle(title);
+
+      // No default `<h2>` margin or bold weight, so the dialog looks the same.
+      expect(style.marginTop).toBe('0px');
+      expect(style.marginBottom).toBe('0px');
+      expect(style.fontWeight).toBe('400');
+      expect(style.fontSize).toBe('24px');
+      expect(style.lineHeight).toBe('32px');
+    });
+  });
+
+  describe('content description', () => {
+    it('should give the content the id that the opener describes the dialog by', () => {
+      const content = compiled.querySelector(
+        '.simple-dialog-content'
+      ) as HTMLElement;
+      // Dialogs that are not described by their content get no stray id.
+      expect(content.hasAttribute('id'))
+        .withContext('without contentId')
+        .toBeFalse();
+
+      component.data = {
+        ...component.data,
+        contentId: 'app-delete-device-dialog-content-0',
+      };
+      fixture.detectChanges();
+
+      expect(content.id).toBe('app-delete-device-dialog-content-0');
+    });
+  });
+
   it('should close dialog on "cancel" click', () => {
     const closeSpy = spyOn(component.dialogRef, 'close');
     const closeButton = compiled.querySelector(
