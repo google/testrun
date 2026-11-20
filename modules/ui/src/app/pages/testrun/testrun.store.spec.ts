@@ -86,6 +86,7 @@ describe('TestrunStore', () => {
     it('should select state', done => {
       testrunStore.viewModel$.pipe(take(1)).subscribe(store => {
         expect(store).toEqual({
+          hasConnectionSettings: true,
           hasDevices: false,
           isAllDevicesOutdated: false,
           systemStatus: null,

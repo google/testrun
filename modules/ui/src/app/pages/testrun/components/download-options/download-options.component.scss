@@ -30,6 +30,14 @@
   gap: 4px;
 }
 
+// Stacks the options above "Download" as `.download-actions` does.
+.download-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
 .download-button {
   padding: 26px;
   border-radius: variables.$corner-large;

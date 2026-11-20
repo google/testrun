@@ -99,6 +99,7 @@ limitations under the License.
           *ngTemplateOutlet="
             startNewTestrunButton;
             context: {
+              hasConnectionSettings: vm.hasConnectionSettings,
               hasDevices: vm.hasDevices,
               isAllDevicesOutdated: vm.isAllDevicesOutdated,
             }
@@ -108,15 +109,18 @@ limitations under the License.
   </ng-template>
   <ng-template
     #startNewTestrunButton
+    let-hasConnectionSettings="hasConnectionSettings"
     let-hasDevices="hasDevices"
     let-isAllDevicesOutdated="isAllDevicesOutdated"
     let-systemStatus="systemStatus">
+    <!-- Keep [disabled] in sync with AppStore.testrunButtonDisabled$. -->
     <button
       class="start-button"
       color="primary"
       aria-haspopup="dialog"
       [attr.aria-describedby]="startTestingInstructionsId"
       [disabled]="
+        hasConnectionSettings !== true ||
         hasDevices === false ||
         isAllDevicesOutdated === true ||
         isTestrunInProgress(systemStatus?.status) ||

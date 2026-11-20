@@ -20,10 +20,8 @@ limitations under the License.
     }}</mat-icon></span
   >
 }
-<span class="simple-dialog-title" role="heading" aria-level="2">{{
-  data.title
-}}</span>
-<p class="simple-dialog-content">
+<h2 class="simple-dialog-title">{{ data.title }}</h2>
+<p class="simple-dialog-content" [attr.id]="data.contentId || null">
   {{ data.content }}
 </p>
 
