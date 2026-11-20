@@ -19,8 +19,7 @@ limitations under the License.
     class="monitoring-timer timer-widget"
     role="timer"
     aria-live="off"
-    aria-atomic="true"
-    [attr.aria-label]="timerAriaLabel">
+    aria-atomic="true">
     <div class="timer-circle-container">
       <svg class="timer-circle-svg" viewBox="0 0 254 254" aria-hidden="true">
         <!-- Layer 1: Light blue background circle -->
@@ -52,8 +51,10 @@ limitations under the License.
         <span class="timer-label" aria-hidden="true">time remaining</span>
       </div>
     </div>
+    <!-- Read on demand only: aria-live="off" keeps per-second updates silent.
+         Milestones are announced once through LiveAnnouncer instead. -->
     <span class="cdk-visually-hidden sr-only">
-      {{ liveAnnouncementText }}
+      {{ remainingTimeText }}
     </span>
   </div>
 }
