@@ -24,14 +24,41 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { PROFILE_FORM } from '../../mocks/profile.mock';
+import { DEVICES_FORM } from '../../mocks/device.mock';
 import { FormControlType, QuestionFormat } from '../../model/question';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-/** Text of an element as exposed to assistive technology (`aria-hidden` content skipped). */
+/**
+ * Text of an element as exposed to assistive technology: `aria-hidden` content
+ * is skipped, and a non-empty `aria-label` replaces the content it is set on.
+ */
 function accessibleText(element: Element): string {
-  const clone = element.cloneNode(true) as Element;
-  clone.querySelectorAll('[aria-hidden="true"]').forEach(node => node.remove());
-  return clone.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+  const textOf = (node: Node): string => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return node.textContent ?? '';
+    }
+    if (
+      !(node instanceof Element) ||
+      node.getAttribute('aria-hidden') === 'true'
+    ) {
+      return '';
+    }
+    return (
+      node.getAttribute('aria-label')?.trim() ||
+      Array.from(node.childNodes, textOf).join('')
+    );
+  };
+  return textOf(element).replace(/\s+/g, ' ').trim();
+}
+
+/** Text exposed for the elements an `aria-describedby`/`aria-labelledby` value references. */
+function accessibleTextOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .map(id => document.getElementById(id))
+    .filter((element): element is HTMLElement => element !== null)
+    .map(element => accessibleText(element))
+    .join(' ');
 }
 
 @Component({
@@ -321,6 +348,83 @@ describe('DynamicFormComponent', () => {
         ) {
           expect(control.required).withContext(item.question).toBe(required);
         }
+      });
+    });
+  });
+
+  describe('required dropdown errors', () => {
+    const REQUIRED_ERROR = 'The field is required';
+    // Dropdown questions of the Devices page qualification form, all required.
+    const DEVICE_QUESTIONS: QuestionFormat[] = DEVICES_FORM.map(question => ({
+      ...question,
+      validation: { required: true },
+    }));
+    const FORMAT = [...PROFILE_FORM, ...DEVICE_QUESTIONS];
+    const DROPDOWNS = FORMAT.map(({ question, type }, index) => ({
+      question,
+      type,
+      index,
+    })).filter(({ type }) => type === FormControlType.SELECT);
+
+    function getDropdown(index: number): HTMLElement {
+      return compiled.querySelector(
+        `mat-select[id="${index}-group"]`
+      ) as HTMLElement;
+    }
+
+    beforeEach(async () => {
+      component.optionKey = 'text'; // As DeviceQualificationFromComponent sets it.
+      // Adds controls for the device questions; existing controls are kept.
+      component.createProfileForm(FORMAT);
+      dummy.format = FORMAT;
+      fixture.detectChanges();
+
+      // Leave every dropdown without choosing an option, as a user tabbing
+      // past it does: MatSelect marks itself as touched on blur.
+      DROPDOWNS.forEach(({ index }) => {
+        const dropdown = getDropdown(index);
+        dropdown.dispatchEvent(new FocusEvent('focus'));
+        dropdown.dispatchEvent(new FocusEvent('blur'));
+      });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges(); // Material syncs aria-describedby after content is checked
+    });
+
+    it('should announce the error message, not the question, for every empty required dropdown', () => {
+      expect(compiled.querySelectorAll('mat-select').length).toBe(
+        DROPDOWNS.length
+      );
+      DROPDOWNS.forEach(({ index, question }) => {
+        const alert = getDropdown(index)
+          .closest('mat-form-field')
+          ?.querySelector('mat-error [role="alert"]');
+
+        expect(alert).withContext(question).not.toBeNull();
+        expect(alert?.hasAttribute('aria-label'))
+          .withContext(`${question} (aria-label hides the error text)`)
+          .toBeFalse();
+        expect(alert ? accessibleText(alert) : null)
+          .withContext(question)
+          .toBe(REQUIRED_ERROR);
+      });
+    });
+
+    it('should describe every invalid dropdown by its error message instead of repeating its question', () => {
+      DROPDOWNS.forEach(({ index, question }) => {
+        const dropdown = getDropdown(index);
+
+        expect(dropdown.getAttribute('aria-invalid'))
+          .withContext(question)
+          .toBe('true');
+        expect(dropdown.getAttribute('aria-label'))
+          .withContext(question)
+          .toBe(question);
+        expect(
+          accessibleTextOfIdRefs(dropdown.getAttribute('aria-describedby'))
+        )
+          .withContext(question)
+          .toBe(REQUIRED_ERROR);
       });
     });
   });
