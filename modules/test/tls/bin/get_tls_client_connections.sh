@@ -26,6 +26,6 @@ if [ -n "$PROTOCOL" ];then
 	TSHARK_FILTER="$TSHARK_FILTER and $PROTOCOL"
 fi
 
-response=$(tshark -r "$CAPTURE_FILE" $TSHARK_OUTPUT $TSHARK_FILTER)
+response=$(cat "$CAPTURE_FILE" | tshark -r - $TSHARK_OUTPUT $TSHARK_FILTER)
 
 echo "$response"

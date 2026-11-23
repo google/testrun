@@ -14,7 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 @if (dataSource) {
-  <mat-table [dataSource]="dataSource" [trackBy]="trackTest">
+  <p class="table-instructions" [id]="instructionsId">
+    Select the info button on any non-compliant or error test row to view
+    detailed test results and steps to resolve.
+  </p>
+  <mat-table
+    [dataSource]="dataSource"
+    [trackBy]="trackTest"
+    aria-label="Test results"
+    [attr.aria-describedby]="instructionsId">
     <ng-container matColumnDef="name">
       <mat-header-cell mat-header-cell *matHeaderCellDef>
         Name
@@ -65,16 +73,23 @@ limitations under the License.
       </mat-cell>
     </ng-container>
     <ng-container matColumnDef="clickableIcon">
-      <mat-header-cell mat-header-cell *matHeaderCellDef aria-label="Details">
+      <mat-header-cell mat-header-cell *matHeaderCellDef>
+        <span class="visually-hidden">Details</span>
       </mat-header-cell>
       <mat-cell mat-cell *matCellDef="let element">
-        @if (element.recommendations) {
-          <mat-icon
-            class="clickable-icon"
-            fontSet="material-symbols-outlined"
-            aria-hidden="true">
-            info
-          </mat-icon>
+        @if (hasResultDetails(element)) {
+          <button
+            mat-icon-button
+            type="button"
+            class="details-button"
+            aria-haspopup="dialog"
+            [attr.aria-label]="getDetailsButtonLabel(element)"
+            [matTooltip]="getDetailsButtonLabel(element)"
+            (click)="$event.stopPropagation(); onRowSelected(element)">
+            <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">
+              info
+            </mat-icon>
+          </button>
         }
       </mat-cell>
     </ng-container>
@@ -85,13 +100,13 @@ limitations under the License.
         columns: displayedColumns;
         when: !isClickableRow
       "></mat-row>
+    <!-- Row click is a mouse shortcut only. Keyboard and screen reader users
+         open the dialog with the details button, so rows stay out of the tab
+         order and keep their table semantics. -->
     <mat-row
       matRipple
       *matRowDef="let row; columns: displayedColumns; when: isClickableRow"
       class="clickable-row"
-      tabindex="0"
-      (click)="onRowSelected(row)"
-      (keydown.enter)="onRowSelected(row)"
-      (keydown.space)="onRowSelected(row)"></mat-row>
+      (click)="onRowSelected(row)"></mat-row>
   </mat-table>
 }

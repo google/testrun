@@ -13,12 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { ChangeDetectorRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TestResultDialogComponent } from './test-result-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { TEST_DATA_RESULT_WITH_RECOMMENDATIONS } from '../../../../mocks/testrun.mock';
+import {
+  RequiredResult,
+  StatusOfTestResult,
+} from '../../../../model/testrun-status';
 
 describe('TestResultDialogComponent', () => {
   let component: TestResultDialogComponent;
@@ -64,5 +69,43 @@ describe('TestResultDialogComponent', () => {
     expect(closeSpy).toHaveBeenCalled();
 
     closeSpy.calls.reset();
+  });
+
+  it('should list the steps to resolve under their label', () => {
+    const steps = Array.from(
+      compiled.querySelectorAll('.info-steps-list li')
+    ).map(step => step.textContent?.trim());
+
+    expect(compiled.querySelector('.info-label.steps')?.textContent).toBe(
+      'Steps to resolve'
+    );
+    expect(steps).toEqual([
+      'An example of a step to resolve',
+      'Disable any running NTP server',
+    ]);
+  });
+
+  describe('for an error result with details only', () => {
+    beforeEach(() => {
+      component.data = {
+        testResult: {
+          name: 'ntp.network.ntp_support',
+          description: 'An error occurred whilst running this test',
+          result: StatusOfTestResult.Error,
+          details: 'NTP server capture file not found',
+          required_result: RequiredResult.Required,
+        },
+      };
+      fixture.debugElement.injector.get(ChangeDetectorRef).markForCheck();
+      fixture.detectChanges();
+    });
+
+    it('should show the details without an empty "Steps to resolve" section', () => {
+      expect(compiled.textContent).not.toContain('Steps to resolve');
+      expect(compiled.querySelector('ul')).toBeNull();
+      expect(compiled.querySelector('.info-details')?.textContent?.trim()).toBe(
+        'NTP server capture file not found'
+      );
+    });
   });
 });
