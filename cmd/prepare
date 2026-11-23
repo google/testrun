@@ -24,8 +24,10 @@ export DEBIAN_FRONTEND=noninteractive
 sudo -E apt-get update && sudo -E apt-get install -y \
   openvswitch-common \
   openvswitch-switch \
+  build-essential \
   python3 \
   python3-venv \
+  python3.14-dev \
   libpangocairo-1.0-0 \
   ethtool
 
