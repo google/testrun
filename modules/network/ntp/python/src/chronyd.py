@@ -47,4 +47,3 @@ class ChronydServer:
     running = os.path.exists(PID_FILE)
     LOGGER.info('chronyd server status: ' + str(running))
     return running
-    

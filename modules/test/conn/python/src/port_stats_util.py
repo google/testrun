@@ -33,7 +33,7 @@ LOGGER = None
 class PortStatsUtil():
   """Helper class for various tests concerning Port behavior"""
 
-  def __init__(self,
+  def __init__(self, # pylint: disable=R0917
                logger,
                ethtool_conn_stats_file=ETHTOOL_CONN_STATS_FILE,
                ethtool_port_stats_pre_file=ETHTOOL_PORT_STATS_PRE_FILE,
