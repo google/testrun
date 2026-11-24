@@ -91,11 +91,11 @@ class ServicesModule(TestModule):
     for _, value in nmap_scan_results.items():
       if value['state'] == 'open':
         nmap_table_data.append({
-            'Port': value['number'],
-            'Type': value['tcp_udp'],
-            'State': value['state'],
-            'Service': value['service'],
-            'Version': value['version']
+          'Port': value['number'],
+          'Type': value['tcp_udp'],
+          'State': value['state'],
+          'Service': value['service'],
+          'Version': value['version']
         })
 
       if value['state'] == 'open':
@@ -464,3 +464,13 @@ class ServicesModule(TestModule):
         True,
         f'''Found BACnet server running on port {', '.join(open_ports)}'''
       )
+
+  def _security_services_ssdp(self, config):
+    LOGGER.info('Running security.services.ssdp')
+
+    open_ports = self._check_results(config['ports'], config['services'])
+    if len(open_ports) == 0:
+      return True, 'UDP port 1900 is closed; no SSDP/UPnP server found'
+    return (False,
+                  f'''Found SSDP/UPnP service found on port
+                  {', '.join(open_ports)}''')
