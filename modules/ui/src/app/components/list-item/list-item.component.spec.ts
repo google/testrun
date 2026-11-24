@@ -17,6 +17,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltip } from '@angular/material/tooltip';
+import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ListItemComponent } from './list-item.component';
 import { HarnessLoader } from '@angular/cdk/testing';
@@ -106,6 +108,52 @@ describe('ListItemComponent', () => {
 
     expect(button).toBeTruthy();
     expect(button?.textContent).toContain('more_vert');
+  });
+
+  describe('actions menu button name', () => {
+    const DEVICE = {
+      manufacturer: 'Delta',
+      model: '03-ENT-OP',
+      mac_addr: '00:1e:42:35:73:c4',
+    };
+
+    function getMenuButton(): HTMLButtonElement {
+      return compiled.querySelector('.list-item > button') as HTMLButtonElement;
+    }
+
+    function renderDevice(): void {
+      fixture.componentRef.setInput('entity', DEVICE);
+      fixture.detectChanges();
+    }
+
+    it('should name the menu button after the device it controls', () => {
+      renderDevice();
+
+      expect(getMenuButton().getAttribute('aria-label')).toBe(
+        'Actions for Delta 03-ENT-OP'
+      );
+      expect(
+        getMenuButton().querySelector('mat-icon')?.getAttribute('aria-hidden')
+      ).toBe('true');
+    });
+
+    it('should name the menu button after a named entity, such as a risk profile', () => {
+      expect(getMenuButton().getAttribute('aria-label')).toBe(
+        'Actions for test'
+      );
+    });
+
+    it('should show the name as its tooltip without repeating it as a description', async () => {
+      renderDevice();
+      // AriaDescriber updates aria-describedby asynchronously.
+      await fixture.whenStable();
+
+      const tooltip = fixture.debugElement
+        .query(By.css('.list-item > button'))
+        .injector.get(MatTooltip);
+      expect(tooltip.message).toBe('Actions for Delta 03-ENT-OP');
+      expect(getMenuButton().hasAttribute('aria-describedby')).toBeFalse();
+    });
   });
 
   it('should call hide on outEvent', () => {

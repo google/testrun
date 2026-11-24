@@ -11,6 +11,7 @@ import {
 } from '@angular/material/menu/testing';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MatTooltip } from '@angular/material/tooltip';
 
 describe('SideButtonMenuComponent', () => {
   let component: SideButtonMenuComponent;
@@ -42,6 +43,41 @@ describe('SideButtonMenuComponent', () => {
   it('should render menu button', () => {
     const button = fixture.debugElement.query(By.css('.side-add-button'));
     expect(button).toBeTruthy();
+  });
+
+  describe('menu button name', () => {
+    // Uses the verbs of the menu items: "Start Testing", "Create new device"
+    // and "Create new Risk profile".
+    const NAME = 'Start testing or create a device or risk profile';
+
+    function getMenuButton(): HTMLButtonElement {
+      return (fixture.nativeElement as HTMLElement).querySelector(
+        '.side-add-button'
+      ) as HTMLButtonElement;
+    }
+
+    it('should name the menu button after the purpose of its menu', () => {
+      const name = getMenuButton().getAttribute('aria-label');
+
+      expect(name).toBe(NAME);
+      // Neither the generic "Actions" nor the "Actions for <device>" names of
+      // the device card menu buttons.
+      expect(name).not.toMatch(/^Actions\b/);
+      expect(
+        getMenuButton().querySelector('mat-icon')?.getAttribute('aria-hidden')
+      ).toBe('true');
+    });
+
+    it('should show the name as its tooltip without repeating it as a description', async () => {
+      // AriaDescriber updates aria-describedby asynchronously.
+      await fixture.whenStable();
+
+      const tooltip = fixture.debugElement
+        .query(By.css('.side-add-button'))
+        .injector.get(MatTooltip);
+      expect(tooltip.message).toBe(NAME);
+      expect(getMenuButton().hasAttribute('aria-describedby')).toBeFalse();
+    });
   });
 
   describe('menu', () => {
