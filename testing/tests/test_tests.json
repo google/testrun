@@ -42,7 +42,8 @@
             "security.services.imap": "Compliant",
             "security.services.snmpv3": "Compliant",
             "security.services.vnc": "Compliant",
-            "security.services.tftp": "Compliant"
+            "security.services.tftp": "Compliant",
+            "security.services.ssdp": "Compliant"
         }
     },
 
@@ -57,7 +58,8 @@
             "security.services.pop": "Non-Compliant",
             "security.services.imap": "Non-Compliant",
             "security.services.snmpv3": "Non-Compliant",
-            "security.services.tftp": "Non-Compliant"
+            "security.services.tftp": "Non-Compliant",
+            "security.services.ssdp": "Non-Compliant"
         }
     },
 
