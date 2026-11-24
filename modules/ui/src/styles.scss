@@ -182,7 +182,8 @@ body {
   display: none;
 }
 
-.mat-mdc-tab.mat-focus-indicator {
+.mat-mdc-tab.mat-focus-indicator,
+.mat-mdc-tab-link.mat-focus-indicator {
   &:focus::before {
     content: none;
   }
