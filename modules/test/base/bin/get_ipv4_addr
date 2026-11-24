@@ -17,6 +17,22 @@
 NET=$1
 MAC=$2
 
-IP_ADDR=$(nmap -sP $NET | grep -B 2 $MAC | head -n 1 | cut -d " " -f 5)
+# Some devices intermittently do not answer a given ARP request, so a single
+# nmap sweep can miss a device that is in fact present. Retry the sweep a few
+# times (each retry issues fresh ARP requests) before giving up, so one dropped
+# reply does not cause resolution to fail.
+RETRIES=4
+RETRY_DELAY=2
+
+IP_ADDR=""
+for attempt in $(seq 1 "$RETRIES"); do
+  IP_ADDR=$(nmap -sP $NET | grep -B 2 $MAC | head -n 1 | cut -d " " -f 5)
+  if [ -n "$IP_ADDR" ]; then
+    break
+  fi
+  if [ "$attempt" -lt "$RETRIES" ]; then
+    sleep "$RETRY_DELAY"
+  fi
+done
 
 echo $IP_ADDR
