@@ -470,7 +470,7 @@ class ServicesModule(TestModule):
 
     open_ports = self._check_results(config['ports'], config['services'])
     if len(open_ports) == 0:
-      return True, 'UDP port 1900 is closed; no SSDP/UPnP server found'
+      return True, 'No SSDP/UPnP server found'
     return (False,
                   f'''Found SSDP/UPnP service found on port
                   {', '.join(open_ports)}''')
