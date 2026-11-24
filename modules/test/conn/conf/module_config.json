@@ -69,6 +69,11 @@
         ]
       },
       {
+        "name": "connection.stp_detection",
+        "test_description": "Check whether the device emits Spanning Tree Protocol (BPDU) traffic",
+        "expected_behavior": "A device with more than one Ethernet port may emit Spanning Tree Protocol (BPDU) traffic"
+      },
+      {
         "name": "connection.dhcp_address",
         "test_description": "The device under test has received an IP address from the DHCP server and responds to an ICMP echo (ping) request",
         "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds successfully to an ICMP echo (ping) request.",
