@@ -37,7 +37,9 @@ import {
 } from '../model/profile';
 import { QuestionFormat } from '../model/question';
 
-const API_URL = `http://${window.location.hostname}:8000`;
+const isDevServer = window.location.port === '4200';
+const API_URL = isDevServer ? 'http://localhost:8000' : '/api';
+export const SYSTEM_START = '/system/start';
 export const SYSTEM_STOP = '/system/stop';
 export const EXPORT = '/export';
 
@@ -61,7 +63,7 @@ export class TestRunService {
       return '';
     }
     // replace url part before '/report' from static to dynamic API URL
-    return url.replace(/^.*(?=\/report|\/export)/, `${API_URL}`);
+    return url.replace(/^.*(?=\/report|\/export)/, API_URL);
   }
 
   fetchDevices(): Observable<Device[]> {
@@ -218,7 +220,7 @@ export class TestRunService {
 
   startTestrun(device: Device): Observable<TestrunStatus> {
     return this.http.post<TestrunStatus>(
-      `${API_URL}/system/start`,
+      `${API_URL}${SYSTEM_START}`,
       JSON.stringify({ device })
     );
   }
