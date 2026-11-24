@@ -394,6 +394,26 @@
             }
           ]
         }
+      },
+      {
+        "name": "security.services.ssdp",
+        "test_description": "Check SSDP/UPnP UDP port 1900 is disabled",
+        "expected_behavior": "UDP port 1900 is closed and no SSDP/UPnP service is running on any port",
+        "config": {
+          "services": [
+            "ssdp",
+            "upnp"
+          ],
+          "ports": [
+            {
+              "number": 1900,
+              "type": "udp"
+            }
+          ]
+        },
+        "recommendations": [
+          "Disable the TFTP server"
+        ]
       }
     ]
   }
