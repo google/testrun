@@ -64,6 +64,10 @@ echo "Starting SNMPv2 on ports 161/162 "
 echo "Starting TFTP on port 69 "
 (while true; do nc -l -p 69 < /dev/null | tee /dev/stderr | cat <(echo 'Hello TCP!') ; done) &
 
+echo "Starting SSDP on port 1900 "
+(while true; do nc -u -l -p 1900 < /dev/null | tee /dev/stderr; done) &
+
+
 # Start NTP service 
 echo "Starting NTP service"
 service ntp start
