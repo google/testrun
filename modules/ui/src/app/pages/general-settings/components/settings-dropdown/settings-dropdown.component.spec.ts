@@ -4,7 +4,13 @@ import { SettingsDropdownComponent } from './settings-dropdown.component';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Component } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { MOCK_INTERFACES } from '../../../../mocks/settings.mock';
+import { TestKey } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MatSelectHarness } from '@angular/material/select/testing';
+import {
+  MOCK_DEVICE_VALUE,
+  MOCK_INTERFACES,
+} from '../../../../mocks/settings.mock';
 
 /** Text of the elements referenced by an `aria-describedby` value. */
 function textOfIdRefs(idRefs: string | null): string {
@@ -15,6 +21,54 @@ function textOfIdRefs(idRefs: string | null): string {
     .join(' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+type Rgb = [number, number, number];
+
+/** Parses a computed `rgb()`/`rgba()` or `color(srgb …)` value; alpha is ignored. */
+function parseColor(value: string): Rgb {
+  const srgb = /^color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)/.exec(value);
+  if (srgb) {
+    return [
+      Number(srgb[1]) * 255,
+      Number(srgb[2]) * 255,
+      Number(srgb[3]) * 255,
+    ];
+  }
+  const rgb = /^rgba?\(([\d.]+),?\s*([\d.]+),?\s*([\d.]+)/.exec(value);
+  if (!rgb) {
+    throw new Error(`Unsupported color format: ${value}`);
+  }
+  return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+}
+
+/** WCAG 2.2 relative luminance. */
+function luminance([r, g, b]: Rgb): number {
+  const [lr, lg, lb] = [r, g, b].map(channel => {
+    const c = channel / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb;
+}
+
+/** WCAG contrast ratio (1–21) between two computed colors. */
+function contrastRatio(foreground: string, background: string): number {
+  const [light, dark] = [
+    luminance(parseColor(foreground)),
+    luminance(parseColor(background)),
+  ].sort((a, b) => b - a);
+  return (light + 0.05) / (dark + 0.05);
+}
+
+/** First non-transparent background of the element or its ancestors. */
+function effectiveBackground(element: Element): string {
+  for (let el: Element | null = element; el; el = el.parentElement) {
+    const background = getComputedStyle(el).backgroundColor;
+    if (background !== 'rgba(0, 0, 0, 0)' && background !== 'transparent') {
+      return background;
+    }
+  }
+  return 'rgb(255, 255, 255)';
 }
 
 @Component({
@@ -171,6 +225,108 @@ describe('SettingsDropdownComponent', () => {
       component.focus();
 
       expect(document.activeElement).toBe(select);
+    });
+  });
+
+  describe('option text contrast', () => {
+    /** The white General Settings page behind the closed select. */
+    const PAGE_BACKGROUND = 'rgb(255, 255, 255)';
+    /** The #f0f4f9 select panel. */
+    const PANEL_BACKGROUND = 'rgb(240, 244, 249)';
+    /** The #c2e7ff selected and keyboard-highlighted options. */
+    const HIGHLIGHT_BACKGROUND = 'rgb(194, 231, 255)';
+
+    let matSelect: MatSelectHarness;
+
+    beforeEach(async () => {
+      // A saved port, shown as its name over a subtitle such as its IP address.
+      component.control.setValue(MOCK_DEVICE_VALUE);
+      fixture.detectChanges();
+      matSelect =
+        await TestbedHarnessEnvironment.loader(fixture).getHarness(
+          MatSelectHarness
+        );
+    });
+
+    /**
+     * Checks that both lines of an option, the name and the subtitle below
+     * it, sit on the expected background with at least the 4.5:1 contrast
+     * required for 16px regular text (WCAG 1.4.3).
+     */
+    function expectReadableOptionText(
+      option: Element | null,
+      background: string
+    ): void {
+      const lines = Array.from(
+        option?.querySelectorAll<HTMLElement>('.option-value') ?? []
+      );
+      expect(lines.length).withContext('lines of option text').toBe(2);
+
+      for (const line of lines) {
+        expect(effectiveBackground(line))
+          .withContext(`${line.className} background`)
+          .toBe(background);
+        const ratio = contrastRatio(getComputedStyle(line).color, background);
+        expect(ratio)
+          .withContext(`${line.className}: ${ratio.toFixed(2)}:1`)
+          .toBeGreaterThanOrEqual(4.5);
+      }
+    }
+
+    function subtitleOf(option: Element | null): string | undefined {
+      return option?.querySelector('.option-value.bottom')?.textContent?.trim();
+    }
+
+    it('should show the selected value with at least 4.5:1 contrast in the closed select', () => {
+      const trigger = select.querySelector('.mat-mdc-select-trigger');
+
+      expect(subtitleOf(trigger)).toBe('mockDeviceValue');
+      expectReadableOptionText(trigger, PAGE_BACKGROUND);
+    });
+
+    describe('when open', () => {
+      let listbox: HTMLElement;
+
+      beforeEach(async () => {
+        await matSelect.open();
+        listbox = document.getElementById(
+          select.getAttribute('aria-controls') ?? ''
+        ) as HTMLElement;
+      });
+
+      it('should show unselected options with at least 4.5:1 contrast', () => {
+        const option = listbox.querySelector(
+          'mat-option[aria-selected="false"]'
+        );
+
+        expect(subtitleOf(option)).toBe('mockInternetValue');
+        expectReadableOptionText(option, PANEL_BACKGROUND);
+      });
+
+      it('should show the selected option with at least 4.5:1 contrast', () => {
+        const option = listbox.querySelector(
+          'mat-option[aria-selected="true"]'
+        );
+
+        expect(subtitleOf(option)).toBe('mockDeviceValue');
+        expectReadableOptionText(option, HIGHLIGHT_BACKGROUND);
+      });
+
+      it('should keep options readable while moving through them with the keyboard', async () => {
+        await (await matSelect.host()).sendKeys(TestKey.DOWN_ARROW);
+
+        const highlighted = document.getElementById(
+          select.getAttribute('aria-activedescendant') ?? ''
+        );
+        expect(subtitleOf(highlighted))
+          .withContext('the highlight moved to the unselected option')
+          .toBe('mockInternetValue');
+        expectReadableOptionText(highlighted, HIGHLIGHT_BACKGROUND);
+        expectReadableOptionText(
+          listbox.querySelector('mat-option[aria-selected="true"]'),
+          HIGHLIGHT_BACKGROUND
+        );
+      });
     });
   });
 });
