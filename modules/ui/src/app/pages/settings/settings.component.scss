@@ -26,19 +26,18 @@
   padding: 24px 0 16px;
 }
 
-.tab-item {
-  display: flex;
-  padding: 0px 32px;
-  align-items: center;
-  gap: 32px;
-}
-.tab-group {
-  ::ng-deep .mat-mdc-tab-labels {
+.tab-nav-bar {
+  ::ng-deep .mat-mdc-tab-links {
     gap: 16px;
     padding: 0 12px;
   }
+}
+.tab-link {
+  padding: 0px 8px;
+}
 
-  ::ng-deep.mat-mdc-tab {
-    padding: 0px 8px;
-  }
+// Custom elements are inline by default. As a block, the tab panel's box
+// wraps the open page that it contains.
+.tab-panel {
+  display: block;
 }

@@ -16,20 +16,10 @@ limitations under the License.
 <form
   [formGroup]="profileForm"
   class="profile-form"
-  [class.profile-form-outdated]="
-    selectedProfile?.status === ProfileStatus.EXPIRED
-  "
-  [attr.tabindex]="
-    selectedProfile?.status === ProfileStatus.EXPIRED ? '-1' : null
-  "
-  [attr.aria-labelledby]="
-    selectedProfile?.status === ProfileStatus.EXPIRED
-      ? 'form-accessible-title'
-      : null
-  ">
-  <span id="form-accessible-title" class="visually-hidden">
-    View information (read-only)
-  </span>
+  [class.profile-form-outdated]="isReadOnly"
+  [attr.tabindex]="isReadOnly ? '-1' : null"
+  aria-labelledby="form-accessible-title">
+  <h2 id="form-accessible-title" class="visually-hidden">{{ formTitle }}</h2>
   <div class="field-container">
     <label class="field-label name-field-label" for="name-field"
       >Profile name *</label

@@ -14,34 +14,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 @if (data.icon) {
-  <span class="simple-dialog-icon"
+  <span class="simple-dialog-icon" aria-hidden="true"
     ><mat-icon fontSet="material-symbols-outlined">{{
       data.icon
     }}</mat-icon></span
   >
 }
-<span class="simple-dialog-title">{{ data.title }}</span>
-<p class="simple-dialog-content">
+<h2 class="simple-dialog-title">{{ data.title }}</h2>
+<p class="simple-dialog-content" [attr.id]="data.contentId || null">
   {{ data.content }}
 </p>
 
-<mat-dialog-actions align="end" class="simple-dialog-actions">
-  <button
-    cdkFocusInitial
-    aria-label="Cancel"
-    (click)="cancel()"
-    class="cancel-button"
-    color="primary"
-    mat-button
-    type="button">
-    Cancel
-  </button>
-  <button
-    (click)="confirm()"
-    class="confirm-button"
-    color="primary"
-    mat-button
-    type="button">
-    {{ data.confirmName ? data.confirmName : 'Confirm' }}
-  </button>
-</mat-dialog-actions>
+@if (!data.isPersistent) {
+  <mat-dialog-actions align="end" class="simple-dialog-actions">
+    <button
+      cdkFocusInitial
+      aria-label="Cancel"
+      (click)="cancel()"
+      class="cancel-button"
+      color="primary"
+      mat-button
+      type="button">
+      Cancel
+    </button>
+    <button
+      (click)="confirm()"
+      class="confirm-button"
+      color="primary"
+      mat-button
+      type="button">
+      {{ data.confirmName ? data.confirmName : 'Confirm' }}
+    </button>
+  </mat-dialog-actions>
+}

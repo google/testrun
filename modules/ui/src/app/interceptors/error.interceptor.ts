@@ -30,12 +30,30 @@ import {
 } from 'rxjs';
 import { NotificationService } from '../services/notification.service';
 
-import { SYSTEM_STOP, EXPORT } from '../services/test-run.service';
+import {
+  SYSTEM_START,
+  SYSTEM_STOP,
+  EXPORT,
+} from '../services/test-run.service';
 import { finalize } from 'rxjs/operators';
 
 const DEFAULT_TIMEOUT_MS = 5000;
+
 const SYSTEM_STOP_TIMEOUT_MS = 60 * 1000;
 const EXPORT_ZIP_TIMEOUT_MS = 60 * 1000;
+
+/**
+ * True when the request never got a response from Testrun: either the request
+ * timed out or the backend was unreachable (HTTP status 0).
+ */
+export function isConnectionFailure(
+  error: HttpErrorResponse | TimeoutError | unknown
+): boolean {
+  return (
+    error instanceof TimeoutError ||
+    (error instanceof HttpErrorResponse && error.status === 0)
+  );
+}
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
@@ -60,6 +78,12 @@ export class ErrorInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       timeout(timeoutValue),
       catchError((error: HttpErrorResponse | TimeoutError) => {
+        // Connection-level failures of the start command (timeout / backend
+        // unreachable) are surfaced by the testrun initiate form as a blocking
+        // error dialog, so no snackbar must be shown for them.
+        if (request.url.includes(SYSTEM_START) && isConnectionFailure(error)) {
+          return throwError(error);
+        }
         if (error instanceof TimeoutError) {
           this.notificationService.notify(
             'Testrun is not responding. Please try again in a moment.'

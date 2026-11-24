@@ -15,7 +15,7 @@ limitations under the License.
 -->
 @if (data.testrunStatus) {
   <div class="testing-result-heading">
-    <p class="testing-result-title">
+    <p class="testing-result-title" role="heading" aria-level="2">
       {{ data.testrunStatus.device.manufacturer }}
       {{ data.testrunStatus.device.model }}
       {{ data.testrunStatus.device.firmware }}
@@ -43,7 +43,9 @@ limitations under the License.
   </div>
 }
 @if (!data.testrunStatus) {
-  <span class="risk-profile-select-form-title">Download ZIP file</span>
+  <span class="risk-profile-select-form-title" role="heading" aria-level="2"
+    >Download ZIP file</span
+  >
 }
 @if (profiles.length === 1) {
   <p class="risk-profile-select-form-content">
@@ -123,18 +125,11 @@ limitations under the License.
   <mat-dialog-actions class="risk-profile-select-form-actions">
     @if (data.testrunStatus) {
       <app-download-report
+        textButton
         [data]="data.testrunStatus"
-        [tabindex]="-1"
-        [href]="data.testrunStatus.report">
-        <button
-          (click)="cancel(undefined)"
-          class="download-pdf-button"
-          color="primary"
-          aria-label="Download PDF report"
-          mat-button
-          type="button">
-          Download PDF report
-        </button>
+        [href]="data.testrunStatus.report"
+        (click)="cancel(undefined)">
+        Download PDF report
       </app-download-report>
     }
     <div>
@@ -151,9 +146,13 @@ limitations under the License.
         class="download-button"
         color="primary"
         mat-flat-button
-        aria-label="Download ZIP file"
         type="button">
-        {{ data.testrunStatus ? 'Download ZIP file' : 'Download' }}
+        @if (data.testrunStatus) {
+          Download ZIP file
+        } @else {
+          <!-- The name starts with the visible "Download" (WCAG 2.5.3). -->
+          Download<span class="visually-hidden"> ZIP file</span>
+        }
       </button>
     </div>
   </mat-dialog-actions>

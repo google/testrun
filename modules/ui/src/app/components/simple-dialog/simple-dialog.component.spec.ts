@@ -80,6 +80,52 @@ describe('DeleteFormComponent', () => {
     expect(content.innerHTML.trim()).toEqual('content');
   });
 
+  describe('title heading', () => {
+    it('should render the title as a native level 2 heading', () => {
+      const title = compiled.querySelector('h2.simple-dialog-title');
+
+      expect(title?.textContent?.trim()).toBe('title?');
+      // Native semantics leave no ARIA heading role to keep in sync.
+      expect(title?.hasAttribute('role')).toBeFalse();
+      expect(title?.hasAttribute('aria-level')).toBeFalse();
+    });
+
+    it('should keep the title text style of the dialog', () => {
+      const title = compiled.querySelector(
+        'h2.simple-dialog-title'
+      ) as HTMLElement;
+      expect(title).withContext('title heading').not.toBeNull();
+      const style = getComputedStyle(title);
+
+      // No default `<h2>` margin or bold weight, so the dialog looks the same.
+      expect(style.marginTop).toBe('0px');
+      expect(style.marginBottom).toBe('0px');
+      expect(style.fontWeight).toBe('400');
+      expect(style.fontSize).toBe('24px');
+      expect(style.lineHeight).toBe('32px');
+    });
+  });
+
+  describe('content description', () => {
+    it('should give the content the id that the opener describes the dialog by', () => {
+      const content = compiled.querySelector(
+        '.simple-dialog-content'
+      ) as HTMLElement;
+      // Dialogs that are not described by their content get no stray id.
+      expect(content.hasAttribute('id'))
+        .withContext('without contentId')
+        .toBeFalse();
+
+      component.data = {
+        ...component.data,
+        contentId: 'app-delete-device-dialog-content-0',
+      };
+      fixture.detectChanges();
+
+      expect(content.id).toBe('app-delete-device-dialog-content-0');
+    });
+  });
+
   it('should close dialog on "cancel" click', () => {
     const closeSpy = spyOn(component.dialogRef, 'close');
     const closeButton = compiled.querySelector(
@@ -104,5 +150,55 @@ describe('DeleteFormComponent', () => {
     expect(closeSpy).toHaveBeenCalledWith(true);
 
     closeSpy.calls.reset();
+  });
+
+  describe('persistent mode', () => {
+    beforeEach(() => {
+      component.data = {
+        icon: 'error',
+        title: 'Connection Error',
+        content: 'content',
+        isPersistent: true,
+      };
+      component.disableEscape = true;
+      fixture.detectChanges();
+    });
+
+    it('should not render cancel and confirm buttons', () => {
+      expect(compiled.querySelector('.cancel-button')).toBeNull();
+      expect(compiled.querySelector('.confirm-button')).toBeNull();
+      expect(compiled.querySelector('mat-dialog-actions')).toBeNull();
+    });
+
+    it('should still render title and content', () => {
+      expect(
+        compiled.querySelector('.simple-dialog-title')?.textContent?.trim()
+      ).toBe('Connection Error');
+      expect(
+        compiled.querySelector('.simple-dialog-content')?.textContent?.trim()
+      ).toBe('content');
+    });
+  });
+
+  it('should set disableEscape from persistent dialog data', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [SimpleDialogComponent, MatDialogModule, MatButtonModule],
+      providers: [
+        {
+          provide: MatDialogRef,
+          useValue: {
+            keydownEvents: () => of(new KeyboardEvent('keydown', { code: '' })),
+            close: () => ({}),
+            afterOpened: () => of(void 0),
+            beforeClosed: () => of(void 0),
+          },
+        },
+        { provide: MAT_DIALOG_DATA, useValue: { isPersistent: true } },
+      ],
+    });
+    const persistentFixture = TestBed.createComponent(SimpleDialogComponent);
+
+    expect(persistentFixture.componentInstance.disableEscape).toBeTrue();
   });
 });

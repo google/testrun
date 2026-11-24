@@ -23,7 +23,7 @@
         "image": "testrun/dns_non_compliant",
         "ethmac": "02:42:aa:00:00:03",
         "expected_results": {
-            "dns.network.hostname_resolution": "Non-Compliant",
+            "dns.network.hostname_resolution": "Feature Not Detected",
             "dns.network.from_dhcp": "Informational",
             "dns.mdns": "Informational"
         }

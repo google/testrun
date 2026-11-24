@@ -50,12 +50,18 @@
 }
 
 .form-step {
-  border: 2px solid colors.$lighter-grey;
+  border: 2px solid colors.$outline;
   width: 4px;
   height: 4px;
   display: inline-block;
   border-radius: 100%;
   margin: 0 8px;
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+  }
   &.step-active {
     border-color: colors.$secondary;
     background: colors.$secondary;

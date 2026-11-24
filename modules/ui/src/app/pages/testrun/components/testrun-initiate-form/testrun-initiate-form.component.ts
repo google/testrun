@@ -17,17 +17,23 @@ import {
   AfterViewChecked,
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   ElementRef,
   OnInit,
   viewChild,
   inject,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { _IdGenerator } from '@angular/cdk/a11y';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
 import { TestRunService } from '../../../../services/test-run.service';
+import { TestRunMqttService } from '../../../../services/test-run-mqtt.service';
+import { MqttErrorDialogService } from '../../../../services/mqtt-error-dialog.service';
+import { isConnectionFailure } from '../../../../interceptors/error.interceptor';
 import {
   Device,
   TestModule,
@@ -97,10 +103,13 @@ export class TestrunInitiateFormComponent
   override dialogRef: MatDialogRef<TestrunInitiateFormComponent>;
   data = inject<DialogData>(MAT_DIALOG_DATA);
   private readonly testRunService = inject(TestRunService);
+  private readonly testRunMqttService = inject(TestRunMqttService);
+  private readonly mqttErrorDialogService = inject(MqttErrorDialogService);
   private fb = inject(FormBuilder);
   private deviceValidators = inject(DeviceValidators);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
   private store = inject<Store<AppState>>(Store);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly firmwareInput = viewChild<ElementRef>('firmwareInput');
   initiateForm!: FormGroup;
@@ -115,6 +124,8 @@ export class TestrunInitiateFormComponent
   error$: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(
     null
   );
+  /** Id of the test modules error; the test modules refer to it while shown. */
+  readonly testModulesErrorId = inject(_IdGenerator).getId('mat-mdc-error-');
 
   constructor() {
     const dialogRef =
@@ -138,6 +149,7 @@ export class TestrunInitiateFormComponent
 
   ngOnInit() {
     this.createInitiateForm();
+    this.clearTestModulesErrorOnSelection();
     this.testModules = this.data?.testModules;
 
     if (this.data?.device) {
@@ -154,6 +166,7 @@ export class TestrunInitiateFormComponent
   changeDevice() {
     this.selectedDevice = null;
     this.firmware.setValue('');
+    this.error$.next(null);
   }
 
   ngAfterViewChecked() {
@@ -206,8 +219,14 @@ export class TestrunInitiateFormComponent
     );
 
     if (this.selectedDevice && !this.startRequestSent.value) {
+      // Scenario 1: MQTT is offline/disconnected - do not start the testrun
+      // and do not show any progress; surface the blocking error dialog.
+      if (!this.testRunMqttService.isConnected()) {
+        this.handleConnectionFailure();
+        return;
+      }
+
       this.startRequestSent.next(true);
-      this.testRunService.fetchVersion();
       this.testRunService
         .startTestrun({
           ...this.selectedDevice,
@@ -217,20 +236,59 @@ export class TestrunInitiateFormComponent
         .pipe(take(1))
         .subscribe({
           next: status => {
+            // MQTT dropped while the start request was in flight: status
+            // updates can no longer be tracked.
+            if (!this.testRunMqttService.isConnected()) {
+              this.handleConnectionFailure();
+              return;
+            }
+            // Refresh the version only after a successful start so that a
+            // hanging backend does not trigger a spinner or snackbar from this
+            // secondary request while the start command itself is failing.
+            this.testRunService.fetchVersion();
             this.cancel(status);
           },
-          error: () => {
+          error: error => {
             this.startRequestSent.next(false);
+            // Testrun did not acknowledge the start command (timeout or
+            // unreachable) or MQTT dropped meanwhile. Backend validation
+            // errors (4xx/5xx) are reported via the ErrorInterceptor snackbar
+            // and keep the dialog open so the user can correct and retry.
+            if (
+              isConnectionFailure(error) ||
+              !this.testRunMqttService.isConnected()
+            ) {
+              this.handleConnectionFailure();
+            }
           },
         });
     }
   }
 
+  private handleConnectionFailure(): void {
+    this.cancel(null);
+    this.mqttErrorDialogService.open();
+  }
+
   private createInitiateForm() {
     this.initiateForm = this.fb.group({
       firmware: ['', [this.deviceValidators.firmwareStringFormat()]],
+      // No testModulesRequired() validator: DeviceTestsComponent would then
+      // mark the modules aria-invalid on blur, before the error is shown.
       test_modules: new FormArray([]),
     });
+  }
+
+  /** Clears the test modules error as soon as a test module is selected. */
+  private clearTestModulesErrorOnSelection(): void {
+    this.test_modules.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((enabled: boolean[]) => {
+        // Use the emitted value: `initiateForm.value` is updated after this.
+        if (enabled.some(Boolean)) {
+          this.error$.next(null);
+        }
+      });
   }
 
   private isAllTestsDisabled(): boolean {

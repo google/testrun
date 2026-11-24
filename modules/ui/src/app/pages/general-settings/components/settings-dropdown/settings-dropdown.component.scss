@@ -45,8 +45,11 @@
     color: colors.$on-surface-variant;
   }
 
+  // #444746 meets the 4.5:1 text minimum on the white closed select (9.39:1),
+  // the #f0f4f9 panel (8.51:1), and #c2e7ff selected or highlighted options
+  // (7.23:1), where #757780 had 4.46:1, 4.04:1, and 3.44:1 (WCAG 1.4.3).
   &.bottom {
-    color: colors.$schemes-outline;
+    color: colors.$on-surface-variant;
   }
 }
 

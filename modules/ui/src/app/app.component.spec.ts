@@ -544,6 +544,57 @@ describe('AppComponent', () => {
         ).toHaveBeenCalledWith(helpTipEl);
         expect(helpTipEl.classList.contains('closed-tip')).toBeFalse();
       }));
+
+      it('should expose the dialog popup state on the toolbar "help tips" button', () => {
+        const helpTipsBtn = compiled.querySelector(
+          '.app-toolbar-button-help-tips'
+        ) as HTMLButtonElement;
+
+        expect(helpTipsBtn.getAttribute('aria-haspopup')).toBe('dialog');
+        expect(helpTipsBtn.getAttribute('aria-expanded')).toBe('true');
+      });
+
+      it('should close the tip and restore focus to the toolbar "help tips" button on Escape', fakeAsync(() => {
+        const helpTipEl = compiled.querySelector('app-help-tip') as HTMLElement;
+        const helpTipsBtn = compiled.querySelector(
+          '.app-toolbar-button-help-tips'
+        ) as HTMLButtonElement;
+        const helpTipCloseBtn = compiled.querySelector(
+          'app-help-tip .close-button'
+        ) as HTMLButtonElement;
+        const focusSpy = spyOn(helpTipsBtn, 'focus');
+
+        helpTipCloseBtn.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+        );
+        tick(100);
+        fixture.detectChanges();
+
+        expect(helpTipEl.classList.contains('closed-tip')).toBeTrue();
+        expect(focusSpy).toHaveBeenCalled();
+        expect(helpTipsBtn.getAttribute('aria-expanded')).toBe('false');
+      }));
+
+      it('should update aria-expanded on the toolbar "help tips" button when the tip is closed and reopened', fakeAsync(() => {
+        const helpTipsBtn = compiled.querySelector(
+          '.app-toolbar-button-help-tips'
+        ) as HTMLButtonElement;
+        const helpTipCloseBtn = compiled.querySelector(
+          'app-help-tip .close-button'
+        ) as HTMLButtonElement;
+
+        helpTipCloseBtn.click();
+        tick(100);
+        fixture.detectChanges();
+
+        expect(helpTipsBtn.getAttribute('aria-expanded')).toBe('false');
+
+        helpTipsBtn.click();
+        tick(100);
+        fixture.detectChanges();
+
+        expect(helpTipsBtn.getAttribute('aria-expanded')).toBe('true');
+      }));
     });
 
     describe('with devices set and systemStatus data', () => {
@@ -560,6 +611,14 @@ describe('AppComponent', () => {
         const helpTip = compiled.querySelector('app-help-tip');
 
         expect(helpTip).toBeNull();
+      });
+
+      it('should set aria-expanded to "false" on the toolbar "help tips" button', () => {
+        const helpTipsBtn = compiled.querySelector(
+          '.app-toolbar-button-help-tips'
+        ) as HTMLButtonElement;
+
+        expect(helpTipsBtn.getAttribute('aria-expanded')).toBe('false');
       });
     });
 

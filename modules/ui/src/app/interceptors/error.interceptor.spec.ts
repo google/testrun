@@ -17,6 +17,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { ErrorInterceptor } from './error.interceptor';
 import { NotificationService } from '../services/notification.service';
+import { SYSTEM_START } from '../services/test-run.service';
 import {
   HttpErrorResponse,
   HttpHandler,
@@ -128,5 +129,64 @@ describe('ErrorInterceptor', () => {
         done();
       }
     );
+  });
+
+  describe('SYSTEM_START request', () => {
+    const requestMock = new HttpRequest('POST', SYSTEM_START, {});
+
+    it('should not notify via snackbar when Testrun is unreachable', done => {
+      const next: HttpHandler = {
+        handle: () => {
+          return throwError(new HttpErrorResponse({ status: 0 }));
+        },
+      };
+
+      interceptor.intercept(requestMock, next).subscribe(
+        () => ({}),
+        () => {
+          expect(notificationServiceMock.notify).not.toHaveBeenCalled();
+          done();
+        }
+      );
+    });
+
+    it('should not notify via snackbar when the request times out', done => {
+      const next: HttpHandler = {
+        handle: () => {
+          return of(new HttpResponse()).pipe(delay(2000));
+        },
+      };
+
+      interceptor.intercept(requestMock, next, 1000).subscribe(
+        () => ({}),
+        () => {
+          expect(notificationServiceMock.notify).not.toHaveBeenCalled();
+          done();
+        }
+      );
+    });
+
+    it('should still notify about backend validation errors', done => {
+      const next: HttpHandler = {
+        handle: () => {
+          return throwError(
+            new HttpErrorResponse({
+              error: { error: 'Device configuration is not complete' },
+              status: 400,
+            })
+          );
+        },
+      };
+
+      interceptor.intercept(requestMock, next).subscribe(
+        () => ({}),
+        () => {
+          expect(notificationServiceMock.notify).toHaveBeenCalledWith(
+            'Device configuration is not complete'
+          );
+          done();
+        }
+      );
+    });
   });
 });

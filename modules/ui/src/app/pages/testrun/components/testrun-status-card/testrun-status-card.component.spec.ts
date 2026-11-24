@@ -418,6 +418,7 @@ describe('ProgressStatusCardComponent', () => {
     describe('with available systemStatus$ data, as Monitoring', () => {
       beforeEach(() => {
         component.systemStatus = MOCK_PROGRESS_DATA_MONITORING;
+        component.monitorPeriod = 300;
         fixture.detectChanges();
       });
 
@@ -433,15 +434,12 @@ describe('ProgressStatusCardComponent', () => {
         expect(progressCardEl?.classList).toContain('progress');
       });
 
-      it('should have progress card result title', () => {
+      it('should not have progress card result title during Monitoring', () => {
         const progressCardResultEl = compiled.querySelector(
           '.progress-card-result-title'
         );
 
-        expect(progressCardResultEl).not.toBeNull();
-        expect(progressCardResultEl?.textContent?.trim()).toEqual(
-          'Please wait, this could take a few minutes'
-        );
+        expect(progressCardResultEl).toBeNull();
       });
 
       it('should have progress card status text as "Monitoring"', () => {
@@ -451,6 +449,37 @@ describe('ProgressStatusCardComponent', () => {
 
         expect(progressCardStatusText).not.toBeNull();
         expect(progressCardStatusText?.textContent).toEqual('Monitoring');
+      });
+
+      it('should render the countdown timer component during Monitoring', () => {
+        const timerEl = compiled.querySelector('app-timer');
+
+        expect(timerEl).not.toBeNull();
+      });
+
+      it('should keep the per-second countdown silent inside the polite status card', () => {
+        const card = compiled.querySelector('.progress-card') as HTMLElement;
+        const timer = card.querySelector('[role="timer"]') as HTMLElement;
+        const remainingTime = Array.from(timer.querySelectorAll('span')).find(
+          span => span.textContent?.includes('Remaining monitoring time')
+        );
+
+        expect(card.getAttribute('role')).toBe('status');
+        expect(card.getAttribute('aria-live')).toBe('polite');
+        expect(timer.getAttribute('aria-live')).toBe('off');
+        expect(timer.hasAttribute('aria-label')).toBeFalse();
+        expect(remainingTime?.textContent?.trim()).toBe(
+          'Remaining monitoring time: 5 minutes 0 seconds'
+        );
+        expect(remainingTime?.closest('[aria-live]')).toBe(timer);
+      });
+
+      it('should not render timer component when monitorPeriod is not defined', () => {
+        fixture.componentRef.setInput('monitorPeriod', undefined);
+        fixture.detectChanges();
+
+        const timerEl = compiled.querySelector('app-timer');
+        expect(timerEl).toBeNull();
       });
     });
 
@@ -484,6 +513,24 @@ describe('ProgressStatusCardComponent', () => {
           'Preliminary Pilot Recommendation'
         );
         expect(textEl.textContent?.trim()).toEqual('Proceed');
+      });
+
+      it('should reflow and fit within a narrow container at 200% zoom without horizontal overflow', () => {
+        compiled.style.width = '435px';
+        fixture.detectChanges();
+
+        const progressCardEl = compiled.querySelector(
+          '.progress-card'
+        ) as HTMLElement;
+        const cardStyle = window.getComputedStyle(progressCardEl);
+        const hostRect = compiled.getBoundingClientRect();
+        const cardRect = progressCardEl.getBoundingClientRect();
+
+        expect(cardStyle.flexWrap).toBe('wrap');
+        expect(cardStyle.boxSizing).toBe('border-box');
+        expect(cardRect.width).toBeLessThanOrEqual(hostRect.width);
+        expect(cardRect.left).toBeGreaterThanOrEqual(hostRect.left);
+        expect(cardRect.right).toBeLessThanOrEqual(hostRect.right);
       });
     });
   });

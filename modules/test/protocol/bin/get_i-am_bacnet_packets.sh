@@ -20,6 +20,6 @@ SRC_IP="$2"
 TSHARK_FILTER="bacnet && ip.src == $SRC_IP"
 TSHARK_OUTPUT="-T json -e ip.src -e ip.dst -e eth.src -e eth.dst -e bacapp.instance_number -e _ws.col.Info"
 
-response=$(tshark -r "$CAPTURE_FILE" $TSHARK_OUTPUT -Y "$TSHARK_FILTER")
+response=$(cat "$CAPTURE_FILE" | tshark -r - $TSHARK_OUTPUT -Y "$TSHARK_FILTER")
 
 echo "$response"

@@ -24,8 +24,42 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { PROFILE_FORM } from '../../mocks/profile.mock';
-import { FormControlType } from '../../model/question';
+import { DEVICES_FORM } from '../../mocks/device.mock';
+import { FormControlType, QuestionFormat } from '../../model/question';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+
+/**
+ * Text of an element as exposed to assistive technology: `aria-hidden` content
+ * is skipped, and a non-empty `aria-label` replaces the content it is set on.
+ */
+function accessibleText(element: Element): string {
+  const textOf = (node: Node): string => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return node.textContent ?? '';
+    }
+    if (
+      !(node instanceof Element) ||
+      node.getAttribute('aria-hidden') === 'true'
+    ) {
+      return '';
+    }
+    return (
+      node.getAttribute('aria-label')?.trim() ||
+      Array.from(node.childNodes, textOf).join('')
+    );
+  };
+  return textOf(element).replace(/\s+/g, ' ').trim();
+}
+
+/** Text exposed for the elements an `aria-describedby`/`aria-labelledby` value references. */
+function accessibleTextOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .map(id => document.getElementById(id))
+    .filter((element): element is HTMLElement => element !== null)
+    .map(element => accessibleText(element))
+    .join(' ');
+}
 
 @Component({
   template:
@@ -102,7 +136,7 @@ describe('DynamicFormComponent', () => {
       const labels = compiled.querySelectorAll('.field-label');
 
       const label = item.question;
-      expect(labels[index].textContent?.trim()).toEqual(label);
+      expect(accessibleText(labels[index])).toEqual(label);
     });
 
     it('should have hint', () => {
@@ -252,6 +286,212 @@ describe('DynamicFormComponent', () => {
 
       expect(wrapper?.style.height).toEqual(`${hint.offsetHeight}px`);
       expect(wrapper?.clientHeight).toEqual(hint.offsetHeight);
+    });
+  });
+
+  describe('required questions', () => {
+    const OPTIONAL_QUESTIONS: QuestionFormat[] = [
+      {
+        question: 'Is the device installed outdoors?',
+        type: FormControlType.SELECT,
+        options: ['Yes', 'No'],
+        validation: { required: false },
+      },
+      { question: 'Additional comments', type: FormControlType.TEXTAREA },
+    ];
+    const FORMAT = [...PROFILE_FORM, ...OPTIONAL_QUESTIONS];
+
+    beforeEach(() => {
+      // Adds controls for the optional questions; existing controls are kept.
+      component.createProfileForm(FORMAT);
+      dummy.format = FORMAT;
+      fixture.detectChanges();
+    });
+
+    it('should mark only required questions with an asterisk hidden from assistive technology', () => {
+      const labels = compiled.querySelectorAll('.field-label');
+
+      expect(labels.length).toBe(FORMAT.length);
+      FORMAT.forEach((item, index) => {
+        const marker = labels[index].querySelector('.field-required-marker');
+
+        if (item.validation?.required) {
+          expect(marker?.textContent?.trim())
+            .withContext(item.question)
+            .toBe('*');
+          expect(marker?.getAttribute('aria-hidden'))
+            .withContext(item.question)
+            .toBe('true');
+        } else {
+          expect(marker).withContext(item.question).toBeNull();
+        }
+        expect(accessibleText(labels[index])).toBe(item.question);
+      });
+    });
+
+    it('should expose only required inputs and dropdowns as required', () => {
+      FORMAT.forEach((item, index) => {
+        if (item.type === FormControlType.SELECT_MULTIPLE) {
+          return; // A checkbox group has no required state; its label has the marker.
+        }
+        const control = compiled.querySelector(
+          `[id="${index}-group"]`
+        ) as HTMLElement;
+        const required = !!item.validation?.required;
+
+        expect(control.getAttribute('aria-required'))
+          .withContext(item.question)
+          .toBe(String(required));
+        if (
+          control instanceof HTMLInputElement ||
+          control instanceof HTMLTextAreaElement
+        ) {
+          expect(control.required).withContext(item.question).toBe(required);
+        }
+      });
+    });
+  });
+
+  describe('required dropdown errors', () => {
+    const REQUIRED_ERROR = 'The field is required';
+    // Dropdown questions of the Devices page qualification form, all required.
+    const DEVICE_QUESTIONS: QuestionFormat[] = DEVICES_FORM.map(question => ({
+      ...question,
+      validation: { required: true },
+    }));
+    const FORMAT = [...PROFILE_FORM, ...DEVICE_QUESTIONS];
+    const DROPDOWNS = FORMAT.map(({ question, type }, index) => ({
+      question,
+      type,
+      index,
+    })).filter(({ type }) => type === FormControlType.SELECT);
+
+    function getDropdown(index: number): HTMLElement {
+      return compiled.querySelector(
+        `mat-select[id="${index}-group"]`
+      ) as HTMLElement;
+    }
+
+    beforeEach(async () => {
+      component.optionKey = 'text'; // As DeviceQualificationFromComponent sets it.
+      // Adds controls for the device questions; existing controls are kept.
+      component.createProfileForm(FORMAT);
+      dummy.format = FORMAT;
+      fixture.detectChanges();
+
+      // Leave every dropdown without choosing an option, as a user tabbing
+      // past it does: MatSelect marks itself as touched on blur.
+      DROPDOWNS.forEach(({ index }) => {
+        const dropdown = getDropdown(index);
+        dropdown.dispatchEvent(new FocusEvent('focus'));
+        dropdown.dispatchEvent(new FocusEvent('blur'));
+      });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges(); // Material syncs aria-describedby after content is checked
+    });
+
+    it('should announce the error message, not the question, for every empty required dropdown', () => {
+      expect(compiled.querySelectorAll('mat-select').length).toBe(
+        DROPDOWNS.length
+      );
+      DROPDOWNS.forEach(({ index, question }) => {
+        const alert = getDropdown(index)
+          .closest('mat-form-field')
+          ?.querySelector('mat-error [role="alert"]');
+
+        expect(alert).withContext(question).not.toBeNull();
+        expect(alert?.hasAttribute('aria-label'))
+          .withContext(`${question} (aria-label hides the error text)`)
+          .toBeFalse();
+        expect(alert ? accessibleText(alert) : null)
+          .withContext(question)
+          .toBe(REQUIRED_ERROR);
+      });
+    });
+
+    it('should describe every invalid dropdown by its error message instead of repeating its question', () => {
+      DROPDOWNS.forEach(({ index, question }) => {
+        const dropdown = getDropdown(index);
+
+        expect(dropdown.getAttribute('aria-invalid'))
+          .withContext(question)
+          .toBe('true');
+        expect(dropdown.getAttribute('aria-label'))
+          .withContext(question)
+          .toBe(question);
+        expect(
+          accessibleTextOfIdRefs(dropdown.getAttribute('aria-describedby'))
+        )
+          .withContext(question)
+          .toBe(REQUIRED_ERROR);
+      });
+    });
+  });
+
+  describe('select multiple with "None of the above" option', () => {
+    const multiSelectIndex = '5';
+
+    beforeEach(() => {
+      component.createProfileForm([
+        ...PROFILE_FORM,
+        {
+          question: 'Which statements are true?',
+          type: FormControlType.SELECT_MULTIPLE,
+          options: ['Option 1', 'Option 2', 'None of the above'],
+          validation: {
+            required: true,
+          },
+        },
+      ]);
+      fixture.detectChanges();
+    });
+
+    it('should unselect "None of the above" when another option is selected after it', () => {
+      const multiSelect = component.getFormGroup(multiSelectIndex);
+
+      multiSelect.get('2')?.setValue(true);
+      expect(multiSelect.value).toEqual({ 0: false, 1: false, 2: true });
+
+      multiSelect.get('1')?.setValue(true);
+      expect(multiSelect.value).toEqual({ 0: false, 1: true, 2: false });
+    });
+
+    it('should unselect other options when "None of the above" is selected, and unselect "None of the above" when another option is selected again', () => {
+      const multiSelect = component.getFormGroup(multiSelectIndex);
+
+      multiSelect.get('0')?.setValue(true);
+      multiSelect.get('1')?.setValue(true);
+      expect(multiSelect.value).toEqual({ 0: true, 1: true, 2: false });
+
+      multiSelect.get('2')?.setValue(true);
+      expect(multiSelect.value).toEqual({ 0: false, 1: false, 2: true });
+
+      multiSelect.get('1')?.setValue(true);
+      expect(multiSelect.value).toEqual({ 0: false, 1: true, 2: false });
+    });
+
+    it('should unselect "None of the above" when another option is selected after form reset', () => {
+      const multiSelect = component.getFormGroup(multiSelectIndex);
+
+      component.formGroup.reset();
+      multiSelect.get('2')?.setValue(true);
+      multiSelect.get('1')?.setValue(true);
+
+      expect(multiSelect.get('1')?.value).toBeTrue();
+      expect(multiSelect.get('2')?.value).toBeFalse();
+    });
+
+    it('should handle non-string option values without throwing an error', () => {
+      expect(() =>
+        component.createProfileForm([
+          {
+            question: 'Object options question',
+            type: FormControlType.SELECT_MULTIPLE,
+            options: [{ label: 'Option 1' }, { label: 'None of the above' }],
+          },
+        ])
+      ).not.toThrow();
     });
   });
 });

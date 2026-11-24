@@ -20,6 +20,7 @@ import { tap, withLatestFrom } from 'rxjs/operators';
 import { AppState } from '../../store/state';
 import { Store } from '@ngrx/store';
 import {
+  selectHasConnectionSettings,
   selectHasDevices,
   selectIsAllDevicesOutdated,
   selectRiskProfiles,
@@ -55,6 +56,9 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
   private readonly loaderService = inject(LoaderService);
 
   private dataSource$ = this.select(state => state.dataSource);
+  private hasConnectionSettings$ = this.store.select(
+    selectHasConnectionSettings
+  );
   private hasDevices$ = this.store.select(selectHasDevices);
   private isAllDevicesOutdated$ = this.store.select(selectIsAllDevicesOutdated);
   private profiles$ = this.store.select(selectRiskProfiles);
@@ -62,6 +66,7 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
   testModules$ = this.store.select(selectTestModules);
 
   viewModel$ = this.select({
+    hasConnectionSettings: this.hasConnectionSettings$,
     hasDevices: this.hasDevices$,
     isAllDevicesOutdated: this.isAllDevicesOutdated$,
     systemStatus: this.systemStatus$,

@@ -108,5 +108,46 @@ describe('DeviceTestsComponent', () => {
 
       expect((test[0] as HTMLElement).tabIndex).toEqual(0);
     });
+
+    it('should set aria-describedby and aria-invalid when errorId is provided', () => {
+      fixture.componentRef.setInput('errorId', 'mat-mdc-error-45');
+      fixture.detectChanges();
+
+      const section = compiled.querySelector('.device-form-test-modules');
+      const inputs =
+        compiled.querySelectorAll<HTMLInputElement>('mat-checkbox input');
+
+      expect(section?.getAttribute('aria-invalid')).toEqual('true');
+      expect(section?.getAttribute('aria-describedby')).toEqual(
+        'device-tests-description mat-mdc-error-45'
+      );
+      inputs.forEach(input => {
+        expect(input.getAttribute('aria-invalid')).toEqual('true');
+        expect(input.getAttribute('aria-describedby')).toEqual(
+          'mat-mdc-error-45'
+        );
+      });
+    });
+
+    it('should remove error aria attributes when errorId is cleared', () => {
+      fixture.componentRef.setInput('errorId', 'mat-mdc-error-45');
+      fixture.detectChanges();
+
+      fixture.componentRef.setInput('errorId', null);
+      fixture.detectChanges();
+
+      const section = compiled.querySelector('.device-form-test-modules');
+      const inputs =
+        compiled.querySelectorAll<HTMLInputElement>('mat-checkbox input');
+
+      expect(section?.getAttribute('aria-invalid')).toBeNull();
+      expect(section?.getAttribute('aria-describedby')).toEqual(
+        'device-tests-description'
+      );
+      inputs.forEach(input => {
+        expect(input.getAttribute('aria-invalid')).toBeNull();
+        expect(input.getAttribute('aria-describedby')).toBeNull();
+      });
+    });
   });
 });

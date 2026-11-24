@@ -182,7 +182,8 @@ body {
   display: none;
 }
 
-.mat-mdc-tab.mat-focus-indicator {
+.mat-mdc-tab.mat-focus-indicator,
+.mat-mdc-tab-link.mat-focus-indicator {
   &:focus::before {
     content: none;
   }
@@ -340,7 +341,7 @@ body:has(app-help-tip) .app-toolbar-button.app-toolbar-button-help-tips {
 
 .message-link {
   color: colors.$blue-700;
-  text-decoration: none;
+  text-decoration: underline;
   cursor: pointer;
   font-weight: 400;
 }

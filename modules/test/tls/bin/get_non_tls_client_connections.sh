@@ -26,6 +26,6 @@ TSHARK_OUTPUT="-T json -e ip.src -e tcp.dstport -e ip.dst"
 # - ICMP (ping) requests are not encrypted so we also need to ignore these
 TSHARK_FILTER="eth.src == $SRC_MAC and not tls and not dns and not ntp and not icmp and not(ip.dst == 224.0.0.0/4 or ip.dst == 255.255.255.255)"
 
-response=$(tshark -r "$CAPTURE_FILE" $TSHARK_OUTPUT $TSHARK_FILTER)
+response=$(cat "$CAPTURE_FILE" | tshark -r - $TSHARK_OUTPUT $TSHARK_FILTER)
 
 echo "$response"

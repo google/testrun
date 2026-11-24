@@ -27,6 +27,8 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { TestRunService } from '../../../../services/test-run.service';
+import { TestRunMqttService } from '../../../../services/test-run-mqtt.service';
+import { MqttErrorDialogService } from '../../../../services/mqtt-error-dialog.service';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Device, DeviceStatus } from '../../../../model/device';
 import { DeviceItemComponent } from '../../../../components/device-item/device-item.component';
@@ -35,17 +37,37 @@ import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DeviceTestsComponent } from '../../../../components/device-tests/device-tests.component';
 import { device, MOCK_TEST_MODULES } from '../../../../mocks/device.mock';
-import { of } from 'rxjs';
+import { of, throwError, TimeoutError } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE } from '../../../../mocks/testrun.mock';
 import { SpinnerComponent } from '../../../../components/spinner/spinner.component';
 import { provideMockStore } from '@ngrx/store/testing';
 import { selectDevices } from '../../../../store/selectors';
+
+/** Markup of descendants rendered with a different font weight than `element`, e.g. bold emphasis. */
+function descendantsWithDifferentFontWeight(element: Element): string[] {
+  const fontWeight = getComputedStyle(element).fontWeight;
+  return Array.from(element.querySelectorAll('*'))
+    .filter(child => getComputedStyle(child).fontWeight !== fontWeight)
+    .map(child => child.outerHTML);
+}
+
+/** Text of the elements referenced by an `aria-labelledby`/`aria-describedby` value. */
+function textOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(id => document.getElementById(id)?.textContent?.trim() ?? '')
+    .join(' ');
+}
 
 describe('ProgressInitiateFormComponent', () => {
   let component: TestrunInitiateFormComponent;
   let fixture: ComponentFixture<TestrunInitiateFormComponent>;
   let compiled: HTMLElement;
 
+  const testRunMqttServiceMock = jasmine.createSpyObj(['isConnected']);
+  const mqttErrorDialogServiceMock = jasmine.createSpyObj(['open']);
   const testRunServiceMock = jasmine.createSpyObj([
     'getDevices',
     'fetchDevices',
@@ -57,6 +79,7 @@ describe('ProgressInitiateFormComponent', () => {
   testRunServiceMock.getDevices.and.returnValue(
     new BehaviorSubject<Device[] | null>([device, device])
   );
+  testRunMqttServiceMock.isConnected.and.returnValue(true);
   testRunServiceMock.startTestrun.and.returnValue(of(true));
   testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE);
 
@@ -64,6 +87,11 @@ describe('ProgressInitiateFormComponent', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: TestRunService, useValue: testRunServiceMock },
+        { provide: TestRunMqttService, useValue: testRunMqttServiceMock },
+        {
+          provide: MqttErrorDialogService,
+          useValue: mqttErrorDialogServiceMock,
+        },
         {
           provide: MatDialogRef,
           useValue: {
@@ -97,6 +125,11 @@ describe('ProgressInitiateFormComponent', () => {
 
   afterEach(() => {
     testRunServiceMock.getSystemStatus.calls.reset();
+    testRunServiceMock.startTestrun.calls.reset();
+    testRunServiceMock.fetchVersion.calls.reset();
+    mqttErrorDialogServiceMock.open.calls.reset();
+    testRunMqttServiceMock.isConnected.and.returnValue(true);
+    testRunServiceMock.startTestrun.and.returnValue(of(true));
   });
 
   describe('Class tests', () => {
@@ -223,6 +256,71 @@ describe('ProgressInitiateFormComponent', () => {
 
           expect(testRunServiceMock.fetchVersion).toHaveBeenCalled();
         });
+
+        it('should not start testrun and should open MQTT error dialog when MQTT is disconnected', () => {
+          testRunMqttServiceMock.isConnected.and.returnValue(false);
+          const cancelSpy = spyOn(component, 'cancel');
+
+          component.startTestRun();
+
+          expect(testRunServiceMock.startTestrun).not.toHaveBeenCalled();
+          expect(testRunServiceMock.fetchVersion).not.toHaveBeenCalled();
+          expect(cancelSpy).toHaveBeenCalledWith(null);
+          expect(mqttErrorDialogServiceMock.open).toHaveBeenCalled();
+        });
+
+        it('should open MQTT error dialog when startTestrun request times out', () => {
+          testRunServiceMock.startTestrun.and.returnValue(
+            throwError(() => new TimeoutError())
+          );
+          const cancelSpy = spyOn(component, 'cancel');
+
+          component.startTestRun();
+
+          expect(cancelSpy).toHaveBeenCalledWith(null);
+          expect(mqttErrorDialogServiceMock.open).toHaveBeenCalled();
+        });
+
+        it('should open MQTT error dialog when Testrun is unreachable', () => {
+          testRunServiceMock.startTestrun.and.returnValue(
+            throwError(() => new HttpErrorResponse({ status: 0 }))
+          );
+          const cancelSpy = spyOn(component, 'cancel');
+
+          component.startTestRun();
+
+          expect(cancelSpy).toHaveBeenCalledWith(null);
+          expect(mqttErrorDialogServiceMock.open).toHaveBeenCalled();
+        });
+
+        it('should open MQTT error dialog when MQTT drops while the start request is in flight', () => {
+          testRunMqttServiceMock.isConnected.and.returnValues(true, false);
+          const cancelSpy = spyOn(component, 'cancel');
+
+          component.startTestRun();
+
+          expect(testRunServiceMock.startTestrun).toHaveBeenCalled();
+          expect(cancelSpy).toHaveBeenCalledWith(null);
+          expect(mqttErrorDialogServiceMock.open).toHaveBeenCalled();
+        });
+
+        it('should keep the dialog open and not show MQTT error dialog on backend validation error', () => {
+          testRunServiceMock.startTestrun.and.returnValue(
+            throwError(
+              () =>
+                new HttpErrorResponse({
+                  status: 409,
+                  error: { error: 'Testrun cannot be started' },
+                })
+            )
+          );
+          const cancelSpy = spyOn(component, 'cancel');
+
+          component.startTestRun();
+
+          expect(cancelSpy).not.toHaveBeenCalled();
+          expect(mqttErrorDialogServiceMock.open).not.toHaveBeenCalled();
+        });
       });
     });
 
@@ -317,6 +415,22 @@ describe('ProgressInitiateFormComponent', () => {
         expect(firmware).toBeTruthy();
       });
 
+      it('should show the firmware required error as plain text, styled like the other errors', () => {
+        component.firmware.setValue('');
+        component.startTestRun();
+        fixture.detectChanges();
+
+        const error = compiled.querySelector(
+          'mat-form-field mat-error'
+        ) as HTMLElement;
+
+        expect(error.textContent?.trim()).toBe('Firmware is required');
+        expect(error.querySelector('strong, b'))
+          .withContext('bold markup inside the error')
+          .toBeNull();
+        expect(descendantsWithDifferentFontWeight(error)).toEqual([]);
+      });
+
       it('should display tests if device selected', () => {
         const testsForm = compiled.querySelector('.device-form-test-modules');
         const tests = compiled.querySelectorAll('.device-form-test-modules p');
@@ -344,6 +458,130 @@ describe('ProgressInitiateFormComponent', () => {
         button.click();
 
         expect(component.startTestRun).toHaveBeenCalled();
+      });
+
+      describe('test modules error', () => {
+        const TEST_MODULES_ERROR =
+          'At least one test has to be selected to start test run.';
+
+        const getError = () =>
+          compiled.querySelector<HTMLElement>('mat-error.device-tests-error');
+        const getGroup = () =>
+          compiled.querySelector(
+            'app-device-tests [role="group"]'
+          ) as HTMLElement;
+        const getCheckboxes = () =>
+          Array.from(
+            compiled.querySelectorAll<HTMLInputElement>(
+              'app-device-tests input[type="checkbox"]'
+            )
+          );
+        const clickChangeDevice = () => {
+          (
+            compiled.querySelector(
+              '.progress-initiate-form-actions-change-device'
+            ) as HTMLButtonElement
+          ).click();
+          fixture.detectChanges();
+        };
+
+        beforeEach(() => {
+          component.firmware.setValue('firmware');
+          component.test_modules.setValue([false, false]);
+          (
+            compiled.querySelector(
+              '.progress-initiate-form-actions-start'
+            ) as HTMLButtonElement
+          ).click();
+          fixture.detectChanges();
+        });
+
+        it('should mark the test modules invalid and describe them by the error', () => {
+          const error = getError() as HTMLElement;
+          expect(error.textContent?.trim()).toBe(TEST_MODULES_ERROR);
+          expect(error.id).toBeTruthy();
+          expect(document.querySelectorAll(`[id="${error.id}"]`).length)
+            .withContext('the error id is unique')
+            .toBe(1);
+
+          const group = getGroup();
+          expect(group.getAttribute('aria-invalid')).toBe('true');
+          expect(
+            textOfIdRefs(group.getAttribute('aria-describedby'))
+          ).toContain(TEST_MODULES_ERROR);
+
+          const checkboxes = getCheckboxes();
+          expect(checkboxes.length).toBe(2);
+          checkboxes.forEach(checkbox => {
+            expect(checkbox.getAttribute('aria-invalid')).toBe('true');
+            expect(
+              textOfIdRefs(checkbox.getAttribute('aria-describedby'))
+            ).toBe(TEST_MODULES_ERROR);
+          });
+        });
+
+        it('should announce the error when it appears', () => {
+          const error = getError() as HTMLElement;
+
+          expect(error.getAttribute('role')).toBe('alert');
+          expect(error.getAttribute('aria-live')).toBe('polite');
+        });
+
+        it('should clear the error and the invalid state once a test module is selected', () => {
+          getCheckboxes()[0].click();
+          fixture.detectChanges();
+
+          expect(getError()).toBeNull();
+          const group = getGroup();
+          expect(group.hasAttribute('aria-invalid')).toBeFalse();
+          expect(
+            textOfIdRefs(group.getAttribute('aria-describedby'))
+          ).not.toContain(TEST_MODULES_ERROR);
+          getCheckboxes().forEach(checkbox => {
+            expect(checkbox.hasAttribute('aria-invalid')).toBeFalse();
+            expect(checkbox.hasAttribute('aria-describedby')).toBeFalse();
+          });
+        });
+
+        it('should not flag the test modules again before the next Start', async () => {
+          const checkbox = getCheckboxes()[0];
+          checkbox.click(); // Selecting a test module clears the error.
+          fixture.detectChanges();
+          checkbox.click(); // No test module is selected again.
+          fixture.detectChanges();
+          // Tabbing away marks the test modules as touched.
+          checkbox.dispatchEvent(new Event('blur'));
+          await fixture.whenStable();
+          fixture.detectChanges();
+
+          expect(getError()).toBeNull();
+          expect(getGroup().hasAttribute('aria-invalid')).toBeFalse();
+          getCheckboxes().forEach(input => {
+            expect(input.hasAttribute('aria-invalid')).toBeFalse();
+          });
+        });
+
+        it('should clear the error when going back to change the device', () => {
+          clickChangeDevice();
+
+          expect(compiled.querySelectorAll('app-device-item').length)
+            .withContext('device list of step 1')
+            .toBe(2);
+          expect(getError()).toBeNull();
+        });
+
+        it('should not carry the error over to the next selected device', () => {
+          clickChangeDevice();
+          component.selectedDevice = device;
+          fixture.detectChanges();
+
+          expect(getError()).toBeNull();
+          expect(getGroup().hasAttribute('aria-invalid')).toBeFalse();
+          getCheckboxes().forEach(checkbox => {
+            expect(checkbox.hasAttribute('aria-invalid')).toBeFalse();
+            expect(checkbox.hasAttribute('aria-describedby')).toBeFalse();
+          });
+        });
       });
     });
 

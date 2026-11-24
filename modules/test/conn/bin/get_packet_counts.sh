@@ -17,22 +17,22 @@ if [ ! -f "$PCAP_FILE" ]; then
 fi
 
 # Count multicast packets from the MAC address
-multicast_from_count=$(tshark -r "$PCAP_FILE" -Y "(eth.dst[0] == 1) && eth.src == $MAC_ADDRESS" -T fields -e frame.number | wc -l)
+multicast_from_count=$(cat "$PCAP_FILE" | tshark -r - -Y "(eth.dst[0] == 1) && eth.src == $MAC_ADDRESS" -T fields -e frame.number | wc -l)
 
 # Count multicast packets to the MAC address
-multicast_to_count=$(tshark -r "$PCAP_FILE" -Y "(eth.dst[0] == 1) && eth.dst == $MAC_ADDRESS" -T fields -e frame.number | wc -l)
+multicast_to_count=$(cat "$PCAP_FILE" | tshark -r - -Y "(eth.dst[0] == 1) && eth.dst == $MAC_ADDRESS" -T fields -e frame.number | wc -l)
 
 # Count broadcast packets from the MAC address (broadcast MAC address is FF:FF:FF:FF:FF:FF)
-broadcast_from_count=$(tshark -r "$PCAP_FILE" -Y "eth.dst == ff:ff:ff:ff:ff:ff && eth.src == $MAC_ADDRESS" -T fields -e frame.number | wc -l)
+broadcast_from_count=$(cat "$PCAP_FILE" | tshark -r - -Y "eth.dst == ff:ff:ff:ff:ff:ff && eth.src == $MAC_ADDRESS" -T fields -e frame.number | wc -l)
 
 # Count broadcast packets to the MAC address
-broadcast_to_count=$(tshark -r "$PCAP_FILE" -Y "eth.dst == ff:ff:ff:ff:ff:ff && eth.dst == $MAC_ADDRESS" -T fields -e frame.number | wc -l)
+broadcast_to_count=$(cat "$PCAP_FILE" | tshark -r - -Y "eth.dst == ff:ff:ff:ff:ff:ff && eth.dst == $MAC_ADDRESS" -T fields -e frame.number | wc -l)
 
 # Count unicast packets from the MAC address
-unicast_from_count=$(tshark -r "$PCAP_FILE" -Y "eth.dst != ff:ff:ff:ff:ff:ff && (eth.dst[0] & 1) == 0 && eth.src == $MAC_ADDRESS" -T fields -e frame.number | wc -l)
+unicast_from_count=$(cat "$PCAP_FILE" | tshark -r - -Y "eth.dst != ff:ff:ff:ff:ff:ff && (eth.dst[0] & 1) == 0 && eth.src == $MAC_ADDRESS" -T fields -e frame.number | wc -l)
 
 # Count unicast packets to the MAC address
-unicast_to_count=$(tshark -r "$PCAP_FILE" -Y "eth.dst != ff:ff:ff:ff:ff:ff && (eth.dst[0] & 1) == 0 && eth.dst == $MAC_ADDRESS" -T fields -e frame.number | wc -l)
+unicast_to_count=$(cat "$PCAP_FILE" | tshark -r - -Y "eth.dst != ff:ff:ff:ff:ff:ff && (eth.dst[0] & 1) == 0 && eth.dst == $MAC_ADDRESS" -T fields -e frame.number | wc -l)
 
 # Output the results as a JSON object
 echo "{

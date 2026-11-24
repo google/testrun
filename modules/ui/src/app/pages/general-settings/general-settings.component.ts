@@ -16,9 +16,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   OnDestroy,
   OnInit,
   inject,
+  viewChild,
 } from '@angular/core';
 import {
   FormBuilder,
@@ -27,7 +29,7 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { Subject, takeUntil, tap, timer } from 'rxjs';
+import { Subject, takeUntil, tap } from 'rxjs';
 import { OnlyDifferentValuesValidator } from './only-different-values.validator';
 import { CalloutType } from '../../model/callout-type';
 import { FormKey, SystemConfig } from '../../model/setting';
@@ -53,8 +55,8 @@ import { MatCheckbox } from '@angular/material/checkbox';
 import { TestRunService } from '../../services/test-run.service';
 import { Router } from '@angular/router';
 import { Routes } from '../../model/routes';
-import { FocusManagerService } from '../../services/focus-manager.service';
 import { LocalStorageService } from '../../services/local-storage.service';
+import { _IdGenerator, LiveAnnouncer } from '@angular/cdk/a11y';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 declare const gtag: Function;
@@ -94,8 +96,16 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   );
   private settingsStore = inject(GeneralSettingsStore);
   private readonly loaderService = inject(LoaderService);
-  private readonly focusManagerService = inject(FocusManagerService);
+  private readonly liveAnnouncer = inject(LiveAnnouncer);
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly localStorageService = inject(LocalStorageService);
+  private readonly deviceDropdown =
+    viewChild<SettingsDropdownComponent>('deviceDropdown');
+  private readonly internetDropdown =
+    viewChild<SettingsDropdownComponent>('internetDropdown');
+
+  /** ID of the error shown when both ports have the same value. */
+  readonly portsErrorId = inject(_IdGenerator).getId('mat-mdc-error-');
 
   private isSettingsDisable = false;
   get settingsDisable(): boolean {
@@ -185,27 +195,57 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
 
   saveSetting(): void {
     if (this.settingForm.invalid) {
+      // Focus has to be moved before the "Save" button gets disabled,
+      // otherwise keyboard focus is lost.
+      this.focusInvalidPortField();
       this.settingsStore.setIsSubmitting(true);
       this.settingForm.markAllAsTouched();
     } else {
       this.createSystemConfig();
       this.settingForm.markAsPristine();
       this.analyticsForm.markAsPristine();
-      this.setFocus();
     }
   }
 
-  private setFocus(): void {
-    timer(200).subscribe(() => {
-      const helpTip = window.document.querySelector(
-        'app-help-tip:not(.closed-tip)'
-      );
-      const focusableContainer = helpTip
-        ? helpTip
-        : window.document.querySelector('app-settings');
+  /**
+   * Moves keyboard focus to the port that has to be changed: the internet
+   * port or, when it is disabled, the device port.
+   */
+  private focusInvalidPortField(): void {
+    const portDropdown = this.isInternetControlDisabled
+      ? this.deviceDropdown()
+      : this.internetDropdown();
+    portDropdown?.focus();
+  }
 
-      this.focusManagerService.focusFirstElementInContainer(focusableContainer);
-    });
+  /**
+   * Tells screen reader users that the settings were saved, and only then
+   * moves keyboard focus away from the "Save" button that saving disabled.
+   */
+  private announceSettingsSaved(): void {
+    this.liveAnnouncer
+      .announce('General settings saved.', 'polite')
+      .then(() => this.focusPageHeading());
+  }
+
+  /**
+   * Moves keyboard focus to the "Settings" page heading if it was lost
+   * because the focused "Save" button got disabled. Depending on the browser,
+   * focus then moves to the page body or stays on the disabled button. Focus
+   * that the user has moved elsewhere in the meantime is left as is.
+   */
+  private focusPageHeading(): void {
+    const focusedElement = document.activeElement;
+    const isFocusLost =
+      !focusedElement ||
+      focusedElement === document.body ||
+      focusedElement.matches(':disabled');
+    if (isFocusLost) {
+      this.elementRef.nativeElement
+        .closest('app-settings')
+        ?.querySelector<HTMLElement>('h2')
+        ?.focus();
+    }
   }
 
   private disableSettings(): void {
@@ -264,6 +304,7 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     this.settingsStore.updateSystemConfig({
       onSystemConfigUpdate: () => {
         this.setDefaultFormValues();
+        this.announceSettingsSaved();
       },
       config: data,
     });
@@ -278,8 +319,16 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     this.destroy$.unsubscribe();
   }
 
+  /**
+   * Fetches the network interfaces again and tells screen reader users once
+   * the refreshed interfaces are loaded.
+   */
   getSystemInterfaces(): void {
-    this.settingsStore.getInterfaces();
+    this.settingsStore.refreshInterfaces({
+      onInterfacesRefresh: () => {
+        this.liveAnnouncer.announce('Network interfaces refreshed.', 'polite');
+      },
+    });
     this.hideLoading();
   }
 

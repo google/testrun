@@ -63,6 +63,37 @@ describe('HelpTipComponent', () => {
     expect(tipContent?.innerHTML.trim()).toContain(HelpTips.step1.content);
   });
 
+  it('should render the title as a level 2 heading', () => {
+    const heading = compiled.querySelector('.tip-container h2.title');
+
+    expect(heading?.textContent?.trim()).toBe(HelpTips.step1.title);
+  });
+
+  it('should name the dialog by its title and describe it by its content', () => {
+    const dialog = compiled.querySelector('[role="dialog"]');
+    const tipTitle = compiled.querySelector('.tip-container .title');
+    const tipContent = compiled.querySelector('.tip-container .tip-content');
+
+    expect(tipTitle?.id).toBe(component.titleId);
+    expect(tipContent?.id).toBe(component.contentId);
+    expect(dialog?.getAttribute('aria-labelledby')).toBe(component.titleId);
+    expect(dialog?.getAttribute('aria-describedby')).toBe(component.contentId);
+    expect(dialog?.hasAttribute('aria-label')).toBeFalse();
+  });
+
+  it('should emit onCLoseTip when Escape is pressed inside the dialog', () => {
+    const closeTipSpy = spyOn(component.onCLoseTip, 'emit');
+    const closeButton = compiled.querySelector(
+      '.close-button'
+    ) as HTMLButtonElement;
+
+    closeButton.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+    );
+
+    expect(closeTipSpy).toHaveBeenCalledWith(true);
+  });
+
   it('should have class provided from arrowPosition', () => {
     const tipEl = compiled.querySelector('.tip');
 

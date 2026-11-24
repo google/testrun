@@ -6,7 +6,11 @@ import { Component } from '@angular/core';
 @Component({
   template:
     '<div id="main"><button class="test-button">Test</button></div>' +
-    '<div id="second"><button class="test-button">Test</button></div>',
+    '<div id="second"><button class="test-button">Test</button></div>' +
+    '<div id="tabs" role="tablist">' +
+    '<a href="#general" role="tab" tabindex="-1">General</a>' +
+    '<a href="#certificates" role="tab" tabindex="0">Certificates</a>' +
+    '</div>',
   standalone: false,
 })
 class DummyComponent {}
@@ -52,5 +56,18 @@ describe('FocusManagerService', () => {
     service.focusFirstElementInContainer(container);
 
     expect(document.activeElement).toBe(testButton);
+  });
+
+  it('should skip links that are not in the Tab sequence', () => {
+    const container = fixture.nativeElement.querySelector(
+      '#tabs'
+    ) as HTMLElement;
+    const selectedTab = container.querySelector(
+      '[tabindex="0"]'
+    ) as HTMLAnchorElement;
+
+    service.focusFirstElementInContainer(container);
+
+    expect(document.activeElement).toBe(selectedTab);
   });
 });

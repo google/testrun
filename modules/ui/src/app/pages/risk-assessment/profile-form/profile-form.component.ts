@@ -131,7 +131,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
       this.copyProfile = null;
     }
     timer(100).subscribe(() => {
-      if (this.profile?.status === ProfileStatus.EXPIRED) {
+      if (this.isReadOnly) {
         this.profileForm.disable();
       } else {
         this.profileForm.enable();
@@ -155,6 +155,29 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     if (this.selectedProfile) {
       this.fillProfileForm(this.profileFormat, this.selectedProfile!);
     }
+  }
+
+  /**
+   * Expired profiles can only be viewed: their form controls are disabled.
+   * New, copied, draft and valid profiles are editable.
+   */
+  get isReadOnly(): boolean {
+    return this.profile?.status === ProfileStatus.EXPIRED;
+  }
+
+  /**
+   * Accessible name of the form (rendered as a visually hidden heading).
+   * It must reflect the actual mode of the form, so screen reader users are
+   * never told that an editable form is read-only.
+   */
+  get formTitle(): string {
+    if (this.isReadOnly) {
+      return 'View information (read-only)';
+    }
+    // An unsaved copy is saved as a brand-new profile.
+    return !this.profile || this.profile.status === ProfileStatus.COPY
+      ? 'Create risk profile'
+      : 'Edit risk profile';
   }
 
   get isSaveDisabled(): boolean | null {

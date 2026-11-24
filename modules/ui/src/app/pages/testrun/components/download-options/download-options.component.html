@@ -14,53 +14,60 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 @if (data) {
-  <div
-    role="menu"
-    tabindex="-1"
-    class="download-actions"
-    [cdkTrapFocus]="isOpenDownloadOptions"
-    (keydown)="handleKeydown($event)">
+  <div class="download-actions">
     @if (isOpenDownloadOptions) {
-      <button
-        role="menuitem"
-        appMenuItem
-        (click)="downloadPdf(data)"
-        class="download-option"
-        aria-label="Download PDF report"
-        mat-flat-button>
-        <mat-icon fontSet="material-symbols-outlined" class="filled">
-          lab_profile
-        </mat-icon>
-        {{ DownloadOption.PDF }}
-      </button>
-      <app-download-report-zip
-        role="menuitem"
-        appMenuItem
-        class="download-option"
-        [report]="data.report"
-        [export]="data.export"
-        [profiles]="profiles">
-        <mat-icon
-          class="download-report-icon"
-          fontSet="material-symbols-outlined"
-          class="filled">
-          archive
-        </mat-icon>
-        <span>{{ DownloadOption.ZIP }}</span>
-      </app-download-report-zip>
+      <div
+        role="menu"
+        tabindex="-1"
+        class="download-menu"
+        [id]="menuId"
+        [attr.aria-labelledby]="triggerId"
+        (keydown)="handleKeydown($event)">
+        <button
+          role="menuitem"
+          appMenuItem
+          (click)="downloadPdf(data); closeDownloadOptions()"
+          class="download-option"
+          aria-label="Download PDF report"
+          mat-flat-button>
+          <mat-icon fontSet="material-symbols-outlined" class="filled">
+            lab_profile
+          </mat-icon>
+          {{ DownloadOption.PDF }}
+        </button>
+        <!-- The dialog returns focus to "Download": this item closes with the menu. -->
+        <app-download-report-zip
+          role="menuitem"
+          appMenuItem
+          class="download-option"
+          [report]="data.report"
+          [export]="data.export"
+          [profiles]="profiles"
+          [restoreFocus]="'#' + triggerId"
+          (click)="closeDownloadOptions()"
+          (keydown.enter)="closeDownloadOptions()"
+          (keydown.space)="closeDownloadOptions()">
+          <mat-icon
+            class="download-report-icon"
+            fontSet="material-symbols-outlined"
+            class="filled">
+            archive
+          </mat-icon>
+          <span>{{ DownloadOption.ZIP }}</span>
+        </app-download-report-zip>
+      </div>
     }
     <button
-      role="menuitem"
-      appMenuItem
+      #downloadButton
+      [id]="triggerId"
       (click)="openDownloadOptions()"
+      (keydown.escape)="closeDownloadOptions()"
       class="download-button"
       [class.download-button-opened]="isOpenDownloadOptions"
       color="primary"
-      [attr.aria-label]="
-        isOpenDownloadOptions
-          ? 'Hide download options'
-          : 'Show download options'
-      "
+      aria-haspopup="menu"
+      [attr.aria-expanded]="isOpenDownloadOptions"
+      [attr.aria-controls]="isOpenDownloadOptions ? menuId : null"
       mat-flat-button>
       @if (!isOpenDownloadOptions) {
         <mat-icon fontSet="material-symbols-outlined" class="filled">
@@ -72,7 +79,8 @@ limitations under the License.
           close
         </mat-icon>
       }
-      {{ isOpenDownloadOptions ? '' : 'Download' }}
+      <!-- Keeps the name "Download" while only the close icon is visible. -->
+      <span [class.visually-hidden]="isOpenDownloadOptions">Download</span>
     </button>
   </div>
 }

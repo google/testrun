@@ -35,7 +35,7 @@ $border-radius: 12px;
 .device-item-basic {
   padding: 0 24px 0 32px;
   width: variables.$device-item-width;
-  height: 92px;
+  min-height: 92px;
   box-shadow:
     0px 1px 2px 0px rgba(0, 0, 0, 0.3),
     0px 1px 3px 1px rgba(0, 0, 0, 0.15);
@@ -103,6 +103,17 @@ $border-radius: 12px;
       visibility: visible;
       width: 24px;
     }
+  }
+
+  // Explicit keyboard focus ring. Without it the card falls back to the
+  // browser default ring, whose platform-dependent color (e.g. #a8c7fa) is
+  // below the 3:1 non-text contrast minimum on the Devices page (1.38:1 on a
+  // selected card). Black matches the app-wide `.mdc-button:focus-visible`
+  // ring and has at least 16:1 contrast on the selected (#d3e3fd) and
+  // unselected (#f0f4f9) cards and on the drawer (#f8fafd).
+  &:focus-visible {
+    outline: 2px solid colors.$black;
+    outline-offset: 2px;
   }
 
   &:disabled {

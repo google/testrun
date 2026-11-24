@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <form [formGroup]="initiateForm" class="progress-initiate-form">
-  <span class="progress-initiate-form-title">Start new Testrun</span>
+  <span class="progress-initiate-form-title" role="heading" aria-level="2"
+    >Start new Testrun</span
+  >
 
   @if (devices$ | async; as devices) {
     <section class="progress-initiate-form-content">
@@ -54,18 +56,23 @@ limitations under the License.
           }
           @if (firmware.errors?.['required']) {
             <mat-error>
-              <span>Firmware is <strong>required</strong></span>
+              <span>Firmware is required</span>
             </mat-error>
           }
         </mat-form-field>
         <app-device-tests
+          [errorId]="(error$ | async) ? testModulesErrorId : null"
           [deviceForm]="initiateForm"
           [deviceTestModules]="selectedDevice.test_modules"
           [testModules]="testModules">
         </app-device-tests>
       }
       @if (error$ | async) {
-        <mat-error class="device-tests-error">
+        <mat-error
+          [id]="testModulesErrorId"
+          role="alert"
+          aria-live="polite"
+          class="device-tests-error">
           <span>{{ error$ | async }}</span>
         </mat-error>
       }

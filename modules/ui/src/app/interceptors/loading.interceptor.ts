@@ -23,6 +23,7 @@ import {
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { LoaderService } from '../services/loader.service';
+import { SYSTEM_START } from '../services/test-run.service';
 
 @Injectable()
 export class LoadingInterceptor implements HttpInterceptor {
@@ -35,6 +36,9 @@ export class LoadingInterceptor implements HttpInterceptor {
     request: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
+    if (request.url.includes(SYSTEM_START)) {
+      return next.handle(request);
+    }
     this.totalRequests++;
     this.zone.run(() => {
       this.loadingService.setLoading(true);

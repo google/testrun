@@ -24,13 +24,19 @@
   align-items: center;
   gap: 8px;
   border-radius: variables.$corner-small;
-  border: 1px solid mat.get-theme-color($light-theme, neutral-variant, 80);
+  border: 1px solid colors.$outline;
   background-color: colors.$white;
   min-height: 48px;
   padding: 4px 8px 4px 6px;
   box-sizing: border-box;
   width: 100%;
   cursor: text;
+
+  &.focused,
+  &:focus-within {
+    outline: 2px solid colors.$primary;
+    outline-offset: 1px;
+  }
 }
 
 .search-menu-trigger {

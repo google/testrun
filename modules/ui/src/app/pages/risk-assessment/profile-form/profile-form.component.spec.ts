@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 
 import { ProfileFormComponent } from './profile-form.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -273,6 +278,71 @@ describe('ProfileFormComponent', () => {
         expect(emitSpy).toHaveBeenCalled();
       });
     });
+  });
+
+  describe('Accessible form title', () => {
+    const getForm = () =>
+      compiled.querySelector('form.profile-form') as HTMLFormElement;
+    const getTitle = () =>
+      compiled.querySelector('#form-accessible-title') as HTMLElement;
+
+    it('should be a visually hidden h2 that labels the form', () => {
+      const title = getTitle();
+
+      expect(title.tagName).toBe('H2');
+      expect(title.classList).toContain('visually-hidden');
+      expect(getForm().getAttribute('aria-labelledby')).toBe(title.id);
+    });
+
+    it('should announce "Create risk profile" for a new profile', () => {
+      component.selectedProfile = null;
+      fixture.detectChanges();
+
+      expect(getTitle().textContent?.trim()).toBe('Create risk profile');
+      expect(getForm().hasAttribute('tabindex')).toBeFalse();
+    });
+
+    it('should announce "Create risk profile" for an unsaved copy of a profile', () => {
+      component.selectedProfile = COPY_PROFILE_MOCK;
+      fixture.detectChanges();
+
+      expect(getTitle().textContent?.trim()).toBe('Create risk profile');
+      expect(getForm().hasAttribute('tabindex')).toBeFalse();
+    });
+
+    [PROFILE_MOCK, PROFILE_MOCK_3].forEach(profile => {
+      it(`should announce "Edit risk profile" for a ${profile.status} profile`, () => {
+        component.selectedProfile = profile;
+        fixture.detectChanges();
+
+        expect(getTitle().textContent?.trim()).toBe('Edit risk profile');
+        expect(getForm().hasAttribute('tabindex')).toBeFalse();
+      });
+    });
+
+    it('should not announce read-only when the form controls are enabled', fakeAsync(() => {
+      component.selectedProfile = PROFILE_MOCK;
+      tick(100);
+      fixture.detectChanges();
+
+      expect(component.profileForm.enabled).toBeTrue();
+      expect(getTitle().textContent).not.toContain('read-only');
+    }));
+
+    it('should announce "View information (read-only)" when the form controls are disabled', fakeAsync(() => {
+      component.selectedProfile = EXPIRED_PROFILE_MOCK;
+      tick(100);
+      fixture.detectChanges();
+
+      expect(component.profileForm.disabled).toBeTrue();
+      expect(getTitle().textContent?.trim()).toBe(
+        'View information (read-only)'
+      );
+      expect(getForm().getAttribute('aria-labelledby')).toBe(
+        'form-accessible-title'
+      );
+      expect(getForm().getAttribute('tabindex')).toBe('-1');
+    }));
   });
 
   describe('Class tests', () => {

@@ -15,15 +15,16 @@ limitations under the License.
 -->
 <div
   role="dialog"
-  aria-label="Help tips"
   class="tip"
+  [attr.aria-labelledby]="titleId"
+  [attr.aria-describedby]="contentId"
   [style.top.px]="tipPosition.top"
   [style.left.px]="tipPosition.left"
   [ngClass]="data()?.arrowPosition">
   @if (data()) {
     <div class="tip-container">
       <div class="heading">
-        <p class="title">{{ data()?.title }}</p>
+        <h2 class="title" [id]="titleId">{{ data()?.title }}</h2>
         <button
           class="close-button"
           mat-icon-button
@@ -32,7 +33,7 @@ limitations under the License.
           <mat-icon>close</mat-icon>
         </button>
       </div>
-      <p class="tip-content">
+      <p class="tip-content" [id]="contentId">
         {{ data()?.content }}
       </p>
       <div class="tip-action-container">

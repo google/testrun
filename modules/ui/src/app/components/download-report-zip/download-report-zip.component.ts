@@ -24,7 +24,7 @@ import {
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Profile } from '../../model/profile';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { DownloadZipModalComponent } from '../download-zip-modal/download-zip-modal.component';
 import { ReportActionComponent } from '../report-action/report-action.component';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
@@ -49,6 +49,12 @@ export class DownloadReportZipComponent
   @Input() profiles: Profile[] = [];
   @Input() report: string | null | undefined = null;
   @Input() export: string | null | undefined = null;
+  /**
+   * Where focus goes when the ZIP dialog closes. By default, the element that
+   * had focus when it opened; a menu passes its trigger instead, because it
+   * removes this item when it closes.
+   */
+  @Input() restoreFocus: MatDialogConfig['restoreFocus'] = true;
 
   @HostListener('click', ['$event'])
   @HostListener('keydown.enter', ['$event'])
@@ -68,6 +74,7 @@ export class DownloadReportZipComponent
         started: this.data?.started,
       },
       autoFocus: true,
+      restoreFocus: this.restoreFocus,
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'initiate-test-run-dialog',
@@ -76,6 +83,18 @@ export class DownloadReportZipComponent
 
   @HostBinding('tabIndex')
   readonly tabIndex = 0;
+
+  /** A button by default; `menuitem` inside a menu. */
+  @HostBinding('attr.role')
+  @Input()
+  role = 'button';
+
+  @HostBinding('attr.aria-label')
+  get ariaLabel(): string {
+    return this.data
+      ? `Download zip for Testrun # ${this.getTestRunId(this.data)}`
+      : 'Download ZIP file';
+  }
 
   @HostListener('mouseenter')
   @HostListener('keyup')

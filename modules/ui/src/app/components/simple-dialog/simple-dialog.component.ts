@@ -30,7 +30,13 @@ interface DialogData {
   icon?: string;
   title?: string;
   content?: string;
+  /**
+   * Id for the content, so that the opener can describe the dialog by it via
+   * `MatDialogConfig.ariaDescribedBy`.
+   */
+  contentId?: string;
   confirmName?: string;
+  isPersistent?: boolean;
 }
 
 @Component({
@@ -58,6 +64,7 @@ export class SimpleDialogComponent extends ComponentWithAnnouncement(
     super(dialogRef, data.title, liveAnnouncer, focusService);
     this.dialogRef = dialogRef;
     this.data = data;
+    this.disableEscape = !!data?.isPersistent;
     this.liveAnnouncer = liveAnnouncer;
     this.focusService = focusService;
   }

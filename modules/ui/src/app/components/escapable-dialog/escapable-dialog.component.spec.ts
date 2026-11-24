@@ -22,11 +22,15 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 describe('EscapableDialogComponent', () => {
   let component: EscapableDialogComponent;
   let fixture: ComponentFixture<EscapableDialogComponent>;
-  const keyboardEvent = new BehaviorSubject<KeyboardEvent>(
-    new KeyboardEvent('keydown', { code: '' })
-  );
+  // Created per test: a shared BehaviorSubject would replay the previous
+  // test's Escape event to the next component, closing it before the spy is
+  // installed.
+  let keyboardEvent: BehaviorSubject<KeyboardEvent>;
 
   beforeEach(() => {
+    keyboardEvent = new BehaviorSubject<KeyboardEvent>(
+      new KeyboardEvent('keydown', { code: '' })
+    );
     TestBed.configureTestingModule({
       imports: [EscapableDialogComponent],
       providers: [
@@ -68,5 +72,18 @@ describe('EscapableDialogComponent', () => {
     expect(closeSpy).not.toHaveBeenCalled();
 
     closeSpy.calls.reset();
+  });
+
+  it('should not close dialog on escape when escape is disabled', () => {
+    const closeSpy = spyOn(component.dialogRef, 'close');
+    component.disableEscape = true;
+
+    keyboardEvent.next(new KeyboardEvent('keydown', { code: 'Escape' }));
+    fixture.detectChanges();
+
+    expect(closeSpy).not.toHaveBeenCalled();
+
+    closeSpy.calls.reset();
+    component.disableEscape = false;
   });
 });

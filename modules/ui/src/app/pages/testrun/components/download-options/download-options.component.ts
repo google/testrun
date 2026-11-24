@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  Injector,
   Input,
   inject,
   QueryList,
+  viewChild,
   ViewChildren,
   AfterViewInit,
 } from '@angular/core';
@@ -30,8 +33,8 @@ import {
 } from '../../../../model/testrun-status';
 import { DownloadReportZipComponent } from '../../../../components/download-report-zip/download-report-zip.component';
 import { Profile } from '../../../../model/profile';
-import { MatButtonModule } from '@angular/material/button';
-import { CdkTrapFocus, FocusKeyManager } from '@angular/cdk/a11y';
+import { MatButton, MatButtonModule } from '@angular/material/button';
+import { _IdGenerator, FocusKeyManager } from '@angular/cdk/a11y';
 import { Directive, ElementRef } from '@angular/core';
 import { FocusableOption } from '@angular/cdk/a11y';
 
@@ -58,7 +61,6 @@ export enum DownloadOption {
     MatButtonModule,
     MatIconModule,
     DownloadReportZipComponent,
-    CdkTrapFocus,
     MenuItemDirective,
   ],
   providers: [DatePipe],
@@ -68,12 +70,21 @@ export class DownloadOptionsComponent implements AfterViewInit {
   @ViewChildren(MenuItemDirective) items!: QueryList<MenuItemDirective>;
 
   private datePipe = inject(DatePipe);
+  private injector = inject(Injector);
   private keyManager!: FocusKeyManager<MenuItemDirective>;
+  /** The "Download" menu trigger. */
+  private downloadButton = viewChild<MatButton>('downloadButton');
 
   isOpenDownloadOptions: boolean = false;
   @Input() profiles: Profile[] = [];
   @Input() data!: TestrunStatus;
   DownloadOption = DownloadOption;
+  /** Names the menu via `aria-labelledby`. */
+  readonly triggerId = inject(_IdGenerator).getId(
+    'app-download-options-trigger-'
+  );
+  /** Referenced by the trigger's `aria-controls` while the menu is open. */
+  readonly menuId = inject(_IdGenerator).getId('app-download-options-menu-');
 
   downloadPdf(data: TestrunStatus) {
     this.createLink(data);
@@ -120,21 +131,40 @@ export class DownloadOptionsComponent implements AfterViewInit {
   }
 
   openDownloadOptions(): void {
-    this.isOpenDownloadOptions = !this.isOpenDownloadOptions;
+    if (this.isOpenDownloadOptions) {
+      this.closeDownloadOptions();
+      return;
+    }
+    this.isOpenDownloadOptions = true;
+    // Like a native menu, move focus to the first item once it renders.
+    afterNextRender(() => this.keyManager.setFirstItemActive(), {
+      injector: this.injector,
+    });
+  }
+
+  /**
+   * Closes the menu and focuses "Download" first, so focus is not lost when
+   * the focused menu item is removed.
+   */
+  closeDownloadOptions(): void {
+    this.isOpenDownloadOptions = false;
+    this.downloadButton()?.focus();
   }
 
   ngAfterViewInit() {
     this.keyManager = new FocusKeyManager(this.items)
       .withWrap()
-      .withVerticalOrientation(true);
+      .withVerticalOrientation(true)
+      .withHomeAndEnd();
   }
 
   handleKeydown(event: KeyboardEvent) {
     if (this.isOpenDownloadOptions) {
       this.keyManager.onKeydown(event);
 
-      if (event.key === 'Tab') {
-        this.isOpenDownloadOptions = false;
+      if (event.key === 'Tab' || event.key === 'Escape') {
+        // Tab keeps its default action: focus moves on from "Download".
+        this.closeDownloadOptions();
       }
     }
   }

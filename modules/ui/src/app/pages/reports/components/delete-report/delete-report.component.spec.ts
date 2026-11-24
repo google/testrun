@@ -97,12 +97,15 @@ describe('DeleteReportComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have delete report button', () => {
+      it('should have delete report button with interpolated aria-label', () => {
         const deleteReportButton = compiled.querySelector(
           '.delete-report-button'
         );
 
         expect(deleteReportButton).toBeTruthy();
+        expect(deleteReportButton?.getAttribute('aria-label')).toBe(
+          'Delete report for Testrun # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20'
+        );
       });
     });
   });

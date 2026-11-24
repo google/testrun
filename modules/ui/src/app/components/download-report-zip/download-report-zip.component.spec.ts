@@ -79,20 +79,45 @@ describe('DownloadReportZipComponent', () => {
             started: '2023-06-22T09:20:00.123Z',
           },
           autoFocus: true,
+          restoreFocus: true,
           hasBackdrop: true,
           disableClose: true,
           panelClass: 'initiate-test-run-dialog',
         });
         openSpy.calls.reset();
       }));
+
+      it('should return focus to the given element when the dialog closes', () => {
+        const openSpy = spyOn(component.dialog, 'open');
+        fixture.componentRef.setInput('restoreFocus', '#download-button');
+
+        component.onClick(new Event('click'));
+
+        expect(openSpy).toHaveBeenCalledWith(
+          DownloadZipModalComponent,
+          jasmine.objectContaining({ restoreFocus: '#download-button' })
+        );
+      });
     });
 
-    it('should have title', () => {
+    it('should have title and accessible role and label', () => {
       component.ngOnInit();
+      fixture.detectChanges();
 
       expect(component.tooltip.message).toEqual(
         'Download zip for Testrun # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20'
       );
+      expect(compiled.getAttribute('role')).toEqual('button');
+      expect(compiled.getAttribute('aria-label')).toEqual(
+        'Download zip for Testrun # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20'
+      );
+    });
+
+    it('should take the role of a menu item inside a menu', () => {
+      fixture.componentRef.setInput('role', 'menuitem');
+      fixture.detectChanges();
+
+      expect(compiled.getAttribute('role')).toEqual('menuitem');
     });
   });
 
