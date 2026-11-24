@@ -1,0 +1,19 @@
+{% macro insert(step_index, line) %}
+<div class="steps-to-resolve">
+  <div class="steps-to-resolve-row">
+    <span class="steps-to-resolve-index">{{ step_index }}.</span>
+    <div class="steps-to-resolve-test-name">
+      <span class="steps-to-resolve subtitle">Name</span><br>{{ line['name'] }}
+    </div>
+    <div class="steps-to-resolve-description">
+      <span class="steps-to-resolve subtitle">Description</span><br>{{ line["description"] }}
+    </div>
+  </div>
+  <div class="steps-to-resolve-row content">
+    <span class="steps-to-resolve subtitle">Steps to resolve</span>
+    {% for recommedtation in line['recommendations'] %}
+      <br><span style="font-size: 14px">{{ loop.index }}. {{ recommedtation }}</span>
+    {% endfor %}
+  </div>
+</div>
+{% endmacro %}
