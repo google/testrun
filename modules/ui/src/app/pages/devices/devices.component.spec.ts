@@ -278,6 +278,37 @@ describe('DevicesComponent', () => {
     });
   });
 
+  describe('device card actions menu buttons', () => {
+    beforeEach(() => {
+      component.viewModel$ = of({
+        devices: [device, updated_device],
+        selectedDevice: null,
+        deviceInProgress: null,
+        testModules: [],
+        actions: [
+          {
+            action: DeviceAction.StartNewTestrun,
+            svgIcon: 'testrun_logo_small',
+          },
+          { action: DeviceAction.Delete, icon: 'delete' },
+        ],
+      });
+      fixture.detectChanges();
+    });
+
+    it('should give each card a distinct actions button name that identifies its device', () => {
+      const names = Array.from(
+        compiled.querySelectorAll('app-list-item .list-item > button'),
+        button => button.getAttribute('aria-label')
+      );
+
+      expect(names).toEqual([
+        'Actions for Delta O3-DIN-CPU',
+        'Actions for Alpha O3-XYZ-CPU',
+      ]);
+    });
+  });
+
   describe('close dialog', () => {
     beforeEach(() => {
       component.viewModel$ = of({
