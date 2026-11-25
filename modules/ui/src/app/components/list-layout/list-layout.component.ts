@@ -86,6 +86,8 @@ export class ListLayoutComponent<T extends object> {
   readonly emptySearchMessage = computed(
     () => `No ${this.entityLabel().plural} found`
   );
+  /** Names the search input after what it filters, e.g. "Search devices". */
+  readonly searchLabel = computed(() => `Search ${this.entityLabel().plural}`);
   readonly filterStatusMessage = computed(() => {
     const count = this.filtered().length;
     const { singular, plural } = this.entityLabel();

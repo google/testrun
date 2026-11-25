@@ -101,6 +101,15 @@
   background-color: colors.$surface-container-high;
   min-height: 40px;
   width: 100%;
+
+  // Unlike the placeholder, the magnifying glass stays visible while a query
+  // is typed, so the field's purpose remains clear. on-surface-variant
+  // (#444746) has 8.06:1 contrast on #e9eef6, above the 3:1 minimum for icons.
+  .search-icon {
+    flex-shrink: 0;
+    color: colors.$on-surface-variant;
+  }
+
   input {
     width: calc(100% - #{variables.$icon-size * 2});
     height: 100%;
@@ -110,6 +119,15 @@
     font-size: 16px;
     font-family: variables.$font-text;
     color: colors.$on-surface-variant;
+
+    // The browser default placeholder color (#757575) has only 3.95:1
+    // contrast on #e9eef6. on-surface-variant (#444746) has 8.06:1, above the
+    // 4.5:1 minimum for text. Opacity is reset because some browsers (e.g.
+    // Firefox) render placeholders semi-transparent.
+    &::placeholder {
+      color: colors.$on-surface-variant;
+      opacity: 1;
+    }
 
     // Explicit keyboard focus ring. Without it the input falls back to the
     // browser default ring, whose platform-dependent color (e.g. #a8c7fa) is
