@@ -38,12 +38,13 @@ limitations under the License.
         </mat-toolbar-row>
         <mat-toolbar-row>
           <div class="search-field">
+            <mat-icon class="search-icon" aria-hidden="true">search</mat-icon>
             <input
               #searchInput
-              aria-label="Search"
+              [attr.aria-label]="searchLabel()"
               [value]="searchText()"
               (input)="updateQuery($event)"
-              placeholder="Search" />
+              [placeholder]="searchLabel()" />
             @if (searchText().length > 2) {
               <button
                 (click)="clearSearch()"
@@ -53,8 +54,6 @@ limitations under the License.
                 aria-label="Clear search">
                 <mat-icon>close</mat-icon>
               </button>
-            } @else {
-              <mat-icon>search</mat-icon>
             }
           </div>
         </mat-toolbar-row>
