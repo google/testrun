@@ -65,7 +65,7 @@ echo "Starting TFTP on port 69 "
 (while true; do nc -l -p 69 < /dev/null | tee /dev/stderr | cat <(echo 'Hello TCP!') ; done) &
 
 echo "Starting SSDP on port 1900 "
-minidlnad -i th0
+minidlnad -i eth0 -P /var/run/minidnla.pid
 
 
 # Start NTP service 
