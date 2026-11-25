@@ -11,7 +11,7 @@ RUN apt-get update && \
     coreutils \
     dnsutils \
     netcat-openbsd \
-    arping && \
+    arping \
     minidlna && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
