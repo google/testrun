@@ -14,7 +14,12 @@ import {
 import { SettingOption, SystemInterfaces } from '../../../../model/setting';
 import { LOG_LEVELS, MONITORING_PERIOD } from '../../general-settings.store';
 
-/** Text of the elements referenced by an `aria-describedby` value. */
+/** IDs referenced by an ID reference list attribute, e.g. `aria-labelledby`. */
+function idRefsOf(element: Element, attribute: string): string[] {
+  return (element.getAttribute(attribute) ?? '').split(/\s+/).filter(Boolean);
+}
+
+/** Text of the elements referenced by an `aria-labelledby` or `aria-describedby` value. */
 function textOfIdRefs(idRefs: string | null): string {
   return (idRefs ?? '')
     .split(/\s+/)
@@ -323,6 +328,76 @@ describe('SettingsDropdownComponent', () => {
     });
   });
 
+  describe('accessible name', () => {
+    /** The name a screen reader announces for the select. */
+    function accessibleName(): string {
+      return textOfIdRefs(select.getAttribute('aria-labelledby'));
+    }
+
+    it('should be labelled by the visible label, then by the value it shows', () => {
+      const shownValue = select.querySelector('.mat-mdc-select-value');
+
+      expect(idRefsOf(select, 'aria-labelledby')).toEqual([
+        'test-label',
+        shownValue?.id as string,
+      ]);
+      expect(select.hasAttribute('aria-label'))
+        .withContext('aria-label would override aria-labelledby')
+        .toBeFalse();
+    });
+
+    it('should include the visible placeholder while no option is selected', () => {
+      expect(accessibleName()).toBe('Test port Test port label');
+    });
+
+    it('should include the selected option', () => {
+      component.control.setValue(MOCK_DEVICE_VALUE);
+      fixture.detectChanges();
+
+      expect(accessibleName()).toBe('Test port mockDeviceKey mockDeviceValue');
+    });
+
+    it('should follow the option selected with the arrow keys', async () => {
+      const matSelect =
+        await TestbedHarnessEnvironment.loader(fixture).getHarness(
+          MatSelectHarness
+        );
+      const trigger = await matSelect.host();
+
+      await trigger.sendKeys(TestKey.DOWN_ARROW);
+
+      expect(accessibleName()).toBe('Test port mockDeviceKey mockDeviceValue');
+
+      await trigger.sendKeys(TestKey.DOWN_ARROW);
+
+      expect(accessibleName()).toBe(
+        'Test port mockInternetKey mockInternetValue'
+      );
+      expect(await matSelect.isOpen())
+        .withContext('the closed select changes its value in place')
+        .toBeFalse();
+    });
+
+    it('should keep the selected option in the name while the options are shown', async () => {
+      component.control.setValue(MOCK_DEVICE_VALUE);
+      fixture.detectChanges();
+      const matSelect =
+        await TestbedHarnessEnvironment.loader(fixture).getHarness(
+          MatSelectHarness
+        );
+
+      await matSelect.open();
+
+      const listbox = document.getElementById(
+        select.getAttribute('aria-controls') ?? ''
+      ) as HTMLElement;
+      expect(accessibleName()).toBe('Test port mockDeviceKey mockDeviceValue');
+      expect(textOfIdRefs(listbox.getAttribute('aria-labelledby')))
+        .withContext('the options are named by the setting label first')
+        .toMatch(/^Test port\b/);
+    });
+  });
+
   describe('option text contrast', () => {
     /** The white General Settings page behind the closed select. */
     const PAGE_BACKGROUND = 'rgb(255, 255, 255)';
@@ -484,6 +559,44 @@ describe('SettingsDropdownComponent', () => {
       form = (rowsFixture.nativeElement as HTMLElement).querySelector(
         'form'
       ) as HTMLFormElement;
+    });
+
+    describe('accessible names', () => {
+      /** The name a screen reader announces for the select of a setting. */
+      function accessibleNameOf(setting: SettingsRow): string {
+        const select = form.querySelector(`#${setting.key}-group`);
+
+        return textOfIdRefs(select?.getAttribute('aria-labelledby') ?? null);
+      }
+
+      it('should name every dropdown by its label and selected value', () => {
+        expect(GENERAL_SETTINGS_ROWS.map(accessibleNameOf)).toEqual([
+          'Device port enx00e04c020fa8 00:e0:4c:02:0f:a8',
+          'Internet port enx207bd26205e9 20:7b:d2:62:05:e9',
+          'Log level WARNING Warnings, errors, critical issues',
+          'Monitoring Time 30 Extremely fast device',
+        ]);
+      });
+
+      it('should name an empty dropdown by its label and visible placeholder', () => {
+        const [, internet] = GENERAL_SETTINGS_ROWS;
+        rowsHost.form.get(internet.key)?.setValue(null);
+        rowsFixture.detectChanges();
+
+        expect(accessibleNameOf(internet)).toBe(
+          'Internet port Internet connection port'
+        );
+      });
+
+      it('should leave a missing subtitle out of the name', () => {
+        const monitoring = GENERAL_SETTINGS_ROWS[3];
+        rowsHost.form
+          .get(monitoring.key)
+          ?.setValue({ key: '60', value: MONITORING_PERIOD[60] });
+        rowsFixture.detectChanges();
+
+        expect(accessibleNameOf(monitoring)).toBe('Monitoring Time 60');
+      });
     });
 
     // Widths of the rows measured on the page at each viewport size.
