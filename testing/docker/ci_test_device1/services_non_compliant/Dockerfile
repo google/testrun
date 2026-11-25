@@ -12,7 +12,7 @@ RUN apt-get update && \
     dnsutils \
     netcat-openbsd \
     arping \
-    minidlna && \
+    socat && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh /entrypoint.sh
