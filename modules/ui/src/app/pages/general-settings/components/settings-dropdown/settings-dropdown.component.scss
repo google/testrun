@@ -2,11 +2,27 @@
 @use 'colors';
 @use 'variables';
 
+$column-gap: 46px;
+$info-column-width: 260px;
+$info-column-padding: 12px;
+// Room in the select for a port name, e.g. `enx00e04c020fa8`, or its MAC
+// address on one line.
+$select-min-width: 220px;
+// Narrower rows would squeeze the label and select columns (1fr each) below
+// $select-min-width next to the fixed-width info column.
+$three-columns-min-width: 2 * $select-min-width + $info-column-width + 2 *
+  $info-column-padding + 2 * $column-gap;
+
 :host {
   display: grid;
   grid-template-columns: 1fr 1fr 1.1fr;
-  gap: 46px;
+  // Only a column gap: the columns form a single row unless they stack.
+  column-gap: $column-gap;
   padding: 8px 0;
+  // The columns respond to the width of the row rather than the viewport,
+  // since the navigation and page padding take part of the viewport.
+  container-name: settings-dropdown;
+  container-type: inline-size;
 }
 
 .setting-form-label {
@@ -40,6 +56,11 @@
   font-weight: 400;
   line-height: 22px;
   letter-spacing: 0;
+  // Material keeps the selected value on one line and clips the rest. Wrap
+  // it instead, also inside port names, which have no spaces, so a narrow
+  // select at 400% zoom shows the whole value (WCAG 1.4.10).
+  white-space: normal;
+  overflow-wrap: anywhere;
 
   &.top {
     color: colors.$on-surface-variant;
@@ -78,6 +99,12 @@
     display: none;
   }
 
+  // Wrap the placeholder of an empty select like a selected value.
+  ::ng-deep .mat-mdc-select-placeholder {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
   ::ng-deep .mat-mdc-form-field-infix {
     min-height: 60px;
     height: auto;
@@ -114,7 +141,25 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  width: 260px;
-  padding: 0 12px;
+  width: $info-column-width;
+  padding: 0 $info-column-padding;
   justify-content: center;
+}
+
+// At 200% zoom (471px rows in a 640x480 viewport) and 400% zoom (147px rows
+// at 320x256), three columns crushed the select to 0px and hid its value
+// (WCAG 1.4.4, 1.4.10). Narrower rows stack the label, the select, and its
+// instructions in a single column instead, in reading order.
+@container settings-dropdown (width < #{$three-columns-min-width}) {
+  .label-column,
+  .setting-field,
+  .info-column {
+    grid-column: 1 / -1;
+  }
+
+  .info-column {
+    width: auto;
+    // As in .label-column, to line up with the label and the selected value.
+    padding-inline: 16px;
+  }
 }
