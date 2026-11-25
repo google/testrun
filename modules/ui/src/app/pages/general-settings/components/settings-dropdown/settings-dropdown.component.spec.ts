@@ -11,6 +11,8 @@ import {
   MOCK_DEVICE_VALUE,
   MOCK_INTERFACES,
 } from '../../../../mocks/settings.mock';
+import { SettingOption, SystemInterfaces } from '../../../../model/setting';
+import { LOG_LEVELS, MONITORING_PERIOD } from '../../general-settings.store';
 
 /** Text of the elements referenced by an `aria-describedby` value. */
 function textOfIdRefs(idRefs: string | null): string {
@@ -90,6 +92,99 @@ class TestHostComponent {
   public errorId: string | null = null;
   public required = false;
   public hasInfo = false;
+}
+
+/** Ports as listed by the API: a name without spaces and a MAC address. */
+const PORTS: SystemInterfaces = {
+  enx00e04c020fa8: '00:e0:4c:02:0f:a8',
+  enx207bd26205e9: '20:7b:d2:62:05:e9',
+};
+
+interface SettingsRow {
+  key: string;
+  groupLabel: string;
+  description: string;
+  label: string;
+  options: SystemInterfaces;
+  value: SettingOption;
+  hasInfo: boolean;
+}
+
+/**
+ * The four dropdowns of the General Settings page, each set to its longest
+ * option.
+ */
+const GENERAL_SETTINGS_ROWS: SettingsRow[] = [
+  {
+    key: 'device',
+    groupLabel: 'Device port',
+    description: 'Port where IoT device is connected for testing',
+    label: 'Device connection port',
+    options: PORTS,
+    value: { key: 'enx00e04c020fa8', value: '00:e0:4c:02:0f:a8' },
+    hasInfo: true,
+  },
+  {
+    key: 'internet',
+    groupLabel: 'Internet port',
+    description: 'Port used for internet connection',
+    label: 'Internet connection port',
+    options: PORTS,
+    value: { key: 'enx207bd26205e9', value: '20:7b:d2:62:05:e9' },
+    hasInfo: true,
+  },
+  {
+    key: 'log-level',
+    groupLabel: 'Log level',
+    description: 'Logging level of details',
+    label: 'Log level',
+    options: LOG_LEVELS,
+    value: { key: 'WARNING', value: LOG_LEVELS.WARNING },
+    hasInfo: false,
+  },
+  {
+    key: 'monitoring-period',
+    groupLabel: 'Monitoring Time',
+    description:
+      'Time period for Testrun to observe the device before starting tests',
+    label: 'Monitoring period',
+    options: MONITORING_PERIOD,
+    value: { key: '30', value: MONITORING_PERIOD[30] },
+    hasInfo: false,
+  },
+];
+
+/** The dropdown rows of the General Settings page, with their instructions. */
+@Component({
+  template: `
+    <form [formGroup]="form">
+      @for (row of rows; track row.key) {
+        <app-settings-dropdown
+          [controlName]="row.key"
+          [key]="row.key"
+          [groupLabel]="row.groupLabel"
+          [description]="row.description"
+          [label]="row.label"
+          [options]="row.options"
+          [hasInfo]="row.hasInfo">
+          @if (row.hasInfo) {
+            <p class="message">This port is required</p>
+            <p class="message">
+              If a port is missing from this list, you can Refresh the System
+              settings
+            </p>
+          }
+        </app-settings-dropdown>
+      }
+    </form>
+  `,
+  // As styled by GeneralSettingsComponent.
+  styles: '.message { margin: 0; font-size: 14px; line-height: 20px; }',
+  imports: [ReactiveFormsModule, SettingsDropdownComponent],
+})
+class GeneralSettingsRowsHostComponent {
+  public form = new FormGroup({});
+  public rows = GENERAL_SETTINGS_ROWS;
 }
 
 describe('SettingsDropdownComponent', () => {
@@ -328,5 +423,196 @@ describe('SettingsDropdownComponent', () => {
         );
       });
     });
+  });
+
+  describe('on the General Settings page', () => {
+    let rowsFixture: ComponentFixture<GeneralSettingsRowsHostComponent>;
+    let rowsHost: GeneralSettingsRowsHostComponent;
+    let form: HTMLFormElement;
+
+    /** The `app-settings-dropdown` row of a setting. */
+    function rowOf(setting: SettingsRow): HTMLElement {
+      return form
+        .querySelector(`#${setting.key}-group`)
+        ?.closest('app-settings-dropdown') as HTMLElement;
+    }
+
+    function boxOf(row: HTMLElement, selector: string): DOMRect {
+      return (
+        row.querySelector(selector) as HTMLElement
+      ).getBoundingClientRect();
+    }
+
+    /**
+     * Checks that the select shows the whole text, i.e. its value or
+     * placeholder, without clipping any of it.
+     */
+    function expectWholeTextVisible(setting: SettingsRow, text: string): void {
+      const value = rowOf(setting).querySelector(
+        '.mat-mdc-select-value'
+      ) as HTMLElement;
+
+      expect(value.textContent?.replace(/\s+/g, ' ').trim())
+        .withContext(`${setting.groupLabel}: shown text`)
+        .toBe(text);
+      expect(value.clientWidth)
+        .withContext(`${setting.groupLabel}: width of "${text}"`)
+        .toBeGreaterThan(0);
+      expect(value.scrollWidth)
+        .withContext(`${setting.groupLabel}: clipped "${text}"`)
+        .toBeLessThanOrEqual(value.clientWidth);
+    }
+
+    function expectWholeValuesVisible(): void {
+      for (const setting of GENERAL_SETTINGS_ROWS) {
+        expectWholeTextVisible(
+          setting,
+          `${setting.value.key} ${setting.value.value}`
+        );
+      }
+    }
+
+    beforeEach(async () => {
+      rowsFixture = TestBed.createComponent(GeneralSettingsRowsHostComponent);
+      rowsHost = rowsFixture.componentInstance;
+      rowsFixture.detectChanges();
+      for (const setting of GENERAL_SETTINGS_ROWS) {
+        rowsHost.form.get(setting.key)?.setValue(setting.value);
+      }
+      rowsFixture.detectChanges();
+      await rowsFixture.whenStable();
+      form = (rowsFixture.nativeElement as HTMLElement).querySelector(
+        'form'
+      ) as HTMLFormElement;
+    });
+
+    // Widths of the rows measured on the page at each viewport size.
+    for (const { zoom, viewport, rowWidth } of [
+      { zoom: '200%', viewport: '640×480', rowWidth: 471 },
+      { zoom: '400%', viewport: '320×256', rowWidth: 147 },
+    ]) {
+      describe(`at ${zoom} zoom (${viewport} viewport, ${rowWidth}px rows)`, () => {
+        beforeEach(() => {
+          form.style.width = `${rowWidth}px`;
+        });
+
+        it('should show the whole selected value of every dropdown', () => {
+          expectWholeValuesVisible();
+        });
+
+        it('should show the whole placeholder of an empty dropdown', () => {
+          const [device] = GENERAL_SETTINGS_ROWS;
+          rowsHost.form.get(device.key)?.setValue(null);
+          rowsFixture.detectChanges();
+
+          expectWholeTextVisible(device, device.label);
+        });
+
+        it('should stack the label, the select and the instructions in reading order', () => {
+          for (const setting of GENERAL_SETTINGS_ROWS) {
+            const row = rowOf(setting);
+            const label = boxOf(row, '.label-column');
+            const select = boxOf(row, 'mat-form-field');
+            const info = boxOf(row, '.info-column');
+
+            expect(select.top)
+              .withContext(`${setting.groupLabel}: select below the label`)
+              .toBeGreaterThanOrEqual(label.bottom);
+            expect(info.top)
+              .withContext(
+                `${setting.groupLabel}: instructions below the select`
+              )
+              .toBeGreaterThanOrEqual(select.bottom);
+            expect(select.width)
+              .withContext(`${setting.groupLabel}: select as wide as the row`)
+              .toBeCloseTo(row.clientWidth, 0);
+          }
+        });
+
+        it('should fit every dropdown in its row without horizontal scrolling', () => {
+          for (const setting of GENERAL_SETTINGS_ROWS) {
+            const row = rowOf(setting);
+            const { left, right } = row.getBoundingClientRect();
+
+            expect(row.scrollWidth)
+              .withContext(`${setting.groupLabel}: horizontal overflow`)
+              .toBeLessThanOrEqual(row.clientWidth);
+            for (const selector of [
+              '.label-column',
+              'mat-form-field',
+              '.info-column',
+            ]) {
+              const column = boxOf(row, selector);
+              expect(column.left)
+                .withContext(`${setting.groupLabel}: left of ${selector}`)
+                .toBeGreaterThanOrEqual(left);
+              expect(column.right)
+                .withContext(`${setting.groupLabel}: right of ${selector}`)
+                .toBeLessThanOrEqual(right);
+            }
+          }
+        });
+
+        it('should wrap long options in the open dropdown instead of scrolling it sideways', async () => {
+          const [device] = GENERAL_SETTINGS_ROWS;
+          const select = await TestbedHarnessEnvironment.loader(
+            rowsFixture
+          ).getHarness(
+            MatSelectHarness.with({ selector: `#${device.key}-group` })
+          );
+
+          await select.open();
+
+          const panel = document.querySelector(
+            '.mat-mdc-select-panel'
+          ) as HTMLElement;
+          expect(panel.querySelectorAll('mat-option').length)
+            .withContext('options')
+            .toBe(Object.keys(PORTS).length);
+          expect(panel.scrollWidth)
+            .withContext('horizontal overflow')
+            .toBeLessThanOrEqual(panel.clientWidth);
+        });
+      });
+    }
+
+    for (const { name, rowWidth } of [
+      { name: 'at 100% zoom (1280×960 viewport, 1115px rows)', rowWidth: 1115 },
+      {
+        name: 'in the narrowest rows with three columns (816px)',
+        rowWidth: 816,
+      },
+    ]) {
+      describe(name, () => {
+        beforeEach(() => {
+          form.style.width = `${rowWidth}px`;
+        });
+
+        it('should keep the label, the select and the instructions side by side', () => {
+          for (const setting of GENERAL_SETTINGS_ROWS) {
+            const row = rowOf(setting);
+            const label = boxOf(row, '.label-column');
+            const select = boxOf(row, 'mat-form-field');
+            const info = boxOf(row, '.info-column');
+
+            expect(select.left)
+              .withContext(`${setting.groupLabel}: select after the label`)
+              .toBeGreaterThanOrEqual(label.right);
+            expect(info.left)
+              .withContext(
+                `${setting.groupLabel}: instructions after the select`
+              )
+              .toBeGreaterThanOrEqual(select.right);
+            expect([select.top, info.top])
+              .withContext(`${setting.groupLabel}: tops of a single row`)
+              .toEqual([label.top, label.top]);
+          }
+        });
+
+        it('should show the whole selected value of every dropdown', () => {
+          expectWholeValuesVisible();
+        });
+      });
+    }
   });
 });

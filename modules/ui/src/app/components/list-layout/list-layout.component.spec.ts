@@ -76,6 +76,54 @@ class HostComponent {
   onMenuItemClicked = jasmine.createSpy('onMenuItemClicked');
 }
 
+type Rgb = [number, number, number];
+
+/** Parses a computed `rgb()`/`rgba()` or `color(srgb …)` value; alpha is ignored. */
+function parseColor(value: string): Rgb {
+  const srgb = /^color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)/.exec(value);
+  if (srgb) {
+    return [
+      Number(srgb[1]) * 255,
+      Number(srgb[2]) * 255,
+      Number(srgb[3]) * 255,
+    ];
+  }
+  const rgb = /^rgba?\(([\d.]+),?\s*([\d.]+),?\s*([\d.]+)/.exec(value);
+  if (!rgb) {
+    throw new Error(`Unsupported color format: ${value}`);
+  }
+  return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+}
+
+/** WCAG 2.2 relative luminance. */
+function luminance([r, g, b]: Rgb): number {
+  const [lr, lg, lb] = [r, g, b].map(channel => {
+    const c = channel / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb;
+}
+
+/** WCAG contrast ratio (1–21) between two computed colors. */
+function contrastRatio(foreground: string, background: string): number {
+  const [light, dark] = [
+    luminance(parseColor(foreground)),
+    luminance(parseColor(background)),
+  ].sort((a, b) => b - a);
+  return (light + 0.05) / (dark + 0.05);
+}
+
+/** First non-transparent background of the element or its ancestors. */
+function effectiveBackground(element: Element): string {
+  for (let el: Element | null = element; el; el = el.parentElement) {
+    const background = getComputedStyle(el).backgroundColor;
+    if (background !== 'rgba(0, 0, 0, 0)' && background !== 'transparent') {
+      return background;
+    }
+  }
+  return 'rgb(255, 255, 255)';
+}
+
 describe('ListLayoutComponent', () => {
   let component: HostComponent;
   let fixture: ComponentFixture<HostComponent>;
@@ -205,7 +253,7 @@ describe('ListLayoutComponent', () => {
       // Verify the input field in the DOM is also cleared
       expect(searchInputElement.value).toBe('');
 
-      // Verify the clear button is gone and search icon is back
+      // Verify the clear button is gone and the search icon is still shown
       const clearButtonAfterClear = compiled.querySelector(
         '.clear-search-button'
       );
@@ -304,6 +352,169 @@ describe('ListLayoutComponent', () => {
         expect(getComputedStyle(searchInputElement).outlineStyle).toBe('none');
       });
     });
+
+    describe('search field purpose', () => {
+      let searchField: HTMLElement;
+      let searchInputElement: HTMLInputElement;
+
+      beforeEach(() => {
+        searchField = compiled.querySelector('.search-field') as HTMLElement;
+        searchInputElement = searchField.querySelector(
+          'input'
+        ) as HTMLInputElement;
+      });
+
+      /** Rendered magnifying glass icons in the field, not counting buttons. */
+      function visibleSearchIcons(): HTMLElement[] {
+        return Array.from(
+          searchField.querySelectorAll<HTMLElement>(
+            'mat-icon:not(button mat-icon)'
+          )
+        ).filter(icon => {
+          const { width, height } = icon.getBoundingClientRect();
+          return (
+            icon.textContent?.trim() === 'search' &&
+            width > 0 &&
+            height > 0 &&
+            getComputedStyle(icon).visibility === 'visible'
+          );
+        });
+      }
+
+      /** The search icon shown in front of the input; throws if there is none. */
+      function leadingSearchIcon(): HTMLElement {
+        const inputLeft = searchInputElement.getBoundingClientRect().left;
+        const icon = visibleSearchIcons().find(
+          searchIcon => searchIcon.getBoundingClientRect().right <= inputLeft
+        );
+        if (!icon) {
+          throw new Error('No search icon is shown in front of the input');
+        }
+        return icon;
+      }
+
+      /** Types a query the way a user does; call inside `fakeAsync`. */
+      function typeQuery(query: string): void {
+        searchInputElement.value = query;
+        searchInputElement.dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+        tick();
+      }
+
+      /** Checks that the icon, query, and clear button sit side by side. */
+      function expectSearchPartsToFitInField(): void {
+        const field = searchField.getBoundingClientRect();
+        const icon = leadingSearchIcon().getBoundingClientRect();
+        const input = searchInputElement.getBoundingClientRect();
+        const clearButton = (
+          compiled.querySelector('.clear-search-button') as HTMLElement
+        ).getBoundingClientRect();
+
+        expect(icon.left)
+          .withContext('icon starts inside the field')
+          .toBeGreaterThanOrEqual(field.left);
+        expect(input.left)
+          .withContext('input starts after the icon')
+          .toBeGreaterThanOrEqual(icon.right);
+        expect(clearButton.left)
+          .withContext('clear button starts after the input')
+          .toBeGreaterThanOrEqual(input.right);
+        expect(clearButton.right)
+          .withContext('clear button ends inside the field')
+          .toBeLessThanOrEqual(field.right);
+      }
+
+      it('should lead the input with a search icon hidden from assistive technology', () => {
+        const icon = leadingSearchIcon();
+
+        expect(icon.getAttribute('aria-hidden')).toBe('true');
+        expect(visibleSearchIcons())
+          .withContext('only one search icon')
+          .toEqual([icon]);
+      });
+
+      it('should give the search icon at least 3:1 contrast against the field', () => {
+        const icon = leadingSearchIcon();
+        const ratio = contrastRatio(
+          getComputedStyle(icon).color,
+          effectiveBackground(icon)
+        );
+
+        expect(ratio)
+          .withContext(`contrast ${ratio.toFixed(2)}:1`)
+          .toBeGreaterThanOrEqual(3);
+      });
+
+      it('should keep the search icon visible before, during, and after text entry', fakeAsync(() => {
+        expect(visibleSearchIcons().length)
+          .withContext('before typing')
+          .toBe(1);
+
+        // The placeholder is gone, but the query is too short to filter yet.
+        typeQuery('En');
+        expect(visibleSearchIcons().length).withContext('while typing').toBe(1);
+
+        typeQuery('Entity 1');
+        const clearButton = compiled.querySelector(
+          '.clear-search-button'
+        ) as HTMLButtonElement;
+        expect(clearButton).withContext('clear button').not.toBeNull();
+        expect(visibleSearchIcons().length)
+          .withContext('while filtering')
+          .toBe(1);
+
+        clearButton.click();
+        fixture.detectChanges();
+        tick();
+        expect(visibleSearchIcons().length)
+          .withContext('after clearing')
+          .toBe(1);
+      }));
+
+      it('should give the placeholder at least 4.5:1 contrast against the field', () => {
+        const placeholder = getComputedStyle(
+          searchInputElement,
+          '::placeholder'
+        );
+        const ratio = contrastRatio(
+          placeholder.color,
+          effectiveBackground(searchInputElement)
+        );
+
+        // The contrast helpers ignore opacity, so the placeholder must be opaque.
+        expect(placeholder.opacity).toBe('1');
+        expect(ratio)
+          .withContext(`contrast ${ratio.toFixed(2)}:1`)
+          .toBeGreaterThanOrEqual(4.5);
+      });
+
+      it('should name the search input after the devices it filters', () => {
+        expect(searchInputElement.getAttribute('aria-label')).toBe(
+          'Search devices'
+        );
+        expect(searchInputElement.placeholder).toBe('Search devices');
+      });
+
+      it('should fit the icon, query, and clear button inside the field', fakeAsync(() => {
+        typeQuery('Entity 1');
+
+        expectSearchPartsToFitInField();
+      }));
+
+      it('should fit the icon, query, and clear button inside the field at 320 CSS px', fakeAsync(() => {
+        // WCAG 1.4.10 Reflow width, e.g. a 1280 px window at 400% zoom.
+        const panel = compiled.querySelector(
+          '.layout-container-left-panel'
+        ) as HTMLElement;
+        panel.style.width = '320px';
+        typeQuery('Entity 1');
+
+        expectSearchPartsToFitInField();
+        expect(searchField.getBoundingClientRect().right)
+          .withContext('search field ends inside the panel')
+          .toBeLessThanOrEqual(panel.getBoundingClientRect().right);
+      }));
+    });
   });
 
   describe('when entity form is open without initial entity', () => {
@@ -398,5 +609,16 @@ describe('ListLayoutComponent', () => {
         'polite'
       );
     }));
+
+    it('should name the search input after the risk profiles it filters', () => {
+      const searchInputElement = compiled.querySelector(
+        '.search-field input'
+      ) as HTMLInputElement;
+
+      expect(searchInputElement.getAttribute('aria-label')).toBe(
+        'Search risk profiles'
+      );
+      expect(searchInputElement.placeholder).toBe('Search risk profiles');
+    });
   });
 });
