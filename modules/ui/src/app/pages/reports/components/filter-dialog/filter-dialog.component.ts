@@ -280,12 +280,20 @@ export class FilterDialogComponent
     this.range.end = this.selectedRangeValue.end;
   }
 
-  confirm(): void {
-    if (
+  /**
+   * Whether the entered filter is invalid. "Ok" is then disabled, so assistive
+   * technology reports it as unavailable, and `confirm()` keeps the dialog open.
+   */
+  get isConfirmDisabled(): boolean {
+    return !!(
       this.filterForm?.invalid ||
       this.startDate()?.invalid ||
       this.endDate()?.invalid
-    ) {
+    );
+  }
+
+  confirm(): void {
+    if (this.isConfirmDisabled) {
       return;
     }
 

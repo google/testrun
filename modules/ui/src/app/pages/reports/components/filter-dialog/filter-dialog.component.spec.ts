@@ -38,6 +38,59 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { ResultOfTestrun } from '../../../../model/testrun-status';
 import { TestingType } from '../../../../model/device';
+import { TestKey } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MatSelectHarness } from '@angular/material/select/testing';
+
+/** Text filters and the visible label of their input. */
+const TEXT_FILTERS = [
+  {
+    filter: FilterName.DeviceInfo,
+    title: FilterTitle.DeviceInfo,
+    label: 'Device',
+  },
+  {
+    filter: FilterName.DeviceFirmware,
+    title: FilterTitle.DeviceFirmware,
+    label: 'Firmware',
+  },
+  {
+    filter: FilterName.Location,
+    title: FilterTitle.Location,
+    label: 'Location',
+  },
+  {
+    filter: FilterName.LinuxEnv,
+    title: FilterTitle.LinuxEnv,
+    label: 'Linux Environment',
+  },
+  {
+    filter: FilterName.PythonVersion,
+    title: FilterTitle.PythonVersion,
+    label: 'Python Version',
+  },
+  { filter: FilterName.Kernel, title: FilterTitle.Kernel, label: 'Kernel' },
+];
+
+/** Text filters that validate their input, with values that fail and pass. */
+const VALIDATED_TEXT_FILTERS = [
+  {
+    filter: FilterName.DeviceInfo,
+    title: FilterTitle.DeviceInfo,
+    label: 'Device',
+    invalidValue: 'Invalid<>Device!',
+    validValue: 'Smart Bulb 2',
+    error: 'The device model name must be a maximum of 64 characters.',
+  },
+  {
+    filter: FilterName.DeviceFirmware,
+    title: FilterTitle.DeviceFirmware,
+    label: 'Firmware',
+    invalidValue: 'Invalid<>Firmware!',
+    validValue: '1.0.2-beta',
+    error: 'The firmware name must be a maximum of 64 characters.',
+  },
+];
 
 describe('FilterDialogComponent', () => {
   let component: FilterDialogComponent;
@@ -255,6 +308,53 @@ describe('FilterDialogComponent', () => {
     });
   });
 
+  describe('text filter inputs (WCAG 1.3.1, 2.5.3, 4.1.2)', () => {
+    for (const { filter, title, label } of TEXT_FILTERS) {
+      it(`should name the "${label}" input by its visible label`, () => {
+        component.data = { trigger: mockClientRest, filter, title };
+        fixture.detectChanges();
+        const input = compiled.querySelector(
+          '.text-field-input'
+        ) as HTMLInputElement;
+        const matLabel = compiled.querySelector('mat-label') as HTMLElement;
+
+        expect(visibleLabel(matLabel)).toBe(label);
+        expect(accessibleName(input)).toBe(label);
+        expect(input.hasAttribute('aria-label'))
+          .withContext('an aria-label overrides the visible label')
+          .toBeFalse();
+      });
+    }
+
+    for (const {
+      filter,
+      title,
+      label,
+      invalidValue,
+      error,
+    } of VALIDATED_TEXT_FILTERS) {
+      it(`should keep the invalid "${label}" input named by its label and described by its error`, async () => {
+        component.data = { trigger: mockClientRest, filter, title };
+        fixture.detectChanges();
+        const input = compiled.querySelector(
+          '.text-field-input'
+        ) as HTMLInputElement;
+
+        enterValue(input, invalidValue);
+        await fixture.whenStable();
+        fixture.detectChanges(); // Material syncs aria-describedby after content is checked
+
+        expect(accessibleName(input)).toBe(label);
+        expect(input.getAttribute('aria-invalid')).toBe('true');
+        expect(
+          normalizeWhitespace(
+            textOfIdRefs(input.getAttribute('aria-describedby'))
+          )
+        ).toContain(error);
+      });
+    }
+  });
+
   describe('assessment type filter', () => {
     beforeEach(() => {
       component.data = {
@@ -280,7 +380,159 @@ describe('FilterDialogComponent', () => {
         ?.setValue(TestingType.Qualification);
       expect(component.assessmentType.value).toBe(TestingType.Qualification);
     });
+
+    describe('accessible name (WCAG 1.3.1, 4.1.2)', () => {
+      let select: HTMLElement;
+
+      beforeEach(async () => {
+        // MatSelect applies its initial value after a microtask.
+        await fixture.whenStable();
+        fixture.detectChanges();
+        select = compiled.querySelector('mat-select') as HTMLElement;
+      });
+
+      function getSelectHarness(): Promise<MatSelectHarness> {
+        return TestbedHarnessEnvironment.loader(fixture).getHarness(
+          MatSelectHarness
+        );
+      }
+
+      it('should be labelled by its visible label, then by the type it shows', () => {
+        const [labelId, ...valueIds] = idRefsOf(select, 'aria-labelledby');
+        const label = labelId ? document.getElementById(labelId) : null;
+        const shownValue = select.querySelector('.mat-mdc-select-value');
+
+        expect(label ? visibleLabel(label) : null)
+          .withContext('first reference: the visible label')
+          .toBe('Assessment type');
+        expect(valueIds)
+          .withContext('then only the shown value')
+          .toEqual([shownValue?.id as string]);
+        expect(select.hasAttribute('aria-label'))
+          .withContext('aria-label would override aria-labelledby')
+          .toBeFalse();
+      });
+
+      it('should be named by its label alone while no type is selected', () => {
+        expect(accessibleName(select)).toBe('Assessment type');
+      });
+
+      for (const type of [TestingType.Qualification, TestingType.Pilot]) {
+        it(`should announce "${type}" once it is selected`, async () => {
+          const matSelect = await getSelectHarness();
+
+          await matSelect.clickOptions({ text: type });
+
+          expect(accessibleName(select)).toBe(`Assessment type ${type}`);
+        });
+      }
+
+      it('should follow the type selected with the arrow keys', async () => {
+        const matSelect = await getSelectHarness();
+        const trigger = await matSelect.host();
+
+        await trigger.sendKeys(TestKey.DOWN_ARROW);
+
+        expect(accessibleName(select)).toBe('Assessment type Pilot Assessment');
+
+        await trigger.sendKeys(TestKey.DOWN_ARROW);
+
+        expect(accessibleName(select)).toBe(
+          'Assessment type Device Qualification'
+        );
+        expect(await matSelect.isOpen())
+          .withContext('the closed select changes its value in place')
+          .toBeFalse();
+      });
+    });
   });
+
+  describe('"Ok" button with invalid input (WCAG 3.3.1, 4.1.2)', () => {
+    /** Queried on demand, so assertions never hold a stale element. */
+    const okButton = () =>
+      compiled.querySelector('.confirm-button') as HTMLButtonElement;
+
+    for (const {
+      filter,
+      title,
+      label,
+      invalidValue,
+      validValue,
+    } of VALIDATED_TEXT_FILTERS) {
+      describe(`in the "${label}" filter`, () => {
+        let input: HTMLInputElement;
+
+        beforeEach(() => {
+          component.data = { trigger: mockClientRest, filter, title };
+          fixture.detectChanges();
+          input = compiled.querySelector(
+            '.text-field-input'
+          ) as HTMLInputElement;
+        });
+
+        it('should be disabled, and keep the dialog open, while the value is invalid', () => {
+          const closeSpy = spyOn(component.dialogRef, 'close');
+
+          enterValue(input, invalidValue);
+
+          expect(okButton().disabled).toBeTrue();
+          okButton().click();
+          component.confirm(); // the guard holds even if "Ok" is reached another way
+          expect(closeSpy).not.toHaveBeenCalled();
+        });
+
+        it('should be enabled again once the value is corrected or cleared', () => {
+          enterValue(input, invalidValue);
+          expect(okButton().disabled).toBeTrue();
+
+          enterValue(input, validValue);
+          expect(okButton().disabled).withContext('a valid value').toBeFalse();
+
+          enterValue(input, invalidValue);
+          enterValue(input, '');
+          expect(okButton().disabled)
+            .withContext('an empty value clears the filter')
+            .toBeFalse();
+        });
+      });
+    }
+
+    describe('in the "Started" filter', () => {
+      beforeEach(() => {
+        component.data = {
+          trigger: mockClientRest,
+          filter: FilterName.Started,
+          title: FilterTitle.Started,
+        };
+        fixture.detectChanges();
+      });
+
+      for (const { part, selector } of [
+        { part: 'start', selector: 'input[matStartDate]' },
+        { part: 'end', selector: 'input[matEndDate]' },
+      ]) {
+        it(`should be disabled while the ${part} date is not in mm/dd/yyyy format`, () => {
+          const dateInput = compiled.querySelector(
+            selector
+          ) as HTMLInputElement;
+
+          enterValue(dateInput, 'not a date');
+          expect(okButton().disabled).toBeTrue();
+
+          enterValue(dateInput, '01/15/2024');
+          expect(okButton().disabled).withContext('a valid date').toBeFalse();
+        });
+      }
+    });
+  });
+
+  /** Types a value into the field and leaves it, as a user does. */
+  function enterValue(input: HTMLInputElement, value: string): void {
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    input.dispatchEvent(new Event('blur'));
+    fixture.detectChanges();
+  }
 
   describe('date filter', () => {
     beforeEach(() => {
@@ -540,3 +792,75 @@ describe('FilterDialogComponent', () => {
     });
   });
 });
+
+/** Collapses whitespace the way the accessible name computation does. */
+function normalizeWhitespace(text: string): string {
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Text of a subtree as assistive technology reads it: skips `aria-hidden` and
+ * CSS-hidden nodes. With `visibleOnly`, it also skips visually hidden text
+ * (clipped to 1 x 1 px), so it returns only what sighted users read.
+ */
+function textOf(node: Node, visibleOnly = false): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent ?? '';
+  }
+  if (
+    !(node instanceof HTMLElement) ||
+    node.getAttribute('aria-hidden') === 'true'
+  ) {
+    return '';
+  }
+  const { display, visibility } = getComputedStyle(node);
+  const { width, height } = node.getBoundingClientRect();
+  if (
+    display === 'none' ||
+    visibility === 'hidden' ||
+    (visibleOnly && width <= 1 && height <= 1)
+  ) {
+    return '';
+  }
+  return Array.from(node.childNodes, child => textOf(child, visibleOnly)).join(
+    ''
+  );
+}
+
+/** IDs referenced by an ID reference list attribute, e.g. `aria-labelledby`. */
+function idRefsOf(element: Element, attribute: string): string[] {
+  return (element.getAttribute(attribute) ?? '').split(/\s+/).filter(Boolean);
+}
+
+/** Text of the elements referenced by an `aria-labelledby`/`aria-describedby` value. */
+function textOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(id => document.getElementById(id)?.textContent?.trim() ?? '')
+    .join(' ');
+}
+
+/**
+ * Accessible name of a form control, in the order the accessible name
+ * computation applies: `aria-labelledby`, `aria-label`, then its `<label>`s.
+ */
+function accessibleName(element: HTMLElement): string {
+  const labelledBy = element.getAttribute('aria-labelledby');
+  if (labelledBy) {
+    return normalizeWhitespace(textOfIdRefs(labelledBy));
+  }
+  const ariaLabel = element.getAttribute('aria-label');
+  if (ariaLabel?.trim()) {
+    return normalizeWhitespace(ariaLabel);
+  }
+  const labels = element instanceof HTMLInputElement ? element.labels : null;
+  return normalizeWhitespace(
+    Array.from(labels ?? [], label => textOf(label)).join(' ')
+  );
+}
+
+/** Text label that sighted users see on a control. */
+function visibleLabel(element: HTMLElement): string {
+  return normalizeWhitespace(textOf(element, true));
+}
