@@ -34,8 +34,8 @@ REPORT_TEMPLATE_FILE = 'report_template.jinja2'
 class NTPModule(TestModule):
   """NTP Test module"""
 
-  def __init__(
-      self,  # pylint: disable=R0917
+  def __init__( # pylint: disable=R0917
+      self,
       module,
       conf_file=None,
       results_dir=None,
