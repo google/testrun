@@ -11,8 +11,11 @@
 </div>
 
 <mat-form-field appearance="outline" class="setting-field">
+  <!-- Named by the label and by the value or placeholder the select shows,
+       which MatSelect leaves out of the name once aria-labelledby is set. -->
   <mat-select
-    aria-labelledby="{{ key }}-label"
+    #select
+    [aria-labelledby]="key + '-label ' + select._valueId"
     [aria-describedby]="describedBy"
     [errorStateMatcher]="errorStateMatcher"
     [required]="required()"
