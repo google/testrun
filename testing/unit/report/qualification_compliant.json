@@ -272,6 +272,20 @@
         "result": "Compliant"
       },
       {
+          "name": "security.services.ssdp",
+          "description": "Check SSDP/UPnP UDP port 1900 is disabled",
+          "expected_behavior": "UDP port 1900 is closed and no SSDP/UPnP service is running on any port",
+          "required_result": "Required",
+          "result": "Compliant"
+        },
+        {
+          "name": "security.services.coap",
+          "description": "Check CoAP UDP port 5683 is closed",
+          "expected_behavior": "UDP port 5683 is closed",
+          "required_result": "Required",
+          "result": "Compliant"
+        },
+      {
         "name": "ntp.network.ntp_server",
         "description": "No NTP server found",
         "expected_behavior": "The device does not respond to NTP requests when it's IP is set as the NTP server on another device",

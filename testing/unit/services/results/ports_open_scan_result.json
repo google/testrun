@@ -138,5 +138,12 @@
     "state": "closed",
     "service": "ssdp",
     "version": ""
+  },
+  "5683udp": {
+    "number": "5683",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "coap",
+    "version": ""
   }
 }

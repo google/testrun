@@ -158,6 +158,10 @@
           "required_result": "Required"
         },
         {
+          "name": "security.services.coap",
+          "required_result": "Required"
+        },
+        {
           "name": "protocol.services.bacnet",
           "required_result": "Informational"
         },

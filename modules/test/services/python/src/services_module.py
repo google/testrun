@@ -474,3 +474,13 @@ class ServicesModule(TestModule):
     return (False,
                   f'''Found SSDP/UPnP service found on port
                   {', '.join(open_ports)}''')
+
+  def _security_services_coap(self, config):
+    LOGGER.info('Running security.services.ssdp')
+
+    open_ports = self._check_results(config['ports'], config['services'])
+    if len(open_ports) == 0:
+      return True, 'No CoAP server found'
+    return (False,
+                  f'''Found CoAP service found on port
+                  {', '.join(open_ports)}''')
