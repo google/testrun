@@ -15,12 +15,87 @@
 # limitations under the License.
 
 # Optional script to prepare your system for use with Testrun.
-# Installs system dependencies
+# Installs system dependencies and Docker (if not already installed).
 
-echo Installing system dependencies
+echo "Installing system dependencies"
 
 # Install system dependencies
 export DEBIAN_FRONTEND=noninteractive
-sudo -E apt-get update && sudo -E apt-get install -y openvswitch-common openvswitch-switch python3 libpangocairo-1.0-0 ethtool
+sudo -E apt-get update && sudo -E apt-get install -y \
+  openvswitch-common \
+  openvswitch-switch \
+  build-essential \
+  python3 \
+  python3-venv \
+  python3-dev \
+  libpangocairo-1.0-0 \
+  ethtool
 
-echo Finished installing system dependencies
+# Check if Docker is installed
+if command -v docker >/dev/null 2>&1 && docker --version >/dev/null 2>&1; then
+  echo "Using $(docker --version)"
+else
+  echo "Docker is not installed. Installing Docker Engine from official Ubuntu repository..."
+
+  # Install prerequisites for Docker's APT repository
+  sudo -E apt-get install -y ca-certificates curl
+
+  # Add Docker's official GPG key
+  sudo install -m 0755 -d /etc/apt/keyrings
+  sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+  # Read OS release metadata cleanly (avoid SC1091 warning from sourcing /etc/os-release)
+  ubuntu_codename=$(
+    # shellcheck disable=SC1091
+    . /etc/os-release && echo "${UBUNTU_CODENAME:-${VERSION_CODENAME:-}}"
+  )
+  arch=$(dpkg --print-architecture)
+
+  if [[ -z "${ubuntu_codename}" ]]; then
+    echo "Unable to determine Ubuntu codename from /etc/os-release" >&2
+    exit 1
+  fi
+
+  # Add the Docker APT repository
+  echo \
+    "deb [arch=${arch} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu ${ubuntu_codename} stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
+
+  sudo -E apt-get update
+  sudo -E apt-get install -y \
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-buildx-plugin \
+    docker-compose-plugin
+
+  # Ensure the Docker daemon is enabled and started when systemd is active
+  if [[ -d /run/systemd/system ]] && command -v systemctl >/dev/null 2>&1; then
+    sudo systemctl enable --now docker
+  fi
+
+  echo "Installed $(docker --version)"
+fi
+
+# Ensure root and the invoking user (if non-root) are in the docker group
+docker_users=("root")
+target_user="${SUDO_USER:-${USER:-}}"
+if [[ -n "${target_user}" && "${target_user}" != "root" ]]; then
+  docker_users+=("${target_user}")
+fi
+
+added_to_docker_group=false
+for docker_user in "${docker_users[@]}"; do
+  if id "${docker_user}" >/dev/null 2>&1 && ! id -nGz "${docker_user}" | grep -qzxF "docker"; then
+    echo "Adding user '${docker_user}' to the docker group"
+    sudo usermod -aG docker "${docker_user}"
+    added_to_docker_group=true
+  fi
+done
+
+if [[ "${added_to_docker_group}" == true ]]; then
+  echo "Note: Log out and log back in (or run 'newgrp docker') for docker group membership to take effect."
+fi
+
+echo "Finished installing system dependencies"

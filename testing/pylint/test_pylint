@@ -21,7 +21,7 @@ python3 -m venv venv
 source venv/bin/activate
 
 # Install pylint
-pip install pylint==3.2.6
+pip install pylint==4.1.4
 
 # Declare the applicable files
 files=$(find . -path ./venv -prune -o -name '*.py' -print)
