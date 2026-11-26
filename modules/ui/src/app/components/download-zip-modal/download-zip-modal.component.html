@@ -51,13 +51,9 @@ limitations under the License.
   <p class="risk-profile-select-form-content">
     Risk Profile is required for device verification. Please consider going to
     <a
-      tabindex="0"
-      role="link"
       class="redirect-link"
-      aria-label="Go to Risk Assessment tab"
-      (keydown.enter)="cancel(null)"
-      (keydown.space)="cancel(null)"
-      (click)="cancel(null)"
+      [href]="riskAssessmentHref"
+      (click)="goToRiskAssessment($event)"
       >Risk Assessment</a
     >
     and creating a profile to attach to your report.
@@ -69,13 +65,9 @@ limitations under the License.
     Risk Profile is required for device verification. Please select a profile
     from the list, or go to
     <a
-      tabindex="0"
-      role="link"
       class="redirect-link"
-      aria-label="Go to Risk Assessment tab"
-      (keydown.enter)="cancel(null)"
-      (keydown.space)="cancel(null)"
-      (click)="cancel(null)"
+      [href]="riskAssessmentHref"
+      (click)="goToRiskAssessment($event)"
       >Risk Assessment</a
     >
     and create a new one to attach to your report.
@@ -84,11 +76,16 @@ limitations under the License.
 
 <div>
   <mat-form-field appearance="outline" class="profile-select">
+    <mat-label>Risk Profile</mat-label>
+    <!-- Named by the label and by the profile it shows, which MatSelect leaves
+         out of the name once the field has a label. Takes the dialog's initial
+         focus while it can be used. -->
     <mat-select
       #select
       [disabled]="profiles.length === 1"
       [(value)]="selectedProfile"
-      aria-label="Please choose a Risk Profile from the list">
+      [aria-labelledby]="select._valueId"
+      [attr.cdkFocusInitial]="profiles.length > 1 ? '' : null">
       <mat-select-trigger>
         {{ selectedProfile.name }}
         @if (selectedProfile.risk) {

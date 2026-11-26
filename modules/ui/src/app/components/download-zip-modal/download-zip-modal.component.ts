@@ -18,7 +18,7 @@ import {
   RiskResultClassName,
 } from '../../model/profile';
 import { MatButtonModule } from '@angular/material/button';
-import { CommonModule } from '@angular/common';
+import { CommonModule, LocationStrategy } from '@angular/common';
 import { MatFormField } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
@@ -91,6 +91,10 @@ export class DownloadZipModalComponent
   public readonly Routes = Routes;
   public readonly StatusOfTestrun = StatusOfTestrun;
   public readonly ResultOfTestrun = ResultOfTestrun;
+  /** The Risk Assessment page URL as the app writes it, e.g. `#/risk-assessment`. */
+  readonly riskAssessmentHref = inject(LocationStrategy).prepareExternalUrl(
+    Routes.RiskAssessment
+  );
   profiles: Profile[] = [];
   selectedProfile: Profile;
   constructor() {
@@ -174,6 +178,15 @@ export class DownloadZipModalComponent
       action: DialogCloseAction.Download,
       profile: value,
     } as DialogCloseResult);
+  }
+
+  /**
+   * Closes the dialog, which then opens the Risk Assessment page, instead of
+   * letting the browser follow the link.
+   */
+  goToRiskAssessment(event: Event): void {
+    event.preventDefault();
+    this.cancel(null);
   }
 
   public getRiskClass(riskResult: string): RiskResultClassName {

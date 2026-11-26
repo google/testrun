@@ -28,6 +28,16 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { Component } from '@angular/core';
 import { device } from '../../mocks/device.mock';
 import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/testrun.mock';
+import {
+  HashLocationStrategy,
+  LocationStrategy,
+  PlatformLocation,
+} from '@angular/common';
+import { FocusTrapFactory } from '@angular/cdk/a11y';
+import { TestKey } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MatSelectHarness } from '@angular/material/select/testing';
+import { Profile, ProfileRisk } from '../../model/profile';
 
 describe('DownloadZipModalComponent', () => {
   // @ts-expect-error data layer should be defined
@@ -279,6 +289,305 @@ describe('DownloadZipModalComponent', () => {
     });
   });
 
+  describe('"Risk Profile" select (WCAG 1.3.1, 3.3.2, 4.1.2)', () => {
+    /** Listed right after "No Risk Profile selected": profiles are sorted by name. */
+    const HIGH_RISK_PROFILE: Profile = {
+      ...PROFILE_MOCK,
+      risk: ProfileRisk.HIGH,
+    };
+    let compiled: HTMLElement;
+    let select: HTMLElement;
+
+    async function createComponent(profiles: Profile[]): Promise<void> {
+      // Other specs leave download or redirect actions in the shared subject,
+      // which the component replays on init.
+      actionBehaviorSubject$.next({ action: DialogCloseAction.Close });
+      TestBed.overrideProvider(MAT_DIALOG_DATA, {
+        useValue: {
+          profiles,
+          report: 'localhost:8080',
+          export: 'localhost:8080',
+          device: device,
+          started: '2026-02-02 17:24:52',
+        },
+      });
+      TestBed.compileComponents();
+      fixture = TestBed.createComponent(DownloadZipModalComponent);
+      compiled = fixture.nativeElement as HTMLElement;
+      fixture.detectChanges();
+      // MatSelect applies its initial value after a microtask.
+      await fixture.whenStable();
+      fixture.detectChanges();
+      select = compiled.querySelector('mat-select') as HTMLElement;
+    }
+
+    function getSelectHarness(): Promise<MatSelectHarness> {
+      return TestbedHarnessEnvironment.loader(fixture).getHarness(
+        MatSelectHarness
+      );
+    }
+
+    describe('with profiles', () => {
+      beforeEach(() => createComponent([PROFILE_MOCK_2, HIGH_RISK_PROFILE]));
+
+      it('should show a visible "Risk Profile" label', () => {
+        const label = compiled.querySelector<HTMLElement>(
+          '.profile-select mat-label'
+        );
+
+        expect(label ? visibleLabel(label) : null).toBe('Risk Profile');
+      });
+
+      it('should be labelled by its visible label, then by the profile it shows', () => {
+        const [labelId, ...valueIds] = idRefsOf(select, 'aria-labelledby');
+        const label = labelId ? document.getElementById(labelId) : null;
+        const shownValue = select.querySelector('.mat-mdc-select-value');
+
+        expect(label ? visibleLabel(label) : null)
+          .withContext('first reference: the visible label')
+          .toBe('Risk Profile');
+        expect(valueIds)
+          .withContext('then only the shown value')
+          .toEqual([shownValue?.id as string]);
+        expect(select.hasAttribute('aria-label'))
+          .withContext('aria-label would override aria-labelledby')
+          .toBeFalse();
+      });
+
+      it('should announce that no profile is selected', () => {
+        expect(accessibleName(select)).toBe(
+          'Risk Profile No Risk Profile selected'
+        );
+      });
+
+      it('should announce the selected profile and its risk level', async () => {
+        const matSelect = await getSelectHarness();
+
+        await matSelect.clickOptions({ text: /Primary profile/ });
+
+        expect(accessibleName(select)).toBe(
+          'Risk Profile Primary profile High risk'
+        );
+      });
+
+      it('should follow the profile selected with the arrow keys', async () => {
+        const matSelect = await getSelectHarness();
+        const trigger = await matSelect.host();
+
+        await trigger.sendKeys(TestKey.DOWN_ARROW);
+
+        expect(accessibleName(select)).toBe(
+          'Risk Profile Primary profile High risk'
+        );
+
+        await trigger.sendKeys(TestKey.DOWN_ARROW);
+
+        expect(accessibleName(select)).toBe('Risk Profile Second profile name');
+        expect(await matSelect.isOpen())
+          .withContext('the closed select changes its value in place')
+          .toBeFalse();
+      });
+
+      it('should be described by its instructions, not named by them', async () => {
+        await fixture.whenStable();
+        fixture.detectChanges(); // Material syncs aria-describedby after content is checked
+
+        expect(textOfIdRefs(select.getAttribute('aria-describedby'))).toBe(
+          'Please choose a Risk Profile from the list'
+        );
+        expect(accessibleName(select))
+          .withContext('the instructions must not be announced twice')
+          .not.toContain('Please choose a Risk Profile from the list');
+      });
+    });
+
+    describe('without profiles', () => {
+      beforeEach(() => createComponent([]));
+
+      it('should name the disabled select by its label and the shown value', () => {
+        expect(select.getAttribute('aria-disabled')).toBe('true');
+        expect(accessibleName(select)).toBe(
+          'Risk Profile No Risk Profile selected'
+        );
+      });
+    });
+  });
+
+  describe('"Risk Assessment" link (WCAG 2.5.3, 4.1.2)', () => {
+    for (const { variant, profiles } of [
+      { variant: 'with profiles', profiles: [PROFILE_MOCK] },
+      { variant: 'without profiles', profiles: [] },
+    ]) {
+      describe(variant, () => {
+        let link: HTMLAnchorElement;
+
+        beforeEach(() => {
+          // Other specs leave download or redirect actions in the shared
+          // subject, which the component replays on init.
+          actionBehaviorSubject$.next({ action: DialogCloseAction.Close });
+          // The app writes its URLs after a hash (`useHash: true` in main.ts).
+          TestBed.overrideProvider(LocationStrategy, {
+            useFactory: (platformLocation: PlatformLocation) =>
+              new HashLocationStrategy(platformLocation),
+            deps: [PlatformLocation],
+          });
+          TestBed.overrideProvider(MAT_DIALOG_DATA, {
+            useValue: {
+              profiles,
+              report: 'localhost:8080',
+              export: 'localhost:8080',
+              device: device,
+              started: '2026-02-02 17:24:52',
+            },
+          });
+          TestBed.compileComponents();
+          fixture = TestBed.createComponent(DownloadZipModalComponent);
+          component = fixture.componentInstance;
+          fixture.detectChanges();
+          link = fixture.nativeElement.querySelector(
+            '.redirect-link'
+          ) as HTMLAnchorElement;
+        });
+
+        it('should be a link to the Risk Assessment page', () => {
+          expect(link.getAttribute('href')).toBe('#/risk-assessment');
+          expect(link.hasAttribute('role'))
+            .withContext('a link with an href has the link role natively')
+            .toBeFalse();
+          expect(link.hasAttribute('tabindex'))
+            .withContext('a link with an href is in the tab order natively')
+            .toBeFalse();
+          expect(link.tabIndex).toBe(0);
+        });
+
+        it('should be named by its visible "Risk Assessment" text', () => {
+          expect(visibleLabel(link)).toBe('Risk Assessment');
+          expect(accessibleName(link)).toBe('Risk Assessment');
+          expect(link.hasAttribute('aria-label'))
+            .withContext('an aria-label overrides the visible text')
+            .toBeFalse();
+        });
+
+        it('should look like a link, not only by its color', () => {
+          // Its color is below 3:1 against the surrounding text (WCAG 1.4.1).
+          expect(getComputedStyle(link).textDecorationLine).toBe('underline');
+        });
+
+        it('should close the dialog to open the page instead of following the link', () => {
+          const closeSpy = spyOn(component.dialogRef, 'close');
+          let defaultPrevented = false;
+          // Runs after the link's own listeners and keeps the test page in place.
+          const recordDefaultPrevented = (event: Event) => {
+            defaultPrevented = event.defaultPrevented;
+            event.preventDefault();
+          };
+          document.addEventListener('click', recordDefaultPrevented);
+
+          link.click();
+
+          document.removeEventListener('click', recordDefaultPrevented);
+          expect(defaultPrevented)
+            .withContext('the page opens once the dialog closes')
+            .toBeTrue();
+          expect(closeSpy).toHaveBeenCalledOnceWith({
+            action: DialogCloseAction.Redirect,
+          });
+        });
+
+        it('should close the dialog once when activated with Enter', () => {
+          const closeSpy = spyOn(component.dialogRef, 'close');
+          const enter = new KeyboardEvent('keydown', {
+            key: 'Enter',
+            bubbles: true,
+            cancelable: true,
+          });
+
+          link.dispatchEvent(enter);
+          // Synthetic events skip default actions; browsers click a link on Enter.
+          if (!enter.defaultPrevented) {
+            link.click();
+          }
+
+          expect(closeSpy).toHaveBeenCalledOnceWith({
+            action: DialogCloseAction.Redirect,
+          });
+        });
+      });
+    }
+  });
+
+  describe('initial focus (WCAG 2.4.3)', () => {
+    let compiled: HTMLElement;
+
+    function createComponent(dialogData: object): void {
+      // Other specs leave download or redirect actions in the shared subject,
+      // which the component replays on init.
+      actionBehaviorSubject$.next({ action: DialogCloseAction.Close });
+      TestBed.overrideProvider(MAT_DIALOG_DATA, { useValue: dialogData });
+      TestBed.compileComponents();
+      fixture = TestBed.createComponent(DownloadZipModalComponent);
+      compiled = fixture.nativeElement as HTMLElement;
+      fixture.detectChanges();
+    }
+
+    /**
+     * Moves focus as `MatDialog` does on open with `autoFocus: true` or
+     * `'first-tabbable'`: to the `[cdkFocusInitial]` element, else to the first
+     * tabbable one.
+     */
+    function focusInitialElement(): void {
+      const focusTrap = TestBed.inject(FocusTrapFactory).create(compiled);
+      focusTrap.focusInitialElement();
+      focusTrap.destroy();
+    }
+
+    it('should start on the Risk Profile select, not on the Risk Assessment link', () => {
+      createComponent({
+        profiles: [PROFILE_MOCK],
+        report: 'localhost:8080',
+        export: 'localhost:8080',
+        device: device,
+        started: '2026-02-02 17:24:52',
+      });
+
+      focusInitialElement();
+
+      expect(document.activeElement).toBe(compiled.querySelector('mat-select'));
+    });
+
+    it('should start on the Risk Profile select when testing is complete', () => {
+      createComponent({
+        profiles: [PROFILE_MOCK],
+        testrunStatus: MOCK_PROGRESS_DATA_COMPLIANT,
+        isTestingComplete: true,
+        report: MOCK_PROGRESS_DATA_COMPLIANT.report,
+        export: MOCK_PROGRESS_DATA_COMPLIANT.export,
+        device: MOCK_PROGRESS_DATA_COMPLIANT.device,
+        started: MOCK_PROGRESS_DATA_COMPLIANT.started,
+      });
+
+      focusInitialElement();
+
+      expect(document.activeElement).toBe(compiled.querySelector('mat-select'));
+    });
+
+    it('should start on the Risk Assessment link while the select is disabled', () => {
+      createComponent({
+        profiles: [],
+        report: 'localhost:8080',
+        export: 'localhost:8080',
+        device: device,
+        started: '2026-02-02 17:24:52',
+      });
+
+      focusInitialElement();
+
+      expect(document.activeElement).toBe(
+        compiled.querySelector('.redirect-link')
+      );
+    });
+  });
+
   describe('with no profiles', () => {
     beforeEach(() => {
       TestBed.overrideProvider(MAT_DIALOG_DATA, {
@@ -479,6 +788,11 @@ function textOf(node: Node, visibleOnly = false): string {
   return Array.from(node.childNodes, child => textOf(child, visibleOnly)).join(
     ''
   );
+}
+
+/** IDs referenced by an ID reference list attribute, e.g. `aria-labelledby`. */
+function idRefsOf(element: Element, attribute: string): string[] {
+  return (element.getAttribute(attribute) ?? '').split(/\s+/).filter(Boolean);
 }
 
 /** Text of the elements referenced by an `aria-labelledby`/`aria-describedby` value. */
