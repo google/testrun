@@ -394,6 +394,45 @@
             }
           ]
         }
+      },
+      {
+        "name": "security.services.ssdp",
+        "test_description": "Check SSDP/UPnP UDP port 1900 is disabled",
+        "expected_behavior": "UDP port 1900 is closed and no SSDP/UPnP service is running on any port",
+        "config": {
+          "services": [
+            "ssdp",
+            "upnp"
+          ],
+          "ports": [
+            {
+              "number": 1900,
+              "type": "udp"
+            }
+          ]
+        },
+        "recommendations": [
+          "Disable the SSDP server"
+        ]
+      },
+      {
+        "name": "security.services.coap",
+        "test_description": "Check CoAP UDP port 5683 is closed",
+        "expected_behavior": "UDP port 5683 is closed",
+        "config": {
+          "services": [
+            "coap"
+          ],
+          "ports": [
+            {
+              "number": 5683,
+              "type": "udp"
+            }
+          ]
+        },
+        "recommendations": [
+          "Disable the CoAP server"
+        ]
       }
     ]
   }
