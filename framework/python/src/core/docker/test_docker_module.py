@@ -156,4 +156,3 @@ class TestModule(Module):
       # Ignore errors, just use default
       timeout = DEFAULT_TIMEOUT
     return timeout # pylint: disable=W0150
-    

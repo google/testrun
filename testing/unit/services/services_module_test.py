@@ -103,4 +103,3 @@ if __name__ == '__main__':
   if not test_result.wasSuccessful():
     sys.exit(1)  # Return a non-zero exit code for failures
   sys.exit(0)  # Return zero for success
-  

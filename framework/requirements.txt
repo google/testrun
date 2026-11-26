@@ -13,11 +13,12 @@ weasyprint==70.0
 pydyf==0.11.0
 
 # Requirements for the API
-fastapi==0.115.0
+starlette==1.10.0
+fastapi==0.163.1
 psutil==5.9.8
 uvicorn==0.27.0
 python-multipart==0.0.32
-pydantic==2.14.3
+pydantic==2.14.4
 
 # Requirements for testing
 pytest==9.0.3
