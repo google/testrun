@@ -18,10 +18,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SimpleDialogComponent } from './simple-dialog.component';
 import {
   MAT_DIALOG_DATA,
+  MatDialog,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { NgZone } from '@angular/core';
 import { of } from 'rxjs';
 
 describe('DeleteFormComponent', () => {
@@ -126,6 +128,63 @@ describe('DeleteFormComponent', () => {
     });
   });
 
+  describe('inside a dialog', () => {
+    let dialog: MatDialog;
+
+    beforeEach(() => {
+      dialog = TestBed.inject(MatDialog);
+    });
+
+    afterEach(() => {
+      dialog.closeAll();
+    });
+
+    /** Opens the dialog in Material's container, with its styles, as openers do. */
+    async function openDialog(): Promise<HTMLElement> {
+      // Opened in the Angular zone, as from a click, so that the dialog renders.
+      TestBed.inject(NgZone).run(() =>
+        dialog.open(SimpleDialogComponent, {
+          data: { title: 'Delete report?', content: 'content' },
+          panelClass: ['simple-dialog', 'delete-dialog'],
+        })
+      );
+      // `mat-dialog-title` registers its id with the dialog in a microtask.
+      await fixture.whenStable();
+      return document.querySelector(
+        '.delete-dialog mat-dialog-container'
+      ) as HTMLElement;
+    }
+
+    it('should name a dialog opened without an aria-label by its heading', async () => {
+      const container = await openDialog();
+
+      expect(container.hasAttribute('aria-label')).toBeFalse();
+      expect(textOfIdRefs(container.getAttribute('aria-labelledby'))).toBe(
+        'Delete report?'
+      );
+      expect(container.getAttribute('aria-labelledby')).toBe(
+        container.querySelector('h2.simple-dialog-title')?.id as string
+      );
+    });
+
+    it('should keep the title look of the dialog', async () => {
+      const container = await openDialog();
+      const title = container.querySelector(
+        '.simple-dialog-title'
+      ) as HTMLElement;
+      const style = getComputedStyle(title);
+
+      // No margin, padding, or 40px line strut from Material's dialog title.
+      expect(boxSides(style, 'margin')).toEqual(['0px', '0px', '0px', '0px']);
+      expect(boxSides(style, 'padding')).toEqual(['0px', '0px', '0px', '0px']);
+      expect(title.offsetHeight).toBe(32);
+      expect(style.fontSize).toBe('24px');
+      expect(style.lineHeight).toBe('32px');
+      expect(style.fontWeight).toBe('400');
+      expect(style.textAlign).toBe('center');
+    });
+  });
+
   it('should close dialog on "cancel" click', () => {
     const closeSpy = spyOn(component.dialogRef, 'close');
     const closeButton = compiled.querySelector(
@@ -202,3 +261,22 @@ describe('DeleteFormComponent', () => {
     expect(persistentFixture.componentInstance.disableEscape).toBeTrue();
   });
 });
+
+/** Text of the elements referenced by an `aria-labelledby`/`aria-describedby` value. */
+function textOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(id => document.getElementById(id)?.textContent?.trim() ?? '')
+    .join(' ');
+}
+
+/** Computed top, right, bottom, and left values of `margin` or `padding`. */
+function boxSides(
+  style: CSSStyleDeclaration,
+  property: 'margin' | 'padding'
+): string[] {
+  return ['top', 'right', 'bottom', 'left'].map(side =>
+    style.getPropertyValue(`${property}-${side}`)
+  );
+}

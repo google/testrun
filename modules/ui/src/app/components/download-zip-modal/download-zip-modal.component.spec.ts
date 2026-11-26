@@ -10,7 +10,11 @@ import {
   DialogCloseAction,
   DownloadZipModalComponent,
 } from './download-zip-modal.component';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import {
   PROFILE_MOCK,
   PROFILE_MOCK_2,
@@ -25,7 +29,7 @@ import { Router } from '@angular/router';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { RouterTestingModule } from '@angular/router/testing';
-import { Component } from '@angular/core';
+import { ApplicationRef, Component, NgZone } from '@angular/core';
 import { device } from '../../mocks/device.mock';
 import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/testrun.mock';
 import {
@@ -286,6 +290,82 @@ describe('DownloadZipModalComponent', () => {
       expect(downloadButton.hasAttribute('aria-label'))
         .withContext('an aria-label overrides the visible text')
         .toBeFalse();
+    });
+  });
+
+  describe('"Download ZIP file" title (WCAG 1.3.1, 2.4.6)', () => {
+    const REPORT_DIALOG_DATA = {
+      profiles: [PROFILE_MOCK],
+      report: 'localhost:8080',
+      export: 'localhost:8080',
+      device: device,
+      started: '2026-02-02 17:24:52',
+    };
+
+    beforeEach(() => {
+      // Other specs leave download or redirect actions in the shared subject,
+      // which the component replays on init.
+      actionBehaviorSubject$.next({ action: DialogCloseAction.Close });
+    });
+
+    afterEach(() => {
+      // Closes as Cancel does: the component expects a close action.
+      TestBed.inject(MatDialog).openDialogs.forEach(dialogRef =>
+        dialogRef.close({ action: DialogCloseAction.Close })
+      );
+    });
+
+    it('should title the dialog with a native level 2 heading', () => {
+      TestBed.overrideProvider(MAT_DIALOG_DATA, {
+        useValue: REPORT_DIALOG_DATA,
+      });
+      TestBed.compileComponents();
+      fixture = TestBed.createComponent(DownloadZipModalComponent);
+      fixture.detectChanges();
+      const compiled = fixture.nativeElement as HTMLElement;
+      const title = compiled.querySelector('h2.risk-profile-select-form-title');
+
+      expect(title?.textContent?.trim()).toBe('Download ZIP file');
+      // Native semantics leave no ARIA heading role to keep in sync.
+      expect(title?.hasAttribute('role')).toBeFalse();
+      expect(title?.hasAttribute('aria-level')).toBeFalse();
+      expect(
+        compiled.querySelectorAll('h1, h2, h3, h4, h5, h6, [role="heading"]')
+          .length
+      ).toBe(1);
+    });
+
+    it('should keep the title look inside the dialog container', async () => {
+      // Opened as openers do, so Material's dialog title styles apply.
+      TestBed.inject(NgZone).run(() =>
+        TestBed.inject(MatDialog).open(DownloadZipModalComponent, {
+          data: REPORT_DIALOG_DATA,
+          panelClass: 'initiate-test-run-dialog',
+        })
+      );
+      await TestBed.inject(ApplicationRef).whenStable();
+      const container = document.querySelector(
+        '.initiate-test-run-dialog mat-dialog-container'
+      ) as HTMLElement;
+      const title = container.querySelector(
+        '.risk-profile-select-form-title'
+      ) as HTMLElement;
+      const style = getComputedStyle(title);
+      const dialogStyle = getComputedStyle(
+        container.querySelector('app-download-zip-modal') as HTMLElement
+      );
+
+      // No margin, padding, or 40px line strut from `<h2>` or Material.
+      expect(boxSides(style, 'margin')).toEqual(['0px', '0px', '0px', '0px']);
+      expect(boxSides(style, 'padding')).toEqual(['0px', '0px', '0px', '0px']);
+      expect(title.offsetHeight).toBe(24);
+      expect(style.fontSize).toBe('18px');
+      expect(style.lineHeight).toBe('24px');
+      expect(style.color).toBe('rgb(32, 33, 36)');
+      // The dialog's font, not the bold `<h2>` or Material title typography.
+      expect(style.fontFamily).toBe(dialogStyle.fontFamily);
+      expect(style.fontWeight).toBe(dialogStyle.fontWeight);
+      expect(style.letterSpacing).toBe(dialogStyle.letterSpacing);
     });
   });
 
@@ -817,4 +897,14 @@ function accessibleName(element: HTMLElement): string {
 /** Text label that sighted users see on a control. */
 function visibleLabel(element: HTMLElement): string {
   return normalizeWhitespace(textOf(element, true));
+}
+
+/** Computed top, right, bottom, and left values of `margin` or `padding`. */
+function boxSides(
+  style: CSSStyleDeclaration,
+  property: 'margin' | 'padding'
+): string[] {
+  return ['top', 'right', 'bottom', 'left'].map(side =>
+    style.getPropertyValue(`${property}-${side}`)
+  );
 }

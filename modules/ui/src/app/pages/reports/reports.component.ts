@@ -449,7 +449,10 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.store.setFilterOpened(true);
     this.store.setActiveFiler(filter);
     const dialogRef = this.dialog.open(FilterDialogComponent, {
-      ariaLabel: 'Filters',
+      // Named by its `mat-dialog-title`, e.g. "Select dates", which an
+      // `ariaLabel` would override. Exposes the page behind as inert;
+      // `mat-select` keeps its options reachable via the dialog's `aria-owns`.
+      ariaModal: true,
       data: {
         filter,
         title,

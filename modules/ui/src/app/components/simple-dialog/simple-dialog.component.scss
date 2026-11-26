@@ -38,6 +38,11 @@
   text-align: center;
   color: colors.$on-surface;
   font-family: variables.$font-primary;
+
+  // The 40px line strut of `mat-dialog-title` would make the title taller.
+  &::before {
+    display: none;
+  }
 }
 
 .simple-dialog-content {

@@ -64,7 +64,10 @@ export class DownloadReportZipComponent
     event.stopPropagation();
 
     this.dialog.open(DownloadZipModalComponent, {
-      ariaLabel: 'Download zip',
+      // Named by its `mat-dialog-title`, "Download ZIP file", which an
+      // `ariaLabel` would override. Exposes the page behind as inert;
+      // `mat-select` keeps its options reachable via the dialog's `aria-owns`.
+      ariaModal: true,
       data: {
         profiles: this.profiles,
         report: this.report,
