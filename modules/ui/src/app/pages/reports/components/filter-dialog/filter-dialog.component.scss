@@ -31,6 +31,9 @@
   display: flex;
   flex-direction: column;
   padding: 0 4px;
+  // Its max height already fits the dialog in the viewport where possible;
+  // otherwise the dialog scrolls instead of crushing the content.
+  flex-shrink: 0;
 
   &:has(.text-field) {
     padding: 0 24px 16px;

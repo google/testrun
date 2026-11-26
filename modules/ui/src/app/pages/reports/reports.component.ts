@@ -460,6 +460,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
+      // Scrolls the dialog when it is taller than the viewport, e.g. at 400%.
+      maxHeight: '100vh',
       panelClass: 'filter-form-dialog',
     });
 

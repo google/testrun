@@ -17,8 +17,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FilterDialogComponent } from './filter-dialog.component';
 import { CommonModule } from '@angular/common';
+import { ApplicationRef, ElementRef } from '@angular/core';
 import {
   MAT_DIALOG_DATA,
+  MatDialog,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
@@ -537,6 +539,233 @@ describe('FilterDialogComponent', () => {
       const updatePositionSpy = spyOn(component.dialogRef, 'updatePosition');
       component.onResize();
       expect(updatePositionSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('when opened from the filter menu of the Reports page', () => {
+    /** Filters in the order of `SearchComponent.filterMenuItems`. */
+    const MENU_ORDER: FilterName[] = [
+      FilterName.Started,
+      FilterName.DeviceInfo,
+      FilterName.DeviceFirmware,
+      FilterName.AssessmentType,
+      FilterName.Results,
+      FilterName.Location,
+      FilterName.LinuxEnv,
+      FilterName.PythonVersion,
+      FilterName.Kernel,
+    ];
+    /**
+     * The filter menu at 200% zoom, as reported: 48px items from y = 40, e.g.
+     * "Result" at y = 232 and "Kernel" at y = 424.
+     */
+    const MENU_RECT = new DOMRect(112, 32, 280, 448);
+
+    afterEach(() => {
+      TestBed.inject(MatDialog).closeAll();
+      const frame = window.frameElement as HTMLElement | null;
+      frame?.style.removeProperty('width');
+      frame?.style.removeProperty('height');
+    });
+
+    /**
+     * Emulates a viewport of `width` × `height` CSS px, e.g. 640×480 for a
+     * 1280×960 window at 200% zoom, by resizing the frame the specs run in, so
+     * that `vh`, media queries and the overlay match it as at that zoom.
+     */
+    function setViewport(width: number, height: number): void {
+      const frame = window.frameElement as HTMLElement | null;
+      if (!frame) {
+        pending('Needs the Karma context frame to resize the viewport');
+        return;
+      }
+      frame.style.width = `${width}px`;
+      frame.style.height = `${height}px`;
+
+      expect([window.innerWidth, window.innerHeight])
+        .withContext('emulated viewport')
+        .toEqual([width, height]);
+    }
+
+    /** Top of the menu item of `filter` in the menu at 200% zoom. */
+    function itemTopOf(filter: FilterName): number {
+      return 40 + 48 * MENU_ORDER.indexOf(filter);
+    }
+
+    /**
+     * Opens the dialog of `filter` from its menu item, as `ReportsComponent`
+     * does, and returns its `mat-dialog-container`.
+     */
+    function openFromMenuItem(
+      filter: FilterName,
+      title: FilterTitle,
+      itemTop = itemTopOf(filter)
+    ): HTMLElement {
+      TestBed.inject(MatDialog).open(FilterDialogComponent, {
+        ariaLabel: 'Filters',
+        data: {
+          filter,
+          title,
+          trigger: new ElementRef(document.body),
+          menuRect: MENU_RECT,
+          itemRect: new DOMRect(MENU_RECT.left, itemTop, MENU_RECT.width, 48),
+        },
+        autoFocus: true,
+        hasBackdrop: true,
+        disableClose: true,
+        maxHeight: '100vh',
+        panelClass: 'filter-form-dialog',
+      });
+      TestBed.inject(ApplicationRef).tick();
+      return document.querySelector('mat-dialog-container') as HTMLElement;
+    }
+
+    function contentOf(dialog: HTMLElement): HTMLElement {
+      return dialog.querySelector('.filter-dialog-content') as HTMLElement;
+    }
+
+    function expectInViewport(element: Element | null, name: string): void {
+      expect(element).withContext(name).not.toBeNull();
+      const { top, right, bottom, left } = (
+        element as Element
+      ).getBoundingClientRect();
+      const viewport = `${window.innerWidth}×${window.innerHeight} viewport`;
+
+      expect(top)
+        .withContext(`${name}: top in the ${viewport}`)
+        .toBeGreaterThanOrEqual(0);
+      expect(left)
+        .withContext(`${name}: left in the ${viewport}`)
+        .toBeGreaterThanOrEqual(0);
+      expect(bottom)
+        .withContext(`${name}: bottom in the ${viewport}`)
+        .toBeLessThanOrEqual(window.innerHeight);
+      expect(right)
+        .withContext(`${name}: right in the ${viewport}`)
+        .toBeLessThanOrEqual(window.innerWidth);
+    }
+
+    /** Checks that the content shows all of its controls, without scrolling. */
+    function expectWholeContentShown(dialog: HTMLElement): void {
+      const { clientHeight, scrollHeight } = contentOf(dialog);
+
+      expect(scrollHeight)
+        .withContext(
+          `content of ${clientHeight}px hides part of its ${scrollHeight}px`
+        )
+        .toBeLessThanOrEqual(clientHeight);
+    }
+
+    /** Checks that the dialog stays beside its menu item, at its level. */
+    function expectBesideMenuItem(dialog: HTMLElement, itemTop: number): void {
+      const { top, bottom } = dialog.getBoundingClientRect();
+
+      expect(top)
+        .withContext('dialog top at or above its menu item')
+        .toBeLessThanOrEqual(itemTop);
+      expect(bottom)
+        .withContext('dialog bottom below the top of its menu item')
+        .toBeGreaterThan(itemTop);
+    }
+
+    describe('at 200% zoom (640×480 viewport)', () => {
+      beforeEach(() => setViewport(640, 480));
+
+      for (const [filter, title] of [
+        [FilterName.Location, FilterTitle.Location],
+        [FilterName.LinuxEnv, FilterTitle.LinuxEnv],
+        [FilterName.PythonVersion, FilterTitle.PythonVersion],
+        [FilterName.Kernel, FilterTitle.Kernel],
+      ] as const) {
+        it(`should show the whole "${title}" dialog inside the viewport`, () => {
+          const dialog = openFromMenuItem(filter, title);
+
+          expectInViewport(dialog, 'dialog');
+          expectWholeContentShown(dialog);
+          expectInViewport(dialog.querySelector('input'), 'input');
+          expectInViewport(dialog.querySelector('.cancel-button'), 'Cancel');
+          expectInViewport(dialog.querySelector('.confirm-button'), 'Ok');
+          expectBesideMenuItem(dialog, itemTopOf(filter));
+        });
+      }
+
+      it('should show all four "Select status" options inside the viewport', () => {
+        const dialog = openFromMenuItem(
+          FilterName.Results,
+          FilterTitle.Results
+        );
+        const options = Array.from(dialog.querySelectorAll('mat-checkbox'));
+
+        expectInViewport(dialog, 'dialog');
+        expectWholeContentShown(dialog);
+        expect(options.length).toBe(4);
+        for (const option of options) {
+          expectInViewport(option, option.textContent?.trim() ?? 'option');
+        }
+        expectBesideMenuItem(dialog, itemTopOf(FilterName.Results));
+      });
+
+      it('should fit the taller "Select dates" dialog in the viewport and scroll only its content', () => {
+        const dialog = openFromMenuItem(
+          FilterName.Started,
+          FilterTitle.Started
+        );
+        const content = contentOf(dialog);
+
+        expectInViewport(dialog, 'dialog');
+        expectInViewport(dialog.querySelector('.cancel-button'), 'Cancel');
+        expectInViewport(dialog.querySelector('.confirm-button'), 'Ok');
+        expect(getComputedStyle(content).overflowY).toBe('auto');
+        expect(content.scrollHeight)
+          .withContext('calendar taller than the visible content')
+          .toBeGreaterThan(content.clientHeight);
+      });
+
+      it('should keep a dialog that fits below its menu item level with the item', () => {
+        const dialog = openFromMenuItem(
+          FilterName.DeviceInfo,
+          FilterTitle.DeviceInfo
+        );
+
+        expectInViewport(dialog, 'dialog');
+        expectWholeContentShown(dialog);
+        expect(dialog.getBoundingClientRect().top).toBe(
+          itemTopOf(FilterName.DeviceInfo)
+        );
+      });
+    });
+
+    it('should move the dialog back inside the viewport when zooming in to 200% while it is open', () => {
+      setViewport(1280, 960);
+      const dialog = openFromMenuItem(FilterName.Kernel, FilterTitle.Kernel);
+      expect(dialog.getBoundingClientRect().top)
+        .withContext('level with its menu item at 100% zoom')
+        .toBe(itemTopOf(FilterName.Kernel));
+
+      setViewport(640, 480);
+      window.dispatchEvent(new Event('resize'));
+      TestBed.inject(ApplicationRef).tick();
+
+      expectInViewport(dialog, 'dialog');
+      expectWholeContentShown(dialog);
+    });
+
+    it('should never shrink the field on a very short viewport (320×180, 400% zoom)', () => {
+      setViewport(320, 180);
+      const dialog = openFromMenuItem(
+        FilterName.Kernel,
+        FilterTitle.Kernel,
+        132
+      );
+      const surface = dialog.querySelector(
+        '.mat-mdc-dialog-surface'
+      ) as HTMLElement;
+
+      expectInViewport(dialog, 'dialog');
+      expectWholeContentShown(dialog);
+      expect(surface.scrollHeight)
+        .withContext('the dialog scrolls to its buttons')
+        .toBeGreaterThan(surface.clientHeight);
     });
   });
 });
