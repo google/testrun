@@ -64,6 +64,14 @@ echo "Starting SNMPv2 on ports 161/162 "
 echo "Starting TFTP on port 69 "
 (while true; do nc -l -p 69 < /dev/null | tee /dev/stderr | cat <(echo 'Hello TCP!') ; done) &
 
+# Start SSDP service
+echo "Starting SSDP on port 1900 "
+socat UDP4-RECVFROM:1900,reuseaddr,fork SYSTEM:'cat >/dev/null; printf "HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=1800\r\nEXT:\r\nLOCATION: http://10.10.10.14:80/description.xml\r\nSERVER: Linux/5.15 UPnP/1.0 Testrun-SSDP/1.0\r\nST: upnp:rootdevice\r\nUSN: uuid:testrun-ssdp-device::upnp:rootdevice\r\n\r\n"' &
+
+# Start CoAP service
+echo "Stating CoAP on UDP port 5683"
+socat UDP4-RECVFROM:5683,reuseaddr,fork SYSTEM:'cat >/dev/null; printf "\140]105\000\001"' &
+
 # Start NTP service 
 echo "Starting NTP service"
 service ntp start
