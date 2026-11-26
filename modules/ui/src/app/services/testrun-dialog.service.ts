@@ -27,7 +27,10 @@ export class TestrunDialogService {
     data: Partial<TestrunData>
   ): Observable<TestrunStatus | undefined> {
     const dialogRef = this.dialog.open(TestrunInitiateFormComponent, {
-      ariaLabel: 'Start new testrun',
+      // Named by its `mat-dialog-title`, "Start new Testrun", which an
+      // `ariaLabel` would override. Exposes the page behind as inert to
+      // assistive technologies.
+      ariaModal: true,
       data,
       autoFocus: 'first-tabbable',
       hasBackdrop: true,

@@ -203,7 +203,7 @@ describe('ProgressTableComponent', () => {
         tick();
 
         expect(openSpy).toHaveBeenCalledWith(TestResultDialogComponent, {
-          ariaLabel: 'Test result information',
+          ariaModal: true,
           data: {
             testResult,
           },
@@ -391,10 +391,13 @@ describe('ProgressTableComponent', () => {
         expect(openSpy).toHaveBeenCalledOnceWith(
           TestResultDialogComponent,
           jasmine.objectContaining({
-            ariaLabel: 'Test result information',
+            ariaModal: true,
             data: { testResult: ERROR_WITH_DETAILS },
           })
         );
+        expect(openSpy.calls.mostRecent().args[1]?.ariaLabel)
+          .withContext('a static name would override the test name heading')
+          .toBeUndefined();
       });
 
       it('should leave Enter and Space to the native details button so the dialog opens once', () => {
@@ -425,7 +428,9 @@ describe('ProgressTableComponent', () => {
         button.focus();
         button.click();
         const dialog = await rootLoader.getHarness(MatDialogHarness);
-        expect(await dialog.getAriaLabel()).toBe('Test result information');
+        expect(textOfIdRefs(await dialog.getAriaLabelledby())).toBe(
+          ERROR_WITH_DETAILS.name
+        );
 
         await dialog.close();
         await fixture.whenStable();
@@ -504,6 +509,74 @@ describe('ProgressTableComponent', () => {
           parseFloat(getComputedStyle(rowWithoutButton).minHeight)
         );
       });
+
+      describe('test result dialog (WCAG 1.3.1, 2.4.6, 4.1.2)', () => {
+        afterEach(() => {
+          component.dialog.closeAll();
+        });
+
+        /** Activates the details button of a result and returns the `role="dialog"` element it opens. */
+        async function openTestResultDialog(
+          result: IResult
+        ): Promise<HTMLElement> {
+          getDetailsButton(result.name)?.click();
+          // The click runs in the Angular zone, which renders the dialog in the
+          // CDK overlay; `mat-dialog-title` then registers its id in a microtask.
+          await fixture.whenStable();
+          return document.querySelector(
+            '.simple-dialog mat-dialog-container'
+          ) as HTMLElement;
+        }
+
+        it('should mark the dialog as modal', async () => {
+          const dialog = await openTestResultDialog(ERROR_WITH_DETAILS);
+
+          expect(dialog.getAttribute('role')).toBe('dialog');
+          expect(dialog.getAttribute('aria-modal')).toBe('true');
+        });
+
+        it('should name the dialog by the test name, its only, level 2, heading', async () => {
+          const dialog = await openTestResultDialog(NON_COMPLIANT_WITH_STEPS);
+          const heading = dialog.querySelector('h2') as HTMLElement;
+
+          expect(textOfIdRefs(dialog.getAttribute('aria-labelledby'))).toBe(
+            'dns.network.from_dhcp'
+          );
+          expect(dialog.getAttribute('aria-labelledby')).toBe(heading?.id);
+          // A static name would override the test name.
+          expect(dialog.hasAttribute('aria-label')).toBeFalse();
+          expect(
+            dialog.querySelectorAll('h1, h2, h3, h4, h5, h6, [role="heading"]')
+              .length
+          ).toBe(1);
+        });
+
+        it('should keep the title look', async () => {
+          const dialog = await openTestResultDialog(NON_COMPLIANT_WITH_STEPS);
+          const title = dialog.querySelector('.dialog-title') as HTMLElement;
+          const style = getComputedStyle(title);
+
+          // The Material dialog title margin, not the `<h2>` one.
+          expect(boxSides(style, 'margin')).toEqual([
+            '0px',
+            '0px',
+            '1px',
+            '0px',
+          ]);
+          expect(boxSides(style, 'padding')).toEqual([
+            '48px',
+            '24px',
+            '40px',
+            '24px',
+          ]);
+          expect(title.offsetHeight).toBe(120);
+          // Not the bold, 1.5em `<h2>` typography.
+          expect(style.fontSize).toBe('24px');
+          expect(style.lineHeight).toBe('32px');
+          expect(style.fontWeight).toBe('500');
+          expect(style.textAlign).toBe('center');
+        });
+      });
     });
   });
 });
@@ -517,6 +590,16 @@ function textOfIdRefs(idRefs: string | null): string {
     .join(' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+/** Computed top, right, bottom, and left values of `margin` or `padding`. */
+function boxSides(
+  style: CSSStyleDeclaration,
+  property: 'margin' | 'padding'
+): string[] {
+  return ['top', 'right', 'bottom', 'left'].map(side =>
+    style.getPropertyValue(`${property}-${side}`)
+  );
 }
 
 type Rgb = [number, number, number];

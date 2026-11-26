@@ -15,12 +15,12 @@ limitations under the License.
 -->
 @if (data.testrunStatus) {
   <div class="testing-result-heading">
-    <p class="testing-result-title" role="heading" aria-level="2">
+    <h2 class="testing-result-title" mat-dialog-title>
       {{ data.testrunStatus.device.manufacturer }}
       {{ data.testrunStatus.device.model }}
       {{ data.testrunStatus.device.firmware }}
-    </p>
-    <p class="testing-result-subtitle">
+    </h2>
+    <p class="testing-result-subtitle" id="testing-result-subtitle">
       {{ data.testrunStatus.device.test_pack }} testing has just finished
     </p>
   </div>

@@ -71,6 +71,20 @@ describe('TestResultDialogComponent', () => {
     closeSpy.calls.reset();
   });
 
+  it('should title the dialog with the test name as a native level 2 heading', () => {
+    const headings = compiled.querySelectorAll(
+      'h1, h2, h3, h4, h5, h6, [role="heading"]'
+    );
+    const title = headings[0];
+
+    expect(headings.length).toBe(1);
+    expect(title?.tagName).toBe('H2');
+    expect(title?.textContent?.trim()).toBe('dns.network.from_dhcp');
+    // Native semantics leave no ARIA heading role to keep in sync.
+    expect(title?.hasAttribute('role')).toBeFalse();
+    expect(title?.hasAttribute('aria-level')).toBeFalse();
+  });
+
   it('should list the steps to resolve under their label', () => {
     const steps = Array.from(
       compiled.querySelectorAll('.info-steps-list li')

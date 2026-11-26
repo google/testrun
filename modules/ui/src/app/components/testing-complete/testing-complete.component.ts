@@ -46,7 +46,10 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
 
   private openTestingCompleteModal(): void {
     const dialogRef = this.dialog.open(DownloadZipModalComponent, {
-      ariaLabel: 'Testing complete',
+      // Named by its `mat-dialog-title`, the tested device, which an
+      // `ariaLabel` would override. Exposes the page behind as inert;
+      // `mat-select` keeps its options reachable via the dialog's `aria-owns`.
+      ariaModal: true,
       data: {
         profiles: this.profiles,
         testrunStatus: this.data,
@@ -58,7 +61,9 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
         started: this.data?.started,
       },
       autoFocus: 'first-tabbable',
-      ariaDescribedBy: 'testing-result-main-info',
+      // Screen readers announce that testing has finished, and its result,
+      // with the name.
+      ariaDescribedBy: 'testing-result-subtitle testing-result-main-info',
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'initiate-test-run-dialog',

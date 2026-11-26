@@ -79,7 +79,10 @@ export class TestrunTableComponent {
 
   onRowSelected(testResult: IResult) {
     this.dialog.open(TestResultDialogComponent, {
-      ariaLabel: 'Test result information',
+      // Named by its `mat-dialog-title`, the test name, which an `ariaLabel`
+      // would override. Exposes the page behind as inert to assistive
+      // technologies.
+      ariaModal: true,
       data: {
         testResult,
       },

@@ -80,6 +80,7 @@ export class TestrunComponent implements OnDestroy {
   private readonly testRunDialogService = inject(TestrunDialogService);
   private readonly testRunService = inject(TestRunService);
   dialog = inject(MatDialog);
+  private readonly idGenerator = inject(_IdGenerator);
   private readonly focusManagerService = inject(FocusManagerService);
   testrunStore = inject(TestrunStore);
 
@@ -96,14 +97,22 @@ export class TestrunComponent implements OnDestroy {
   }
 
   public openStopTestrunDialog() {
+    const contentId = this.idGenerator.getId(
+      'app-stop-testrun-dialog-content-'
+    );
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: `Stop Testrun`,
+      // Named by its `mat-dialog-title`, "Stop Testrun?", which an `ariaLabel`
+      // would override. Screen readers announce the warning with the name.
+      ariaDescribedBy: contentId,
+      // Exposes the page behind as inert to assistive technologies.
+      ariaModal: true,
       data: {
         icon: 'stop_circle',
         title: `Stop Testrun?`,
         content:
           'Testrun will be stopped without any track records and report generation.',
         confirmName: 'Stop',
+        contentId,
       },
       autoFocus: true,
       hasBackdrop: true,

@@ -64,8 +64,16 @@
 
 .progress-initiate-form-title {
   @include mixins.headline-large;
+  // Looks like the former `<span>` title, without the margin of `<h2>` and
+  // `mat-dialog-title`.
+  margin: 0;
   padding: 24px 24px 20px;
   text-align: center;
+
+  // The 40px line strut of `mat-dialog-title` would make the title taller.
+  &::before {
+    display: none;
+  }
 }
 
 .progress-initiate-form-content {
