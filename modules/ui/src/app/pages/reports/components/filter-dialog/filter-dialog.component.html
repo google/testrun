@@ -24,11 +24,7 @@ limitations under the License.
     @if (data.filter === FilterName.DeviceInfo) {
       <mat-form-field appearance="outline" class="text-field">
         <mat-label>Device</mat-label>
-        <input
-          class="text-field-input"
-          formControlName="deviceInfo"
-          matInput
-          aria-label="device name" />
+        <input class="text-field-input" formControlName="deviceInfo" matInput />
         @if (deviceInfo.hasError('invalid_format')) {
           <mat-error role="alert" aria-live="assertive">
             <span
@@ -46,8 +42,7 @@ limitations under the License.
         <input
           class="text-field-input firmware-input"
           formControlName="deviceFirmware"
-          matInput
-          aria-label="device firmware" />
+          matInput />
         @if (deviceFirmware.hasError('invalid_format')) {
           <mat-error role="alert" aria-live="assertive">
             <span
@@ -62,21 +57,13 @@ limitations under the License.
     @if (data.filter === FilterName.Location) {
       <mat-form-field appearance="outline" class="text-field">
         <mat-label>Location</mat-label>
-        <input
-          class="text-field-input"
-          formControlName="location"
-          matInput
-          aria-label="location" />
+        <input class="text-field-input" formControlName="location" matInput />
       </mat-form-field>
     }
     @if (data.filter === FilterName.LinuxEnv) {
       <mat-form-field appearance="outline" class="text-field">
         <mat-label>Linux Environment</mat-label>
-        <input
-          class="text-field-input"
-          formControlName="linuxEnv"
-          matInput
-          aria-label="linux environment" />
+        <input class="text-field-input" formControlName="linuxEnv" matInput />
       </mat-form-field>
     }
     @if (data.filter === FilterName.PythonVersion) {
@@ -85,26 +72,24 @@ limitations under the License.
         <input
           class="text-field-input"
           formControlName="pythonVersion"
-          matInput
-          aria-label="python version" />
+          matInput />
       </mat-form-field>
     }
     @if (data.filter === FilterName.Kernel) {
       <mat-form-field appearance="outline" class="text-field">
         <mat-label>Kernel</mat-label>
-        <input
-          class="text-field-input"
-          formControlName="kernel"
-          matInput
-          aria-label="kernel" />
+        <input class="text-field-input" formControlName="kernel" matInput />
       </mat-form-field>
     }
     @if (data.filter === FilterName.AssessmentType) {
       <mat-form-field appearance="outline" class="text-field">
         <mat-label>Assessment type</mat-label>
+        <!-- Named by the label and by the type it shows, which MatSelect leaves
+             out of the name once the field has a label. -->
         <mat-select
+          #assessmentTypeSelect
           formControlName="assessmentType"
-          aria-label="assessment type">
+          [aria-labelledby]="assessmentTypeSelect._valueId">
           @for (type of testingTypes; track type) {
             <mat-option [value]="type">{{ type }}</mat-option>
           }
@@ -168,5 +153,11 @@ limitations under the License.
 </mat-dialog-content>
 <mat-dialog-actions align="end" class="filter-dialog-actions">
   <button (click)="cancel()" class="cancel-button" mat-button>Cancel</button>
-  <button (click)="confirm()" class="confirm-button" mat-button>Ok</button>
+  <button
+    (click)="confirm()"
+    class="confirm-button"
+    mat-button
+    [disabled]="isConfirmDisabled">
+    Ok
+  </button>
 </mat-dialog-actions>
