@@ -17,7 +17,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DeleteReportComponent } from './delete-report.component';
 import { of } from 'rxjs';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatDialogConfig,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { SimpleDialogComponent } from '../../../../components/simple-dialog/simple-dialog.component';
 import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../../../mocks/testrun.mock';
 
@@ -60,17 +64,28 @@ describe('DeleteReportComponent', () => {
       expect(deviceRemovedSpy).toHaveBeenCalled();
 
       expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
-        ariaLabel: 'Delete report',
+        ariaDescribedBy: jasmine.stringMatching(
+          /^app-delete-report-dialog-content-/
+        ),
+        ariaModal: true,
         data: {
           title: 'Delete report?',
           content:
             'You are about to delete Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20. Are you sure?',
+          contentId: jasmine.stringMatching(
+            /^app-delete-report-dialog-content-/
+          ),
         },
         autoFocus: true,
         hasBackdrop: true,
         disableClose: true,
         panelClass: ['simple-dialog', 'delete-dialog'],
       });
+      // The dialog is described by its own content.
+      const config = openSpy.calls.mostRecent().args[1] as MatDialogConfig<{
+        contentId: string;
+      }>;
+      expect(config.ariaDescribedBy).toBe(config.data?.contentId);
       openSpy.calls.reset();
     });
   });
@@ -109,4 +124,84 @@ describe('DeleteReportComponent', () => {
       });
     });
   });
+
+  describe('delete report dialog accessibility', () => {
+    const WARNING =
+      'You are about to delete Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20. Are you sure?';
+
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
+
+    afterEach(() => {
+      component.dialog.closeAll();
+    });
+
+    /** Activates Delete report and returns the `role="dialog"` element it opens. */
+    async function openDeleteDialog(): Promise<HTMLElement> {
+      (
+        compiled.querySelector('.delete-report-button') as HTMLAnchorElement
+      ).click();
+      // The click runs in the Angular zone, which renders the dialog in the CDK
+      // overlay; `mat-dialog-title` then registers its id in a microtask.
+      await fixture.whenStable();
+      return document.querySelector(
+        '.delete-dialog mat-dialog-container'
+      ) as HTMLElement;
+    }
+
+    it('should mark the dialog as modal', async () => {
+      const dialog = await openDeleteDialog();
+
+      expect(dialog.getAttribute('role')).toBe('dialog');
+      expect(dialog.getAttribute('aria-modal')).toBe('true');
+    });
+
+    it('should name the dialog by its visible heading', async () => {
+      const dialog = await openDeleteDialog();
+      const heading = dialog.querySelector('h2') as HTMLElement;
+
+      expect(textOfIdRefs(dialog.getAttribute('aria-labelledby'))).toBe(
+        'Delete report?'
+      );
+      expect(dialog.getAttribute('aria-labelledby')).toBe(heading.id);
+      // A static name would override the visible heading.
+      expect(dialog.hasAttribute('aria-label')).toBeFalse();
+    });
+
+    it('should title the dialog with a single level 2 heading', async () => {
+      const dialog = await openDeleteDialog();
+
+      expect(dialog.querySelector('h2')?.textContent?.trim()).toBe(
+        'Delete report?'
+      );
+      expect(
+        dialog.querySelectorAll('h1, h2, h3, h4, h5, h6, [role="heading"]')
+          .length
+      ).toBe(1);
+    });
+
+    it('should describe the dialog by its warning', async () => {
+      const dialog = await openDeleteDialog();
+      const descriptionId = dialog.getAttribute('aria-describedby');
+
+      expect(textOfIdRefs(descriptionId)).toBe(WARNING);
+      // The id is unique and belongs to the warning inside this dialog.
+      expect(document.querySelectorAll(`[id="${descriptionId}"]`).length).toBe(
+        1
+      );
+      expect(dialog.querySelector(`[id="${descriptionId}"]`)).toBe(
+        dialog.querySelector('.simple-dialog-content')
+      );
+    });
+  });
 });
+
+/** Text of the elements referenced by an `aria-labelledby`/`aria-describedby` value. */
+function textOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(id => document.getElementById(id)?.textContent?.trim() ?? '')
+    .join(' ');
+}

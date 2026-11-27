@@ -17,7 +17,7 @@ import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 
 import { DownloadReportZipComponent } from './download-report-zip.component';
 import { of } from 'rxjs';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import {
   DialogCloseAction,
   DownloadZipModalComponent,
@@ -25,6 +25,7 @@ import {
 import { RouterTestingModule } from '@angular/router/testing';
 import { Component } from '@angular/core';
 import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/testrun.mock';
+import { PROFILE_MOCK } from '../../mocks/profile.mock';
 import { DeviceStatus } from '../../model/device';
 
 describe('DownloadReportZipComponent', () => {
@@ -63,7 +64,7 @@ describe('DownloadReportZipComponent', () => {
         component.onClick(new Event('click'));
 
         expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
-          ariaLabel: 'Download zip',
+          ariaModal: true,
           data: {
             profiles: [],
             report: 'localhost:8080',
@@ -161,6 +162,63 @@ describe('DownloadReportZipComponent', () => {
       });
     });
   });
+
+  describe('"Download ZIP file" dialog (WCAG 1.3.1, 4.1.2)', () => {
+    afterEach(() => {
+      // Closes as Cancel does: the dialog expects a close action.
+      TestBed.inject(MatDialog).openDialogs.forEach(dialogRef =>
+        dialogRef.close({ action: DialogCloseAction.Close })
+      );
+    });
+
+    /** Activates the control and returns the `role="dialog"` element it opens. */
+    async function openZipDialog(): Promise<HTMLElement> {
+      fixture.detectChanges();
+      compiled.click();
+      // The click runs in the Angular zone, which renders the dialog in the CDK
+      // overlay; `mat-dialog-title` then registers its id in a microtask.
+      await fixture.whenStable();
+      return document.querySelector(
+        '.initiate-test-run-dialog mat-dialog-container'
+      ) as HTMLElement;
+    }
+
+    it('should mark the dialog as modal', async () => {
+      const dialog = await openZipDialog();
+
+      expect(dialog.getAttribute('role')).toBe('dialog');
+      expect(dialog.getAttribute('aria-modal')).toBe('true');
+    });
+
+    it('should name the dialog by its visible "Download ZIP file" heading', async () => {
+      const dialog = await openZipDialog();
+      const heading = dialog.querySelector('h2') as HTMLElement;
+
+      expect(textOfIdRefs(dialog.getAttribute('aria-labelledby'))).toBe(
+        'Download ZIP file'
+      );
+      expect(dialog.getAttribute('aria-labelledby')).toBe(heading?.id);
+      // A static name would override the visible heading.
+      expect(dialog.hasAttribute('aria-label')).toBeFalse();
+    });
+
+    it('should keep the Risk Profile options reachable in the modal dialog', async () => {
+      component.profiles = [PROFILE_MOCK];
+      const dialog = await openZipDialog();
+      const select = dialog.querySelector('mat-select') as HTMLElement;
+
+      (dialog.querySelector('.mat-mdc-select-trigger') as HTMLElement).click();
+      await fixture.whenStable();
+
+      // Some screen readers hide content outside an `aria-modal` dialog, so
+      // the dialog owns the options panel that renders in another overlay.
+      const panelId = `${select.id}-panel`;
+      expect(idRefsOf(dialog, 'aria-owns')).toContain(panelId);
+      expect(document.getElementById(panelId)?.getAttribute('role')).toBe(
+        'listbox'
+      );
+    });
+  });
 });
 
 @Component({
@@ -168,3 +226,17 @@ describe('DownloadReportZipComponent', () => {
   template: '',
 })
 class FakeRiskAssessmentComponent {}
+
+/** IDs referenced by an ID reference list attribute, e.g. `aria-owns`. */
+function idRefsOf(element: Element, attribute: string): string[] {
+  return (element.getAttribute(attribute) ?? '').split(/\s+/).filter(Boolean);
+}
+
+/** Text of the elements referenced by an `aria-labelledby`/`aria-describedby` value. */
+function textOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(id => document.getElementById(id)?.textContent?.trim() ?? '')
+    .join(' ');
+}

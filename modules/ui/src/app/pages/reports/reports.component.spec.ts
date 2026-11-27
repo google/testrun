@@ -27,7 +27,8 @@ import { of } from 'rxjs';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
-import { ElementRef } from '@angular/core';
+import { ElementRef, NgZone } from '@angular/core';
+import { MatNativeDateModule } from '@angular/material/core';
 import { FilterName, FilterTitle, Filters } from '../../model/filters';
 import SpyObj = jasmine.SpyObj;
 import { DATA_SOURCE_INITIAL_VALUE, ReportsStore } from './reports.store';
@@ -114,7 +115,9 @@ describe('ReportsComponent', () => {
     mockLiveAnnouncer = jasmine.createSpyObj(['announce']);
 
     TestBed.configureTestingModule({
-      imports: [BrowserAnimationsModule, ReportsComponent],
+      // The app provides the date adapter at the root, as `main.ts` does; the
+      // "Select dates" filter dialog needs it for its calendar.
+      imports: [BrowserAnimationsModule, MatNativeDateModule, ReportsComponent],
       providers: [
         { provide: TestRunService, useValue: mockService },
         { provide: ReportsStore, useValue: mockReportsStore },
@@ -220,7 +223,7 @@ describe('ReportsComponent', () => {
 
       expect(openSpy).toHaveBeenCalled();
       expect(openSpy).toHaveBeenCalledWith(FilterDialogComponent, {
-        ariaLabel: 'Filters',
+        ariaModal: true,
         data: {
           filter: '',
           title: '',
@@ -949,4 +952,93 @@ describe('ReportsComponent', () => {
       });
     });
   });
+
+  describe('filter dialog accessibility (WCAG 1.3.1, 4.1.2)', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
+
+    afterEach(() => {
+      component.dialog.closeAll();
+    });
+
+    /** Opens a filter dialog and returns its `role="dialog"` element. */
+    async function openFilterDialog(
+      filter: FilterName,
+      title: FilterTitle
+    ): Promise<HTMLElement> {
+      // Opened in the Angular zone, as from a click, so that the dialog renders.
+      TestBed.inject(NgZone).run(() =>
+        component.openFilterDialog(new ElementRef(null), filter, title)
+      );
+      // `mat-dialog-title` registers its id with the dialog in a microtask.
+      await fixture.whenStable();
+      return document.querySelector(
+        '.filter-form-dialog mat-dialog-container'
+      ) as HTMLElement;
+    }
+
+    it('should mark the filter dialog as modal', async () => {
+      const dialog = await openFilterDialog(
+        FilterName.Started,
+        FilterTitle.Started
+      );
+
+      expect(dialog.getAttribute('role')).toBe('dialog');
+      expect(dialog.getAttribute('aria-modal')).toBe('true');
+    });
+
+    (
+      [
+        [FilterName.Started, FilterTitle.Started],
+        [FilterName.DeviceInfo, FilterTitle.DeviceInfo],
+        [FilterName.Results, FilterTitle.Results],
+      ] as const
+    ).forEach(([filter, title]) => {
+      it(`should name the "${title}" dialog by its visible heading`, async () => {
+        const dialog = await openFilterDialog(filter, title);
+        const heading = dialog.querySelector('h2') as HTMLElement;
+
+        expect(textOfIdRefs(dialog.getAttribute('aria-labelledby'))).toBe(
+          title
+        );
+        expect(dialog.getAttribute('aria-labelledby')).toBe(heading.id);
+        // A generic static name, e.g. "Filters", would override the heading.
+        expect(dialog.hasAttribute('aria-label')).toBeFalse();
+      });
+    });
+
+    it('should keep the assessment type options reachable in the modal dialog', async () => {
+      const dialog = await openFilterDialog(
+        FilterName.AssessmentType,
+        FilterTitle.AssessmentType
+      );
+      const select = dialog.querySelector('mat-select') as HTMLElement;
+
+      (dialog.querySelector('.mat-mdc-select-trigger') as HTMLElement).click();
+      await fixture.whenStable();
+
+      // Some screen readers hide content outside an `aria-modal` dialog, so
+      // the dialog owns the options panel that renders in another overlay.
+      const panelId = `${select.id}-panel`;
+      expect(idRefsOf(dialog, 'aria-owns')).toContain(panelId);
+      expect(document.getElementById(panelId)?.getAttribute('role')).toBe(
+        'listbox'
+      );
+    });
+  });
 });
+
+/** IDs referenced by an ID reference list attribute, e.g. `aria-owns`. */
+function idRefsOf(element: Element, attribute: string): string[] {
+  return (element.getAttribute(attribute) ?? '').split(/\s+/).filter(Boolean);
+}
+
+/** Text of the elements referenced by an `aria-labelledby`/`aria-describedby` value. */
+function textOfIdRefs(idRefs: string | null): string {
+  return (idRefs ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(id => document.getElementById(id)?.textContent?.trim() ?? '')
+    .join(' ');
+}

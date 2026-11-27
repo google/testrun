@@ -29,6 +29,7 @@ import { SimpleDialogComponent } from '../../../../components/simple-dialog/simp
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { Subject } from 'rxjs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { _IdGenerator } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'app-delete-report',
@@ -43,6 +44,7 @@ export class DeleteReportComponent
   implements OnDestroy
 {
   dialog = inject(MatDialog);
+  private readonly idGenerator = inject(_IdGenerator);
 
   @Output() removeDevice = new EventEmitter<void>();
   private destroy$: Subject<boolean> = new Subject<boolean>();
@@ -57,11 +59,20 @@ export class DeleteReportComponent
 
   deleteReport(event: Event) {
     event.preventDefault();
+    const contentId = this.idGenerator.getId(
+      'app-delete-report-dialog-content-'
+    );
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: 'Delete report',
+      // Named by its `mat-dialog-title`, "Delete report?", which an
+      // `ariaLabel` would override. Screen readers announce the warning with
+      // the name.
+      ariaDescribedBy: contentId,
+      // Exposes the page behind as inert to assistive technologies.
+      ariaModal: true,
       data: {
         title: 'Delete report?',
         content: `You are about to delete ${this.getTestRunId(this.data)}. Are you sure?`,
+        contentId,
       },
       autoFocus: true,
       hasBackdrop: true,
