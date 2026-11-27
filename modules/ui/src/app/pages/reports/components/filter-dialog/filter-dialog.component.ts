@@ -14,20 +14,25 @@
  * limitations under the License.
  */
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
   HostListener,
   OnInit,
+  signal,
   viewChild,
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   MAT_DIALOG_DATA,
+  MatDialogActions,
   MatDialogConfig,
+  MatDialogContent,
   MatDialogModule,
   MatDialogRef,
+  MatDialogTitle,
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import {
@@ -91,6 +96,24 @@ interface DialogData {
   itemRect?: DOMRect;
 }
 
+/** Size of the dialog rendered in the overlay, in px. */
+interface DialogSize {
+  width: number;
+  /** Height of the title and the actions, which do not scroll. */
+  fixedHeight: number;
+  /** Height of the whole content, including the part it scrolls to. */
+  contentHeight: number;
+}
+
+/** Space kept between the dialog and the bottom of the viewport, in px. */
+const VIEWPORT_GAP = 16;
+
+/**
+ * Lowest max height of the content, in px: room for an outlined form field and
+ * the padding of the content, so that a short viewport never crushes it.
+ */
+const MIN_CONTENT_HEIGHT = 88;
+
 @Component({
   selector: 'app-filter-dialog',
 
@@ -119,7 +142,7 @@ interface DialogData {
 })
 export class FilterDialogComponent
   extends EscapableDialogComponent
-  implements OnInit
+  implements OnInit, AfterViewInit
 {
   override dialogRef: MatDialogRef<FilterDialogComponent>;
   private deviceValidators = inject(DeviceValidators);
@@ -144,12 +167,13 @@ export class FilterDialogComponent
 
   range: LocalDateRange = new LocalDateRange();
 
-  topPosition = 0;
-  dialogTitle = 110;
+  /**
+   * Max height of the content, in px, that keeps the dialog in the viewport;
+   * `null` until the dialog is rendered.
+   */
+  readonly contentMaxHeight = signal<number | null>(null);
 
   today = new Date();
-
-  private dialog_actions_height = 50;
 
   @HostListener('window:resize')
   onResize() {
@@ -159,6 +183,9 @@ export class FilterDialogComponent
   readonly calendar = viewChild(MatCalendar);
   readonly startDate = viewChild<NgModel>('startDate');
   readonly endDate = viewChild<NgModel>('endDate');
+  private readonly title = viewChild(MatDialogTitle, { read: ElementRef });
+  private readonly content = viewChild(MatDialogContent, { read: ElementRef });
+  private readonly actions = viewChild(MatDialogActions, { read: ElementRef });
 
   constructor() {
     const dialogRef = inject<MatDialogRef<FilterDialogComponent>>(MatDialogRef);
@@ -200,6 +227,11 @@ export class FilterDialogComponent
     this.createFilterForm();
   }
 
+  ngAfterViewInit() {
+    // Fits the dialog in the viewport, now that the size of its content is known.
+    this.setDialogView();
+  }
+
   private setDialogView(): void {
     const matDialogConfig: MatDialogConfig = new MatDialogConfig();
 
@@ -211,22 +243,28 @@ export class FilterDialogComponent
       matDialogConfig.width = '328px';
     }
 
-    const dialogWidthNum = parseInt(matDialogConfig.width, 10) || 328;
+    const size = this.getDialogSize();
+    // The rendered width can be larger, e.g. the 280px min width of Material
+    // dialogs for "Select status".
+    const dialogWidthNum = Math.max(
+      parseInt(matDialogConfig.width, 10) || 328,
+      size?.width ?? 0
+    );
 
     if (this.data.menuRect) {
       let left = this.data.menuRect.right;
       if (left + dialogWidthNum > window.innerWidth) {
         left = Math.max(0, window.innerWidth - dialogWidthNum);
       }
-      const top = this.data.itemRect
-        ? this.data.itemRect.top
-        : this.data.menuRect.top;
+      const top = this.fitInViewport(
+        this.data.itemRect ? this.data.itemRect.top : this.data.menuRect.top,
+        size
+      );
 
       matDialogConfig.position = {
         left: `${left}px`,
         top: `${top}px`,
       };
-      this.topPosition = top + this.dialog_actions_height;
     } else {
       const rect = this.data.trigger?.nativeElement?.getBoundingClientRect?.();
       if (rect) {
@@ -235,9 +273,8 @@ export class FilterDialogComponent
             this.data.filter === FilterName.Results
               ? `${rect.left - 240}px`
               : `${rect.left}px`,
-          top: `${rect.bottom + 14}px`,
+          top: `${this.fitInViewport(rect.bottom + 14, size)}px`,
         };
-        this.topPosition = rect.bottom + this.dialog_actions_height;
       }
     }
 
@@ -246,6 +283,45 @@ export class FilterDialogComponent
       this.dialogRef.updatePosition(matDialogConfig.position);
     }
   }
+
+  /** Size of the dialog once it is rendered in the overlay, else `null`. */
+  private getDialogSize(): DialogSize | null {
+    const title: HTMLElement | undefined = this.title()?.nativeElement;
+    const content: HTMLElement | undefined = this.content()?.nativeElement;
+    const actions: HTMLElement | undefined = this.actions()?.nativeElement;
+    const container = content?.closest<HTMLElement>('mat-dialog-container');
+    if (!title || !content || !actions || !container) {
+      return null;
+    }
+    return {
+      width: container.offsetWidth,
+      fixedHeight: title.offsetHeight + actions.offsetHeight,
+      contentHeight: content.scrollHeight,
+    };
+  }
+
+  /**
+   * Returns the top of the dialog that keeps it in the viewport, also at 200%
+   * zoom (WCAG 1.4.4, 1.4.10): `anchorTop` while the whole dialog fits below
+   * it, otherwise just high enough to show the whole content, but never above
+   * the viewport. Limits the content to the height left, where it scrolls, but
+   * never below `MIN_CONTENT_HEIGHT`.
+   */
+  private fitInViewport(anchorTop: number, size: DialogSize | null): number {
+    if (!size) {
+      return anchorTop;
+    }
+    const bottom = window.innerHeight - VIEWPORT_GAP;
+    const top = Math.max(
+      0,
+      Math.min(anchorTop, bottom - size.fixedHeight - size.contentHeight)
+    );
+    this.contentMaxHeight.set(
+      Math.max(MIN_CONTENT_HEIGHT, bottom - top - size.fixedHeight)
+    );
+    return top;
+  }
+
   private createFilterForm() {
     this.filterForm = this.fb.group({
       deviceInfo: ['', [this.deviceValidators.deviceStringFormat()]],

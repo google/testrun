@@ -17,9 +17,7 @@ limitations under the License.
 
 <mat-dialog-content
   class="filter-dialog-content"
-  [ngStyle]="{
-    'max-height': 'calc(100vh - ' + (topPosition + dialogTitle) + 'px)',
-  }">
+  [style.max-height.px]="contentMaxHeight()">
   <form [formGroup]="filterForm" class="filter-form">
     @if (data.filter === FilterName.DeviceInfo) {
       <mat-form-field appearance="outline" class="text-field">

@@ -231,6 +231,7 @@ describe('ReportsComponent', () => {
         autoFocus: true,
         hasBackdrop: true,
         disableClose: true,
+        maxHeight: '100vh',
         panelClass: 'filter-form-dialog',
       });
 
