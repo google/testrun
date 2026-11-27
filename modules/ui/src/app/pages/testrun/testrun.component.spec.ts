@@ -127,6 +127,16 @@ function visibleLabel(element: HTMLElement): string {
   return normalizeWhitespace(textOf(element, true));
 }
 
+/** Computed top, right, bottom, and left values of `margin` or `padding`. */
+function boxSides(
+  style: CSSStyleDeclaration,
+  property: 'margin' | 'padding'
+): string[] {
+  return ['top', 'right', 'bottom', 'left'].map(side =>
+    style.getPropertyValue(`${property}-${side}`)
+  );
+}
+
 describe('TestrunComponent', () => {
   let component: TestrunComponent;
   let fixture: ComponentFixture<TestrunComponent>;
@@ -622,6 +632,96 @@ describe('TestrunComponent', () => {
 
         it('should announce that it opens a confirmation dialog', () => {
           expect(stopBtn.getAttribute('aria-haspopup')).toBe('dialog');
+        });
+      });
+
+      describe('"Stop Testrun?" dialog (WCAG 1.3.1, 2.4.6, 4.1.2)', () => {
+        const WARNING =
+          'Testrun will be stopped without any track records and report generation.';
+
+        afterEach(() => {
+          // Closes as Cancel does, so Testrun keeps running.
+          component.dialog.closeAll();
+        });
+
+        /** Activates "Stop" and returns the `role="dialog"` element it opens. */
+        async function openStopTestrunDialog(): Promise<HTMLElement> {
+          (compiled.querySelector('.stop-button') as HTMLButtonElement).click();
+          // The click runs in the Angular zone, which renders the dialog in the
+          // CDK overlay; `mat-dialog-title` then registers its id in a microtask.
+          await fixture.whenStable();
+          return document.querySelector(
+            '.stop-testrun mat-dialog-container'
+          ) as HTMLElement;
+        }
+
+        it('should mark the dialog as modal', async () => {
+          const dialog = await openStopTestrunDialog();
+
+          expect(dialog.getAttribute('role')).toBe('dialog');
+          expect(dialog.getAttribute('aria-modal')).toBe('true');
+        });
+
+        it('should name the dialog by its visible "Stop Testrun?" heading', async () => {
+          const dialog = await openStopTestrunDialog();
+          const heading = dialog.querySelector(
+            'h2.simple-dialog-title'
+          ) as HTMLElement;
+
+          expect(textOfIdRefs(dialog.getAttribute('aria-labelledby'))).toBe(
+            'Stop Testrun?'
+          );
+          expect(dialog.getAttribute('aria-labelledby')).toBe(heading?.id);
+          // A static name would override the visible heading.
+          expect(dialog.hasAttribute('aria-label')).toBeFalse();
+          expect(
+            dialog.querySelectorAll('h1, h2, h3, h4, h5, h6, [role="heading"]')
+              .length
+          ).toBe(1);
+        });
+
+        it('should describe the dialog by its warning', async () => {
+          const dialog = await openStopTestrunDialog();
+          const descriptionId = dialog.getAttribute('aria-describedby');
+
+          expect(textOfIdRefs(descriptionId)).toBe(WARNING);
+          // The id is unique and belongs to the warning inside this dialog.
+          expect(
+            document.querySelectorAll(`[id="${descriptionId}"]`).length
+          ).toBe(1);
+          expect(dialog.querySelector(`[id="${descriptionId}"]`)).toBe(
+            dialog.querySelector('.simple-dialog-content')
+          );
+        });
+
+        it('should keep the title look', async () => {
+          const dialog = await openStopTestrunDialog();
+          const title = dialog.querySelector(
+            '.simple-dialog-title'
+          ) as HTMLElement;
+          const style = getComputedStyle(title);
+
+          // No margin, padding, or 40px line strut from the Material title.
+          expect(boxSides(style, 'margin')).toEqual([
+            '0px',
+            '0px',
+            '0px',
+            '0px',
+          ]);
+          expect(boxSides(style, 'padding')).toEqual([
+            '0px',
+            '0px',
+            '0px',
+            '0px',
+          ]);
+          expect(title.offsetHeight).toBe(32);
+          // The headline-small typography, not the Material title one.
+          expect(style.fontSize).toBe('24px');
+          expect(style.lineHeight).toBe('32px');
+          expect(style.fontWeight).toBe('400');
+          expect(style.fontFamily).toBe('"Google Sans", sans-serif');
+          expect(style.letterSpacing).toBe('normal');
+          expect(style.textAlign).toBe('center');
         });
       });
     });

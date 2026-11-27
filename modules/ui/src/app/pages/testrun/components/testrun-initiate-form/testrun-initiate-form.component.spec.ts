@@ -362,6 +362,32 @@ describe('ProgressInitiateFormComponent', () => {
   });
 
   describe('DOM tests', () => {
+    describe('"Start new Testrun" title (WCAG 1.3.1, 2.4.6)', () => {
+      /** The title, if it is the only heading of the form. */
+      const getOnlyHeading = (): Element | null => {
+        const headings = compiled.querySelectorAll(
+          'h1, h2, h3, h4, h5, h6, [role="heading"]'
+        );
+        return headings.length === 1 ? headings[0] : null;
+      };
+
+      it('should be the only heading, a native level 2 heading, in both steps', () => {
+        fixture.detectChanges();
+        const headingOfDeviceStep = getOnlyHeading();
+        component.selectedDevice = device;
+        fixture.detectChanges();
+        const headingOfTestsStep = getOnlyHeading();
+
+        [headingOfDeviceStep, headingOfTestsStep].forEach(heading => {
+          expect(heading?.tagName).toBe('H2');
+          expect(heading?.textContent?.trim()).toBe('Start new Testrun');
+          // Native semantics leave no ARIA heading role to keep in sync.
+          expect(heading?.hasAttribute('role')).toBeFalse();
+          expect(heading?.hasAttribute('aria-level')).toBeFalse();
+        });
+      });
+    });
+
     describe('empty device', () => {
       beforeEach(() => {
         component.selectedDevice = null;

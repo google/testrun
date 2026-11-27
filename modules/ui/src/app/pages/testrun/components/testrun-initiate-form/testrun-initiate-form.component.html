@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <form [formGroup]="initiateForm" class="progress-initiate-form">
-  <span class="progress-initiate-form-title" role="heading" aria-level="2"
-    >Start new Testrun</span
-  >
+  <h2 class="progress-initiate-form-title" mat-dialog-title>
+    Start new Testrun
+  </h2>
 
   @if (devices$ | async; as devices) {
     <section class="progress-initiate-form-content">

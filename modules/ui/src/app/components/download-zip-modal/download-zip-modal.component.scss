@@ -105,6 +105,17 @@
   line-height: 40px;
   text-align: center;
   color: colors.$grey-900;
+  // Looks like the former `<p>` title, without the padding and typography of
+  // `<h2>` and `mat-dialog-title`.
+  padding: 0;
+  font-family: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+
+  // The 40px line strut of `mat-dialog-title` would make the title taller.
+  &::before {
+    display: none;
+  }
 }
 
 .testing-result-subtitle {
